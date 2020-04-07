@@ -1,0 +1,102 @@
+ ##################
+### SKS SETTINGS ###
+ ##################
+
+---
+############
+### Grid ###
+############
+
+x0   : 0
+y0   : 0
+xnum : 300
+ynum : 300
+dx   : 10
+dy   : 10
+
+###############
+### Polygon ###
+###############
+
+data_has_polygon : False
+polygon_data     : ''
+
+####################
+### PointManager ###
+####################
+
+###Inlets
+# 'random'    - full random points 
+# 'import'    - import points
+# 'composite' - add n random points to imported points
+inlets_mode   : 'random'
+inlets_data   : ''
+inlets_number : 50
+
+###Outlets
+# 'random'    - full random points 
+# 'import'    - import points
+# 'composite' - add n random points to imported points
+outlets_mode   : 'import'
+outlets_data   : [[1500, 0]]
+outlets_number : 1
+
+######################
+### GeologyManager ###
+######################
+
+###Geology
+# 'null'   - No geology
+# 'import' - Import geology
+# 'image'  - Import geology via image
+geological_mode     : 'null'
+geological_datafile : ''
+
+###Faults
+# 'null'   - No faults
+# 'import' - Import faults
+# 'image'  - Import faults via image
+faults_mode     : 'null'
+faults_datafile : ''
+
+###Fractures
+# 'null'   - No fractures
+# 'import' - Import fractures
+# 'image'  - Import fractures via image
+# 'random' - Generate random fractures
+fractures_mode     : 'random'
+fractures_datafile : ''
+
+# If fractures mode is 'generate'
+fractures_densities       : [0.00005,0.0001]
+fractures_min_orientation : [    340,    70]
+fractures_max_orientation : [     20,   110]
+
+# For fracture size
+alpha : 2
+fractures_min_length : 100
+fractures_max_length : 4000
+
+###############################
+### Fast-Marching Algorithm ###
+###############################
+
+code_out       : 0.1
+code_aquifere  : 2
+code_aquiclude : 1
+code_faults    : 4
+code_fractures : 3
+code_conduits  : 5
+
+### Formation to consider and FMM code associated
+geology_id       : [1,2] # Only for 'import' geological mode
+geology_velocity : [code_aquifere,code_aquiclude]
+
+importance_factor : [1,3,5]
+
+#############
+### Other ###
+#############
+
+rand_seed : 0
+...
