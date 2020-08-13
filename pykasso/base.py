@@ -41,23 +41,23 @@ def get_settings(example=False):
     ----------
     example : bool, optionnal
         If True, pyKasso will provide you the Betteraz's files example
-    
+
     Examples
     --------
         >>> pk.get_settings(example=True)
     """
-    
+
     # copying defaults file from source package
     import shutil
     import glob
 
     path = os.path.dirname(os.path.abspath(__file__)) + '/' + 'default_files' + '/'
-    
+
     if example == True:
-        
+
         # create inputs directory
         dst = 'inputs'
-        
+
         if not os.path.exists(dst):
             try:
                 os.makedirs(dst)
@@ -72,8 +72,8 @@ def get_settings(example=False):
 
         for src in srcs:
             shutil.copy(src, dst)
-        
-    else: 
+
+    else:
         src = path + 'settings.yaml'
         dst  = 'settings.yaml'
 
@@ -100,7 +100,7 @@ class Grid():
 		x-coordinate origin.
 	y0 : float
 		y-coordinate origin.
-	xnum : integer
+	s : integer
 		Number of cells on x dimension.
 	ynum : integer
 		Number of cells on y dimension.
@@ -111,10 +111,10 @@ class Grid():
 
 	Notes
 	-----
-	- On this version, dx and dy must be similar. pyKasso does not support unstructured grid yet.  
+	- On this version, dx and dy must be similar. pyKasso does not support unstructured grid yet.
 	- x0 and y0 are considered to be in the center of the first node.
-	"""        
-    
+	"""
+
     def __init__(self, x0, y0, xnum, ynum, dx, dy):
         self.x0   = x0
         self.y0   = y0
@@ -141,7 +141,7 @@ class Polygon():
 	grid : Grid()
 		Polygon() class needs a Grid() object as an argument.
 	"""
-    
+
     def __init__(self, grid):
         self.polygon = None
         self.mask    = None
@@ -161,10 +161,10 @@ class Polygon():
             self.polygon = _loadpoints(text)
         else:
             self.polygon = vertices
-            
+
         self.mask = self._set_mask()
         return None
-    
+
     def _set_mask(self):
         """
         Set the mask.
@@ -264,7 +264,7 @@ class PointManager():
     polygon : Polygon(), optionnal
         PointManager() class needs a Polygon() object as an argument.
     """
-    
+
     def __init__(self, grid, polygon=None):
         self.points  = {}
         self.grid    = grid
@@ -474,9 +474,9 @@ class GeologyManager():
             Fractures maximum orientation for each fracture family.
         alpha : float
             Degree of power law.
-        fractures_min_length : float
+        fractures_min_length : list
             The minimum lenght of the fractures. For all the families.
-        fractures_max_length : float
+        fractures_max_length : list
             The maximum lenght of the fractures. For all the families.
         """
         self.data['fractures'] = {}
@@ -517,8 +517,7 @@ class GeologyManager():
                 # pdf = ((alpha - 1)/min_fracture_length) * np.float_power(x / min_fracture_length, -alpha) / C
                 # cdf = (np.float_power(min_fracture_length, -alpha+1) - np.float_power(x, -alpha+1)) / (np.float_power(min_fracture_length, -alpha+1) - np.float_power(max_fracture_length, -alpha+1))
                 # cdf_reverse = np.float_power( np.float_power(min_fracture_length, -alpha+1) - P(x) * (np.float_power(min_fracture_length, -alpha+1) - np.float_power(max_fracture_length, -alpha+1)) , (1/(-alpha+1)))
-                frac_length = np.float_power(np.float_power(fractures_min_length, -alpha+1) - np.random.rand() * (np.float_power(fractures_min_length, -alpha+1) - np.float_power(fractures_max_length, -alpha+1)) , (1/(-alpha+1)))
-
+                frac_length = np.float_power(np.float_power(fractures_min_length[frac_family], -alpha+1) - np.random.rand() * (np.float_power(fractures_min_length[frac_family], -alpha+1) - np.float_power(fractures_max_length[frac_family], -alpha+1)) , (1/(-alpha+1)))
                 # FRACTURE ORIENTATION
                 # -> from von Mises distribution
                 mu = mean_angle
@@ -544,7 +543,7 @@ class GeologyManager():
         for frac_family in self.fractures:
             fractures = self.fractures[frac_family]['fractures']
             [fracture.compute_segment_points(self.grid.dx) for fracture in fractures]
-        
+
             for fracture in fractures:
                 x1,y1 = fracture.coordinates[1]
                 x2,y2 = fracture.coordinates[2]
@@ -620,7 +619,7 @@ class GeologyManager():
                     k += 1
 
         return maps[selected_var]
-    
+
     def compute_stats_on_data(self):
         """
         Compute statistics on the geologic data.
@@ -708,7 +707,7 @@ def _extents(f):
 #################
 class Fracture():
     """
-    A class for modeling fractures as objects. 
+    A class for modeling fractures as objects.
 
     Parameters
     ----------
@@ -725,7 +724,7 @@ class Fracture():
     orientation : float
         Orientation of the fracture
     """
-    
+
     def __init__(self, ID, family, x_start, y_start, length, orientation):
 
         self.ID           = ID
@@ -766,7 +765,7 @@ class SKS():
     """
     A super-class to manage all the previous data class and to simulate karst networks.
     """
-    
+
     def __init__(self, yaml_settings_file = None, rand_seed = None):
         """
         Construct a SKS class according to the specified settings datafile.
@@ -775,7 +774,7 @@ class SKS():
         ----------
         yaml_settings_file : string
             YAML settings file location.
-            
+
         Examples
         --------
             >>> catchment = pk.SKS()
@@ -783,7 +782,7 @@ class SKS():
         """
         if yaml_settings_file is None:
             yaml_settings_file = os.path.dirname(os.path.abspath(__file__)) + '/' + 'default_files/settings.yaml'
-        
+
         try:
             with open(yaml_settings_file, 'r') as stream:
                 try:
@@ -796,17 +795,17 @@ class SKS():
             raise
 
         self.settings = settings
-        
+
         self.settings['fractures_numbers'] = [int(self.settings['xnum']*self.settings['ynum']*self.settings['dx']*self.settings['dy']*float(i)) for i in self.settings['fractures_densities']]
-        
+
         geology_velocity = []
         for elem in self.settings['geology_velocity']:
             geology_velocity.append(self.settings[elem])
-        self.settings['geology_velocity'] = geology_velocity      
-        
+        self.settings['geology_velocity'] = geology_velocity
+
         if self.settings['rand_seed'] > 0:
             np.random.seed(self.settings['rand_seed'])
-            
+
         if rand_seed != None:
             np.random.seed(rand_seed)
 
@@ -981,7 +980,7 @@ class SKS():
     def get_fractures_numbers(self):
         """
         Get the number of fractures.
-        
+
         Return
         ------
         dictionnary
@@ -993,7 +992,7 @@ class SKS():
             model.append(self.geology.fractures[frac_family]['frac_nbr'])
         fracs = {'user' : user, 'model' : model}
         return fracs
-    
+
     def get_mask(self):
         """
         Get the numpy-array mask calculated if a polygon is given.
@@ -1014,7 +1013,7 @@ class SKS():
         Parameter
         ---------
         data_has_polygon : bool
-            If true, a polygon will be required. 
+            If true, a polygon will be required.
         """
         self.settings['data_has_polygon'] = data_has_polygon
         return None
@@ -1027,7 +1026,7 @@ class SKS():
         Parameter
         ---------
         polygon_data : string or list
-            Polygon datafile path or list of vertices coordinates. 
+            Polygon datafile path or list of vertices coordinates.
         """
         self.settings['polygon_data'] = polygon_data
         return None
@@ -1039,9 +1038,9 @@ class SKS():
         Parameter
         ---------
         inlets_mode : string
-            'random'    - Full random points 
+            'random'    - Full random points
             'import'    - Import points
-            'composite' - Add n random points to imported points 
+            'composite' - Add n random points to imported points
         """
         self.settings['inlets_mode'] = inlets_mode
         return None
@@ -1054,7 +1053,7 @@ class SKS():
         Parameter
         ---------
         inlets_data : string or list
-            Inlets datafile path or list of inlets coordinates. 
+            Inlets datafile path or list of inlets coordinates.
         """
         self.settings['inlets_data'] = inlets_data
         return None
@@ -1067,7 +1066,7 @@ class SKS():
         Parameter
         ---------
         inlets_number : string
-            Number of inlets to generate. 
+            Number of inlets to generate.
         """
         self.settings['inlets_number'] = inlets_number
         return None
@@ -1079,9 +1078,9 @@ class SKS():
         Parameter
         ---------
         outlets_mode : string
-            'random'    - Full random points 
+            'random'    - Full random points
             'import'    - Import points
-            'composite' - Add n random points to imported points 
+            'composite' - Add n random points to imported points
         """
         self.settings['outlets_mode'] = outlets_mode
         return None
@@ -1094,7 +1093,7 @@ class SKS():
         Parameter
         ---------
         outlets_data : string or list
-            Outlets datafile path or list of outlets coordinates. 
+            Outlets datafile path or list of outlets coordinates.
         """
         self.settings['outlets_data'] = outlets_data
         return None
@@ -1107,7 +1106,7 @@ class SKS():
         Parameter
         ---------
         outlets_number : string
-            Number of outlets to generate. 
+            Number of outlets to generate.
         """
         self.settings['outlets_number'] = outlets_number
         return None
@@ -1134,7 +1133,7 @@ class SKS():
         Parameter
         ---------
         geological_datafile : string
-            Geological datafile path. 
+            Geological datafile path.
         """
         self.settings['geological_datafile'] = geological_datafile
         return None
@@ -1161,7 +1160,7 @@ class SKS():
         Parameter
         ---------
         faults_datafile : string
-            Faults datafile path. 
+            Faults datafile path.
         """
         self.settings['faults_datafile'] = faults_datafile
         return None
@@ -1189,7 +1188,7 @@ class SKS():
         Parameter
         ---------
         fracture_datafile : string
-            Fractures datafile path. 
+            Fractures datafile path.
         """
         self.fracture_datafile = fracture_datafile
         return None
@@ -1202,7 +1201,7 @@ class SKS():
         Parameter
         ---------
         fractures_densities : list
-            One density for each family. 
+            One density for each family.
         """
         self.settings['fractures_densities'] = fractures_densities
         self.settings['fractures_numbers'] = [self.settings['xnum']*self.settings['ynum']*self.settings['dx']*self.settings['dy']*i/10**6 for i in self.settings['fractures_densities']]
@@ -1216,7 +1215,7 @@ class SKS():
         Parameter
         ---------
         fractures_min_orientation : list
-            One orientation for each family. 
+            One orientation for each family.
         """
         self.settings['fractures_min_orientation'] = fractures_min_orientation
         return None
@@ -1229,7 +1228,7 @@ class SKS():
         Parameter
         ---------
         fractures_max_orientation : list
-            One orientation for each family. 
+            One orientation for each family.
         """
         self.settings['fractures_max_orientation'] = fractures_max_orientation
         return None
@@ -1253,7 +1252,7 @@ class SKS():
 
         Parameter
         ---------
-        fractures_min_length : float 
+        fractures_min_length : list
         """
         self.settings['fractures_min_length'] = fractures_min_length
         return None
@@ -1265,7 +1264,7 @@ class SKS():
 
         Parameter
         ---------
-        fractures_max_length : float 
+        fractures_max_length : list
         """
         self.settings['fractures_max_length'] = fractures_max_length
         return None
@@ -1277,7 +1276,7 @@ class SKS():
 
         Parameter
         ---------
-        code_out : float 
+        code_out : float
         """
         self.settings['code_out'] = code_out
         return None
@@ -1288,7 +1287,7 @@ class SKS():
 
         Parameter
         ---------
-        code_aquifere : float 
+        code_aquifere : float
         """
         self.settings['code_aquifere'] = code_aquifere
         return None
@@ -1299,7 +1298,7 @@ class SKS():
 
         Parameter
         ---------
-        code_aquiclude : float 
+        code_aquiclude : float
         """
         self.settings['code_aquiclude'] = code_aquiclude
         return None
@@ -1310,7 +1309,7 @@ class SKS():
 
         Parameter
         ---------
-        code_faults : float 
+        code_faults : float
         """
         self.settings['code_faults'] = code_faults
         return None
@@ -1321,7 +1320,7 @@ class SKS():
 
         Parameter
         ---------
-        code_fractures : float 
+        code_fractures : float
         """
         self.settings['code_fractures'] = code_fractures
         return None
@@ -1332,7 +1331,7 @@ class SKS():
 
         Parameter
         ---------
-        code_conduits : float 
+        code_conduits : float
         """
         self.settings['code_conduits'] = code_conduits
         return None
@@ -1341,7 +1340,7 @@ class SKS():
         """
         Define the geology id (from geology datafile) to consider in the simulation.
         Only needed in 'import' mode.
-        
+
         Parameter
         ---------
         geology_id : list
@@ -1352,7 +1351,7 @@ class SKS():
     def set_geology_velocity(self, geology_velocity):
         """
         Define the velocities to apply to each geology id.
-        
+
         Parameter
         ---------
         geology_velocity : list
@@ -1394,11 +1393,11 @@ class SKS():
         self.settings['rand_seed'] += 1
         np.random.seed(self.settings['rand_seed'])
         return None
-    
+
     ###################
     # update_ methods #
     ###################
-    
+
     def update_polygon(self):
         """
         Update the polygon settings.
@@ -1459,7 +1458,7 @@ class SKS():
             self.geology.set_data_from_image('geology', self.settings['geological_datafile'])
         else:
             print('/!\\ Error : unrecognized geological mode.')
-            sys.exit() 
+            sys.exit()
         self.geology.compute_stats_on_data()
         if self.settings['polygon_data']:
             self.geology_masked['geology'] = ma.MaskedArray(self.geology.data['geology']['data'], mask=self.mask)
@@ -1495,14 +1494,14 @@ class SKS():
             self.geology.set_data_from_image('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'random':
             self.geology.generate_fractures(self.settings['fractures_numbers'], self.settings['fractures_min_orientation'], self.settings['fractures_max_orientation'], self.settings['alpha'], self.settings['fractures_min_length'], self.settings['fractures_max_length'])
-        else:                                                                                  
+        else:
             print('/!\\ Error : unrecognized fractures mode.')
             sys.exit()
         self.geology.compute_stats_on_data()
         if self.settings['polygon_data']:
             self.geology_masked['fractures'] = ma.MaskedArray(self.geology.data['fractures']['data'], mask=self.mask)
         return None
-    
+
     def update_all(self):
         """
         Update all the parameters.
@@ -1558,12 +1557,12 @@ class SKS():
         # The geologic data
         self.geology = self._set_geology(self.grid)
         self.geology.compute_stats_on_data()
-        
+
         self.geology_masked = {}
         if self.mask is not None:
             for key in self.geology.data:
                 self.geology_masked[key] = ma.MaskedArray(self.geology.data[key]['data'], mask=self.mask)
-        
+
         return None
 
     def _set_grid(self, x0, y0, xnum, ynum, dx, dy):
@@ -1649,45 +1648,45 @@ class SKS():
             print('/!\\ Error : unrecognized fractures mode.')
             sys.exit()
         return geology
-    
+
     ##############################
     # karst simulation functions #
     ##############################
-    
+
     def compute_karst_network(self, verbose = False):
         """
         Compute the karst network according to the parameters.
-        
+
         Save the results in the `karst_simulations` list attribute.
         """
         # 1 - Initialize the parameters
         self._initialize_karst_network_parameters()
-        
+
         # 2 - Compute conduits for each generation
         self._compute_iterations_karst_network()
 
         # 3 - Gather the conduits points to construct a node network
         edges, nodes = self._compute_nodes_network()
-        
+
         # 4 - Calculate the karst network statistics indicators with karstnet and save karst network
         k = kn.KGraph(edges, nodes)
         stats = k.characterize_graph(verbose)
-        
+
         maps = self.maps.copy()
-        
+
         points = {}
         points['inlets']  = self.inlets
         points['outlets'] = self.outlets
-        
+
         network = {}
         network['edges'] = edges
         network['nodes'] = nodes
-        
+
         config = self.settings
-        
+
         self.karst_simulations.append(KarstNetwork(maps, points, network, stats, config))
         return None
-    
+
     # 1
     def _initialize_karst_network_parameters(self):
         """
@@ -1708,7 +1707,7 @@ class SKS():
         self.conduits    = []
         self.outletsNode = []
         return None
-    
+
     # 1
     def _set_inlets_repartition(self):
         """
@@ -1730,7 +1729,7 @@ class SKS():
                 inlets.append((self.inlets[i][0],self.inlets[i][1],k))
                 i += 1
         return inlets
-    
+
     # 2
     def _compute_iterations_karst_network(self):
         """
@@ -1748,7 +1747,7 @@ class SKS():
 #            print('iteration:{}/{}'.format(iteration+1,self.nbr_iteration))
 #        print('- END -')
         return None
-    
+
     # 2
     def _compute_phi_map(self):
         """
@@ -1759,7 +1758,7 @@ class SKS():
             Y = int(math.ceil((y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
             self.maps['phi'][Y][X] = -1
         return None
-    
+
     # 2
     def _compute_velocity_map(self, iteration):
         """
@@ -1773,39 +1772,39 @@ class SKS():
             elif self.geology.data['geology']['mode'] == 'image':
                 self.maps['velocity'][0] = np.where(self.geology.data['geology']['data']==1, self.settings['code_aquiclude'], self.settings['code_aquifere'])
             elif self.geology.data['geology']['mode'] == 'import':
-                
+
                 tableFMM = {}
                 if len(self.settings['geology_id']) != len(self.settings['geology_velocity']):
                     print("- _compute_velocity_map() - Error : number of lithologies does not match with number of FMM code.")
                     sys.exit()
-    
+
                 for geology, codeFMM in zip(self.settings['geology_id'], self.settings['geology_velocity']):
                     if geology in self.geology.data['geology']['stats']['ID']:
                         tableFMM[geology] = codeFMM
                     else:
                         print("- initialize_velocityMap() - Warning : no geology n {} found.".format(geology))
                         tableFMM[geology] = self.settings['code_out']
-    
+
                 for y in range(self.grid.ynum):
                     for x in range(self.grid.xnum):
                         geology = self.geology.data['geology']['data'][y][x]
                         self.maps['velocity'][0][y][x] = tableFMM[geology]
-    
+
             # Faults
             self.maps['velocity'][0] = np.where(self.geology.data['faults']['data'] > 0, self.settings['code_faults'], self.maps['velocity'][0])
-    
+
             # Fractures
             self.maps['velocity'][0] = np.where(self.geology.data['fractures']['data'] > 0, self.settings['code_fractures'], self.maps['velocity'][0])
-    
+
             # If out of polygon
             if self.mask is not None:
                 self.maps['velocity'][0] = np.where(self.mask==1, self.settings['code_out'], self.maps['velocity'][0])
-                
+
         else:
             self.maps['velocity'][iteration] = self.maps['velocity'][iteration-1]
             self.maps['velocity'][iteration] = np.where(self.maps['karst'][iteration-1] > 0, self.settings['code_conduits'], self.maps['velocity'][iteration])
         return None
-    
+
     # 2
     def _compute_time_map(self, iteration):
         """
@@ -1819,7 +1818,7 @@ class SKS():
             except:
                 raise
         return None
-    
+
     # 2
     def _compute_karst_map(self, iteration):
         """
@@ -1836,7 +1835,7 @@ class SKS():
         # get karst map from previous iteration
         if iteration > 0:
             self.maps['karst'][iteration] = self.maps['karst'][iteration-1]
-            
+
         for (x,y,i) in self.inlets:
             # check if inlet iteration match with actual iteration
             if i == iteration:
@@ -1886,7 +1885,7 @@ class SKS():
 
                 self.conduits.append(conduit)
         return None
- 
+
     # 2
     def _check_boundary_conditions(self,iteration,X,Y):
         borders_conditions = [     #(X,Y)
@@ -1904,42 +1903,42 @@ class SKS():
         time_values = []
         rank = 0
 
-        if X == 0:
+        if X <= 0:
             for row in borders_conditions[0]:
                 time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
             rank  = time_values.index(min(time_values))
             moove = borders_conditions[0][rank]
-        elif Y == 0:
+        elif Y <= 0:
             for row in borders_conditions[1]:
                 time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
             rank  = time_values.index(min(time_values))
             moove = borders_conditions[1][rank]
-        elif X == self.grid.xnum:
+        elif X >= self.grid.xnum:
             for row in borders_conditions[2]:
                 time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
             rank  = time_values.index(min(time_values))
             moove = borders_conditions[2][rank]
-        elif Y == self.grid.ynum:
+        elif Y >= self.grid.ynum:
             for row in borders_conditions[3]:
                 time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
             rank  = time_values.index(min(time_values))
             moove = borders_conditions[3][rank]
-        elif (X == 0) and (Y == 0):
+        elif (X <= 0) and (Y <= 0):
             for row in corners_conditions[0]:
                 time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
             rank  = time_values.index(min(time_values))
             moove = corners_conditions[0][rank]
-        elif (X == 0) and (Y == self.grid.ynum):
+        elif (X <= 0) and (Y >= self.grid.ynum):
             for row in corners_conditions[1]:
                 time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
             rank  = time_values.index(min(time_values))
             moove = corners_conditions[1][rank]
-        elif (X == self.grid.xnum) and (Y == self.grid.ynum):
+        elif (X >= self.grid.s) and (Y >= self.grid.ynum):
             for row in corners_conditions[2]:
                 time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
             rank  = time_values.index(min(time_values))
             moove = corners_conditions[2][rank]
-        elif (X == self.grid.xnum) and (Y == 0):
+        elif (X >= self.grid.s) and (Y <= 0):
             for row in corners_conditions[3]:
                 time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
             rank  = time_values.index(min(time_values))
@@ -1947,9 +1946,9 @@ class SKS():
 
         dx = moove[0] * self.step
         dy = moove[1] * self.step
-        
+
         return (dx,dy)
-    
+
     # 3
     def _compute_nodes_network(self):
         """
@@ -2003,11 +2002,11 @@ class SKS():
         for outlet in self.outletsNode:
             NODES[outlet[0]] = (outlet[1],outlet[2])
         return (EDGES,NODES)
-    
-    
+
+
     ###########################
     # visualization functions #
-    ###########################    
+    ###########################
 
     def show_catchment(self, data='geology', title=None, mask=False, cmap='binary'):
         """
@@ -2017,7 +2016,7 @@ class SKS():
         if title is None:
             title = data
         fig.suptitle(title, fontsize=16)
-        
+
         if   data == 'geology':
             d = self.geology.data['geology']['data']
         elif data == 'faults':
@@ -2047,50 +2046,50 @@ class SKS():
         plt.legend(loc='upper right')
         plt.show()
         return None
-                
+
     def _show_karst_network(self, sim=-1, iteration=-1, cmap='binary'):
         """
         Show the simulated karst network.
         """
         karst_network = self.karst_simulations[sim]
-        
+
         fig, ([ax1,ax2],[ax3,ax4]) = plt.subplots(2, 2, sharex=True, sharey=True)
         fig.suptitle('Karst Network', fontsize=16)
-        
+
         ax1.imshow(karst_network.maps['phi'], extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap)
         ax1.set_title('Phi')
-        
+
         ax2.imshow(karst_network.maps['velocity'][iteration], extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap)
         ax2.set_title('Velocity')
-        
+
         ax3.imshow(karst_network.maps['time'][iteration], extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap)
         ax3.set_title('Time')
-        
+
         ax4.imshow(karst_network.maps['karst'][iteration], extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap)
         ax4.set_title('Karst')
 
         fig.subplots_adjust(hspace=0.5)
         plt.show()
         return None
-        
+
     def show(self, data=None, title=None, cmap='binary', probability=False):
         """
         Show the entire study domain.
-        """        
+        """
         if data is None:
             data = self.karst_simulations[-1].maps['karst'][-1]
-        
+
         if probability == True:
             data = self._compute_average_paths()
-            
+
         fig, ax1 = plt.subplots()
         if title is not None:
             fig.suptitle(title, fontsize=16)
 
         im1 = ax1.imshow(data, extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap)
-        
+
         fig.colorbar(im1, ax=ax1)
-        
+
         if self.settings['data_has_polygon']:
             closed_polygon = self.polygon.polygon[:]
             closed_polygon.append(closed_polygon[0])
@@ -2103,7 +2102,7 @@ class SKS():
         plt.legend(loc='upper right')
         plt.show()
         return None
-    
+
     def _compute_average_paths(self, show=False):
         """
         Compute the mean of all the simulations.
@@ -2113,12 +2112,12 @@ class SKS():
             karst_maps.append(karst_simulation.maps['karst'][-1])
 
         karst_prob = sum(karst_maps)/len(karst_maps)
-        
+
         if self.mask is not None:
             karst_prob = np.ma.MaskedArray(karst_prob, self.mask)
-        
+
         return karst_prob
-    
+
     def compare_stats(self, data=None, mean=False):
         """
         Compare statistics between reference indicators and calculated networks.
@@ -2133,7 +2132,7 @@ class SKS():
         m_d  = []
         cvd  = []
         vars = [cpd,cv_d,cv_l,o_e,l_e,spl,m_d,cvd]
-        
+
         if data == None:
             i = -1
         else:
@@ -2188,7 +2187,7 @@ class SKS():
                     result = 'IN'
                 print('%-10s%-12s%-12s%-12s%-12s' % (key, round(mean,3), round(self.reference_statistics[key][0],3), round(self.reference_statistics[key][1],3), result))
         return None
-    
+
 
 ################
 class Conduit():
@@ -2203,7 +2202,7 @@ class Conduit():
     def add_node(self,nodeID,x,y,nodeType):
         """
         Add a new node in the current constructed conduit.
-        
+
         Parameters
         ----------
         nodeID:
@@ -2229,7 +2228,7 @@ class Conduit():
             self.edges.append((node_1,node_2))
         return None
 
-#####################   
+#####################
 class KarstNetwork():
     """
     A class for stroring a calculated karst network.
