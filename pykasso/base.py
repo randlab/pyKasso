@@ -1460,7 +1460,7 @@ class SKS():
             print('/!\\ Error : unrecognized geological mode.')
             sys.exit()
         self.geology.compute_stats_on_data()
-        if self.settings['polygon_data']:
+        if self.settings['data_has_polygon']:
             self.geology_masked['geology'] = ma.MaskedArray(self.geology.data['geology']['data'], mask=self.mask)
         return None
 
@@ -1478,7 +1478,7 @@ class SKS():
             print('/!\\ Error : unrecognized faults mode.')
             sys.exit()
         self.geology.compute_stats_on_data()
-        if self.settings['polygon_data']:
+        if self.settings['data_has_polygon']:
             self.geology_masked['faults'] = ma.MaskedArray(self.geology.data['faults']['data'], mask=self.mask)
         return None
 
