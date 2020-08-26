@@ -100,7 +100,7 @@ class Grid():
 		x-coordinate origin.
 	y0 : float
 		y-coordinate origin.
-	s : integer
+	xnum : integer
 		Number of cells on x dimension.
 	ynum : integer
 		Number of cells on y dimension.
@@ -808,7 +808,7 @@ class SKS():
 
         if rand_seed != None:
             np.random.seed(rand_seed)
-
+            self.settings['rand_seed'] = rand_seed
         self._get_reference_statistics()
         self._load_data()
         self.karst_simulations = []
@@ -1252,7 +1252,7 @@ class SKS():
 
         Parameter
         ---------
-        fractures_min_length : list
+        fractures_min_length : float
         """
         self.settings['fractures_min_length'] = fractures_min_length
         return None
@@ -1264,7 +1264,7 @@ class SKS():
 
         Parameter
         ---------
-        fractures_max_length : list
+        fractures_max_length : float
         """
         self.settings['fractures_max_length'] = fractures_max_length
         return None
@@ -1498,7 +1498,7 @@ class SKS():
             print('/!\\ Error : unrecognized fractures mode.')
             sys.exit()
         self.geology.compute_stats_on_data()
-        if self.settings['polygon_data']:
+        if self.settings['data_has_polygon']:
             self.geology_masked['fractures'] = ma.MaskedArray(self.geology.data['fractures']['data'], mask=self.mask)
         return None
 
@@ -1902,8 +1902,27 @@ class SKS():
 
         time_values = []
         rank = 0
-
-        if X <= 0:
+        if (X <= 0) and (Y <= 0):
+            for row in corners_conditions[0]:
+                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
+            rank  = time_values.index(min(time_values))
+            moove = corners_conditions[0][rank]
+        elif (X <= 0) and (Y >= self.grid.ynum-1):
+            for row in corners_conditions[1]:
+                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
+            rank  = time_values.index(min(time_values))
+            moove = corners_conditions[1][rank]
+        elif (X >= self.grid.xnum-1) and (Y >= self.grid.ynum-1):
+            for row in corners_conditions[2]:
+                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
+            rank  = time_values.index(min(time_values))
+            moove = corners_conditions[2][rank]
+        elif (X >= self.grid.xnum-1) and (Y <= 0):
+            for row in corners_conditions[3]:
+                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
+            rank  = time_values.index(min(time_values))
+            moove = corners_conditions[3][rank]
+        elif X <= 0:
             for row in borders_conditions[0]:
                 time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
             rank  = time_values.index(min(time_values))
@@ -1913,37 +1932,19 @@ class SKS():
                 time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
             rank  = time_values.index(min(time_values))
             moove = borders_conditions[1][rank]
-        elif X >= self.grid.xnum:
+        elif X >= self.grid.xnum-1:
             for row in borders_conditions[2]:
                 time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
             rank  = time_values.index(min(time_values))
             moove = borders_conditions[2][rank]
-        elif Y >= self.grid.ynum:
+        elif Y >= self.grid.ynum-1:
             for row in borders_conditions[3]:
                 time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
             rank  = time_values.index(min(time_values))
             moove = borders_conditions[3][rank]
-        elif (X <= 0) and (Y <= 0):
-            for row in corners_conditions[0]:
-                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
-            rank  = time_values.index(min(time_values))
-            moove = corners_conditions[0][rank]
-        elif (X <= 0) and (Y >= self.grid.ynum):
-            for row in corners_conditions[1]:
-                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
-            rank  = time_values.index(min(time_values))
-            moove = corners_conditions[1][rank]
-        elif (X >= self.grid.s) and (Y >= self.grid.ynum):
-            for row in corners_conditions[2]:
-                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
-            rank  = time_values.index(min(time_values))
-            moove = corners_conditions[2][rank]
-        elif (X >= self.grid.s) and (Y <= 0):
-            for row in corners_conditions[3]:
-                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
-            rank  = time_values.index(min(time_values))
-            moove = corners_conditions[3][rank]
 
+        else:
+            print(X,Y)
         dx = moove[0] * self.step
         dy = moove[1] * self.step
 
