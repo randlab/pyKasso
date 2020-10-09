@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="pykasso",
     version="0.1.0",
-    author="François Miville",
+    author="Francois Miville",
     author_email="francois.miville@unine.ch",
 	url="https://github.com/randlab/pyKasso",
     description="Python project intended to simulate stochastic karst network.",
