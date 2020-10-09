@@ -15,13 +15,16 @@ pip install .
 # Dependencies
 
 pyKasso requires the following python packages to function properly:
-- yaml
+- yaml (Note: must install pyyaml not yaml)
 - mpmath
 - numpy
 - pandas
 - matplotlib
 - [skfmm](https://github.com/scikit-fmm/scikit-fmm)
 - [karstnet](https://github.com/UniNE-CHYN/karstnet)
+	- networkx
+	- scipy
+	- mplstereonet (Note: cannot install with conda - use pip)
 
 
 ## Examples
