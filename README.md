@@ -20,6 +20,7 @@ pyKasso requires the following python packages to function properly:
 - numpy
 - pandas
 - matplotlib
+- xlrd
 - [skfmm](https://github.com/scikit-fmm/scikit-fmm)
 - [karstnet](https://github.com/UniNE-CHYN/karstnet)
 	- networkx
