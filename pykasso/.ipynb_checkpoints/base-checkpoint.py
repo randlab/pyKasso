@@ -1,4 +1,4 @@
-"""
+x and y components of gradient in each cell of array"""
 pyKasso
 =======
 
@@ -588,7 +588,7 @@ class GeologyManager():
         # Control if size declared match with gslib's size file
         data_lines = text[2+nvar:]
         if len(data_lines) != (self.grid.xnum*self.grid.ynum):
-            print("- set_data() - Error : Dimensions declared does not match with gslib's dimensions file.")
+            print("- set_data() - Error : Dimensions declared does not match with gslib file's dimensions.")
             return None
 
         # Get variables names
@@ -802,7 +802,12 @@ class SKS():
         geology_velocity = []
         for elem in self.settings['geology_velocity']:
             geology_velocity.append(self.settings[elem])
-        self.settings['geology_velocity'] = geology_velocity      
+        self.settings['geology_velocity'] = geology_velocity 
+        
+        geology_cost = []
+        for elem in self.settings['geology_cost']:
+            geology_cost.append(self.settings[elem])
+        self.settings['geology_cost'] = geology_cost
         
         if self.settings['rand_seed'] > 0:
             np.random.seed(self.settings['rand_seed'])
@@ -919,6 +924,9 @@ class SKS():
 
     def get_geology_velocity(self):
         return self.settings['geology_velocity']
+    
+    def get_geology_cost(self):
+        return self.settings['geology_cost']
 
     def get_importance_factor(self):
         return self.settings['importance_factor']
@@ -1359,6 +1367,17 @@ class SKS():
         """
         self.settings['geology_velocity'] = geology_velocity
         return None
+    
+    def set_geology_cost(self, geology_cost):
+        """
+        Define the travel cost to apply to each geology id.
+        
+        Parameter
+        ---------
+        geology_cost : list
+        """
+        self.settings['geology_cost'] = geology_cost
+        return None
 
     def set_importance_factor(self, importance_factor):
         """
@@ -1700,6 +1719,7 @@ class SKS():
         self.maps = {}
         self.maps['phi']      = np.ones((self.grid.ynum, self.grid.xnum))
         self.maps['velocity'] = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
+        self.maps['cost']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #add cost map
         self.maps['time']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
         self.maps['karst']    = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
 
@@ -1743,6 +1763,7 @@ class SKS():
         # Compute velocity map and travel time for each iteration and draw network
         for iteration in range(self.nbr_iteration):
             self._compute_velocity_map(iteration)
+            self._compute_cost_map(iteration)    #add step to compute cost map
             self._compute_time_map(iteration)
             self._compute_karst_map(iteration)
 #            print('iteration:{}/{}'.format(iteration+1,self.nbr_iteration))
@@ -1804,6 +1825,52 @@ class SKS():
         else:
             self.maps['velocity'][iteration] = self.maps['velocity'][iteration-1]
             self.maps['velocity'][iteration] = np.where(self.maps['karst'][iteration-1] > 0, self.settings['code_conduits'], self.maps['velocity'][iteration])
+        return None
+    
+    # 2
+    def _compute_cost_map(self, iteration):
+        """
+        Compute the cost map.
+        """
+        # If it's the first iteration, iniatialize the cost map according to the geological settings.
+        if iteration == 0:
+            # Geology
+            if self.geology.data['geology']['mode'] == 'null':
+                self.maps['cost'][0] = np.full((self.grid.ynum, self.grid.xnum), self.settings['code_aquifere'])
+            elif self.geology.data['geology']['mode'] == 'image':
+                self.maps['cost'][0] = np.where(self.geology.data['geology']['data']==1, self.settings['code_aquiclude'], self.settings['code_aquifere'])
+            elif self.geology.data['geology']['mode'] == 'import':
+                
+                tableFMM = {}
+                if len(self.settings['geology_id']) != len(self.settings['geology_cost']):
+                    print("- _compute_cost_map() - Error : number of lithologies does not match with number of FMM code.")
+                    sys.exit()
+    
+                for geology, codeFMM in zip(self.settings['geology_id'], self.settings['geology_cost']):
+                    if geology in self.geology.data['geology']['stats']['ID']:
+                        tableFMM[geology] = codeFMM
+                    else:
+                        print("- initialize_costMap() - Warning : no geology n {} found.".format(geology))
+                        tableFMM[geology] = self.settings['code_out']
+    
+                for y in range(self.grid.ynum):
+                    for x in range(self.grid.xnum):
+                        geology = self.geology.data['geology']['data'][y][x]
+                        self.maps['cost'][0][y][x] = tableFMM[geology]
+    
+            # Faults
+            self.maps['cost'][0] = np.where(self.geology.data['faults']['data'] > 0, self.settings['code_faults'], self.maps['cost'][0])
+    
+            # Fractures
+            self.maps['cost'][0] = np.where(self.geology.data['fractures']['data'] > 0, self.settings['code_fractures'], self.maps['cost'][0])
+    
+            # If out of polygon
+            if self.mask is not None:
+                self.maps['cost'][0] = np.where(self.mask==1, self.settings['code_out'], self.maps[cost'][0])
+                
+        else:
+            self.maps['cost'][iteration] = self.maps['cost'][iteration-1]
+            self.maps['cost'][iteration] = np.where(self.maps['karst'][iteration-1] > 0, self.settings['code_conduits'], self.maps['cost'][iteration])
         return None
     
     # 2
