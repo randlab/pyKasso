@@ -1,0 +1,48 @@
+Metadata-Version: 2.1
+Name: pykasso
+Version: 0.1.0
+Summary: Python project intended to simulate stochastic karst network.
+Home-page: https://github.com/randlab/pyKasso
+Author: Francois Miville
+Author-email: francois.miville@unine.ch
+License: UNKNOWN
+Description: # pyKasso - stochastic karst network simulation
+        
+        pyKasso is a python3 project intended to simulate stochastic karst network.
+        
+        Version 0.1.0 - April 2020
+        
+        
+        ## Installation
+        
+        Install from source (from project main directory):
+        ```
+        pip install .
+        ```
+        
+        # Dependencies
+        
+        pyKasso requires the following python packages to function properly:
+        - yaml (Note: must install pyyaml not yaml)
+        - mpmath
+        - numpy
+        - pandas
+        - matplotlib
+        - xlrd
+        - [skfmm](https://github.com/scikit-fmm/scikit-fmm)
+        - [karstnet](https://github.com/UniNE-CHYN/karstnet)
+        	- networkx
+        	- scipy
+        	- mplstereonet (Note: cannot install with conda - use pip)
+        
+        
+        ## Examples
+        
+        Please have a look on the notebooks examples in ``notebooks/``.
+Keywords: simulation karstic stochastic
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown

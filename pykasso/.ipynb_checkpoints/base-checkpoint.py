@@ -1,4 +1,4 @@
-x and y components of gradient in each cell of array"""
+"""
 pyKasso
 =======
 
@@ -781,6 +781,8 @@ class SKS():
             >>> catchment = pk.SKS()
             >>> catchment = pk.SKS('exemple.yaml')
         """
+        print('CAUTION: You are using the development version of this package.') #uncomment this to tell apart the development version and the main version
+        
         if yaml_settings_file is None:
             yaml_settings_file = os.path.dirname(os.path.abspath(__file__)) + '/' + 'default_files/settings.yaml'
         
@@ -824,6 +826,7 @@ class SKS():
     ################
 
     def get_x0(self):
+        print('test')
         return self.settings['x0']
 
     def get_y0(self):
@@ -1679,6 +1682,9 @@ class SKS():
         
         Save the results in the `karst_simulations` list attribute.
         """
+        #TESTING
+        print('changes have been made')
+        
         # 1 - Initialize the parameters
         self._initialize_karst_network_parameters()
         
@@ -1866,7 +1872,7 @@ class SKS():
     
             # If out of polygon
             if self.mask is not None:
-                self.maps['cost'][0] = np.where(self.mask==1, self.settings['code_out'], self.maps[cost'][0])
+                self.maps['cost'][0] = np.where(self.mask==1, self.settings['code_out'], self.maps['cost'][0])
                 
         else:
             self.maps['cost'][iteration] = self.maps['cost'][iteration-1]
