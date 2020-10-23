@@ -428,7 +428,7 @@ class GeologyManager():
         Parameters
         ----------
         data_key : string
-            Type of data : 'geology', 'faults' or 'fractures'.
+            Type of data : 'geology', faults', or 'fractures'.
         datafile_location : string
             Path of the datafile.
         selected_var : integer, optionnal
@@ -460,7 +460,36 @@ class GeologyManager():
         self.data[data_key]['mode'] = 'image'
         return None
 
-    def generate_fractures(self, fractures_numbers, fractures_min_orientation, fractures_max_orientation, alpha, fractures_min_length, fractures_max_length):
+    def set_data_from_csv(self, data_key, datafile_location):
+        """
+        Set data from a csv file for indicated data key.
+
+        Parameters
+        ----------
+        data_key : string
+            Type of data : 'geology', 'topography', 'faults' or 'fractures'.
+        datafile_location : string
+            Path of the datafile.
+        """
+        self.data[data_key]         = {}
+        self.data[data_key]['data'] = np.genfromtxt(datafile_location, delimiter=',')
+        self.data[data_key]['mode'] = 'csv'
+        return None
+    
+    def generate_orientations(self):
+        """
+        Generate maps of x and y components of orientation based on topography
+        """
+    
+        self.data['orientationx'] = {}
+        self.data['orientationx']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
+        self.data['orientationy'] = {}
+        self.data['orientationy']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
+        self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(self.data['topography']['data'], self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array 
+
+        return None
+    
+    def generate_fractures(self, fractures_numbers, fractures_min_orientation, fractures_max_orientation, fractures_alpha, fractures_min_length, fractures_max_length):
         """
         Generate fractures.
 
@@ -472,7 +501,7 @@ class GeologyManager():
             Fractures minimum orientation for each fracture family.
         fractures_max_orientation : list
             Fractures maximum orientation for each fracture family.
-        alpha : float
+        fractures_alpha : float
             Degree of power law.
         fractures_min_length : float
             The minimum lenght of the fractures. For all the families.
@@ -517,7 +546,7 @@ class GeologyManager():
                 # pdf = ((alpha - 1)/min_fracture_length) * np.float_power(x / min_fracture_length, -alpha) / C
                 # cdf = (np.float_power(min_fracture_length, -alpha+1) - np.float_power(x, -alpha+1)) / (np.float_power(min_fracture_length, -alpha+1) - np.float_power(max_fracture_length, -alpha+1))
                 # cdf_reverse = np.float_power( np.float_power(min_fracture_length, -alpha+1) - P(x) * (np.float_power(min_fracture_length, -alpha+1) - np.float_power(max_fracture_length, -alpha+1)) , (1/(-alpha+1)))
-                frac_length = np.float_power(np.float_power(fractures_min_length, -alpha+1) - np.random.rand() * (np.float_power(fractures_min_length, -alpha+1) - np.float_power(fractures_max_length, -alpha+1)) , (1/(-alpha+1)))
+                frac_length = np.float_power(np.float_power(fractures_min_length, -fractures_alpha+1) - np.random.rand() * (np.float_power(fractures_min_length, -fractures_alpha+1) - np.float_power(fractures_max_length, -fractures_alpha+1)) , (1/(-fractures_alpha+1)))
 
                 # FRACTURE ORIENTATION
                 # -> from von Mises distribution
@@ -895,8 +924,8 @@ class SKS():
     def get_fractures_max_orientation(self):
         return self.settings['fractures_max_orientation']
 
-    def get_alpha(self):
-        return self.settings['alpha']
+    def get_fractures_alpha(self):
+        return self.settings['fractures_alpha']
 
     def get_fractures_min_length(self):
         return self.settings['fractures_min_length']
@@ -1245,16 +1274,16 @@ class SKS():
         self.settings['fractures_max_orientation'] = fractures_max_orientation
         return None
 
-    def set_alpha(self, alpha):
+    def set_fractures_alpha(self, fractures_alpha):
         """
         Define the ???.
         Usefull only when the mode for fractures is on 'random'.
 
         Parameter
         ---------
-        alpha : float
+        fractures_alpha : float
         """
-        self.settings['alpha'] = alpha
+        self.settings['fractures_alpha'] = fractures_alpha
         return None
 
     def set_fractures_min_length(self, fractures_min_length):
@@ -1516,7 +1545,7 @@ class SKS():
         elif self.settings['fractures_mode'] == 'image':
             self.geology.set_data_from_image('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'random':
-            self.geology.generate_fractures(self.settings['fractures_numbers'], self.settings['fractures_min_orientation'], self.settings['fractures_max_orientation'], self.settings['alpha'], self.settings['fractures_min_length'], self.settings['fractures_max_length'])
+            self.geology.generate_fractures(self.settings['fractures_numbers'], self.settings['fractures_min_orientation'], self.settings['fractures_max_orientation'], self.settings['fractures_alpha'], self.settings['fractures_min_length'], self.settings['fractures_max_length'])
         else:                                                                                  
             print('/!\\ Error : unrecognized fractures mode.')
             sys.exit()
@@ -1569,7 +1598,7 @@ class SKS():
         """
         # The grid
         self.grid    = self._set_grid(self.settings['x0'],self.settings['y0'],self.settings['xnum'],self.settings['ynum'],self.settings['dx'],self.settings['dy'])
-        # The polygon and his mask
+        # The polygon and its mask
         self.polygon = self._set_polygon(self.grid)
         self.mask    = self.polygon.mask
         # The points
@@ -1648,6 +1677,22 @@ class SKS():
         else:
             print('/!\\ Error : unrecognized geological mode.')
             sys.exit()
+        # Topography
+        if self.settings['topography_mode'] == 'null':
+            geology.set_data_null('topography')
+        elif self.settings['topography_mode'] == 'csv':
+            geology.set_data_from_csv('topography', self.settings['topography_datafile'])
+        else:
+            print('/!\\ Error : unrecognized topography mode.')
+            sys.exit()
+        # Orientation
+        if self.settings['orientation_mode'] == 'null':
+            geology.set_data_null('orientation')
+        elif self.settings['orientation_mode'] == 'topo':
+            geology.generate_orientations()
+        else:
+            print('/!\\ Error : unrecognized orientation mode.')
+            sys.exit()
         # Faults
         if self.settings['faults_mode'] == 'null':
             geology.set_data_null('faults')
@@ -1666,7 +1711,7 @@ class SKS():
         elif self.settings['fractures_mode'] == 'image':
             geology.set_data_from_image('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'random':
-            geology.generate_fractures(self.settings['fractures_numbers'], self.settings['fractures_min_orientation'], self.settings['fractures_max_orientation'], self.settings['alpha'], self.settings['fractures_min_length'], self.settings['fractures_max_length'])
+            geology.generate_fractures(self.settings['fractures_numbers'], self.settings['fractures_min_orientation'], self.settings['fractures_max_orientation'], self.settings['fractures_alpha'], self.settings['fractures_min_length'], self.settings['fractures_max_length'])
         else:
             print('/!\\ Error : unrecognized fractures mode.')
             sys.exit()
@@ -1723,11 +1768,14 @@ class SKS():
 
         # Raster maps
         self.maps = {}
-        self.maps['phi']      = np.ones((self.grid.ynum, self.grid.xnum))
-        self.maps['velocity'] = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
-        self.maps['cost']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #add cost map
-        self.maps['time']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
-        self.maps['karst']    = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
+        self.maps['phi']       = np.ones((self.grid.ynum, self.grid.xnum))
+        self.maps['velocity']  = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
+        self.maps['cost']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) 
+        self.maps['alpha']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) 
+        self.maps['beta']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) 
+        self.maps['riemann']   = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
+        self.maps['time']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
+        self.maps['karst']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
 
         # Vector maps
         self.nodeID      = 0
@@ -1769,7 +1817,10 @@ class SKS():
         # Compute velocity map and travel time for each iteration and draw network
         for iteration in range(self.nbr_iteration):
             self._compute_velocity_map(iteration)
-            self._compute_cost_map(iteration)    #add step to compute cost map
+            self._compute_cost_map(iteration)    
+            self._compute_alpha_map(iteration)
+            self._compute_beta_map(iteration)
+            self._compute_riemann_map(iteration)
             self._compute_time_map(iteration)
             self._compute_karst_map(iteration)
 #            print('iteration:{}/{}'.format(iteration+1,self.nbr_iteration))
@@ -1880,6 +1931,23 @@ class SKS():
         return None
     
     # 2
+    def _compute_alpha_map(self, iteration):
+        """
+        Compute the alpha map: travel cost in the same direction as the gradient.
+        For most cases will be the same as the cost map.
+        """
+        self.maps['alpha'][iteration] = self.maps['cost'][iteration]
+        return None
+    
+    # 2
+    def _compute_beta_map(self, iteration):
+        """
+        Compute the beta map: travel cost perpendicular to the gradient.
+        """
+        self.maps['beta'][iteration] = self.maps['alpha'][iteration] / self.settings['cost_ratio']
+        return None
+    
+    # 2
     def _compute_time_map(self, iteration):
         """
         Compute the time map.
@@ -1939,9 +2007,9 @@ class SKS():
                     self.nodeID += 1
 
                     # new move
-                    alpha = math.sqrt((self.step**2)*(1/(grad_x[Y][X]**2+grad_y[Y][X]**2)))
-                    dx = grad_x[Y][X] * alpha
-                    dy = grad_y[Y][X] * alpha
+                    fractures_alpha = math.sqrt((self.step**2)*(1/(grad_x[Y][X]**2+grad_y[Y][X]**2)))
+                    dx = grad_x[Y][X] * fractures_alpha
+                    dy = grad_y[Y][X] * fractures_alpha
 
                     # check if we are going out boundaries
                     X_ = get_X(x - dx)
@@ -2135,6 +2203,9 @@ class SKS():
         
         ax2.imshow(karst_network.maps['velocity'][iteration], extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap)
         ax2.set_title('Velocity')
+        
+        ax2.imshow(karst_network.maps['cost'][iteration], extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap)
+        ax2.set_title('Cost') #CAUTION: This will over-write the velocity map!
         
         ax3.imshow(karst_network.maps['time'][iteration], extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap)
         ax3.set_title('Time')

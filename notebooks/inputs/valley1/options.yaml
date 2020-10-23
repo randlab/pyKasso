@@ -52,6 +52,18 @@ outlets_number : 1
 geological_mode     : 'import'
 geological_datafile : 'inputs/valley1/geology2D.gslib'
 
+###Topography
+#'null'   - No topography
+#'csv'    - Import topography from csv file 
+topography_mode : 'csv'
+topography_datafile : 'inputs/valley1/dem.csv'
+
+###Orientation
+#'null'   - No orientation
+#'topo'   - Calculate orientation from topography
+#'import' - Import from gslib file (in progress)
+orientation_mode : 'topo'
+
 ###Faults
 # 'null'   - No faults
 # 'import' - Import faults
@@ -73,7 +85,7 @@ fractures_min_orientation : [      0,     15,     30,    60,    105,    120, 150
 fractures_max_orientation : [     15,     30,     45,   105,    120,    150, 180]
 
 # For fracture size
-alpha : 2
+fractures_alpha      : 2
 fractures_min_length : 50
 fractures_max_length : 800
 
@@ -88,10 +100,20 @@ code_faults    : 4
 code_fractures : 3
 code_conduits  : 5
 
+#New for HFM:
+#Travel cost parallel to gradient
+cost_out       : 0.999   
+cost_aquifer   : 0.2
+cost_aquiclude : 0.6 
+cost_faults    : 0.05
+cost_fractures : 0.05
+cost_conduits  : 0.1
+cost_ratio     : 0.25     #ratio of travel cost parallel to gradient / travel cost prependicular to gradient
+
 ### Formation to consider and FMM code associated
 geology_id       : [2,3] # Only for 'import' geological mode
 geology_velocity : [code_aquifere,code_aquiclude]
-geology_cost     : [code_aquifere,code_aquiclude]
+geology_cost     : [cost_aquifer, cost_aquiclude]
 
 importance_factor : [1,2,3]
 
