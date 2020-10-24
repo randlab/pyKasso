@@ -27,6 +27,14 @@ from   matplotlib.path import Path
 import agd # dependance
 import skfmm  # dependance
 import karstnet as kn # dependance
+#agd sub-modules:
+from agd import Eikonal
+from agd.Metrics import Riemann
+from agd.Plotting import quiver
+from agd import LinearParallel as lp
+from agd import AutomaticDifferentiation as ad
+norm_infinity = ad.Optimization.norm_infinity  #what does this do?
+
 
 #####
 # 1 #
@@ -1783,8 +1791,18 @@ class SKS():
         self.conduits    = []
         self.outletsNode = []
 
-        # Other?
-        self.riemannMetric = []      #this changes at every iteration, but cannot be stored?
+        # Set up fast-marching:
+        self.riemannMetric = []                    #this changes at every iteration, but cannot be stored?
+        self.fastMarching = agd.Eikonal.dictIn({
+            'model'             : 'Riemann2',      #set choice of algorithm (replace by variable)
+            'order'             : 2,               #recommended setting: 2 (replace by variable)
+            'exportValues'      : 1,               #export the travel time field
+            'exportGeodesicFlow': 1                #export the walker paths (i.e. the conduits)
+        })
+        self.fastMarching.SetRect(                 #give the fast-marching algorithm the model grid
+            sides=[[self.grid.x0, self.grid.dx*self.grid.xnum],
+                   [self.grid.y0, self.grid.dy*self.grid.ynum]],
+            dims=[self.grid.xnum, self.grid.ynum]) 
 
         return None
     
@@ -1827,6 +1845,7 @@ class SKS():
             self._compute_beta_map(iteration)
             self._compute_riemann_metric(iteration)
             self._compute_time_map(iteration)
+            self._compute_time_map_hfm(iteration)
             self._compute_karst_map(iteration)
 #            print('iteration:{}/{}'.format(iteration+1,self.nbr_iteration))
 #        print('- END -')
@@ -1974,6 +1993,21 @@ class SKS():
                 raise
         return None
     
+    # 2
+    def _compute_time_map_hfm(self, iteration):
+        """
+        Compute the time map using the agd fast-marching algorithm.
+        """
+        
+        self.fastMarching['seeds']  = self.outlets.data   #set the spring coordinates (need to change iteration structure to do one spring at a time)
+        self.fastMarching['tips']   = [inlet[:2] for inlet in self.inlets if inlet[2] == iteration] #set the inlet coordinates for current iteration (rework iteration to be cleaner?)
+        self.fastMarching['metric'] = self.riemannMetric  #set the travel cost through each cell
+        self.fastMarchingOutput = self.fastMarching.Run() #run the fast marching algorithm and store the outputs
+        #next: store in maps and turn paths into node/link
+        #self.maps['time'][iteration] = skfmm.travel_time(self.maps['phi'], self.maps['velocity'][iteration], dx=self.grid.dx, order=2)
+        
+        return None
+
     # 2
     def _compute_karst_map(self, iteration):
         """
