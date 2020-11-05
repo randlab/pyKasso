@@ -487,7 +487,7 @@ class GeologyManager():
     
     def generate_orientations(self):
         """
-        Generate maps of x and y components of orientation based on topography
+        Generate maps of x and y components of orientation based on topography.
         """
     
         self.data['orientationx'] = {}
@@ -820,7 +820,7 @@ class SKS():
             >>> catchment = pk.SKS('exemple.yaml')
         """
         print('CAUTION: You are using the development version of this package.') #uncomment this to tell apart the development version and the main version
-        
+
         if yaml_settings_file is None:
             yaml_settings_file = os.path.dirname(os.path.abspath(__file__)) + '/' + 'default_files/settings.yaml'
         
@@ -1784,6 +1784,7 @@ class SKS():
         self.maps['beta']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) 
         
         self.maps['time']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
+        self.maps['time_hfm']  = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
         self.maps['karst']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
 
         # Vector maps
@@ -1917,9 +1918,9 @@ class SKS():
         if iteration == 0:
             # Geology
             if self.geology.data['geology']['mode'] == 'null':
-                self.maps['cost'][0] = np.full((self.grid.ynum, self.grid.xnum), self.settings['code_aquifere'])
+                self.maps['cost'][0] = np.full((self.grid.ynum, self.grid.xnum), self.settings['cost_aquifer'])
             elif self.geology.data['geology']['mode'] == 'image':
-                self.maps['cost'][0] = np.where(self.geology.data['geology']['data']==1, self.settings['code_aquiclude'], self.settings['code_aquifere'])
+                self.maps['cost'][0] = np.where(self.geology.data['geology']['data']==1, self.settings['cost_aquiclude'], self.settings['cost_aquifer'])
             elif self.geology.data['geology']['mode'] == 'import':
                 
                 tableFMM = {}
@@ -1932,7 +1933,7 @@ class SKS():
                         tableFMM[geology] = codeFMM
                     else:
                         print("- initialize_costMap() - Warning : no geology n {} found.".format(geology))
-                        tableFMM[geology] = self.settings['code_out']
+                        tableFMM[geology] = self.settings['cost_out']
     
                 for y in range(self.grid.ynum):
                     for x in range(self.grid.xnum):
@@ -1940,18 +1941,18 @@ class SKS():
                         self.maps['cost'][0][y][x] = tableFMM[geology]
     
             # Faults
-            self.maps['cost'][0] = np.where(self.geology.data['faults']['data'] > 0, self.settings['code_faults'], self.maps['cost'][0])
+            self.maps['cost'][0] = np.where(self.geology.data['faults']['data'] > 0, self.settings['cost_faults'], self.maps['cost'][0])
     
             # Fractures
-            self.maps['cost'][0] = np.where(self.geology.data['fractures']['data'] > 0, self.settings['code_fractures'], self.maps['cost'][0])
+            self.maps['cost'][0] = np.where(self.geology.data['fractures']['data'] > 0, self.settings['cost_fractures'], self.maps['cost'][0])
     
             # If out of polygon
             if self.mask is not None:
-                self.maps['cost'][0] = np.where(self.mask==1, self.settings['code_out'], self.maps['cost'][0])
+                self.maps['cost'][0] = np.where(self.mask==1, self.settings['cost_out'], self.maps['cost'][0])
                 
         else:
             self.maps['cost'][iteration] = self.maps['cost'][iteration-1]
-            self.maps['cost'][iteration] = np.where(self.maps['karst'][iteration-1] > 0, self.settings['code_conduits'], self.maps['cost'][iteration])
+            self.maps['cost'][iteration] = np.where(self.maps['karst'][iteration-1] > 0, self.settings['cost_conduits'], self.maps['cost'][iteration])
         return None
     
     # 2
@@ -1975,8 +1976,10 @@ class SKS():
     def _compute_riemann_metric(self, iteration):
         """
         Compute the riemann metric: Define the Riemannian metric needed as input for the anisotropic fast marching.
+        Note: For this purpose, all input arrays must be rotated by 90 degrees.
         """
-        self.riemannMetric = agd.Metrics.Riemann.needle([self.geology.data['orientationx']['data'], self.geology.data['orientationy']['data']], self.maps['alpha'][iteration], self.maps['beta'][iteration])
+        
+        self.riemannMetric = agd.Metrics.Riemann.needle([np.rot90(self.geology.data['orientationx']['data'], k=3), np.rot90(self.geology.data['orientationy']['data'], k=3)], np.rot90(self.maps['alpha'][iteration], k=3), np.rot90(self.maps['beta'][iteration], k=3))
         return None
     
     # 2
@@ -1996,7 +1999,7 @@ class SKS():
     # 2
     def _compute_time_map_hfm(self, iteration):
         """
-        Compute the time map using the agd fast-marching algorithm.
+        Compute the time map using the agd fast-marching algorithm and store travel time map (rotated back)
         """
         
         self.fastMarching['seeds']  = self.outlets.data   #set the spring coordinates (need to change iteration structure to do one spring at a time)
@@ -2004,7 +2007,7 @@ class SKS():
         self.fastMarching['metric'] = self.riemannMetric  #set the travel cost through each cell
         self.fastMarchingOutput = self.fastMarching.Run() #run the fast marching algorithm and store the outputs
         #next: store in maps and turn paths into node/link
-        #self.maps['time'][iteration] = skfmm.travel_time(self.maps['phi'], self.maps['velocity'][iteration], dx=self.grid.dx, order=2)
+        self.maps['time_hfm'][iteration] = np.rot90(self.fastMarchingOutput['values'], k=-3)
         
         return None
 

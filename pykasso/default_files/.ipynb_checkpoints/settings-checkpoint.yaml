@@ -52,6 +52,24 @@ outlets_number : 1
 geological_mode     : 'null'
 geological_datafile : ''
 
+##################################
+#NEW
+###################################
+###Topography
+#'null'   - No topography
+#'csv'    - Import topography from csv file 
+topography_mode : 'null'
+topography_datafile : 'inputs/valley1/dem.csv'
+
+###Orientation
+#'null'   - No orientation
+#'topo'   - Calculate orientation from topography
+#'import' - Import from gslib file (in progress)
+orientation_mode : 'null'
+##################################
+#END NEW
+###################################
+
 ###Faults
 # 'null'   - No faults
 # 'import' - Import faults
@@ -73,7 +91,7 @@ fractures_min_orientation : [    340,    70]
 fractures_max_orientation : [     20,   110]
 
 # For fracture size
-alpha : 2
+fractures_alpha : 2                         #changed to fractures_alpha from alpha
 fractures_min_length : 100
 fractures_max_length : 4000
 
@@ -87,6 +105,16 @@ code_aquiclude : 1
 code_faults    : 4
 code_fractures : 3
 code_conduits  : 5
+
+#New for HFM:
+#Travel cost parallel to gradient
+cost_out       : 0.999   
+cost_aquifer   : 0.2
+cost_aquiclude : 0.6 
+cost_faults    : 0.05
+cost_fractures : 0.05
+cost_conduits  : 0.1
+cost_ratio     : 0.25     #ratio of travel cost parallel to gradient / travel cost prependicular to gradient
 
 ### Formation to consider and FMM code associated
 geology_id       : [1,2] # Only for 'import' geological mode

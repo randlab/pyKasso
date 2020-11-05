@@ -7,19 +7,19 @@
 ### Grid ###
 ############
 
-x0   : 0
-y0   : 0
-xnum : 100
-ynum : 80
-dx   : 10
-dy   : 10
+x0   : 572510
+y0   : 250010
+xnum : 300
+ynum : 300
+dx   : 20
+dy   : 20
 
 ###############
 ### Polygon ###
 ###############
 
-data_has_polygon : False
-polygon_data     : 'inputs/polygon.txt'
+data_has_polygon : True
+polygon_data     : 'inputs/polygon_Betteraz.txt'
 
 ####################
 ### PointManager ###
@@ -29,16 +29,16 @@ polygon_data     : 'inputs/polygon.txt'
 # 'random'    - full random points
 # 'import'    - import points
 # 'composite' - add n random points to imported points
-inlets_mode   : 'import'
-inlets_data   : 'inputs/valley1/inlets.csv'
-inlets_number : 1
+inlets_mode   : 'composite'
+inlets_data   : 'inputs/inlets_betteraz_cas_2.csv'
+inlets_number : 100
 
 ###Outlets
 # 'random'    - full random points
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 outlets_mode   : 'import'
-outlets_data   : 'inputs/valley1/outlets.csv'
+outlets_data   : 'inputs/outlets_betteraz.csv'
 outlets_number : 1
 
 ######################
@@ -49,27 +49,15 @@ outlets_number : 1
 # 'null'   - No geology
 # 'import' - Import geology
 # 'image'  - Import geology via image
-geological_mode     : 'import'
-geological_datafile : 'inputs/valley1/geology2D.gslib'
-
-###Topography
-#'null'   - No topography
-#'csv'    - Import topography from csv file 
-topography_mode : 'csv'
-topography_datafile : 'inputs/valley1/dem.csv'
-
-###Orientation
-#'null'   - No orientation
-#'topo'   - Calculate orientation from topography
-#'import' - Import from gslib file (in progress)
-orientation_mode : 'topo'
+geological_mode      : 'import'
+geological_datafile  : 'inputs/betteraz_2D_z430.gslib'
 
 ###Faults
 # 'null'   - No faults
 # 'import' - Import faults
 # 'image'  - Import faults via image
-faults_mode     : 'null'
-faults_datafile : 'inputs/faults.gslib'
+faults_mode     : 'import'
+faults_datafile : 'inputs/betteraz_fault_20_2D.gslib'
 
 ###Fractures
 # 'null'   - No fractures
@@ -77,17 +65,17 @@ faults_datafile : 'inputs/faults.gslib'
 # 'image'  - Import fractures via image
 # 'random' - Generate random fractures
 fractures_mode     : 'random'
-fractures_datafile : 'inputs/fractures.gslib'
+fractures_datafile : 'inputs/betteraz_fault_20_2D.gslib'
 
 # If fractures mode is 'generate'
-fractures_densities       : [5.83e-5,1.38e-5,2.22e-5,2.5e-5,4.16e-5,6.66e-5,5e-5]
+fractures_densities       : [5.83e-6,1.38e-6,2.22e-6,2.5e-6,4.16e-6,6.66e-6,5e-6]
 fractures_min_orientation : [      0,     15,     30,    60,    105,    120, 150]
 fractures_max_orientation : [     15,     30,     45,   105,    120,    150, 180]
 
 # For fracture size
 alpha : 2
-fractures_min_length : 50
-fractures_max_length : 800
+fractures_min_length : 100
+fractures_max_length : 8500
 
 ###############################
 ### Fast-Marching Algorithm ###
@@ -95,23 +83,14 @@ fractures_max_length : 800
 
 code_out       : 0.1
 code_aquifere  : 2
-code_aquiclude : 1 
+code_aquiclude : 1
 code_faults    : 4
 code_fractures : 3
 code_conduits  : 5
 
-#New for HFM:
-cost_out       : 0.999
-cost_aquifer   : 0.2
-cost_aquiclude : 0.6 
-cost_faults    : 0.05
-cost_fractures : 0.05
-cost_conduits  : 0.1
-
 ### Formation to consider and FMM code associated
-geology_id       : [2,3] # Only for 'import' geological mode
+geology_id       : [1,2] # Only for 'import' geological mode
 geology_velocity : [code_aquifere,code_aquiclude]
-geology_cost     : [cost_aquifer, cost_aquiclude]
 
 importance_factor : [1,2,3]
 

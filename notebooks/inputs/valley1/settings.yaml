@@ -19,7 +19,7 @@ dy   : 10
 ###############
 
 data_has_polygon : False
-polygon_data     : 'inputs/polygon.txt'
+polygon_data     : 'notebooks/inputs/polygon.txt'
 
 ####################
 ### PointManager ###
@@ -30,7 +30,7 @@ polygon_data     : 'inputs/polygon.txt'
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 inlets_mode   : 'import'
-inlets_data   : 'inputs/valley1/inlets.csv'
+inlets_data   : 'notebooks/inputs/valley1/inlets.csv'
 inlets_number : 1
 
 ###Outlets
@@ -38,7 +38,7 @@ inlets_number : 1
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 outlets_mode   : 'import'
-outlets_data   : 'inputs/valley1/outlets.csv'
+outlets_data   : 'notebooks/inputs/valley1/outlets.csv'
 outlets_number : 1
 
 ######################
@@ -47,16 +47,16 @@ outlets_number : 1
 
 ###Geology
 # 'null'   - No geology
-# 'import' - Import geology
+# 'import' - Import geology via GSLIB
 # 'image'  - Import geology via image
 geological_mode     : 'import'
-geological_datafile : 'inputs/valley1/geology2D.gslib'
+geological_datafile : 'notebooks/inputs/valley1/geology2D.gslib'
 
 ###Topography
 #'null'   - No topography
 #'csv'    - Import topography from csv file 
 topography_mode : 'csv'
-topography_datafile : 'inputs/valley1/dem.csv'
+topography_datafile : 'notebooks/inputs/valley1/dem.csv'
 
 ###Orientation
 #'null'   - No orientation
@@ -69,7 +69,7 @@ orientation_mode : 'topo'
 # 'import' - Import faults
 # 'image'  - Import faults via image
 faults_mode     : 'null'
-faults_datafile : 'inputs/faults.gslib'
+faults_datafile : 'notebooks/inputs/faults.gslib'
 
 ###Fractures
 # 'null'   - No fractures
@@ -77,7 +77,7 @@ faults_datafile : 'inputs/faults.gslib'
 # 'image'  - Import fractures via image
 # 'random' - Generate random fractures
 fractures_mode     : 'random'
-fractures_datafile : 'inputs/fractures.gslib'
+fractures_datafile : 'notebooks/inputs/fractures.gslib'
 
 # If fractures mode is 'generate'
 fractures_densities       : [5.83e-5,1.38e-5,2.22e-5,2.5e-5,4.16e-5,6.66e-5,5e-5]
@@ -93,21 +93,23 @@ fractures_max_length : 800
 ### Fast-Marching Algorithm ###
 ###############################
 
-code_out       : 0.1
-code_aquifere  : 2
-code_aquiclude : 1 
-code_faults    : 4
-code_fractures : 3
-code_conduits  : 5
+#For skfmm:
+#Ease of travel through each medium (higher=faster/easier) - must be >=1
+code_out       : 0
+code_aquifere  : 3
+code_aquiclude : 2 
+code_faults    : 5
+code_fractures : 4
+code_conduits  : 6
 
-#New for HFM:
-#Travel cost parallel to gradient
+#For AGD-HFM:
+#Travel cost parallel to gradient (higher=slower/harder)
 cost_out       : 0.999   
 cost_aquifer   : 0.2
 cost_aquiclude : 0.6 
 cost_faults    : 0.05
-cost_fractures : 0.05
-cost_conduits  : 0.1
+cost_fractures : 0.1
+cost_conduits  : 0.01
 cost_ratio     : 0.25     #ratio of travel cost parallel to gradient / travel cost prependicular to gradient
 
 ### Formation to consider and FMM code associated
