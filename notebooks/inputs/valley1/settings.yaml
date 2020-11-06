@@ -76,7 +76,7 @@ faults_datafile : 'notebooks/inputs/faults.gslib'
 # 'import' - Import fractures
 # 'image'  - Import fractures via image
 # 'random' - Generate random fractures
-fractures_mode     : 'random'
+fractures_mode     : 'null'
 fractures_datafile : 'notebooks/inputs/fractures.gslib'
 
 # If fractures mode is 'generate'
@@ -115,10 +115,10 @@ code_conduits  : 6
 #For AGD-HFM:
 #Travel cost parallel to gradient (higher=slower/harder)
 cost_out       : 0.999   
-cost_aquifer   : 0.5
-cost_aquiclude : 0.7 
-cost_faults    : 0.4
-cost_fractures : 0.4
+cost_aquifer   : 0.3
+cost_aquiclude : 0.6 
+cost_faults    : 0.2
+cost_fractures : 0.2
 cost_conduits  : 0.1
 cost_ratio     : 0.25     #ratio of travel cost parallel to gradient / travel cost prependicular to gradient
 
@@ -131,7 +131,7 @@ geology_cost     : [cost_aquifer, cost_aquiclude]
 #Length of array indicates number of iterations
 #each integer indicates number of inlets to run in that iteration
 #sum of integers must equal total number of inlets?
-importance_factor : [3,2,1]   #[1,2,3]
+importance_factor : [1,1,1,1,1]   #to run a single iteration: [n_inlets]  #to run each inlet separately: [1,1,1,...]
 
 #############
 ### Other ###

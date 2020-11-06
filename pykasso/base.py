@@ -106,9 +106,9 @@ class Grid():
 	Parameters
 	----------
 	x0 : float
-		x-coordinate origin.
+		x-coordinate origin (centerpoint of bottom left cell, NOT bottom left corner of bottom left cell).
 	y0 : float
-		y-coordinate origin.
+		y-coordinate origin (centerpoint of bottom left cell, NOT bottom left corner of bottom left cell)..
 	xnum : integer
 		Number of cells on x dimension.
 	ynum : integer
@@ -125,20 +125,24 @@ class Grid():
 	"""        
     
     def __init__(self, x0, y0, xnum, ynum, dx, dy):
-        self.x0   = x0
-        self.y0   = y0
-        self.xnum = xnum
-        self.ynum = ynum
-        self.dx   = dx
-        self.dy   = dy
+        self.x0   = x0        #x coord of centerpoint of bottom left cell 
+        self.y0   = y0        #y coord of centerpoint of bottom left cell
+        self.xnum = xnum      #x resolution: number of cells in x direction (aka columns)
+        self.ynum = ynum      #y resolution: number of cells in y direction (aka rows)
+        self.dx   = dx        #cell width in x direction
+        self.dy   = dy        #cell width in y direction
 
-        self.x        = np.arange(self.x0,self.x0+(self.xnum)*self.dx,self.dx,dtype=np.float_)
-        self.y        = np.arange(self.y0,self.y0+(self.ynum)*self.dy,self.dy,dtype=np.float_)
-        self.X,self.Y = np.meshgrid(self.x,self.y)
-        self.xlimits  = [self.x0-self.dx/2,self.x0-self.dx/2,self.x[-1]+self.dx/2,self.x[-1]+self.dx/2,self.x0-self.dx/2]
-        self.ylimits  = [self.y0-self.dy/2,self.y[-1]+self.dy/2,self.y[-1]+self.dy/2,self.y0-self.dy/2,self.y0-self.dy/2]
-        self.limits   = list(zip(self.xlimits,self.ylimits))
-
+        self.x        = np.arange(self.x0,self.x0+(self.xnum)*self.dx,self.dx,dtype=np.float_)  #1D array of centerpoints of each cell along x axis
+        self.y        = np.arange(self.y0,self.y0+(self.ynum)*self.dy,self.dy,dtype=np.float_)  #1D array of centerpoints of each cell along y axis
+        self.X,self.Y = np.meshgrid(self.x,self.y)             #2D array of dim (xnum, ynum) with xy coord of each cell's centerpoint
+        self.xlimits  = [self.x0-self.dx/2,self.x0-self.dx/2,self.x[-1]+self.dx/2,self.x[-1]+self.dx/2,self.x0-self.dx/2] #x coord of outermost cell edges [bottom left, top left, top right, bottom right, bottom left]
+        self.ylimits  = [self.y0-self.dy/2,self.y[-1]+self.dy/2,self.y[-1]+self.dy/2,self.y0-self.dy/2,self.y0-self.dy/2] #y coord of outermost cell edges [bottom left, top left, top right, bottom right, bottom left]
+        self.limits   = list(zip(self.xlimits,self.ylimits)) #array of tuples with coordinates of corners [(bottom left/origin), (top left), (top right), (bottom right), (bottom left/origin)]
+        self.xmin     = self.x0    - self.dx/2      #coordinate of leftmost edge
+        self.xmax     = self.x[-1] + self.dx/2      #coordinate of rightmost edge
+        self.ymin     = self.y0    - self.dy/2      #coordinate of bottom edge
+        self.ymax     = self.y[-1] + self.dy/2      #coordinate of top edge
+        self.extent   = [self.xmin, self.xmax, self.ymin, self.ymax]  #coordinates of extent for use in plt.imshow()
 
 ################
 class Polygon():
@@ -1777,16 +1781,17 @@ class SKS():
 
         # Raster maps
         self.maps = {}
-        self.maps['phi']       = np.ones((self.grid.ynum, self.grid.xnum))
-        self.maps['velocity']  = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
-        self.maps['cost']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) 
-        self.maps['alpha']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) 
-        self.maps['beta']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) 
-        
-        self.maps['time']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
-        self.maps['time_hfm']  = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
-        self.maps['karst']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
-        self.maps['karst_hfm'] = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
+        #skfmm:
+        self.maps['phi']       = np.ones((self.grid.ynum, self.grid.xnum))  #outlet location
+        self.maps['velocity']  = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #ease of travel through each cell
+        self.maps['time']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #travel time to outlet from each cell
+        self.maps['karst']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #presence/absence of karst conduit
+        #agd-hfm:
+        self.maps['cost']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #cost of travel through each cell
+        self.maps['alpha']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #cost of travel along gradient through each cell
+        self.maps['beta']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #cost of travel perpendicular to gradient through each cell
+        self.maps['time_hfm']  = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #travel time to outlet from each cell
+        self.maps['karst_hfm'] = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #presence/absence of karst conduit in each cell
 
         # Vector maps
         self.nodeID       = 0
@@ -1803,10 +1808,9 @@ class SKS():
             'exportGeodesicFlow': 1                #export the walker paths (i.e. the conduits)
         })
         self.fastMarching.SetRect(                 #give the fast-marching algorithm the model grid
-            sides=[[self.grid.x0, self.grid.dx*self.grid.xnum],
-                   [self.grid.y0, self.grid.dy*self.grid.ynum]],
+            sides=[[self.grid.xmin, self.grid.xmax],    #leftmost edge, rightmost edge (NOT centerpoint)
+                   [self.grid.ymin, self.grid.ymax]],   #bottom edge,   top edge (NOT centerpoint)
             dims=[self.grid.xnum, self.grid.ynum]) 
-
         return None
     
     # 1
@@ -1816,18 +1820,18 @@ class SKS():
         """
         inlets_repartition = []
         inlets_proportion  = []
-        total = float(sum(self.settings['importance_factor']))
+        total = float(sum(self.settings['importance_factor'])) #total number of inlets
 
         for iteration in range(self.nbr_iteration):
-            inlets_proportion.append(float(self.settings['importance_factor'][iteration])/total)
-            inlets_repartition.append(round(inlets_proportion[iteration]*len(self.inlets)))
-        inlets_repartition[-1] = len(self.inlets)-sum(inlets_repartition[0:-1])
-
+            inlets_proportion.append(float(self.settings['importance_factor'][iteration])/total) #percent of inlets to use this iteration
+            inlets_repartition.append(round(inlets_proportion[iteration]*len(self.inlets))) #number of inlets to use this iteration (need to round bc percentage will not result in whole number)
+        inlets_repartition[-1] = len(self.inlets)-sum(inlets_repartition[0:-1]) #whichever inlets are left over are assignd to last iteration
+        
         inlets = []
         i = 0
-        for k,repartition_nbr in enumerate(inlets_repartition):
-            for num in range(repartition_nbr):
-                inlets.append((self.inlets[i][0],self.inlets[i][1],k))
+        for k,repartition_nbr in enumerate(inlets_repartition): #loop over number of inlets per iteration
+            for num in range(repartition_nbr):  #loop over each inlet in current iteration
+                inlets.append((self.inlets[i][0],self.inlets[i][1],k))   #append inlet with its iteration number
                 i += 1
         return inlets
     
@@ -1863,7 +1867,7 @@ class SKS():
     # 2
     def _compute_phi_map(self):
         """
-        Compute the phi map.
+        Compute the phi map (array indicating location of outlets as -1 and everywhere else as 1).
         """
         for (x,y) in self.outlets:
             X = int(math.ceil((x - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
@@ -1874,7 +1878,7 @@ class SKS():
     # 2
     def _compute_velocity_map(self, iteration):
         """
-        Compute the velocity map.
+        Compute the velocity map (how quickly each cell can be traversed).
         """
         # If it's the first iteration, iniatialize the velocity map according to the geological settings.
         if iteration == 0:
@@ -1920,13 +1924,14 @@ class SKS():
     # 2
     def _compute_cost_map(self, iteration):
         """
-        Compute the cost map.
+        Compute the cost map (how difficult it is to traverse each cell).
         """
         # If it's the first iteration, iniatialize the cost map according to the geological settings.
+        print('iteration',iteration)
         if iteration == 0:
             # Geology
             if self.geology.data['geology']['mode'] == 'null':
-                self.maps['cost'][0] = np.full((self.grid.ynum, self.grid.xnum), self.settings['cost_aquifer'])
+                self.maps['cost'][0] = np.full((self.grid.ynum, self.grid.xnum), self.settings['cost_aquifer'])  #every cell has the same travel cost and is part of the aquifer
             elif self.geology.data['geology']['mode'] == 'image':
                 self.maps['cost'][0] = np.where(self.geology.data['geology']['data']==1, self.settings['cost_aquiclude'], self.settings['cost_aquifer'])
             elif self.geology.data['geology']['mode'] == 'import':
@@ -1958,9 +1963,25 @@ class SKS():
             if self.mask is not None:
                 self.maps['cost'][0] = np.where(self.mask==1, self.settings['cost_out'], self.maps['cost'][0])
                 
-        else:
-            self.maps['cost'][iteration] = self.maps['cost'][iteration-1]
-            self.maps['cost'][iteration] = np.where(self.maps['karst_hfm'][iteration-1] > 0, self.settings['cost_conduits'], self.maps['cost'][iteration])
+        else: #if not the first iteration
+            f,ax = plt.subplots(1,5, figsize=(15,10))
+            ax[0].imshow(self.maps['cost'][0], extent=self.grid.extent, origin='lower', vmin=0,vmax=1,cmap='cividis')
+            ax[0].set_title('cost iteration'+str(0))
+            ax[1].imshow(self.maps['cost'][iteration-1], extent=self.grid.extent, origin='lower', vmin=0,vmax=1,cmap='cividis')
+            ax[1].set_title('cost iteration'+str(iteration-1))
+            
+            self.maps['cost'][iteration] = self.maps['cost'][iteration-1] #set cost map to be same as previous iteration
+            
+            ax[2].imshow(self.maps['cost'][iteration], extent=self.grid.extent, origin='lower', vmin=0,vmax=1,cmap='cividis')
+            ax[2].set_title('cost iteration'+str(iteration))
+            
+            self.maps['cost'][iteration] = np.where(self.maps['karst_hfm'][iteration-1] > 0, self.settings['cost_conduits'], self.maps['cost'][iteration]) #where karst conduits are present from previous iteration, set cost to conduit cost, elsewhere, leave unchanged
+            
+            ax[3].imshow(self.maps['cost'][iteration], extent=self.grid.extent, origin='lower', vmin=0,vmax=1,cmap='cividis')
+            ax[3].set_title('updated cost iteration'+str(iteration))
+            ax[4].imshow(self.maps['karst_hfm'][iteration-1], extent=self.grid.extent, origin='lower', vmin=0,vmax=1,cmap='binary')
+            ax[4].set_title('karst iteration'+str(iteration-1))
+            
         return None
     
     # 2
@@ -1985,8 +2006,13 @@ class SKS():
     def _compute_riemann_metric(self, iteration):
         """
         Compute the riemann metric: Define the Riemannian metric needed as input for the anisotropic fast marching.
-        Note: For this purpose, all input arrays must be rotated by 90 degrees.
+        Note: For this purpose, the input cost arrays (alpha and beta) must be rotated by 90 degrees.
         """
+        f,ax = plt.subplots(1,2, figsize=(10,5))
+        ax[0].imshow(self.maps['alpha'][iteration], extent=self.grid.extent, origin='lower', vmin=0,vmax=3)
+        ax[0].set_title('alpha iteration'+str(iteration))
+        ax[1].imshow(self.maps['beta'][iteration],  extent=self.grid.extent, origin='lower', vmin=0,vmax=3)
+        ax[1].set_title('beta iteration'+str(iteration))
         
         self.riemannMetric = agd.Metrics.Riemann.needle([self.geology.data['orientationx']['data'], self.geology.data['orientationy']['data']], np.rot90(self.maps['alpha'][iteration], k=3), np.rot90(self.maps['beta'][iteration], k=3))
         return None
@@ -1994,7 +2020,7 @@ class SKS():
     # 2
     def _compute_time_map(self, iteration):
         """
-        Compute the time map.
+        Compute the travel time map (how long it takes to get to the outlet from each grid cell).
         """
         try:
             self.maps['time'][iteration] = skfmm.travel_time(self.maps['phi'], self.maps['velocity'][iteration], dx=self.grid.dx, order=2)
@@ -2008,18 +2034,16 @@ class SKS():
     # 2
     def _compute_time_map_hfm(self, iteration):
         """
-        Compute the time map using the agd fast-marching algorithm and store travel time map (rotated back)
+        Compute the travel time map (how long it takes to get to the outlet from each cell),
+        using the agd-hfm fast-marching algorithm, and store travel time map (rotated back).
         """
         
         self.fastMarching['seeds']  = self.outlets.data   #set the spring coordinates (need to change iteration structure to do one spring at a time)
-        self.fastMarching['tips']   = [inlet[:2] for inlet in self.inlets if inlet[2] == iteration] #set the inlet coordinates for current iteration (rework iteration to be cleaner?)
+        self.fastMarching['tips']   = [inlet[:2] for inlet in self.inlets if inlet[2] == iteration] #set the inlet coordinates for current iteration (rework iteration to allow choice of which inlets in which iteration?)
         self.fastMarching['metric'] = self.riemannMetric  #set the travel cost through each cell
         self.fastMarchingOutput = self.fastMarching.Run() #run the fast marching algorithm and store the outputs
-        #next: store in maps and turn paths into node/link
-        self.maps['time_hfm'][iteration] = np.rot90(self.fastMarchingOutput['values'], k=-3)
-        self.conduits_hfm.append(self.fastMarchingOutput['geodesics'])
-
-        
+        self.maps['time_hfm'][iteration] = np.rot90(self.fastMarchingOutput['values'], k=-3)  #unrotate the travel time map & store
+        self.conduits_hfm.append(self.fastMarchingOutput['geodesics']) #store fastest travel paths
         return None
 
     # 2
@@ -2092,21 +2116,29 @@ class SKS():
     # 2
     def _compute_karst_map_hfm(self, iteration):
         """
-        Compute the karst map based on the paths from agd-hfm.
-        Note: something is off about the IndexFromPoint function, so it has to be manually corrected
+        Compute the karst map based on the paths from agd-hfm. 
+        Array of all zeros, with ones in cells containing a karst conduit.
         """
         # Get karst map from previous iteration
+        f,ax = plt.subplots(1,2, figsize=(10,5))
+
         if iteration > 0:
             self.maps['karst_hfm'][iteration] = self.maps['karst_hfm'][iteration-1]
+            ax[0].imshow(self.maps['karst_hfm'][iteration], extent=self.grid.extent, origin='lower', vmin=0,vmax=1)
+            ax[0].set_title('karst iteration >0: '+str(iteration))
+        else:
+            ax[0].imshow(self.maps['karst_hfm'][iteration], extent=self.grid.extent, origin='lower', vmin=0,vmax=1)
+            ax[0].set_title('karst iteration not>0: '+str(iteration))
             
         # Update karst map with new conduits from current iteration
         for path in self.fastMarchingOutput['geodesics']:  #loop over individual paths for this iteration's conduits
             for i in range(path.shape[1]):                 #loop over coordinates of each point in path
-                point = path[:,i]
+                point = path[:,i]    #get coordinates for current point
                 [[ix,iy],error] = self.fastMarching.IndexFromPoint(point) #convert to indices
-                self.maps['cost'][iteration][iy-1,ix+1] = self.settings['cost_conduits']   #assign a new cost value to cells with conduits in them
-                self.maps['karst_hfm'][iteration][iy-1,ix+1] = 1                           #assign 1 to cell if it is a conduit
-                        
+                self.maps['karst_hfm'][iteration][iy,ix] = 1                           #assign 1 to cell if it is a conduit          
+        
+        ax[1].imshow(self.maps['karst_hfm'][iteration], extent=self.grid.extent, origin='lower', vmin=0,vmax=1)
+        ax[1].set_title('updated karst iteration'+str(iteration))
         return None
  
     # 2
