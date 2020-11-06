@@ -98,6 +98,15 @@ fractures_max_length : 4000
 ###############################
 ### Fast-Marching Algorithm ###
 ###############################
+#Choose which algorithm to use:
+#'skfmm'     : scikit fast-marching: 2D, fast, requires minimal inputs, but does not represent high-relief catchments well (original algorithm)
+#'Isotropic2': agd-hfm: 2D, equivalent of skfmm
+#'Isotropic3': adg-hfm: 3D, equivalent of skfmm
+#'Riemann2'  : agd-hfm: 2D, anisotropic, requires an anisotropy vector field (topography or geologic orientation), performs well in high-relief catchments
+#'Riemann3'  : agd-hfm: 3D version of anisotropic algorithm
+#for more options, see agd-hfm library documentation
+
+algorithm : 'skfmm'
 
 code_out       : 0.1
 code_aquifere  : 2

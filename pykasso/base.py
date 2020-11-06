@@ -491,10 +491,10 @@ class GeologyManager():
         """
     
         self.data['orientationx'] = {}
-        self.data['orientationx']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
+        self.data['orientationx']['data'] = np.zeros((self.grid.xnum, self.grid.ynum))
         self.data['orientationy'] = {}
-        self.data['orientationy']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
-        self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(self.data['topography']['data'], self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array 
+        self.data['orientationy']['data'] = np.zeros((self.grid.xnum, self.grid.ynum))
+        self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(np.rot90(self.data['topography']['data'], k=3), self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array 
 
         return None
     
@@ -663,7 +663,8 @@ class GeologyManager():
         """
         Compute statistics on the geologic data.
         """
-        for key in self.data:
+        #for key in self.data:
+        for key in ['geology','faults','fractures']:
             stats = {}
             for y in range(self.grid.ynum):
                 for x in range(self.grid.xnum):
@@ -1696,7 +1697,8 @@ class SKS():
             sys.exit()
         # Orientation
         if self.settings['orientation_mode'] == 'null':
-            geology.set_data_null('orientation')
+            geology.set_data_null('orientationx')
+            geology.set_data_null('orientationy')
         elif self.settings['orientation_mode'] == 'topo':
             geology.generate_orientations()
         else:
@@ -1736,8 +1738,6 @@ class SKS():
         
         Save the results in the `karst_simulations` list attribute.
         """
-        #TESTING
-        print('changes have been made')
         
         # 1 - Initialize the parameters
         self._initialize_karst_network_parameters()
@@ -1786,11 +1786,13 @@ class SKS():
         self.maps['time']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
         self.maps['time_hfm']  = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
         self.maps['karst']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
+        self.maps['karst_hfm'] = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
 
         # Vector maps
-        self.nodeID      = 0
-        self.conduits    = []
-        self.outletsNode = []
+        self.nodeID       = 0
+        self.conduits     = []
+        self.conduits_hfm = []
+        self.outletsNode  = []
 
         # Set up fast-marching:
         self.riemannMetric = []                    #this changes at every iteration, but cannot be stored?
@@ -1840,14 +1842,20 @@ class SKS():
 
         # Compute velocity map and travel time for each iteration and draw network
         for iteration in range(self.nbr_iteration):
-            self._compute_velocity_map(iteration)
-            self._compute_cost_map(iteration)    
-            self._compute_alpha_map(iteration)
-            self._compute_beta_map(iteration)
-            self._compute_riemann_metric(iteration)
-            self._compute_time_map(iteration)
-            self._compute_time_map_hfm(iteration)
-            self._compute_karst_map(iteration)
+            if self.settings['algorithm'] == 'skfmm':
+                self._compute_velocity_map(iteration)  #1
+                self._compute_time_map(iteration) #6
+                self._compute_karst_map(iteration) #8
+            elif self.settings['algorithm'] == 'Riemann2':
+                self._compute_velocity_map(iteration)  #old - remove later
+                self._compute_cost_map(iteration)     #2
+                self._compute_alpha_map(iteration) #3
+                self._compute_beta_map(iteration) #4
+                self._compute_riemann_metric(iteration) #5
+                self._compute_time_map(iteration) #old - remove later
+                self._compute_time_map_hfm(iteration) #7
+                self._compute_karst_map(iteration) #convert to use hfm 
+                self._compute_karst_map_hfm(iteration)  #9
 #            print('iteration:{}/{}'.format(iteration+1,self.nbr_iteration))
 #        print('- END -')
         return None
@@ -1945,14 +1953,14 @@ class SKS():
     
             # Fractures
             self.maps['cost'][0] = np.where(self.geology.data['fractures']['data'] > 0, self.settings['cost_fractures'], self.maps['cost'][0])
-    
+
             # If out of polygon
             if self.mask is not None:
                 self.maps['cost'][0] = np.where(self.mask==1, self.settings['cost_out'], self.maps['cost'][0])
                 
         else:
             self.maps['cost'][iteration] = self.maps['cost'][iteration-1]
-            self.maps['cost'][iteration] = np.where(self.maps['karst'][iteration-1] > 0, self.settings['cost_conduits'], self.maps['cost'][iteration])
+            self.maps['cost'][iteration] = np.where(self.maps['karst_hfm'][iteration-1] > 0, self.settings['cost_conduits'], self.maps['cost'][iteration])
         return None
     
     # 2
@@ -1960,6 +1968,7 @@ class SKS():
         """
         Compute the alpha map: travel cost in the same direction as the gradient.
         For most cases will be the same as the cost map.
+        Note: must be rotated by 90 degrees to serve as input to agd-hfm algorithm
         """
         self.maps['alpha'][iteration] = self.maps['cost'][iteration]
         return None
@@ -1979,7 +1988,7 @@ class SKS():
         Note: For this purpose, all input arrays must be rotated by 90 degrees.
         """
         
-        self.riemannMetric = agd.Metrics.Riemann.needle([np.rot90(self.geology.data['orientationx']['data'], k=3), np.rot90(self.geology.data['orientationy']['data'], k=3)], np.rot90(self.maps['alpha'][iteration], k=3), np.rot90(self.maps['beta'][iteration], k=3))
+        self.riemannMetric = agd.Metrics.Riemann.needle([self.geology.data['orientationx']['data'], self.geology.data['orientationy']['data']], np.rot90(self.maps['alpha'][iteration], k=3), np.rot90(self.maps['beta'][iteration], k=3))
         return None
     
     # 2
@@ -2008,6 +2017,8 @@ class SKS():
         self.fastMarchingOutput = self.fastMarching.Run() #run the fast marching algorithm and store the outputs
         #next: store in maps and turn paths into node/link
         self.maps['time_hfm'][iteration] = np.rot90(self.fastMarchingOutput['values'], k=-3)
+        self.conduits_hfm.append(self.fastMarchingOutput['geodesics'])
+
         
         return None
 
@@ -2076,6 +2087,26 @@ class SKS():
                     Y = get_Y(y)
 
                 self.conduits.append(conduit)
+        return None
+
+    # 2
+    def _compute_karst_map_hfm(self, iteration):
+        """
+        Compute the karst map based on the paths from agd-hfm.
+        Note: something is off about the IndexFromPoint function, so it has to be manually corrected
+        """
+        # Get karst map from previous iteration
+        if iteration > 0:
+            self.maps['karst_hfm'][iteration] = self.maps['karst_hfm'][iteration-1]
+            
+        # Update karst map with new conduits from current iteration
+        for path in self.fastMarchingOutput['geodesics']:  #loop over individual paths for this iteration's conduits
+            for i in range(path.shape[1]):                 #loop over coordinates of each point in path
+                point = path[:,i]
+                [[ix,iy],error] = self.fastMarching.IndexFromPoint(point) #convert to indices
+                self.maps['cost'][iteration][iy-1,ix+1] = self.settings['cost_conduits']   #assign a new cost value to cells with conduits in them
+                self.maps['karst_hfm'][iteration][iy-1,ix+1] = 1                           #assign 1 to cell if it is a conduit
+                        
         return None
  
     # 2
@@ -2171,7 +2202,7 @@ class SKS():
                     dx   = abs(x - node[1])
                     dy   = abs(y - node[2])
                     dist.append((math.sqrt(dx**2 + dy**2),node[0]))
-                min_node = min(dist)
+                min_node = min(dist)                                      #this line does not work if only one iteration
                 conduit.edges.append((last_node[0],min_node[1]))
 
             # connect last node on outlet coordinates

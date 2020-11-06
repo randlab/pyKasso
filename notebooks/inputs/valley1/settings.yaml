@@ -93,6 +93,16 @@ fractures_max_length : 800
 ### Fast-Marching Algorithm ###
 ###############################
 
+#Choose which algorithm to use:
+#'skfmm'     : scikit fast-marching: 2D, fast, requires minimal inputs, but does not represent high-relief catchments well (original algorithm)
+#'Isotropic2': agd-hfm: 2D, equivalent of skfmm
+#'Isotropic3': adg-hfm: 3D, equivalent of skfmm
+#'Riemann2'  : agd-hfm: 2D, anisotropic, requires an anisotropy vector field (topography or geologic orientation), performs well in high-relief catchments
+#'Riemann3'  : agd-hfm: 3D version of anisotropic algorithm
+#for more options, see agd-hfm library documentation
+
+algorithm : 'Riemann2'
+
 #For skfmm:
 #Ease of travel through each medium (higher=faster/easier) - must be >=1
 code_out       : 0
@@ -105,11 +115,11 @@ code_conduits  : 6
 #For AGD-HFM:
 #Travel cost parallel to gradient (higher=slower/harder)
 cost_out       : 0.999   
-cost_aquifer   : 0.2
-cost_aquiclude : 0.6 
-cost_faults    : 0.05
-cost_fractures : 0.1
-cost_conduits  : 0.01
+cost_aquifer   : 0.5
+cost_aquiclude : 0.7 
+cost_faults    : 0.4
+cost_fractures : 0.4
+cost_conduits  : 0.1
 cost_ratio     : 0.25     #ratio of travel cost parallel to gradient / travel cost prependicular to gradient
 
 ### Formation to consider and FMM code associated
@@ -117,7 +127,11 @@ geology_id       : [2,3] # Only for 'import' geological mode
 geology_velocity : [code_aquifere,code_aquiclude]
 geology_cost     : [cost_aquifer, cost_aquiclude]
 
-importance_factor : [1,2,3]
+###Inlet iteration:
+#Length of array indicates number of iterations
+#each integer indicates number of inlets to run in that iteration
+#sum of integers must equal total number of inlets?
+importance_factor : [3,2,1]   #[1,2,3]
 
 #############
 ### Other ###
