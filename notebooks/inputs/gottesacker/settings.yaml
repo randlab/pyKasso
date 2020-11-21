@@ -7,19 +7,19 @@
 ### Grid ###
 ############
 
-x0   : 5
-y0   : 5
-xnum : 100
-ynum : 80
-dx   : 10
-dy   : 10
+x0   : 578287.5
+y0   : 5240062.5
+xnum : 251
+ynum : 200
+dx   : 50
+dy   : 50
 
 ###############
 ### Polygon ###
 ###############
 
 data_has_polygon : False
-polygon_data     : 'inputs/polygon.txt'
+polygon_data     : 'notebooks/inputs/polygon.txt'
 
 ####################
 ### PointManager ###
@@ -30,7 +30,7 @@ polygon_data     : 'inputs/polygon.txt'
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 inlets_mode   : 'import'
-inlets_data   : 'inputs/valley1/inlets.txt'
+inlets_data   : 'notebooks/inputs/gottesacker/inlets.csv'
 inlets_number : 5
 
 ###Outlets
@@ -38,8 +38,8 @@ inlets_number : 5
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 outlets_mode   : 'import'
-outlets_data   : 'inputs/valley1/outlets.txt'
-outlets_number : 5
+outlets_data   : 'notebooks/inputs/gottesacker/outlets.csv'
+outlets_number : 1
 
 ######################
 ### GeologyManager ###
@@ -49,29 +49,28 @@ outlets_number : 5
 # 'null'   - No geology
 # 'import' - Import geology via GSLIB
 # 'image'  - Import geology via image
-# 'csv'    - Import geology via csv
-geological_mode     : 'csv'
-geological_datafile : 'inputs/valley1/geo80x100.csv'
+geological_mode     : 'import'
+geological_datafile : 'notebooks/inputs/gottesacker/geology2D.gslib'
 
 ###Topography
 #'null'   - No topography
 #'csv'    - Import topography from csv file 
 topography_mode : 'csv'
-topography_datafile : 'inputs/valley1/dem80x100.csv'
+topography_datafile : 'notebooks/inputs/gottesacker/dem_rot90fliplr.csv'
 
 ###Orientation
 #'null'   - No orientation
 #'topo'   - Calculate orientation from topography
 #'import' - Import from gslib file (in progress)
 orientation_mode : 'topo'
-orientation_datafile : 'inputs/valley1/orientation.gslib'
+orientation_datafile : 'notebooks/inputs/gottesacker/orientation.gslib'
 
 ###Faults
 # 'null'   - No faults
 # 'import' - Import faults
 # 'image'  - Import faults via image
 faults_mode     : 'null'
-faults_datafile : 'inputs/faults.gslib'
+faults_datafile : 'notebooks/inputs/faults.gslib'
 
 ###Fractures
 # 'null'   - No fractures
@@ -79,7 +78,7 @@ faults_datafile : 'inputs/faults.gslib'
 # 'image'  - Import fractures via image
 # 'random' - Generate random fractures
 fractures_mode     : 'null'
-fractures_datafile : 'inputs/fractures.gslib'
+fractures_datafile : 'notebooks/inputs/fractures.gslib'
 
 # If fractures mode is 'generate'
 fractures_densities       : [5.83e-5,1.38e-5,2.22e-5,2.5e-5,4.16e-5,6.66e-5,5e-5]
@@ -116,18 +115,26 @@ code_conduits  : 7
 
 #For AGD-HFM:
 #Travel cost parallel to gradient (higher=slower/harder)
-cost_out       : 0.999  
-cost_aquifer   : 0.3
-cost_aquiclude : 0.8 
-cost_faults    : 0.2
-cost_fractures : 0.2
+#cost_out       : 0.999   
+#cost_aquifer   : 0.3
+#cost_aquiclude : 0.6 
+#cost_faults    : 0.2
+#cost_fractures : 0.2
+#cost_conduits  : 0.01
+#cost_ratio     : 0.25     #ratio of travel cost parallel to gradient / travel cost prependicular to gradient
+
+cost_out       : 0.9  
+cost_aquifer   : 0.4
+cost_aquiclude : 0.7 
+cost_faults    : 0.3
+cost_fractures : 0.3
 cost_conduits  : 0.1
 cost_ratio     : 0.25     #ratio of travel cost parallel to gradient / travel cost prependicular to gradient
 
 ### Formation to consider and FMM code associated
-geology_id       : [2,3] # Only for 'import' or 'csv' geological modes
-geology_velocity : [code_aquifere,code_aquiclude]
-geology_cost     : [cost_aquifer, cost_aquiclude]
+geology_id       : [0,1,2,3,4] # Only for 'import' geological mode
+geology_velocity : [code_out, code_aquiclude, code_aquifere,code_aquiclude, code_aquiclude]
+geology_cost     : [cost_out, cost_aquiclude, cost_aquifer, cost_aquiclude, cost_aquiclude]
 
 ###Inlet iteration:
 #Length of array indicates number of iterations
@@ -141,7 +148,4 @@ importance_factor : [1,1,1,1,1]   #to run a single iteration: [n_inlets]  #to ru
 
 # if 0 = total random
 rand_seed : 1
-
-#Verbosity: how much output to display during run 
-verbosity : 0    #0: minimal output, 1: some output; 2: maximum output
 ...

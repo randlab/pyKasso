@@ -24,17 +24,8 @@ import pandas   as pd # dependance
 import matplotlib.pyplot as plt
 from   matplotlib.path import Path
 
-import agd # dependance
 import skfmm  # dependance
 import karstnet as kn # dependance
-#agd sub-modules:
-from agd import Eikonal
-from agd.Metrics import Riemann
-#from agd.Plotting import quiver
-#from agd import LinearParallel as lp
-#from agd import AutomaticDifferentiation as ad
-#norm_infinity = ad.Optimization.norm_infinity  #what does this do?
-
 
 #####
 # 1 #
@@ -106,9 +97,9 @@ class Grid():
 	Parameters
 	----------
 	x0 : float
-		x-coordinate origin (centerpoint of bottom left cell, NOT bottom left corner of bottom left cell).
+		x-coordinate origin.
 	y0 : float
-		y-coordinate origin (centerpoint of bottom left cell, NOT bottom left corner of bottom left cell).
+		y-coordinate origin.
 	xnum : integer
 		Number of cells on x dimension.
 	ynum : integer
@@ -121,28 +112,24 @@ class Grid():
 	Notes
 	-----
 	- On this version, dx and dy must be similar. pyKasso does not support unstructured grid yet.  
-	- x0 and y0 are considered to be in the center of the first cell.
+	- x0 and y0 are considered to be in the center of the first node.
 	"""        
     
     def __init__(self, x0, y0, xnum, ynum, dx, dy):
-        self.x0   = x0        #x coord of centerpoint of bottom left cell 
-        self.y0   = y0        #y coord of centerpoint of bottom left cell
-        self.xnum = xnum      #x resolution: number of cells in x direction (aka columns)
-        self.ynum = ynum      #y resolution: number of cells in y direction (aka rows)
-        self.dx   = dx        #cell width in x direction
-        self.dy   = dy        #cell width in y direction
+        self.x0   = x0
+        self.y0   = y0
+        self.xnum = xnum
+        self.ynum = ynum
+        self.dx   = dx
+        self.dy   = dy
 
-        self.x        = np.arange(self.x0,self.x0+(self.xnum)*self.dx,self.dx,dtype=np.float_)  #1D array of centerpoints of each cell along x axis
-        self.y        = np.arange(self.y0,self.y0+(self.ynum)*self.dy,self.dy,dtype=np.float_)  #1D array of centerpoints of each cell along y axis
-        self.X,self.Y = np.meshgrid(self.x,self.y)            #2D array of dim (xnum, ynum) with xy coord of each cell's centerpoint
-        self.xlimits  = [self.x0-self.dx/2,self.x0-self.dx/2,self.x[-1]+self.dx/2,self.x[-1]+self.dx/2,self.x0-self.dx/2] #x coord of outermost cell edges [bottom left, top left, top right, bottom right, bottom left]
-        self.ylimits  = [self.y0-self.dy/2,self.y[-1]+self.dy/2,self.y[-1]+self.dy/2,self.y0-self.dy/2,self.y0-self.dy/2] #y coord of outermost cell edges [bottom left, top left, top right, bottom right, bottom left]
-        self.limits   = list(zip(self.xlimits,self.ylimits)) #array of tuples with coordinates of corners [(bottom left/origin), (top left), (top right), (bottom right), (bottom left/origin)]
-        self.xmin     = self.x0    - self.dx/2      #coordinate of leftmost edge of leftmost cells
-        self.xmax     = self.x[-1] + self.dx/2      #coordinate of rightmost edge of rightmost cells
-        self.ymin     = self.y0    - self.dy/2      #coordinate of bottom edge of bottom cells
-        self.ymax     = self.y[-1] + self.dy/2      #coordinate of top edge of top cells
-        self.extent   = [self.xmin, self.xmax, self.ymin, self.ymax]  #coordinates of extent for use in plt.imshow()
+        self.x        = np.arange(self.x0,self.x0+(self.xnum)*self.dx,self.dx,dtype=np.float_)
+        self.y        = np.arange(self.y0,self.y0+(self.ynum)*self.dy,self.dy,dtype=np.float_)
+        self.X,self.Y = np.meshgrid(self.x,self.y)
+        self.xlimits  = [self.x0-self.dx/2,self.x0-self.dx/2,self.x[-1]+self.dx/2,self.x[-1]+self.dx/2,self.x0-self.dx/2]
+        self.ylimits  = [self.y0-self.dy/2,self.y[-1]+self.dy/2,self.y[-1]+self.dy/2,self.y0-self.dy/2,self.y0-self.dy/2]
+        self.limits   = list(zip(self.xlimits,self.ylimits))
+
 
 ################
 class Polygon():
@@ -430,7 +417,7 @@ class GeologyManager():
             Type of data : 'geology', 'faults' or 'fractures'.
         """
         self.data[data_key] = {}
-        self.data[data_key]['data'] = np.zeros((self.grid.ynum, self.grid.xnum)) 
+        self.data[data_key]['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
         self.data[data_key]['mode'] = 'null'
         return None
 
@@ -441,7 +428,7 @@ class GeologyManager():
         Parameters
         ----------
         data_key : string
-            Type of data : 'geology', faults', or 'fractures'.
+            Type of data : 'geology', 'faults' or 'fractures'.
         datafile_location : string
             Path of the datafile.
         selected_var : integer, optionnal
@@ -473,35 +460,7 @@ class GeologyManager():
         self.data[data_key]['mode'] = 'image'
         return None
 
-    def set_data_from_csv(self, data_key, datafile_location):
-        """
-        Set data from a csv file for indicated data key.
-
-        Parameters
-        ----------
-        data_key : string
-            Type of data : 'geology', 'topography', 'faults' or 'fractures'.
-        datafile_location : string
-            Path of the datafile.
-        """
-        self.data[data_key]         = {}
-        self.data[data_key]['data'] = np.genfromtxt(datafile_location, delimiter=',')
-        self.data[data_key]['mode'] = 'csv'
-        return None
-    
-    def generate_orientations(self):
-        """
-        Generate maps of x and y components of orientation based on topography.
-        """
-    
-        self.data['orientationx'] = {}
-        self.data['orientationx']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
-        self.data['orientationy'] = {}
-        self.data['orientationy']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
-        self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(self.data['topography']['data'], self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array 
-        return None
-    
-    def generate_fractures(self, fractures_numbers, fractures_min_orientation, fractures_max_orientation, fractures_alpha, fractures_min_length, fractures_max_length):
+    def generate_fractures(self, fractures_numbers, fractures_min_orientation, fractures_max_orientation, alpha, fractures_min_length, fractures_max_length):
         """
         Generate fractures.
 
@@ -513,7 +472,7 @@ class GeologyManager():
             Fractures minimum orientation for each fracture family.
         fractures_max_orientation : list
             Fractures maximum orientation for each fracture family.
-        fractures_alpha : float
+        alpha : float
             Degree of power law.
         fractures_min_length : float
             The minimum lenght of the fractures. For all the families.
@@ -521,7 +480,7 @@ class GeologyManager():
             The maximum lenght of the fractures. For all the families.
         """
         self.data['fractures'] = {}
-        self.data['fractures']['data'] = np.zeros((self.grid.ynum, self.grid.xnum)) #need to flip
+        self.data['fractures']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
 
         self.fractures = {}
         fracture_id = 0
@@ -558,7 +517,7 @@ class GeologyManager():
                 # pdf = ((alpha - 1)/min_fracture_length) * np.float_power(x / min_fracture_length, -alpha) / C
                 # cdf = (np.float_power(min_fracture_length, -alpha+1) - np.float_power(x, -alpha+1)) / (np.float_power(min_fracture_length, -alpha+1) - np.float_power(max_fracture_length, -alpha+1))
                 # cdf_reverse = np.float_power( np.float_power(min_fracture_length, -alpha+1) - P(x) * (np.float_power(min_fracture_length, -alpha+1) - np.float_power(max_fracture_length, -alpha+1)) , (1/(-alpha+1)))
-                frac_length = np.float_power(np.float_power(fractures_min_length, -fractures_alpha+1) - np.random.rand() * (np.float_power(fractures_min_length, -fractures_alpha+1) - np.float_power(fractures_max_length, -fractures_alpha+1)) , (1/(-fractures_alpha+1)))
+                frac_length = np.float_power(np.float_power(fractures_min_length, -alpha+1) - np.random.rand() * (np.float_power(fractures_min_length, -alpha+1) - np.float_power(fractures_max_length, -alpha+1)) , (1/(-alpha+1)))
 
                 # FRACTURE ORIENTATION
                 # -> from von Mises distribution
@@ -629,7 +588,7 @@ class GeologyManager():
         # Control if size declared match with gslib's size file
         data_lines = text[2+nvar:]
         if len(data_lines) != (self.grid.xnum*self.grid.ynum):
-            print("- set_data() - Error : Dimensions declared does not match with gslib file's dimensions.")
+            print("- set_data() - Error : Dimensions declared does not match with gslib's dimensions file.")
             return None
 
         # Get variables names
@@ -664,34 +623,33 @@ class GeologyManager():
     
     def compute_stats_on_data(self):
         """
-        Compute statistics on the geologic data (not including the orientations).
+        Compute statistics on the geologic data.
         """
-        #for key in self.data:
-        for key in ['geology','faults','fractures']:
+        for key in self.data:
             stats = {}
             for y in range(self.grid.ynum):
                 for x in range(self.grid.xnum):
-                    value = self.data[key]['data'][y][x] 
+                    value = self.data[key]['data'][y][x]
                     try:
                         if stats.get(value) == None:
                             stats[value] = 1
                         else:
                             stats[value] += 1
                     except:
-                        print('Unable to comput stats for value', value)
+                        print(value)
 
-            #if self.settings['verbosity'] > 1:
-                #print('\n')
-                #print('STATS for {}'.format(key))
-                #print('%-12s%-12s%-12s%-12s' % ('ID', 'Number', '%', 'Superficy'))
+            #if verbose:
+             #   print('\n')
+              #  print('STATS for {}'.format(key))
+               # print('%-12s%-12s%-12s%-12s' % ('ID', 'Number', '%', 'Superficy'))
                 #print(48*'-')
             ID        = []
             occurence = []
             frequency = []
             superficy = []
             for k in stats:
-                #if self.settings['verbosity'] > 1:
-                   #print('%-12i%-12i%-12f%-12i' % (k, stats[k], 100*stats[k]/(self.grid.xnum*self.grid.ynum), stats[k]*self.grid.dx*self.grid.dy))
+                #if verbose:
+                 #   print('%-12i%-12i%-12f%-12i' % (k, stats[k], 100*stats[k]/(self.grid.xnum*self.grid.ynum), stats[k]*self.grid.dx*self.grid.dy))
                 ID.append(k)
                 occurence.append(stats[k])
                 frequency.append(100*stats[k]/(self.grid.xnum*self.grid.ynum))
@@ -823,8 +781,6 @@ class SKS():
             >>> catchment = pk.SKS()
             >>> catchment = pk.SKS('exemple.yaml')
         """
-        print('CAUTION: You are using the development version of this package.') #uncomment this to tell apart the development version and the main version
-
         if yaml_settings_file is None:
             yaml_settings_file = os.path.dirname(os.path.abspath(__file__)) + '/' + 'default_files/settings.yaml'
         
@@ -846,12 +802,7 @@ class SKS():
         geology_velocity = []
         for elem in self.settings['geology_velocity']:
             geology_velocity.append(self.settings[elem])
-        self.settings['geology_velocity'] = geology_velocity 
-        
-        geology_cost = []
-        for elem in self.settings['geology_cost']:
-            geology_cost.append(self.settings[elem])
-        self.settings['geology_cost'] = geology_cost
+        self.settings['geology_velocity'] = geology_velocity      
         
         if self.settings['rand_seed'] > 0:
             np.random.seed(self.settings['rand_seed'])
@@ -868,7 +819,6 @@ class SKS():
     ################
 
     def get_x0(self):
-        print('test')
         return self.settings['x0']
 
     def get_y0(self):
@@ -937,8 +887,8 @@ class SKS():
     def get_fractures_max_orientation(self):
         return self.settings['fractures_max_orientation']
 
-    def get_fractures_alpha(self):
-        return self.settings['fractures_alpha']
+    def get_alpha(self):
+        return self.settings['alpha']
 
     def get_fractures_min_length(self):
         return self.settings['fractures_min_length']
@@ -969,9 +919,6 @@ class SKS():
 
     def get_geology_velocity(self):
         return self.settings['geology_velocity']
-    
-    def get_geology_cost(self):
-        return self.settings['geology_cost']
 
     def get_importance_factor(self):
         return self.settings['importance_factor']
@@ -1287,16 +1234,16 @@ class SKS():
         self.settings['fractures_max_orientation'] = fractures_max_orientation
         return None
 
-    def set_fractures_alpha(self, fractures_alpha):
+    def set_alpha(self, alpha):
         """
         Define the ???.
         Usefull only when the mode for fractures is on 'random'.
 
         Parameter
         ---------
-        fractures_alpha : float
+        alpha : float
         """
-        self.settings['fractures_alpha'] = fractures_alpha
+        self.settings['alpha'] = alpha
         return None
 
     def set_fractures_min_length(self, fractures_min_length):
@@ -1411,17 +1358,6 @@ class SKS():
         geology_velocity : list
         """
         self.settings['geology_velocity'] = geology_velocity
-        return None
-    
-    def set_geology_cost(self, geology_cost):
-        """
-        Define the travel cost to apply to each geology id.
-        
-        Parameter
-        ---------
-        geology_cost : list
-        """
-        self.settings['geology_cost'] = geology_cost
         return None
 
     def set_importance_factor(self, importance_factor):
@@ -1558,7 +1494,7 @@ class SKS():
         elif self.settings['fractures_mode'] == 'image':
             self.geology.set_data_from_image('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'random':
-            self.geology.generate_fractures(self.settings['fractures_numbers'], self.settings['fractures_min_orientation'], self.settings['fractures_max_orientation'], self.settings['fractures_alpha'], self.settings['fractures_min_length'], self.settings['fractures_max_length'])
+            self.geology.generate_fractures(self.settings['fractures_numbers'], self.settings['fractures_min_orientation'], self.settings['fractures_max_orientation'], self.settings['alpha'], self.settings['fractures_min_length'], self.settings['fractures_max_length'])
         else:                                                                                  
             print('/!\\ Error : unrecognized fractures mode.')
             sys.exit()
@@ -1611,7 +1547,7 @@ class SKS():
         """
         # The grid
         self.grid    = self._set_grid(self.settings['x0'],self.settings['y0'],self.settings['xnum'],self.settings['ynum'],self.settings['dx'],self.settings['dy'])
-        # The polygon and its mask
+        # The polygon and his mask
         self.polygon = self._set_polygon(self.grid)
         self.mask    = self.polygon.mask
         # The points
@@ -1687,27 +1623,8 @@ class SKS():
             geology.set_data('geology', self.settings['geological_datafile'])
         elif self.settings['geological_mode'] == 'image':
             geology.set_data_from_image('geology', self.settings['geological_datafile'])
-        elif self.settings['geological_mode'] == 'csv':
-            geology.set_data_from_csv('geology', self.settings['geological_datafile'])
         else:
             print('/!\\ Error : unrecognized geological mode.')
-            sys.exit()
-        # Topography
-        if self.settings['topography_mode'] == 'null':
-            geology.set_data_null('topography')
-        elif self.settings['topography_mode'] == 'csv':
-            geology.set_data_from_csv('topography', self.settings['topography_datafile'])
-        else:
-            print('/!\\ Error : unrecognized topography mode.')
-            sys.exit()
-        # Orientation
-        if self.settings['orientation_mode'] == 'null':
-            geology.set_data_null('orientationx')
-            geology.set_data_null('orientationy')
-        elif self.settings['orientation_mode'] == 'topo':
-            geology.generate_orientations()
-        else:
-            print('/!\\ Error : unrecognized orientation mode.')
             sys.exit()
         # Faults
         if self.settings['faults_mode'] == 'null':
@@ -1727,7 +1644,7 @@ class SKS():
         elif self.settings['fractures_mode'] == 'image':
             geology.set_data_from_image('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'random':
-            geology.generate_fractures(self.settings['fractures_numbers'], self.settings['fractures_min_orientation'], self.settings['fractures_max_orientation'], self.settings['fractures_alpha'], self.settings['fractures_min_length'], self.settings['fractures_max_length'])
+            geology.generate_fractures(self.settings['fractures_numbers'], self.settings['fractures_min_orientation'], self.settings['fractures_max_orientation'], self.settings['alpha'], self.settings['fractures_min_length'], self.settings['fractures_max_length'])
         else:
             print('/!\\ Error : unrecognized fractures mode.')
             sys.exit()
@@ -1743,7 +1660,6 @@ class SKS():
         
         Save the results in the `karst_simulations` list attribute.
         """
-        
         # 1 - Initialize the parameters
         self._initialize_karst_network_parameters()
         
@@ -1779,42 +1695,18 @@ class SKS():
         """
         self.nbr_iteration = len(self.settings['importance_factor'])
         self.inlets        = self._set_inlets_repartition()
-        self.inlets_hfm    = np.asarray(self.inlets)
 
         # Raster maps
         self.maps = {}
-        #skfmm:
-        self.maps['phi']       = np.ones((self.grid.ynum, self.grid.xnum))  #outlet location
-        self.maps['velocity']  = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #ease of travel through each cell
-        self.maps['time']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #travel time to outlet from each cell
-        self.maps['karst']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #presence/absence of karst conduit
-        #agd-hfm:
-        self.maps['cost']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #cost of travel through each cell
-        self.maps['alpha']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #cost of travel along gradient through each cell
-        self.maps['beta']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #cost of travel perpendicular to gradient through each cell
-        self.maps['time_hfm']  = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #travel time to outlet from each cell
-        self.maps['karst_hfm'] = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #presence/absence of karst conduit in each cell
+        self.maps['phi']      = np.ones((self.grid.ynum, self.grid.xnum))
+        self.maps['velocity'] = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
+        self.maps['time']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
+        self.maps['karst']    = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum))
 
         # Vector maps
-        self.nodeID       = 0
-        self.conduits     = []
-        self.conduits_hfm = []
-        self.outletsNode  = []
-
-        # Set up fast-marching:
-        #Note: AGD-HFM library has different indexing, so model dimensions must be [ynum,xnum],
-        # and model extent must be [ymin,ymax, xmin,xmax] (NOT x0,y0)
-        self.riemannMetric = []                    #this changes at every iteration, but cannot be stored?
-        self.fastMarching = agd.Eikonal.dictIn({
-            'model'             : 'Riemann2',      #set choice of algorithm (replace by variable)
-            'order'             : 2,               #recommended setting: 2 (replace by variable)
-            'exportValues'      : 1,               #export the travel time field
-            'exportGeodesicFlow': 1                #export the walker paths (i.e. the conduits)
-        })
-        self.fastMarching.SetRect(                 #give the fast-marching algorithm the model grid 
-            sides=[[self.grid.ymin, self.grid.ymax],    #leftmost edge, rightmost edge (NOT centerpoint)
-                   [self.grid.xmin, self.grid.xmax]],   #bottom edge,   top edge (NOT centerpoint)
-            dims=[self.grid.ynum, self.grid.xnum])      #number of cells, number of cells
+        self.nodeID      = 0
+        self.conduits    = []
+        self.outletsNode = []
         return None
     
     # 1
@@ -1824,18 +1716,18 @@ class SKS():
         """
         inlets_repartition = []
         inlets_proportion  = []
-        total = float(sum(self.settings['importance_factor'])) #total number of inlets
+        total = float(sum(self.settings['importance_factor']))
 
         for iteration in range(self.nbr_iteration):
-            inlets_proportion.append(float(self.settings['importance_factor'][iteration])/total) #percent of inlets to use this iteration
-            inlets_repartition.append(round(inlets_proportion[iteration]*len(self.inlets))) #number of inlets to use this iteration (need to round bc percentage will not result in whole number)
-        inlets_repartition[-1] = len(self.inlets)-sum(inlets_repartition[0:-1]) #whichever inlets are left over are assignd to last iteration
-        
+            inlets_proportion.append(float(self.settings['importance_factor'][iteration])/total)
+            inlets_repartition.append(round(inlets_proportion[iteration]*len(self.inlets)))
+        inlets_repartition[-1] = len(self.inlets)-sum(inlets_repartition[0:-1])
+
         inlets = []
         i = 0
-        for k,repartition_nbr in enumerate(inlets_repartition): #loop over number of inlets per iteration
-            for num in range(repartition_nbr):  #loop over each inlet in current iteration
-                inlets.append((self.inlets[i][0],self.inlets[i][1],k))   #append inlet with its iteration number
+        for k,repartition_nbr in enumerate(inlets_repartition):
+            for num in range(repartition_nbr):
+                inlets.append((self.inlets[i][0],self.inlets[i][1],k))
                 i += 1
         return inlets
     
@@ -1845,54 +1737,39 @@ class SKS():
         Compute each generation of karst conduits.
         """
         # Define phi map according to outlets emplacements
-        if self.settings['verbosity'] > 0:
-            print('-START-')
+        #print('-START-')
         self._compute_phi_map()
 
         # Compute velocity map and travel time for each iteration and draw network
         for iteration in range(self.nbr_iteration):
-            if self.settings['algorithm'] == 'skfmm':
-                self._compute_velocity_map(iteration)  #1
-                self._compute_time_map(iteration) #6
-                self._compute_karst_map(iteration) #8
-            elif self.settings['algorithm'] == 'Riemann2':
-                #self._compute_velocity_map(iteration)  #old - remove later
-                self._compute_cost_map(iteration)     #2
-                self._compute_alpha_map(iteration) #3
-                self._compute_beta_map(iteration) #4
-                self._compute_riemann_metric(iteration) #5
-                #self._compute_time_map(iteration) #old - remove later - error: phi map contains no zero contour
-                self._compute_time_map_hfm(iteration) #7
-                #self._compute_karst_map(iteration) #convert to use hfm 
-                self._compute_karst_map_hfm(iteration)  #9
-            if self.settings['verbosity'] > 0:
-                print('iteration:{}/{}'.format(iteration+1,self.nbr_iteration))
-        if self.settings['verbosity'] > 0:
-            print('- END -')
+            self._compute_velocity_map(iteration)
+            self._compute_time_map(iteration)
+            self._compute_karst_map(iteration)
+#            print('iteration:{}/{}'.format(iteration+1,self.nbr_iteration))
+#        print('- END -')
         return None
     
     # 2
     def _compute_phi_map(self):
         """
-        Compute the phi map (array indicating location of outlets as -1 and everywhere else as 1).
+        Compute the phi map.
         """
         for (x,y) in self.outlets:
             X = int(math.ceil((x - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
             Y = int(math.ceil((y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
-            self.maps['phi'][Y][X] = -1 
+            self.maps['phi'][Y][X] = -1
         return None
     
     # 2
     def _compute_velocity_map(self, iteration):
         """
-        Compute the velocity map (how quickly each cell can be traversed).
+        Compute the velocity map.
         """
         # If it's the first iteration, iniatialize the velocity map according to the geological settings.
         if iteration == 0:
             # Geology
             if self.geology.data['geology']['mode'] == 'null':
-                self.maps['velocity'][0] = np.full((self.grid.ynum, self.grid.xnum), self.settings['code_aquifere']) #XYflip
-                #self.maps['velocity'][0] = np.full((self.grid.xnum, self.grid.ynum), self.settings['code_aquifere'])
+                self.maps['velocity'][0] = np.full((self.grid.ynum, self.grid.xnum), self.settings['code_aquifere'])
             elif self.geology.data['geology']['mode'] == 'image':
                 self.maps['velocity'][0] = np.where(self.geology.data['geology']['data']==1, self.settings['code_aquiclude'], self.settings['code_aquifere'])
             elif self.geology.data['geology']['mode'] == 'import':
@@ -1911,8 +1788,8 @@ class SKS():
     
                 for y in range(self.grid.ynum):
                     for x in range(self.grid.xnum):
-                        geology = self.geology.data['geology']['data'][y][x] 
-                        self.maps['velocity'][0][y][x] = tableFMM[geology]  
+                        geology = self.geology.data['geology']['data'][y][x]
+                        self.maps['velocity'][0][y][x] = tableFMM[geology]
     
             # Faults
             self.maps['velocity'][0] = np.where(self.geology.data['faults']['data'] > 0, self.settings['code_faults'], self.maps['velocity'][0])
@@ -1930,86 +1807,12 @@ class SKS():
         return None
     
     # 2
-    def _compute_cost_map(self, iteration):
-        """
-        Compute the cost map (how difficult it is to traverse each cell).
-        """
-        # If it's the first iteration, iniatialize the cost map according to the geological settings.
-        if iteration == 0:
-            # Geology
-            if self.geology.data['geology']['mode'] == 'null':
-                self.maps['cost'][0] = np.full((self.grid.ynum, self.grid.xnum), self.settings['cost_aquifer']) #every cell has the same travel cost and is part of the aquifer
-            elif self.geology.data['geology']['mode'] == 'image':
-                self.maps['cost'][0] = np.where(self.geology.data['geology']['data']==1, self.settings['cost_aquiclude'], self.settings['cost_aquifer'])
-            elif self.geology.data['geology']['mode'] == 'import' or self.geology.data['geology']['mode'] == 'csv':
-
-                tableFMM = {}
-                if len(self.settings['geology_id']) != len(self.settings['geology_cost']):
-                    print("- _compute_cost_map() - Error : number of lithologies does not match with number of FMM code.")
-                    sys.exit()
-    
-                for geology, codeFMM in zip(self.settings['geology_id'], self.settings['geology_cost']):
-                    if geology in self.geology.data['geology']['stats']['ID']:
-                        tableFMM[geology] = codeFMM
-                    else:
-                        print("- initialize_costMap() - Warning : no geology n {} found.".format(geology))
-                        tableFMM[geology] = self.settings['cost_out']
-                    
-                for y in range(self.grid.ynum):
-                    for x in range(self.grid.xnum):
-                        geology = self.geology.data['geology']['data'][y][x] 
-                        self.maps['cost'][0][y][x] = tableFMM[geology]       
-            else:
-                print('geology mode', self.geology.data['geology']['mode'], 'not supported')
-                sys.exit()
-
-            # Faults
-            self.maps['cost'][0] = np.where(self.geology.data['faults']['data'] > 0, self.settings['cost_faults'], self.maps['cost'][0])
-    
-            # Fractures
-            self.maps['cost'][0] = np.where(self.geology.data['fractures']['data'] > 0, self.settings['cost_fractures'], self.maps['cost'][0])
-
-            # If out of polygon
-            if self.mask is not None:
-                self.maps['cost'][0] = np.where(self.mask==1, self.settings['cost_out'], self.maps['cost'][0])
-
-        else: #if not the first iteration
-            self.maps['cost'][iteration] = self.maps['cost'][iteration-1] #set cost map to be same as previous iteration
-            self.maps['cost'][iteration] = np.where(self.maps['karst_hfm'][iteration-1] > 0, self.settings['cost_conduits'], self.maps['cost'][iteration]) #where karst conduits are present from previous iteration, set cost to conduit cost, elsewhere, leave unchanged            
-        return None
-    
-    # 2
-    def _compute_alpha_map(self, iteration):
-        """
-        Compute the alpha map: travel cost in the same direction as the gradient.
-        For most cases will be the same as the cost map.
-        """
-        self.maps['alpha'][iteration] = self.maps['cost'][iteration]
-        return None
-    
-    # 2
-    def _compute_beta_map(self, iteration):
-        """
-        Compute the beta map: travel cost perpendicular to the gradient.
-        """
-        self.maps['beta'][iteration] = self.maps['alpha'][iteration] / self.settings['cost_ratio']
-        return None
-
-    # 2
-    def _compute_riemann_metric(self, iteration):
-        """
-        Compute the riemann metric: Define the Riemannian metric needed as input for the anisotropic fast marching.
-        """
-        self.riemannMetric = agd.Metrics.Riemann.needle([self.geology.data['orientationx']['data'], self.geology.data['orientationy']['data']], self.maps['alpha'][iteration], self.maps['beta'][iteration])
-        return None
-    
-    # 2
     def _compute_time_map(self, iteration):
         """
-        Compute the travel time map (how long it takes to get to the outlet from each grid cell).
+        Compute the time map.
         """
         try:
-            self.maps['time'][iteration] = skfmm.travel_time(self.maps['phi'], self.maps['velocity'][iteration], dx=self.grid.dx, order=2)         
+            self.maps['time'][iteration] = skfmm.travel_time(self.maps['phi'], self.maps['velocity'][iteration], dx=self.grid.dx, order=2)
         except:
             try:
                 self.maps['time'][iteration] = skfmm.travel_time(self.maps['phi'], self.maps['velocity'][iteration], dx=self.grid.dx, order=1)
@@ -2017,22 +1820,6 @@ class SKS():
                 raise
         return None
     
-    # 2
-    def _compute_time_map_hfm(self, iteration):
-        """
-        Compute the travel time map (how long it takes to get to the outlet from each cell),
-        using the agd-hfm fast-marching algorithm, and store travel time map.
-        Note: the AGD-HFM library uses different indexing, so x and y indices are reversed for inlets and outlets.
-        """
-        
-        self.fastMarching['seeds']  = self.outlets.data[:,[1,0]]              #reverse outlet indexing
-        self.fastMarching['tips']   = [inlet[[1,0]] for inlet in self.inlets_hfm if inlet[2] == iteration] #select inlets for current iteration
-        self.fastMarching['metric'] = self.riemannMetric                      #set the travel cost through each cell
-        self.fastMarchingOutput     = self.fastMarching.Run()                 #run the fast marching algorithm and store the outputs
-        self.maps['time_hfm'][iteration] = self.fastMarchingOutput['values']  #store travel time maps
-        self.conduits_hfm.append(self.fastMarchingOutput['geodesics'])        #store fastest travel paths
-        return None
-
     # 2
     def _compute_karst_map(self, iteration):
         """
@@ -2079,9 +1866,9 @@ class SKS():
                     self.nodeID += 1
 
                     # new move
-                    fractures_alpha = math.sqrt((self.step**2)*(1/(grad_x[Y][X]**2+grad_y[Y][X]**2)))
-                    dx = grad_x[Y][X] * fractures_alpha
-                    dy = grad_y[Y][X] * fractures_alpha
+                    alpha = math.sqrt((self.step**2)*(1/(grad_x[Y][X]**2+grad_y[Y][X]**2)))
+                    dx = grad_x[Y][X] * alpha
+                    dy = grad_y[Y][X] * alpha
 
                     # check if we are going out boundaries
                     X_ = get_X(x - dx)
@@ -2098,24 +1885,6 @@ class SKS():
                     Y = get_Y(y)
 
                 self.conduits.append(conduit)
-        return None
-
-    # 2
-    def _compute_karst_map_hfm(self, iteration):
-        """
-        Compute the karst map based on the paths from agd-hfm. 
-        Array of all zeros, with ones in cells containing a karst conduit.
-        """
-        # Get karst map from previous iteration
-        if iteration > 0:
-            self.maps['karst_hfm'][iteration] = self.maps['karst_hfm'][iteration-1]
-        
-        # Update karst map with new conduits from current iteration
-        for path in self.fastMarchingOutput['geodesics']:  #loop over individual paths for this iteration's conduits
-            for i in range(path.shape[1]):                 #loop over coordinates of each point in path
-                point = path[:,i]    #get coordinates for current point
-                [[ix,iy],error] = self.fastMarching.IndexFromPoint(point) #convert to indices
-                self.maps['karst_hfm'][iteration][ix,iy] = 1 
         return None
  
     # 2
@@ -2211,7 +1980,7 @@ class SKS():
                     dx   = abs(x - node[1])
                     dy   = abs(y - node[2])
                     dist.append((math.sqrt(dx**2 + dy**2),node[0]))
-                min_node = min(dist)                                      #this line does not work if only one iteration
+                min_node = min(dist)
                 conduit.edges.append((last_node[0],min_node[1]))
 
             # connect last node on outlet coordinates
@@ -2264,8 +2033,7 @@ class SKS():
             elif data == 'fractures':
                 d = self.geology_masked['fractures']
 
-        im1 = ax1.imshow(d, extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap) #XYflip
-        #im1 = ax1.contourf(self.grid.X, self.grid.Y, d, cmap=cmap) 
+        im1 = ax1.imshow(d, extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap)
         fig.colorbar(im1, ax=ax1)
         if self.settings['data_has_polygon']:
             closed_polygon = self.polygon.polygon[:]
@@ -2295,9 +2063,6 @@ class SKS():
         ax2.imshow(karst_network.maps['velocity'][iteration], extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap)
         ax2.set_title('Velocity')
         
-        ax2.imshow(karst_network.maps['cost'][iteration], extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap)
-        ax2.set_title('Cost') #CAUTION: This will over-write the velocity map!
-        
         ax3.imshow(karst_network.maps['time'][iteration], extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap)
         ax3.set_title('Time')
         
@@ -2314,37 +2079,6 @@ class SKS():
         """        
         if data is None:
             data = self.karst_simulations[-1].maps['karst'][-1]
-        
-        if probability == True:
-            data = self._compute_average_paths()
-            
-        fig, ax1 = plt.subplots()
-        if title is not None:
-            fig.suptitle(title, fontsize=16)
-
-        im1 = ax1.imshow(data, extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap)
-        
-        fig.colorbar(im1, ax=ax1)
-        
-        if self.settings['data_has_polygon']:
-            closed_polygon = self.polygon.polygon[:]
-            closed_polygon.append(closed_polygon[0])
-            x,y = zip(*closed_polygon)
-            ax1.plot(x,y, color='red', label='polygon')
-        for key in self.points.points:
-            x,y = zip(*self.points.points[key])
-            ax1.plot(x,y,'o',label=key)
-        ax1.set_aspect('equal', 'box')
-        plt.legend(loc='upper right')
-        plt.show()
-        return None
-
-    def show_hfm(self, data=None, title=None, cmap='binary', probability=False):
-        """
-        Show the entire study domain.
-        """        
-        if data is None:
-            data = self.karst_simulations[-1].maps['karst_hfm'][-1]
         
         if probability == True:
             data = self._compute_average_paths()
