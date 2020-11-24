@@ -116,13 +116,14 @@ code_conduits  : 7
 
 #For AGD-HFM:
 #Travel cost parallel to gradient (higher=slower/harder)
-cost_out       : 0.999  
-cost_aquifer   : 0.3
-cost_aquiclude : 0.8 
-cost_faults    : 0.2
-cost_fractures : 0.2
-cost_conduits  : 0.1
-cost_ratio     : 0.25     #ratio of travel cost parallel to gradient / travel cost prependicular to gradient
+#Must be between 0 and 1
+cost_out       : 0.999  #default: 0.999
+cost_aquifer   : 0.2    #default: 0.3
+cost_aquiclude : 0.9    #default: 0.8
+cost_faults    : 0.2    #default: 0.2
+cost_fractures : 0.2    #default: 0.2
+cost_conduits  : 0.1    #default: 0.1
+cost_ratio     : 0.25   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient
 
 ### Formation to consider and FMM code associated
 geology_id       : [2,3] # Only for 'import' or 'csv' geological modes
