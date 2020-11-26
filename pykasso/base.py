@@ -1851,6 +1851,7 @@ class SKS():
 
         # Compute velocity map and travel time for each iteration and draw network
         for iteration in range(self.nbr_iteration):
+            print('Iteration', iteration)
             if self.settings['algorithm'] == 'skfmm':
                 self._compute_velocity_map(iteration)  #1
                 self._compute_time_map(iteration) #6
@@ -2043,7 +2044,7 @@ class SKS():
 
         grad_y, grad_x = np.gradient(self.maps['time'][iteration], self.grid.dx, self.grid.dy)
 
-        get_X = lambda x : int(math.ceil((x - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
+        get_X = lambda x : int(math.ceil((x - self.grid.x0 - self.grid.dx/2) / self.grid.dx)) #get index from coordinate
         get_Y = lambda y : int(math.ceil((y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
 
         # get karst map from previous iteration
@@ -2110,12 +2111,77 @@ class SKS():
         if iteration > 0:
             self.maps['karst_hfm'][iteration] = self.maps['karst_hfm'][iteration-1]
         
+        f = plt.figure(figsize=(10,10))   
+
+        #Send walkers along time map manually to get network in format that works later
+        #This does the same thing as the built-in fastMarching.IndexFromPoints() function
+        get_X = lambda x : int(math.ceil((x - self.grid.x0 - self.grid.dx/2) / self.grid.dx)) #get index from coordinate
+        get_Y = lambda y : int(math.ceil((y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
+            
+        for (x,y,i) in self.inlets:
+            n = 0               #initialize indexer for nodes along paths
+            #plt.scatter(x,y, c='c') #debugging
+            if i == iteration:  # check if inlet iteration matches with actual iteration
+                conduit = Conduit(iteration)
+                X = get_X(x)
+                Y = get_Y(y)
+                while self.maps['time_hfm'][iteration][Y][X] != np.amin(self.maps['time_hfm'][iteration]): #as long as outlet is not reached
+                    #plt.scatter(x,y) #debugging
+                    # If X,Y is on an existing karstic conduit, then stop
+                    if self.maps['karst_hfm'][iteration-1][Y][X] == 1:
+                        conduit.add_node(self.nodeID,x,y,1) # node type 1 (conjonction)
+                        self.nodeID += 1
+                        break
+                    else:
+                        self.maps['karst_hfm'][iteration][Y][X] = 1  #this is being done below based on HFM's conduits
+
+                    # If X,Y is on an outlet, then stop
+                    if self.maps['phi'][Y][X] == -1:
+                        self.maps['karst_hfm'][iteration][Y][X] = 1  #this is being done below
+                        conduit.add_node(self.nodeID,x,y,2) # node type 2 (end)
+                        self.nodeID += 1
+                        break
+
+                    # else conduit is here
+                    conduit.add_node(self.nodeID,x,y,0)
+                    self.nodeID += 1
+
+                    # new move
+                    #fractures_alpha = math.sqrt((self.step**2)*(1/(grad_x[Y][X]**2+grad_y[Y][X]**2))) #why is the fracture alpha recalculated and then used here?
+                    #dx = grad_x[Y][X] * fractures_alpha
+                    #dy = grad_y[Y][X] * fractures_alpha
+
+                    # check if we are going out boundaries
+                    #X_ = get_X(x - dx)
+                    #Y_ = get_Y(y - dy)
+                    #if (X_ < 0) or (Y_ < 0) or (X_ > self.grid.xnum - 1) or (Y_ > self.grid.ynum - 1):
+                        #dx_,dy_ = self._check_boundary_conditions(iteration,X,Y)
+                        #x = x + dx_
+                        #y = y + dy_
+                    #else: # otherwise acts normal
+                        #x = x - dx
+                        #y = y - dy
+
+                    #Move to next point in path departing from current inlet:
+                    n = n+1   #increment counter up by one
+                    if n < np.shape(self.fastMarchingOutput['geodesics'][0])[1]-1:
+                        x = self.fastMarchingOutput['geodesics'][0][1,n]   #get x coordinate of next point along path
+                        y = self.fastMarchingOutput['geodesics'][0][0,n]   #get y coordinate of next point along path
+                        X = get_X(x)  #convert to index
+                        Y = get_Y(y)
+                    else:  
+                        break   #if the end of the path is reached, then stop & go to next path
+
+                self.conduits.append(conduit)
+
         # Update karst map with new conduits from current iteration
-        for path in self.fastMarchingOutput['geodesics']:  #loop over individual paths for this iteration's conduits
-            for i in range(path.shape[1]):                 #loop over coordinates of each point in path
-                point = path[:,i]    #get coordinates for current point
-                [[ix,iy],error] = self.fastMarching.IndexFromPoint(point) #convert to indices
-                self.maps['karst_hfm'][iteration][ix,iy] = 1 
+        #for path in self.fastMarchingOutput['geodesics']:  #loop over individual paths for this iteration's conduits
+            #for i in range(path.shape[1]):                 #loop over coordinates of each point in path
+                #point = path[:,i]    #get coordinates for current point
+                #[[ix,iy],error] = self.fastMarching.IndexFromPoint(point) #convert to indices
+                #self.maps['karst_hfm'][iteration][ix,iy] = 1              #update karst map
+                #self.maps['karst_hfm'][iteration][ix,iy] = self.maps['karst_hfm'][iteration][ix,iy] + 1 #update karst map
+     
         return None
  
     # 2
@@ -2175,6 +2241,8 @@ class SKS():
                 time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
             rank  = time_values.index(min(time_values))
             moove = corners_conditions[3][rank]
+        else:
+            print('Error: none of the conditions are met.')
 
         dx = moove[0] * self.step
         dy = moove[1] * self.step

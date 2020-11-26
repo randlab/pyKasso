@@ -118,8 +118,8 @@ code_conduits  : 7
 #Travel cost parallel to gradient (higher=slower/harder)
 #Must be between 0 and 1
 cost_out       : 0.999  #default: 0.999
-cost_aquifer   : 0.2    #default: 0.3
-cost_aquiclude : 0.9    #default: 0.8
+cost_aquifer   : 0.3    #default: 0.3
+cost_aquiclude : 0.8    #default: 0.8
 cost_faults    : 0.2    #default: 0.2
 cost_fractures : 0.2    #default: 0.2
 cost_conduits  : 0.1    #default: 0.1
