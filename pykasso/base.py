@@ -1764,8 +1764,9 @@ class SKS():
         points['outlets'] = self.outlets
         
         network = {}
-        network['edges'] = edges
-        network['nodes'] = nodes
+        network['edges'] = edges   #store edges list
+        network['nodes'] = nodes   #store nodes list
+        network['karstnet'] = k    #store karstnet network object (including graph)
         
         config = self.settings
         

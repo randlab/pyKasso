@@ -36,6 +36,15 @@ pyKasso requires the following python packages to function properly:
 	- scipy
 	- mplstereonet (Note: cannot install with conda - use pip)
 
+To be able to use pykasso with swmmpy, the following packages are also needed:
+- rasterio (Note: this will also install gdal? But may need to do a separate `conda install gdal` first)
+- shapely
+- pyproj
+- pysheds
+- swmmtoolbox (Note: cannot install with conda - use pip)
+
+
+
 
 ## Examples
 
