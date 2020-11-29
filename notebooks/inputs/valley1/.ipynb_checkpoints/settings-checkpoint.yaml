@@ -47,11 +47,12 @@ outlets_number : 5
 
 ###Geology
 # 'null'   - No geology
-# 'import' - Import geology via GSLIB
+# 'import' - Import geology via GSLIB (old method)
+# 'gslib'  - Import geology via GSLIB (new method)
 # 'image'  - Import geology via image
 # 'csv'    - Import geology via csv
-geological_mode     : 'csv'
-geological_datafile : 'inputs/valley1/geo80x100.csv'
+geological_mode     : 'gslib'
+geological_datafile : 'inputs/valley1/geo80x100.gslib'
 
 ###Topography
 #'null'   - No topography
@@ -118,8 +119,8 @@ code_conduits  : 7
 #Travel cost parallel to gradient (higher=slower/harder)
 #Must be between 0 and 1
 cost_out       : 0.999  #default: 0.999
-cost_aquifer   : 0.2    #default: 0.3
-cost_aquiclude : 0.9    #default: 0.8
+cost_aquifer   : 0.3    #default: 0.3
+cost_aquiclude : 0.8    #default: 0.8
 cost_faults    : 0.2    #default: 0.2
 cost_fractures : 0.2    #default: 0.2
 cost_conduits  : 0.1    #default: 0.1
@@ -141,7 +142,7 @@ importance_factor : [1,1,1,1,1]   #to run a single iteration: [n_inlets]  #to ru
 #############
 
 # if 0 = total random
-rand_seed : 1
+rand_seed : 0
 
 #Verbosity: how much output to display during run 
 verbosity : 0    #0: minimal output, 1: some output; 2: maximum output

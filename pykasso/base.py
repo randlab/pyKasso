@@ -436,7 +436,7 @@ class GeologyManager():
 
     def set_data(self, data_key, datafile_location, selected_var=0):
         """
-        Set data from a datafile for a indicated data key.
+        Set data from a datafile for an indicated data key.
 
         Parameters
         ----------
@@ -454,7 +454,7 @@ class GeologyManager():
 
     def set_data_from_image(self, data_key, datafile_location):
         """
-        Set data from an image for a indicated data key.
+        Set data from an image for an indicated data key.
 
         Parameters
         ----------
@@ -488,6 +488,25 @@ class GeologyManager():
         self.data[data_key]['data'] = np.genfromtxt(datafile_location, delimiter=',')
         self.data[data_key]['mode'] = 'csv'
         return None
+
+    def set_data_from_gslib(self, data_key, datafile_location):
+        """
+        Set data from a gslib file for indicated data key.
+
+        Parameters
+        ----------
+        data_key : string
+            Type of data : 'geology', 'topography', 'faults' or 'fractures'.
+        datafile_location : string
+            Path to the datafile.
+        """
+        self.data[data_key]         = {}
+        a = np.genfromtxt(datafile_location, dtype=float, skip_header=3) #read in gslib file as float numpy array without header rows
+        a[a==0] = np.nan                                                 #replace zeros with nans (array must be float first)
+        a = np.reshape(a, (self.grid.ynum,self.grid.xnum), order='F')    #reshape to xy grid using Fortran ordering
+        self.data[data_key]['data'] = a                                  #store  
+        self.data[data_key]['mode'] = 'gslib'
+        return None
     
     def generate_orientations(self):
         """
@@ -499,6 +518,8 @@ class GeologyManager():
         self.data['orientationy'] = {}
         self.data['orientationy']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
         self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(self.data['topography']['data'], self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array 
+        self.data['orientationx']['mode'] = 'topo'
+        self.data['orientationy']['mode'] = 'topo'
         return None
     
     def generate_fractures(self, fractures_numbers, fractures_min_orientation, fractures_max_orientation, fractures_alpha, fractures_min_length, fractures_max_length):
@@ -651,7 +672,7 @@ class GeologyManager():
             print("- set_data() - Unexpected error:", sys.exc_info()[0])
             raise
 
-        # Put values in x,y matrice
+        # Put values in x,y matrix
         maps = np.zeros((nvar,self.grid.ynum,self.grid.xnum))
         for var in range(nvar):
             k = 0
@@ -1521,6 +1542,8 @@ class SKS():
             self.geology.set_data('geology', self.settings['geological_datafile'])
         elif self.settings['geological_mode'] == 'image':
             self.geology.set_data_from_image('geology', self.settings['geological_datafile'])
+        elif self.settings['geological_mode'] == 'gslib':
+            self.geology.set_data_from_gslib('geology', self.settings['geological_datafile'])
         else:
             print('/!\\ Error : unrecognized geological mode.')
             sys.exit() 
@@ -1689,6 +1712,8 @@ class SKS():
             geology.set_data_from_image('geology', self.settings['geological_datafile'])
         elif self.settings['geological_mode'] == 'csv':
             geology.set_data_from_csv('geology', self.settings['geological_datafile'])
+        elif self.settings['geological_mode'] == 'gslib':
+            geology.set_data_from_gslib('geology', self.settings['geological_datafile'])
         else:
             print('/!\\ Error : unrecognized geological mode.')
             sys.exit()
@@ -1943,7 +1968,7 @@ class SKS():
                 self.maps['cost'][0] = np.full((self.grid.ynum, self.grid.xnum), self.settings['cost_aquifer']) #every cell has the same travel cost and is part of the aquifer
             elif self.geology.data['geology']['mode'] == 'image':
                 self.maps['cost'][0] = np.where(self.geology.data['geology']['data']==1, self.settings['cost_aquiclude'], self.settings['cost_aquifer'])
-            elif self.geology.data['geology']['mode'] == 'import' or self.geology.data['geology']['mode'] == 'csv':
+            elif self.geology.data['geology']['mode'] == 'import' or self.geology.data['geology']['mode'] == 'csv' or self.geology.data['geology']['mode'] == 'gslib':
 
                 tableFMM = {}
                 if len(self.settings['geology_id']) != len(self.settings['geology_cost']):

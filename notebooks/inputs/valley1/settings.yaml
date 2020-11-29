@@ -47,11 +47,12 @@ outlets_number : 5
 
 ###Geology
 # 'null'   - No geology
-# 'import' - Import geology via GSLIB
+# 'import' - Import geology via GSLIB (old method)
+# 'gslib'  - Import geology via GSLIB (new method)
 # 'image'  - Import geology via image
 # 'csv'    - Import geology via csv
-geological_mode     : 'csv'
-geological_datafile : 'inputs/valley1/geo80x100.csv'
+geological_mode     : 'gslib'
+geological_datafile : 'inputs/valley1/geo80x100.gslib'
 
 ###Topography
 #'null'   - No topography
