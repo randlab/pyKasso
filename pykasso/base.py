@@ -2055,6 +2055,7 @@ class SKS():
         self.fastMarching['seeds']  = self.outlets.data[:,[1,0]]              #reverse outlet indexing
         self.fastMarching['tips']   = [inlet[[1,0]] for inlet in self.inlets_hfm if inlet[2] == iteration] #select inlets for current iteration
         self.fastMarching['metric'] = self.riemannMetric                      #set the travel cost through each cell
+        self.fastMarching['verbosity'] = self.settings['verbosity']           #set verbosity of hfm run
         self.fastMarchingOutput     = self.fastMarching.Run()                 #run the fast marching algorithm and store the outputs
         self.maps['time_hfm'][iteration] = self.fastMarchingOutput['values']  #store travel time maps
         self.conduits_hfm.append(self.fastMarchingOutput['geodesics'])        #store fastest travel paths
