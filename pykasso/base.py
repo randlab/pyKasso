@@ -2349,6 +2349,8 @@ class SKS():
             d = self.geology.data['faults']['data']
         elif data == 'fractures':
             d = self.geology.data['fractures']['data']
+        elif data == 'topography':
+            d = self.geology.data['topography']['data']
 
         if mask==True:
             if   data == 'geology':
@@ -2357,6 +2359,8 @@ class SKS():
                 d = self.geology_masked['faults']
             elif data == 'fractures':
                 d = self.geology_masked['fractures']
+            elif data == 'topography':
+                d = self.geology_masked['topography']
 
         im1 = ax1.imshow(d, extent=_extents(self.grid.x) + _extents(self.grid.y), origin='lower', cmap=cmap) #XYflip
         #im1 = ax1.contourf(self.grid.X, self.grid.Y, d, cmap=cmap) 
