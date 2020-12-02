@@ -1779,18 +1779,21 @@ class SKS():
         edges, nodes = self._compute_nodes_network()
         
         # 4 - Calculate the karst network statistics indicators with karstnet and save karst network
-        k = kn.KGraph(edges, nodes)
+        #k = kn.KGraph(edges, nodes)   #original version
+        k = kn.KGraph(list(self.edges.values()), self.nodes)  #edges must be a list, and nodes must be a dic of format {nodeindex: [x,y]}
         stats = k.characterize_graph(verbose)
         
-        maps = self.maps.copy()
+        maps = self.maps.copy() #why making a copy before storing?
         
         points = {}
         points['inlets']  = self.inlets
         points['outlets'] = self.outlets
         
         network = {}
-        network['edges'] = edges   #store edges list
-        network['nodes'] = nodes   #store nodes list
+        #network['edges'] = edges   #store edges list - old
+        #network['nodes'] = nodes   #store nodes list - old
+        network['edges'] = self.edges   #store edges list
+        network['nodes'] = self.nodes   #store nodes list
         network['karstnet'] = k    #store karstnet network object (including graph)
         
         config = self.settings
@@ -1810,22 +1813,30 @@ class SKS():
         # Raster maps
         self.maps = {}
         #skfmm:
-        self.maps['phi']       = np.ones((self.grid.ynum, self.grid.xnum))  #outlet location
+        self.maps['phi']       = np.ones((self.grid.ynum, self.grid.xnum))  #outlet location for skfmm
         self.maps['velocity']  = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #ease of travel through each cell
         self.maps['time']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #travel time to outlet from each cell
         self.maps['karst']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #presence/absence of karst conduit
         #agd-hfm:
+        self.maps['outlets']   = np.full((self.grid.ynum, self.grid.xnum), np.nan) #map of null values where each cell with an outlet will have the index of that outlet
+        self.maps['nodes']     = np.full((self.grid.ynum, self.grid.xnum), np.nan) #map of null values where each cell that has a node will be updated with that node index
         self.maps['cost']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #cost of travel through each cell
         self.maps['alpha']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #cost of travel along gradient through each cell
         self.maps['beta']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #cost of travel perpendicular to gradient through each cell
         self.maps['time_hfm']  = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #travel time to outlet from each cell
         self.maps['karst_hfm'] = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #presence/absence of karst conduit in each cell
+        
 
         # Vector maps
         self.nodeID       = 0
         self.conduits     = []
         self.conduits_hfm = []
+        self.network      = []   #empty list to store entire network (nodes and edges for all conduits)
+        self.nodes        = {}   #empty dic to store nodes (key: nodeID, val: [x, y, type])
+        self.edges        = {}   #empty dic to store edges (key: edgeID, val: [inNode, outNode])
         self.outletsNode  = []
+        self.n = 0  #start node counter at zero 
+        self.e = 0  #start edge counter at zero
 
         # Set up fast-marching:
         #Note: AGD-HFM library has different indexing, so model dimensions must be [ynum,xnum],
@@ -1874,6 +1885,7 @@ class SKS():
         if self.settings['verbosity'] > 0:
             print('-START-')
         self._compute_phi_map()
+        self._compute_outlets_map()  #assign outlet indices
 
         # Compute velocity map and travel time for each iteration and draw network
         for iteration in range(self.nbr_iteration):
@@ -1907,6 +1919,17 @@ class SKS():
             X = int(math.ceil((x - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
             Y = int(math.ceil((y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
             self.maps['phi'][Y][X] = -1 
+        return None
+
+    # 2
+    def _compute_outlets_map(self):
+        """
+        Compute the outlets map (array indicating location of outlets as their index and everywhere else as nan).
+        """
+        for i,(x,y) in enumerate(self.outlets):
+            X = int(math.ceil((x - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
+            Y = int(math.ceil((y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
+            self.maps['outlets'][Y][X] = i 
         return None
     
     # 2
@@ -2134,80 +2157,43 @@ class SKS():
         Compute the karst map based on the paths from agd-hfm. 
         Array of all zeros, with ones in cells containing a karst conduit.
         """
-        # Get karst map from previous iteration
-        if iteration > 0:
-            self.maps['karst_hfm'][iteration] = self.maps['karst_hfm'][iteration-1]
-        
-        f = plt.figure(figsize=(10,10))   
 
-        #Send walkers along time map manually to get network in format that works later
-        #This does the same thing as the built-in fastMarching.IndexFromPoints() function
-        get_X = lambda x : int(math.ceil((x - self.grid.x0 - self.grid.dx/2) / self.grid.dx)) #get index from coordinate
-        get_Y = lambda y : int(math.ceil((y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
+        if iteration > 0:           # Get karst map from previous iteration (except for the very first iteration)
+            self.maps['karst_hfm'][iteration] = self.maps['karst_hfm'][iteration-1] 
             
-        for (x,y,i) in self.inlets:
-            n = 0               #initialize indexer for nodes along paths
-            #plt.scatter(x,y, c='c') #debugging
-            if i == iteration:  # check if inlet iteration matches with actual iteration
-                conduit = Conduit(iteration)
-                X = get_X(x)
-                Y = get_Y(y)
-                while self.maps['time_hfm'][iteration][Y][X] != np.amin(self.maps['time_hfm'][iteration]): #as long as outlet is not reached
-                    #plt.scatter(x,y) #debugging
-                    # If X,Y is on an existing karstic conduit, then stop
-                    if self.maps['karst_hfm'][iteration-1][Y][X] == 1:
-                        conduit.add_node(self.nodeID,x,y,1) # node type 1 (conjonction)
-                        self.nodeID += 1
-                        break
-                    else:
-                        self.maps['karst_hfm'][iteration][Y][X] = 1  #this is being done below based on HFM's conduits
-
-                    # If X,Y is on an outlet, then stop
-                    if self.maps['phi'][Y][X] == -1:
-                        self.maps['karst_hfm'][iteration][Y][X] = 1  #this is being done below
-                        conduit.add_node(self.nodeID,x,y,2) # node type 2 (end)
-                        self.nodeID += 1
-                        break
-
-                    # else conduit is here
-                    conduit.add_node(self.nodeID,x,y,0)
-                    self.nodeID += 1
-
-                    # new move
-                    #fractures_alpha = math.sqrt((self.step**2)*(1/(grad_x[Y][X]**2+grad_y[Y][X]**2))) #why is the fracture alpha recalculated and then used here?
-                    #dx = grad_x[Y][X] * fractures_alpha
-                    #dy = grad_y[Y][X] * fractures_alpha
-
-                    # check if we are going out boundaries
-                    #X_ = get_X(x - dx)
-                    #Y_ = get_Y(y - dy)
-                    #if (X_ < 0) or (Y_ < 0) or (X_ > self.grid.xnum - 1) or (Y_ > self.grid.ynum - 1):
-                        #dx_,dy_ = self._check_boundary_conditions(iteration,X,Y)
-                        #x = x + dx_
-                        #y = y + dy_
-                    #else: # otherwise acts normal
-                        #x = x - dx
-                        #y = y - dy
-
-                    #Move to next point in path departing from current inlet:
-                    n = n+1   #increment counter up by one
-                    if n < np.shape(self.fastMarchingOutput['geodesics'][0])[1]-1:
-                        x = self.fastMarchingOutput['geodesics'][0][1,n]   #get x coordinate of next point along path
-                        y = self.fastMarchingOutput['geodesics'][0][0,n]   #get y coordinate of next point along path
-                        X = get_X(x)  #convert to index
-                        Y = get_Y(y)
-                    else:  
-                        break   #if the end of the path is reached, then stop & go to next path
-
-                self.conduits.append(conduit)
-
-        # Update karst map with new conduits from current iteration
-        #for path in self.fastMarchingOutput['geodesics']:  #loop over individual paths for this iteration's conduits
-            #for i in range(path.shape[1]):                 #loop over coordinates of each point in path
-                #point = path[:,i]    #get coordinates for current point
-                #[[ix,iy],error] = self.fastMarching.IndexFromPoint(point) #convert to indices
-                #self.maps['karst_hfm'][iteration][ix,iy] = 1              #update karst map
-                #self.maps['karst_hfm'][iteration][ix,iy] = self.maps['karst_hfm'][iteration][ix,iy] + 1 #update karst map
+        for path in self.fastMarchingOutput['geodesics']:   #loop over conduit paths in this iteration (there is one path from each inlet)
+            for p in range(path.shape[1]):                  #loop over points making up this conduit path
+                point = path[:,p]                           #get coordinates of current point
+                [[ix,iy],error]  = self.fastMarching.IndexFromPoint(point) #convert to coordinates to indices
+                
+                if self.maps['cost'][iteration][ix,iy] != self.settings['cost_conduits']:  #if there is no conduit here 
+                    if ~np.isnan(self.maps['outlets'][ix,iy]):                             #if there is an outlet here (cell value is not nan)
+                        outlet = self.outlets[int(self.maps['outlets'][ix,iy])]            #get the outlet coordinates using the ID in the outlets map
+                        self.nodes[self.n]             = [outlet[1], outlet[0]]            #add a node at the outlet coordinates
+                        #self.nodes[self.n]             = [outlet[1], outlet[0], 'outfall']      #add a node at the outlet coordinates (with the node type for SWMM)
+                        self.maps['nodes'][ix,iy] = self.n                                 #update node map with node index
+                        if p > 0:                                                          #if this is not the first point (i.e. the inlet) in the current path
+                            self.edges[self.e] = [self.n-1, self.n]                        #add an edge connecting the previous node to the current node
+                            self.e = self.e+1                                              #increment edge counter up by one
+                        self.n = self.n+1                                                  #increment node counter up by one
+                    else:                                                                  #if there is NOT an outlet here
+                        self.nodes[self.n] = [point[0], point[1]]                          #add a node here
+                        #nodes[self.n] = [point[0], point[1], 'junction']                  #add a node here (with the node type for SWMM)
+                        self.maps['nodes'][ix,iy] = self.n                                 #update node map with node index
+                        if p > 0:                                                          #if this is not the first point in the current path
+                            self.edges[self.e] = [self.n-1, self.n]                        #add and edge connecting the previous node to the current node
+                            self.e = self.e+1                                              #increment edge counter up by one
+                        self.n = self.n+1                                                  #increment node counter up by one
+                elif ~np.isnan(self.maps['nodes'][ix,iy]):                                 #if there is already a node in this cell (either because there is a conduit here, or because there are two nodes in the same cell)
+                    n_existing = self.maps['nodes'][ix,iy]                                 #get index of node already present in current cell
+                    if n_existing == self.n-1:                                             #if existing index is only one less than next node to be added index, this is a duplicate node and can be skipped
+                        pass                                                               #skip this node (duplicate)
+                    else:                                                                  #if existing node index is >1 less than next node to be added index
+                        self.edges[self.e] = [self.n-1, n_existing]                        #add an edge connecting most recently added node and existing node in cell
+                        self.e = self.e+1                                                  #increment edge counter up by one
+                        break                                                              #stop iterating over current path - you have joined an existing path
+                
+                self.maps['karst_hfm'][iteration][ix,iy] = 1                               #update karst map to put a conduit in current cell
      
         return None
  
@@ -2330,6 +2316,7 @@ class SKS():
             NODES[outlet[0]] = (outlet[1],outlet[2])
         return (EDGES,NODES)
     
+
     
     ###########################
     # visualization functions #
