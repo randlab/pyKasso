@@ -59,7 +59,7 @@ geological_datafile : ''
 #'null'   - No topography
 #'csv'    - Import topography from csv file 
 topography_mode : 'null'
-topography_datafile : 'inputs/valley1/dem.csv'
+topography_datafile : 'dem.csv'
 
 ###Orientation
 #'null'   - No orientation
@@ -106,7 +106,7 @@ fractures_max_length : 4000
 #'Riemann3'  : agd-hfm: 3D version of anisotropic algorithm
 #for more options, see agd-hfm library documentation
 
-algorithm : 'skfmm'
+algorithm : 'Isotropic2'
 
 code_out       : 0.1
 code_aquifere  : 2
@@ -138,4 +138,5 @@ importance_factor : [1,3,5]
 #############
 
 rand_seed : 0
+verbosity : 0
 ...

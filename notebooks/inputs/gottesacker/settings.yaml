@@ -51,8 +51,8 @@ outlets_number : 1
 # 'image'  - Import geology via image
 # 'csv'    - Import geology via csv
 # 'gslib'  - Import geology via GSLIB (new version)
-geological_mode     : 'gslib'
-geological_datafile : 'inputs/gottesacker/geology2D_rot90flipud.gslib'
+geological_mode     : 'csv'
+geological_datafile : 'inputs/gottesacker/geo200x251.csv'
 
 ###Topography
 #'null'   - No topography
@@ -106,36 +106,16 @@ fractures_max_length : 800
 
 algorithm : 'Riemann2'
 
-#For skfmm:
-#Ease of travel through each medium (higher=faster/easier) - must be >=1
-code_out       : 0
-code_aquifere  : 3
-code_aquiclude : 2 
-code_faults    : 5
-code_fractures : 4
-code_conduits  : 7
-
-#For AGD-HFM:
-#Travel cost parallel to gradient (higher=slower/harder)
-#cost_out       : 0.999   
-#cost_aquifer   : 0.3
-#cost_aquiclude : 0.6 
-#cost_faults    : 0.2
-#cost_fractures : 0.2
-#cost_conduits  : 0.01
-#cost_ratio     : 0.25     #ratio of travel cost parallel to gradient / travel cost prependicular to gradient
-
-cost_out       : 0.9  
+cost_out       : 0.999  
 cost_aquifer   : 0.4
-cost_aquiclude : 0.7 
+cost_aquiclude : 0.8 
 cost_faults    : 0.3
 cost_fractures : 0.3
-cost_conduits  : 0.1
-cost_ratio     : 0.25     #ratio of travel cost parallel to gradient / travel cost prependicular to gradient
+cost_conduits  : 0.01
+cost_ratio     : 0.25     #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (should be less than 0.5 for conduits to go downgradient)
 
 ### Formation to consider and FMM code associated
 geology_id       : [0,1,2,3,4] # Only for 'import' geological mode
-geology_velocity : [code_out, code_aquiclude, code_aquifere,code_aquiclude, code_aquiclude]
 geology_cost     : [cost_out, cost_aquiclude, cost_aquifer, cost_aquiclude, cost_aquiclude]
 
 ###Inlet iteration:

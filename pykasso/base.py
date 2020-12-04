@@ -24,16 +24,11 @@ import pandas   as pd # dependance
 import matplotlib.pyplot as plt
 from   matplotlib.path import Path
 
-import agd # dependance
-import skfmm  # dependance
 import karstnet as kn # dependance
-#agd sub-modules:
+import agd # dependance
 from agd import Eikonal
 from agd.Metrics import Riemann
-#from agd.Plotting import quiver
-#from agd import LinearParallel as lp
-#from agd import AutomaticDifferentiation as ad
-#norm_infinity = ad.Optimization.norm_infinity  #what does this do?
+
 
 
 #####
@@ -134,7 +129,7 @@ class Grid():
 
         self.x        = np.arange(self.x0,self.x0+(self.xnum)*self.dx,self.dx,dtype=np.float_)  #1D array of centerpoints of each cell along x axis
         self.y        = np.arange(self.y0,self.y0+(self.ynum)*self.dy,self.dy,dtype=np.float_)  #1D array of centerpoints of each cell along y axis
-        self.X,self.Y = np.meshgrid(self.x,self.y)            #2D array of dim (xnum, ynum) with xy coord of each cell's centerpoint
+        self.X,self.Y = np.meshgrid(self.x,self.y)            #2D array of dim (xnum, ynum) with xy coord of each cell's centerpoint - useful for plotting
         self.xlimits  = [self.x0-self.dx/2,self.x0-self.dx/2,self.x[-1]+self.dx/2,self.x[-1]+self.dx/2,self.x0-self.dx/2] #x coord of outermost cell edges [bottom left, top left, top right, bottom right, bottom left]
         self.ylimits  = [self.y0-self.dy/2,self.y[-1]+self.dy/2,self.y[-1]+self.dy/2,self.y0-self.dy/2,self.y0-self.dy/2] #y coord of outermost cell edges [bottom left, top left, top right, bottom right, bottom left]
         self.limits   = list(zip(self.xlimits,self.ylimits)) #array of tuples with coordinates of corners [(bottom left/origin), (top left), (top right), (bottom right), (bottom left/origin)]
@@ -508,16 +503,16 @@ class GeologyManager():
         self.data[data_key]['mode'] = 'gslib'
         return None
     
-    def generate_orientations(self):
+    def generate_orientations(self, surface):
         """
-        Generate maps of x and y components of orientation based on topography.
+        Generate maps of x and y components of orientation.
         """
-    
+        
         self.data['orientationx'] = {}
         self.data['orientationx']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
         self.data['orientationy'] = {}
         self.data['orientationy']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
-        self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(self.data['topography']['data'], self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array 
+        self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(surface, self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array 
         self.data['orientationx']['mode'] = 'topo'
         self.data['orientationy']['mode'] = 'topo'
         return None
@@ -862,13 +857,9 @@ class SKS():
 
         self.settings = settings
         
-        self.settings['fractures_numbers'] = [int(self.settings['xnum']*self.settings['ynum']*self.settings['dx']*self.settings['dy']*float(i)) for i in self.settings['fractures_densities']]
+        self.settings['fractures_numbers'] = [int(self.settings['xnum']*self.settings['ynum']*self.settings['dx']*self.settings['dy']*float(i)) for i in self.settings['fractures_densities']] 
         
-        geology_velocity = []
-        for elem in self.settings['geology_velocity']:
-            geology_velocity.append(self.settings[elem])
-        self.settings['geology_velocity'] = geology_velocity 
-        
+        #Set travel cost through each geologic formation
         geology_cost = []
         for elem in self.settings['geology_cost']:
             geology_cost.append(self.settings[elem])
@@ -1730,9 +1721,12 @@ class SKS():
             geology.set_data_null('orientationx')
             geology.set_data_null('orientationy')
         elif self.settings['orientation_mode'] == 'topo':
-            geology.generate_orientations()
+            geology.generate_orientations(geology.data['topography']['data'])
+        elif self.settings['orientation_mode'] == 'contact':
+            geology.set_data_from_csv('contact', self.settings['orientation_datafile'])
+            geology.generate_orientations(geology.data['contact']['data'])
         else:
-            print('/!\\ Error : unrecognized orientation mode.')
+            print('/!\\ Error : unrecognized orientation mode', self.settings['orientation_mode'])
             sys.exit()
         # Faults
         if self.settings['faults_mode'] == 'null':
@@ -1843,7 +1837,7 @@ class SKS():
         # and model extent must be [ymin,ymax, xmin,xmax] (NOT x0,y0)
         self.riemannMetric = []                    #this changes at every iteration, but cannot be stored?
         self.fastMarching = agd.Eikonal.dictIn({
-            'model'             : 'Riemann2',      #set choice of algorithm (replace by variable)
+            'model'             : self.settings['algorithm'],      #set algorithm from settings file ('Isotropic2', 'Isotropic3', 'Riemann2', 'Riemann3')
             'order'             : 2,               #recommended setting: 2 (replace by variable)
             'exportValues'      : 1,               #export the travel time field
             'exportGeodesicFlow': 1                #export the walker paths (i.e. the conduits)
@@ -1890,20 +1884,19 @@ class SKS():
         # Compute velocity map and travel time for each iteration and draw network
         for iteration in range(self.nbr_iteration):
             print('Iteration', iteration)
-            if self.settings['algorithm'] == 'skfmm':
-                self._compute_velocity_map(iteration)  #1
-                self._compute_time_map(iteration) #6
-                self._compute_karst_map(iteration) #8
+            if self.settings['algorithm'] == 'Isotropic2':
+                self._compute_cost_map(iteration)  
+                self._compute_time_map_isotropic(iteration) 
+                self._compute_karst_map_hfm(iteration) 
             elif self.settings['algorithm'] == 'Riemann2':
-                #self._compute_velocity_map(iteration)  #old - remove later
-                self._compute_cost_map(iteration)     #2
-                self._compute_alpha_map(iteration) #3
-                self._compute_beta_map(iteration) #4
-                self._compute_riemann_metric(iteration) #5
-                #self._compute_time_map(iteration) #old - remove later - error: phi map contains no zero contour
-                self._compute_time_map_hfm(iteration) #7
-                #self._compute_karst_map(iteration) #convert to use hfm 
-                self._compute_karst_map_hfm(iteration)  #9
+                self._compute_cost_map(iteration)     
+                self._compute_alpha_map(iteration) 
+                self._compute_beta_map(iteration) 
+                self._compute_riemann_metric(iteration) 
+                self._compute_time_map_riemann(iteration) 
+                self._compute_karst_map_hfm(iteration)  
+            else:
+                print('Unrecognized algorithm', self.settings['algorithm'])
             if self.settings['verbosity'] > 0:
                 print('iteration:{}/{}'.format(iteration+1,self.nbr_iteration))
         if self.settings['verbosity'] > 0:
@@ -2068,10 +2061,27 @@ class SKS():
         return None
     
     # 2
-    def _compute_time_map_hfm(self, iteration):
+    def _compute_time_map_isotropic(self, iteration):
         """
         Compute the travel time map (how long it takes to get to the outlet from each cell),
-        using the agd-hfm fast-marching algorithm, and store travel time map.
+        using the isotropic agd-hfm fast-marching algorithm, and store travel time map.
+        Note: the AGD-HFM library uses different indexing, so x and y indices are reversed for inlets and outlets.
+        """
+        
+        self.fastMarching['seeds']  = self.outlets.data[:,[1,0]]              #reverse outlet indexing
+        self.fastMarching['tips']   = [inlet[[1,0]] for inlet in self.inlets_hfm if inlet[2] == iteration] #select inlets for current iteration
+        self.fastMarching['cost']   = self.maps['cost'][iteration]                       #set the isotropic travel cost through each cell
+        self.fastMarching['verbosity'] = self.settings['verbosity']           #set verbosity of hfm run
+        self.fastMarchingOutput     = self.fastMarching.Run()                 #run the fast marching algorithm and store the outputs
+        self.maps['time_hfm'][iteration] = self.fastMarchingOutput['values']  #store travel time maps
+        self.conduits_hfm.append(self.fastMarchingOutput['geodesics'])        #store fastest travel paths
+        return None
+    
+    # 2
+    def _compute_time_map_riemann(self, iteration):
+        """
+        Compute the travel time map (how long it takes to get to the outlet from each cell),
+        using the anisotropic agd-hfm fast-marching algorithm, and store travel time map.
         Note: the AGD-HFM library uses different indexing, so x and y indices are reversed for inlets and outlets.
         """
         

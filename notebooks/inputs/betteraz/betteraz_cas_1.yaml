@@ -19,7 +19,7 @@ dy   : 20
 ###############
 
 data_has_polygon : True
-polygon_data     : 'inputs/polygon_Betteraz.txt'
+polygon_data     : 'inputs/betteraz/polygon_Betteraz.txt'
 
 ####################
 ### PointManager ###
@@ -30,7 +30,7 @@ polygon_data     : 'inputs/polygon_Betteraz.txt'
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 inlets_mode   : 'import'
-inlets_data   : 'inputs/inlets_betteraz_cas_1.csv'
+inlets_data   : 'inputs/betteraz/inlets_betteraz_cas_1.csv'
 inlets_number : 1
 
 ###Outlets
@@ -38,59 +38,68 @@ inlets_number : 1
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 outlets_mode   : 'import'
-outlets_data   : 'inputs/outlets_betteraz.csv'
+outlets_data   : 'inputs/betteraz/outlets_betteraz.csv'
 outlets_number : 1
 
 ######################
 ### GeologyManager ###
 ######################
+#Mode options:
+# 'null'   - No geology/topography/fractures/etc.
+# 'import' - Import from 
+# 'gslib'  - Import from gslib file
+# 'csv'    - Import from csv file
+# 'image'  - Import from image
+# 'topo'   - For orientations only: generate from a 2D topographic surface
+# 'random' - For fractures only: randomly generate a fracture field
 
-###Geology
-# 'null'   - No geology
-# 'import' - Import geology
-# 'image'  - Import geology via image
-geological_mode     : 'import'
-geological_datafile : 'inputs/betteraz_2D_z430.gslib'
+#Topography
+topography_mode      : 'csv'          #null, import, gslib, csv, or image
+topography_datafile  : 'inputs/betteraz/dem_300x300.csv'
 
-###Faults
-# 'null'   - No faults
-# 'import' - Import faults
-# 'image'  - Import faults via image
-faults_mode     : 'import'
-faults_datafile : 'inputs/betteraz_fault_20_2D.gslib'
+#Geology
+geological_mode      : 'import'        #null, import, gslib, csv, or image
+geological_datafile  : 'inputs/betteraz/betteraz_2D_z430.gslib'
 
-###Fractures
-# 'null'   - No fractures
-# 'import' - Import fractures
-# 'image'  - Import fractures via image
-# 'random' - Generate random fractures
-fractures_mode     : 'random'
-fractures_datafile : 'inputs/betteraz_fault_20_2D.gslib'
+#Orientation (not needed for isotropic)
+orientation_mode     : 'topo'        #null, topo, or contact
+orientation_datafile : 'inputs/betteraz/orientation.gslib'
 
-# If fractures mode is 'generate'
+#Faults
+faults_mode          : 'import'       #null, import, gslib, csv, image
+faults_datafile      : 'inputs/betteraz/betteraz_fault_20_2D.gslib'
+
+#Fractures
+fractures_mode       : 'random'        #null, import, gslib, csv, image, or random
+fractures_datafile   : 'inputs/betteraz/betteraz_fault_20_2D.gslib'
+
+# If fractures mode is 'random'
 fractures_densities       : [5.83e-6,1.38e-6,2.22e-6,2.5e-6,4.16e-6,6.66e-6,5e-6]
 fractures_min_orientation : [      0,     15,     30,    60,    105,    120, 150]
 fractures_max_orientation : [     15,     30,     45,   105,    120,    150, 180]
 
 # For fracture size
-alpha : 2
+fractures_alpha      : 2
 fractures_min_length : 100
 fractures_max_length : 8500
 
 ###############################
 ### Fast-Marching Algorithm ###
 ###############################
+algorithm      : 'Riemann2'   #'Isotropic2', 'Riemann2', which algo to use, see agd-hfm library doc for all options
 
-code_out       : 0.1
-code_aquifere  : 2
-code_aquiclude : 1
-code_faults    : 4
-code_fractures : 3
-code_conduits  : 5
+#Travel cost through each feature (higher is harder to cross that feature)
+cost_out       : 0.999
+cost_aquifer   : 0.3
+cost_aquiclude : 0.8
+cost_faults    : 0.1
+cost_fractures : 0.2
+cost_conduits  : 0.001
+cost_ratio     : 0.25    # ratio of travel cost parallel/perpendicular to gradient
 
 ### Formation to consider and FMM code associated
-geology_id       : [1,2] # Only for 'import' geological mode
-geology_velocity : [code_aquifere,code_aquiclude]
+geology_id     : [1,2] # Only for 'import' geological mode
+geology_cost   : [cost_aquifer,cost_aquiclude]
 
 importance_factor : [1,2,3]
 
@@ -98,6 +107,7 @@ importance_factor : [1,2,3]
 ### Other ###
 #############
 
-# if 0 = total random
-rand_seed : 1
+
+rand_seed : 1  # if 0 = total random
+verbosity : 0  # 0: display minimal output, 1: display some output; 2: display maximum output
 ...

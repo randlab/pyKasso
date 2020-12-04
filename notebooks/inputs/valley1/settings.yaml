@@ -18,8 +18,8 @@ dy   : 10
 ### Polygon ###
 ###############
 
-data_has_polygon : False
-polygon_data     : 'inputs/polygon.txt'
+data_has_polygon : True
+polygon_data     : 'inputs/valley1/polygon.txt'
 
 ####################
 ### PointManager ###
@@ -29,7 +29,7 @@ polygon_data     : 'inputs/polygon.txt'
 # 'random'    - full random points
 # 'import'    - import points
 # 'composite' - add n random points to imported points
-inlets_mode   : 'import'
+inlets_mode   : 'composite'
 inlets_data   : 'inputs/valley1/inlets.txt'
 inlets_number : 5
 
@@ -39,7 +39,7 @@ inlets_number : 5
 # 'composite' - add n random points to imported points
 outlets_mode   : 'import'
 outlets_data   : 'inputs/valley1/outlets.txt'
-outlets_number : 5
+outlets_number : 1
 
 ######################
 ### GeologyManager ###
@@ -61,11 +61,12 @@ topography_mode : 'csv'
 topography_datafile : 'inputs/valley1/dem80x100.csv'
 
 ###Orientation
-#'null'   - No orientation
-#'topo'   - Calculate orientation from topography
-#'import' - Import from gslib file (in progress)
-orientation_mode : 'topo'
-orientation_datafile : 'inputs/valley1/orientation.gslib'
+#'null'     - No orientation
+#'topo'     - Calculate orientation from surface topography
+#'contact'  - Calculate from map of elevation of lower boundary of karst unit (as csv)
+#'gslib'    - Import from gslib file (in progress)
+orientation_mode : 'contact'
+orientation_datafile : 'inputs/valley1/contact80x100.csv'
 
 ###Faults
 # 'null'   - No faults
@@ -79,7 +80,7 @@ faults_datafile : 'inputs/faults.gslib'
 # 'import' - Import fractures
 # 'image'  - Import fractures via image
 # 'random' - Generate random fractures
-fractures_mode     : 'null'
+fractures_mode     : 'random'
 fractures_datafile : 'inputs/fractures.gslib'
 
 # If fractures mode is 'generate'
@@ -97,7 +98,6 @@ fractures_max_length : 800
 ###############################
 
 #Choose which algorithm to use:
-#'skfmm'     : scikit fast-marching: 2D, fast, requires minimal inputs, but does not represent high-relief catchments well (original algorithm)
 #'Isotropic2': agd-hfm: 2D, equivalent of skfmm
 #'Isotropic3': adg-hfm: 3D, equivalent of skfmm
 #'Riemann2'  : agd-hfm: 2D, anisotropic, requires an anisotropy vector field (topography or geologic orientation), performs well in high-relief catchments
@@ -106,16 +106,6 @@ fractures_max_length : 800
 
 algorithm : 'Riemann2'
 
-#For skfmm:
-#Ease of travel through each medium (higher=faster/easier) - must be >=1
-code_out       : 0
-code_aquifere  : 3
-code_aquiclude : 2 
-code_faults    : 5
-code_fractures : 4
-code_conduits  : 7
-
-#For AGD-HFM:
 #Travel cost parallel to gradient (higher=slower/harder)
 #Must be between 0 and 1
 cost_out       : 0.999  #default: 0.999
@@ -123,7 +113,7 @@ cost_aquifer   : 0.3    #default: 0.3
 cost_aquiclude : 0.8    #default: 0.8
 cost_faults    : 0.2    #default: 0.2
 cost_fractures : 0.2    #default: 0.2
-cost_conduits  : 0.1    #default: 0.1
+cost_conduits  : 0.01    #default: 0.1
 cost_ratio     : 0.25   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient
 
 ### Formation to consider and FMM code associated
@@ -135,7 +125,7 @@ geology_cost     : [cost_aquifer, cost_aquiclude]
 #Length of array indicates number of iterations
 #each integer indicates number of inlets to run in that iteration
 #sum of integers must equal total number of inlets?
-importance_factor : [1,1,1,1,1]   #to run a single iteration: [n_inlets]  #to run each inlet separately: [1,1,1,...]
+importance_factor : [1,2,3]   #to run a single iteration: [n_inlets]  #to run each inlet separately: [1,1,1,...]
 
 #############
 ### Other ###

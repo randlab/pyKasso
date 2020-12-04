@@ -79,7 +79,7 @@ faults_datafile : 'inputs/faults.gslib'
 # 'import' - Import fractures
 # 'image'  - Import fractures via image
 # 'random' - Generate random fractures
-fractures_mode     : 'null'
+fractures_mode     : 'random'
 fractures_datafile : 'inputs/fractures.gslib'
 
 # If fractures mode is 'generate'
