@@ -29,17 +29,19 @@ polygon_data     : 'inputs/valley1/polygon.txt'
 # 'random'    - full random points
 # 'import'    - import points
 # 'composite' - add n random points to imported points
-inlets_mode   : 'composite'
-inlets_data   : 'inputs/valley1/inlets.txt'
-inlets_number : 5
+inlets_mode    : 'composite'
+inlets_data    : 'inputs/valley1/inlets.txt'
+inlets_number  : 5
+inlets_shuffle : True   #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
 
 ###Outlets
 # 'random'    - full random points
 # 'import'    - import points
 # 'composite' - add n random points to imported points
-outlets_mode   : 'import'
-outlets_data   : 'inputs/valley1/outlets.txt'
-outlets_number : 1
+outlets_mode    : 'import'
+outlets_data    : 'inputs/valley1/outlets.txt'
+outlets_number  : 1
+outlets_shuffle : False #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
 
 ######################
 ### GeologyManager ###
@@ -118,7 +120,6 @@ cost_ratio     : 0.25   #ratio of travel cost parallel to gradient / travel cost
 
 ### Formation to consider and FMM code associated
 geology_id       : [2,3] # Only for 'import' or 'csv' geological modes
-geology_velocity : [code_aquifere,code_aquiclude]
 geology_cost     : [cost_aquifer, cost_aquiclude]
 
 ###Inlet iteration:
