@@ -22,6 +22,7 @@ import numpy    as np # dependance
 import numpy.ma as ma
 import pandas   as pd # dependance
 
+import matplotlib
 import matplotlib.pyplot as plt
 from   matplotlib.path import Path
 
@@ -1836,6 +1837,8 @@ class SKS():
         self.outlets = self.points.points['outlets'][:]
         if self.settings['inlets_shuffle'] == True:
             np.random.shuffle(self.inlets)
+        if self.settings['outlets_shuffle'] == True:
+            np.random.shuffle(self.outlets)
         # The geologic data
         self.geology = self._set_geology(self.grid)
         self.geology.compute_stats_on_data()
@@ -1987,6 +1990,7 @@ class SKS():
         
         points = {}
         points['inlets']  = self.inlets
+        #points['outlets'] = self.outlets.data
         points['outlets'] = self.outlets
         
         network = {}
@@ -2004,9 +2008,27 @@ class SKS():
         """
         Initialize the karst network parameters.
         """
-        self.nbr_iteration = len(self.settings['importance_factor'])
-        #self.inlets        = self._set_inlets_repartition()
-        self.inlets    = np.asarray(self._set_inlets_repartition())
+        #Iterations
+        #self.nbr_iteration = len(self.settings['importance_factor'])
+        self.nbr_iteration = len(self.settings['outlets_importance'])*len(self.settings['inlets_importance']) #total number of iterations that will occur
+        #self.inlets        = np.asarray(self._set_inlets_repartition())
+        outlets_repartition  = self._repartition_points(self.outlets, self.settings['outlets_importance']) #correct for outlets_importance not summing to correct number of actual outlets
+        self.outlets         = self._distribute_outlets(outlets_repartition)  # distribute outlets to iterations
+        inlets_repartition   = self._repartition_points(self.inlets, self.settings['inlets_per_outlet']) #correct for inlets_per_outlet not summing to correct number of actual inlets
+        self.inlets          = self._distribute_inlets(inlets_repartition)  # distribute inlets to outlets
+        
+        inlets  = []
+        for o,outlet in enumerate(self.outlets):                 #loop over outlets
+            inlets_current = self.inlets[self.inlets[:,2]==o]    #select only inlets assigned to current outlet
+            repartition    = self._repartition_points(inlets_current, self.settings['inlets_importance']) #correct for inlets_importance not summing to correct number of actual inlets available for current outlet
+            i = 0            #total inlet counter for current outlet
+            for k,n in enumerate(repartition):   #get iteration index and number of inlets assigned to that iteration
+                for j in range(n):               #loop over each inlet in current iteration
+                    inlets.append((inlets_current[i,0], inlets_current[i,1], inlets_current[i,2], inlets_current[i,3], inlets_current[i,4], k))
+                    i += 1
+        #self.inlets = np.asarray(inlets)[:,[0,1,5]]  #store inlets with their iteration number
+        self.inlets  = pd.DataFrame(inlets,       columns = ['x','y', 'outlet', 'outletx', 'outlety', 'inlet_iteration']) #store as pandas df for easier handling
+        self.outlets = pd.DataFrame(self.outlets, columns = ['x','y', 'outlet_iteration']) #store as df for easier indexing
 
         # Raster maps
         self.maps = {}
@@ -2021,12 +2043,8 @@ class SKS():
         
 
         # Vector maps
-        #self.nodeID       = 0
-        #self.conduits = []
-        #self.network      = []   #empty list to store entire network (nodes and edges for all conduits)
         self.nodes        = {}   #empty dic to store nodes (key: nodeID, val: [x, y, type])
         self.edges        = {}   #empty dic to store edges (key: edgeID, val: [inNode, outNode])
-        #self.outletsNode  = []
         self.n = 0  #start node counter at zero 
         self.e = 0  #start edge counter at zero
 
@@ -2044,58 +2062,120 @@ class SKS():
             sides=[[self.grid.ymin, self.grid.ymax],    #leftmost edge, rightmost edge (NOT centerpoint)
                    [self.grid.xmin, self.grid.xmax]],   #bottom edge,   top edge (NOT centerpoint)
             dims=[self.grid.ynum, self.grid.xnum])      #number of cells, number of cells
+        
         return None
     
     # 1
-    def _set_inlets_repartition(self):
+    #def _set_inlets_repartition(self):
         """
         Distribute the inlets points between the different simulating generation according to the `importance_factor` setting.
         """
-        inlets_repartition = []
-        inlets_proportion  = []
-        total = float(sum(self.settings['importance_factor'])) #total number of inlets
+        #inlets_repartition = []
+        #inlets_proportion  = []
+        #total = float(sum(self.settings['importance_factor'])) #total number of inlets
 
-        for iteration in range(self.nbr_iteration):
-            inlets_proportion.append(float(self.settings['importance_factor'][iteration])/total) #percent of inlets to use this iteration
-            inlets_repartition.append(round(inlets_proportion[iteration]*len(self.inlets))) #number of inlets to use this iteration (need to round bc percentage will not result in whole number)
-        inlets_repartition[-1] = len(self.inlets)-sum(inlets_repartition[0:-1]) #whichever inlets are left over are assignd to last iteration
+        #for iteration in range(self.nbr_iteration):
+            #inlets_proportion.append(float(self.settings['importance_factor'][iteration])/total) #percent of inlets to use this iteration
+            #inlets_repartition.append(round(inlets_proportion[iteration]*len(self.inlets))) #number of inlets to use this iteration (need to round bc percentage will not result in whole number)
+        #inlets_repartition[-1] = len(self.inlets)-sum(inlets_repartition[0:-1]) #whichever inlets are left over are assignd to last iteration
         
-        inlets = []
-        i = 0
-        for k,repartition_nbr in enumerate(inlets_repartition): #loop over number of inlets per iteration
-            for num in range(repartition_nbr):  #loop over each inlet in current iteration
-                inlets.append((self.inlets[i][0],self.inlets[i][1],k))   #append inlet with its iteration number
-                i += 1
-        return inlets
+        #inlets = []
+        #i = 0
+        #for k,repartition_nbr in enumerate(inlets_repartition): #loop over number of inlets per iteration
+            #for num in range(repartition_nbr):  #loop over each inlet in current iteration
+                #inlets.append((self.inlets[i][0],self.inlets[i][1],k))   #append inlet with its iteration number
+                #i += 1
+        #return inlets
+
+    # 1
+    def _repartition_points(self, points, importance):
+        '''Correct for integers in importance factors list not summing correctly to total number of points'''
+        repartition = []
+        proportion  = []
+        total       = float(sum(importance))     #total number of points as assigned (this may not be the actual total)
+        for i,n in enumerate(importance):        #get iteration index and number of points being assigned to that iteration
+            proportion.append(float(n)/total)    #percent of points to use this iteration
+            repartition.append(round(proportion[i]*len(points))) #number of points to use this iteration (need to round bc percentage will not result in whole number)
+        repartition[-1] = len(points)-sum(repartition[0:-1])     #leftover points are assignd to last iteration
+        return repartition
     
+    #1
+    def _distribute_outlets(self, repartition):
+        '''Distribute points into iteration groups based on the corrected repartition from the importance settings'''
+        outlets = []
+        i = 0              #point counter
+        for k,n in enumerate(repartition):        #get iteration index and number of points being assigned to that iteration
+            for j in range(n):                    #loop over each point in current iteration
+                outlets.append((self.outlets[i][0], self.outlets[i][1], k))   #append point with its iteration number
+                i += 1                                                                #increment point index by 1
+        return np.asarray(outlets)
+
+    #1
+    def _distribute_inlets(self, repartition):
+        '''Distribute points into iteration groups based on the corrected repartition from the importance settings'''
+        inlets = []
+        i = 0              #point counter
+        for k,n in enumerate(repartition):        #get iteration index and number of points being assigned to that iteration
+            for j in range(n):                    #loop over each point in current iteration
+                inlets.append((self.inlets[i][0], self.inlets[i][1], k, self.outlets[k,0], self.outlets[k,1]))   #append point with its iteration number
+                i += 1                                                                #increment point index by 1
+        return np.asarray(inlets)
+
+
     # 2
     def _compute_iterations_karst_network(self):
         """
         Compute each generation of karst conduits.
         """
-        # Define outlets map according to outlets emplacements
         if self.settings['verbosity'] > 0:
             print('-START-')
+
+        # Define outlets map according to outlets emplacements
         self._compute_outlets_map()  #assign outlet indices
 
         # Compute velocity map and travel time for each iteration and draw network
-        for iteration in range(self.nbr_iteration):
-            print('Iteration', iteration)
-            if self.settings['algorithm'] == 'Isotropic2':
-                self._compute_cost_map(iteration)  
-                self._compute_time_map_isotropic(iteration) 
-                self._compute_karst_map(iteration) 
-            elif self.settings['algorithm'] == 'Riemann2':
-                self._compute_cost_map(iteration)     
-                self._compute_alpha_map(iteration) 
-                self._compute_beta_map(iteration) 
-                self._compute_riemann_metric(iteration) 
-                self._compute_time_map_riemann(iteration) 
-                self._compute_karst_map(iteration)  
-            else:
-                print('Unrecognized algorithm', self.settings['algorithm'])
-            if self.settings['verbosity'] > 0:
-                print('iteration:{}/{}'.format(iteration+1,self.nbr_iteration))
+        ## Set up iteration structure:
+        f = plt.figure()
+        plt.imshow(self.geology.data['geology']['data'], extent=self.grid.extent, origin='lower', cmap='gray_r', alpha=0.5) #for debugging
+        iteration = 0                                   #initialize total iteration counter
+        #for iteration in range(self.nbr_iteration):
+        for outlet_iteration in range(len(self.settings['outlets_importance'])):  #loop over outlet iterations
+            print('Total Iteration', iteration, 'Outlet iteration:', outlet_iteration)
+            outlets_current = self.outlets[self.outlets.outlet_iteration==outlet_iteration]  #get the outlets assigned to the current outlet iteration
+            plt.scatter(outlets_current.x,outlets_current.y, c='c')
+            for o,outlet in outlets_current.iterrows():                     #loop over outlets in current outlet iteration
+                print('\t Current outlet index:', outlet.name)
+                plt.annotate(str(outlet_iteration), (outlet.x,outlet.y))
+                inlets_outlet = self.inlets[self.inlets.outlet==outlet.name]          #get the inlets assigned to current outlet 
+                print('\t Inlets assigned to this outlet:\n', inlets_outlet)
+                for inlet_iteration in range(len(self.settings['inlets_importance'])): #loop over inlet iterations
+                    print('\t\t Inlet iteration:', inlet_iteration)
+                    inlets_current = inlets_outlet[inlets_outlet.inlet_iteration==inlet_iteration] #get the inlets assigned to the current inlet iteration
+                    print(inlets_current)
+                    plt.scatter(inlets_current.x, inlets_current.y)
+                    for i,inlet in inlets_current.iterrows():                                 #loop over inlet in current inlet iteration
+                        plt.annotate(str(outlet_iteration)+'-'+str(inlet_iteration), (inlet.x,inlet.y))
+                        self.outlets.loc[self.outlets.index==outlet.name, 'iteration'] = iteration   #store total iteration counter
+                        self.inlets.loc[ self.inlets.index ==inlet.name,  'iteration'] = iteration   #store total iteration counter
+                    
+                    #Compute travel maps:
+                    if self.settings['algorithm'] == 'Isotropic2':
+                        self._compute_cost_map(iteration)  
+                        self._compute_time_map_isotropic(iteration) 
+                        self._compute_karst_map(iteration) 
+                    elif self.settings['algorithm'] == 'Riemann2':
+                        self._compute_cost_map(iteration)     
+                        self._compute_alpha_map(iteration) 
+                        self._compute_beta_map(iteration) 
+                        self._compute_riemann_metric(iteration) 
+                        self._compute_time_map_riemann(iteration) 
+                        self._compute_karst_map(iteration)  
+                    else:
+                        print('Unrecognized algorithm', self.settings['algorithm'])
+                    iteration = iteration + 1                                              #increment total iteration number by 1 
+                    
+                    if self.settings['verbosity'] > 0:
+                        print('iteration:{}/{}'.format(iteration+1,self.nbr_iteration))
         if self.settings['verbosity'] > 0:
             print('- END -')
         return None
@@ -2105,9 +2185,9 @@ class SKS():
         """
         Compute the outlets map (array indicating location of outlets as their index and everywhere else as nan).
         """
-        for i,(x,y) in enumerate(self.outlets):
-            X = int(math.ceil((x - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
-            Y = int(math.ceil((y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
+        for i,outlet in self.outlets.iterrows():
+            X = int(math.ceil((outlet.x - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
+            Y = int(math.ceil((outlet.y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
             self.maps['outlets'][Y][X] = i 
         return None
     
@@ -2210,8 +2290,10 @@ class SKS():
         Note: the AGD-HFM library uses different indexing, so x and y indices are reversed for inlets and outlets.
         """
         
-        self.fastMarching['seeds']  = self.outlets.data[:,[1,0]]              #reverse outlet indexing
-        self.fastMarching['tips']   = [inlet[[1,0]] for inlet in self.inlets if inlet[2] == iteration] #select inlets for current iteration
+        #self.fastMarching['seeds']  = self.outlets.data[:,[1,0]]              #reverse outlet indexing
+        self.fastMarching['seeds']  = np.rot90([self.outlets[self.outlets.iteration==iteration].x, self.outlets[self.outlets.iteration==iteration].y], k=3)         #set the outlets for this iteration
+        #self.fastMarching['tips']   = [inlet[[1,0]] for inlet in self.inlets if inlet[2] == iteration] #select inlets for current iteration
+        self.fastMarching['tips']   = np.rot90([self.inlets[self.inlets.iteration==iteration].x, self.inlets[self.inlets.iteration==iteration].y], k=3) #select inlets for current iteration
         self.fastMarching['metric'] = self.riemannMetric                      #set the travel cost through each cell
         self.fastMarching['verbosity'] = self.settings['verbosity']           #set verbosity of hfm run
         self.fastMarchingOutput     = self.fastMarching.Run()                 #run the fast marching algorithm and store the outputs
@@ -2236,9 +2318,10 @@ class SKS():
                 
                 if self.maps['cost'][iteration][ix,iy] != self.settings['cost_conduits']:  #if there is no conduit here 
                     if ~np.isnan(self.maps['outlets'][ix,iy]):                             #if there is an outlet here (cell value is not nan)
-                        outlet = self.outlets[int(self.maps['outlets'][ix,iy])]            #get the outlet coordinates using the ID in the outlets map
-                        #self.nodes[self.n]             = [outlet[1], outlet[0]]            #add a node at the outlet coordinates
-                        self.nodes[self.n]             = [outlet[1], outlet[0], 'outfall'] #add a node at the outlet coordinates (with the node type for SWMM)
+                        #outlet = self.outlets[int(self.maps['outlets'][ix,iy])]            #get the outlet coordinates using the ID in the outlets map
+                        outlet = self.outlets.iloc[int(self.maps['outlets'][ix,iy])]
+                        #self.nodes[self.n]             = [outlet[1], outlet[0], 'outfall'] #add a node at the outlet coordinates (with the node type for SWMM)
+                        self.nodes[self.n]             = [outlet.y, outlet.x, 'outfall']
                         self.maps['nodes'][ix,iy] = self.n                                 #update node map with node index
                         if p > 0:                                                          #if this is not the first point (i.e. the inlet) in the current path
                             self.edges[self.e] = [self.n-1, self.n]                        #add an edge connecting the previous node to the current node
@@ -2329,61 +2412,6 @@ class SKS():
         dy = moove[1] * self.step
         
         return (dx,dy)
-    
-    # 3
-    def _compute_nodes_network(self):
-        """
-        This script computes the nodes network with all the previous calculated conduits.
-        """
-        # Add outlets
-        outlets = self.points.points['outlets']
-        for outlet in outlets:
-            self.outletsNode.append((self.nodeID,outlet[0],outlet[1]))
-            self.nodeID += 1
-
-        # Connect regular nodes
-        [conduit.compute_edges() for conduit in self.conduits]
-
-        for conduit in self.conduits:
-            dist = []
-            last_node = conduit.nodes[-1]
-            x = last_node[1]
-            y = last_node[2]
-            # connect last node on old karstic conduit
-            if last_node[-1] == 1:
-                older_conduits = [conduit_ for conduit_ in self.conduits if conduit_.iteration < conduit.iteration]
-                all_nodes = []
-                for older_conduit in older_conduits:
-                    for node in older_conduit.nodes:
-                        all_nodes.append(node)
-                for node in all_nodes:
-                    dx   = abs(x - node[1])
-                    dy   = abs(y - node[2])
-                    dist.append((math.sqrt(dx**2 + dy**2),node[0]))
-                min_node = min(dist)                                      #this line does not work if only one iteration
-                conduit.edges.append((last_node[0],min_node[1]))
-
-            # connect last node on outlet coordinates
-            if last_node[-1] == 2:
-                for outlet in self.outletsNode:
-                    dx = abs(x - outlet[1])
-                    dy = abs(y - outlet[2])
-                    dist.append((math.sqrt(dx**2 + dy**2),outlet[0]))
-                min_outlet = min(dist)
-                conduit.edges.append((last_node[0],min_outlet[1]))
-
-        # Get data for karstnet
-        EDGES = []
-        NODES = {}
-        for conduit in self.conduits:
-            for edge in conduit.edges:
-                EDGES.append(edge)
-            for node in conduit.nodes:
-                NODES[node[0]] = (node[1],node[2])
-        for outlet in self.outletsNode:
-            NODES[outlet[0]] = (outlet[1],outlet[2])
-        return (EDGES,NODES)
-    
 
     
     ###########################
@@ -2433,9 +2461,9 @@ class SKS():
         plt.show()
         return None
                 
-    def _show_karst_network(self, sim=-1, iteration=-1, cmap='binary'):
+    def _show_maps(self, sim=-1, iteration=-1, cmap='binary'):
         """
-        Show the simulated karst network.
+        Show the simulated karst network as an image.
         """
         karst_network = self.karst_simulations[sim]
         
@@ -2459,36 +2487,109 @@ class SKS():
         return None
         
 
-    def show(self, data=None, title=None, cmap='binary', probability=False):
+    def show(self, data=None, title=None, probability=False):
         """
-        Show the entire study domain.
+        Show the entire study domain (defaults to showing most recent simulation).
         """        
         if data is None:
-            data = self.karst_simulations[-1].maps['karst'][-1]
+            data = self.karst_simulations[-1]
         
         if probability == True:
             data = self._compute_average_paths()
             
-        fig, ax1 = plt.subplots()
-        if title is not None:
-            fig.suptitle(title, fontsize=16)
+        fig = plt.figure(figsize=(20,10))
+        
+        fig.add_subplot(131, aspect='equal')
+        plt.xlabel('Cost array'+str(data.maps['cost'][-1].shape))
+        plt.imshow(data.maps['cost'][-1], extent=self.grid.extent, origin='lower', cmap='gray') #darker=faster
+        plt.colorbar(shrink=0.35)
 
-        im1 = ax1.imshow(data, extent=self.grid.extent, origin='lower', cmap=cmap)
-        
-        fig.colorbar(im1, ax=ax1)
-        
+        fig.add_subplot(132, aspect='equal')
+        plt.xlabel('Travel time array'+str(data.maps['time'][-1].shape))
+        plt.imshow(data.maps['time'][-1], extent=self.grid.extent, origin='lower', cmap='cividis') #darker=faster
+        plt.colorbar(shrink=0.35)
+
+        fig.add_subplot(133, aspect='equal')
+        plt.xlabel('Karst array'+str(data.maps['time'][-1].shape))
+        plt.imshow(data.maps['karst'][-1], extent=self.grid.extent, origin='lower', cmap='gray_r') #darker=conduits
+        plt.colorbar(shrink=0.35)
+        #i = plt.scatter(data.points['inlets'][:,0],  data.points['inlets'][:,1],  c='orange')
+        #o = plt.scatter(data.points['outlets'][:,0], data.points['outlets'][:,1], c='steelblue')
+        i = plt.scatter(data.points['inlets'].x,  data.points['inlets'].y,  c='orange')
+        o = plt.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue')
+        p = matplotlib.patches.Rectangle((0,0),0,0, ec='r', fc='none')
         if self.settings['data_has_polygon']:
             closed_polygon = self.polygon.polygon[:]
             closed_polygon.append(closed_polygon[0])
             x,y = zip(*closed_polygon)
-            ax1.plot(x,y, color='red', label='polygon')
-        for key in self.points.points:
-            x,y = zip(*self.points.points[key])
-            ax1.plot(x,y,'o',label=key)
-        ax1.set_aspect('equal', 'box')
-        plt.legend(loc='upper right')
+            plt.plot(x,y, color='red', label='polygon')
+
+        plt.legend([i,o,p], ['inlets', 'outlets', 'catchment'], loc='upper right')
+        
+        if title is not None:
+            fig.suptitle(title, fontsize=16)
         plt.show()
         return None
+
+    def show_network(self, data=None, ax=None, labels=['inlets', 'outlets'], title=None, cmap='cividis'):
+        """
+        Show the karst network as a graph with nodes and edges. Defaults to showing latest iteration.
+        Inputs: 
+        data: karst simulation object containing nodes, edges, points, etc. Can be obtained from self.karst_simulations[i]
+        ax: axis to plot on
+        label: None or list of strings ['nodes','edges','inlets','outlets'], indicating which components to label
+        title: string, title of plot
+        cmap: string, colormap to use when plotting
+        """
+
+        if ax == None:
+            fig,ax = plt.subplots(figsize=(10,10))
+            ax.set_aspect('equal')
+
+        if data == None:
+            data = self.karst_simulations[-1]
+
+        #Set up data for plotting:
+        nodes = pd.DataFrame.from_dict(data.network['nodes'], orient='index', columns=['x','y','type']) #convert to pandas for easier plotting
+        edges = pd.DataFrame.from_dict(data.network['edges'], orient='index', columns=['inNode','outNode']) 
+        fromX = nodes.x.loc[edges.inNode]      #calculate coordinates for link start and end points
+        fromY = nodes.y.loc[edges.inNode]
+        toX   = nodes.x.loc[edges.outNode]
+        toY   = nodes.y.loc[edges.outNode]
+
+        #Plot nodes and edges:
+        n = ax.scatter(nodes.y,                     nodes.x,                     c='k',         s=5)  #scatterplot nodes
+        #i = ax.scatter(data.points['inlets'][:,0],  data.points['inlets'][:,1],  c='orange',    s=30) #scatterplot inlets
+        #o = ax.scatter(data.points['outlets'][:,0], data.points['outlets'][:,1], c='steelblue', s=30) #scatterplot outlets
+        i = ax.scatter(data.points['inlets'].x,  data.points['inlets'].y,  c='orange',    s=30) #scatterplot inlets
+        o = ax.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue', s=30) #scatterplot outlets
+        e = matplotlib.lines.Line2D([0],[0])                                                  #line artist for legend 
+        for ind in edges.index:                                                               #loop over edge indices
+            ax.plot((fromY.iloc[ind], toY.iloc[ind]), (fromX.iloc[ind], toX.iloc[ind]), c=plt.cm.get_cmap(cmap)(ind/len(edges)))  #plot each edge, moving along color gradient to show order
+        
+        #Add labels:
+        if 'nodes' in labels:                                         #label node indices
+            for ind in nodes.index:                                   #loop over node indices
+                ax.annotate(str(ind), xy=(nodes.y[ind]-10, nodes.x[ind]))  #annotate slightly to left of each node
+        if 'edges' in labels:                                         
+            for ind in edges.index:                                   
+                ax.annotate(str(ind), xy=(edges.y[ind]-10, edges.x[ind]))  #annotate slightly to left of each edge
+        if 'inlets' in labels:                                        
+            for index,inlet in data.points['inlets'].iterrows(): 
+                print(inlet)                      
+                #plt.annotate(str(int(inlet[2])),  xy=(inlet[0]-10,  inlet[1])) 
+                plt.annotate(str(int(inlet.outlet))+'-'+str(int(inlet.iteration)),  xy=(inlet.x-10,  inlet.y)) 
+        if 'outlets' in labels:                                       
+            for index,outlet in data.points['outlets'].iterrows():                     
+                plt.annotate(str(int(outlet.name)), xy=(outlet.x-10, outlet.y)) 
+
+        #Add legend & title:
+        plt.legend([i,o,n,e],['inlets','outlets','nodes','edges'])
+        if title is not None:
+            ax.set_title(title, fontsize=16)
+
+        return None
+
     
     def _compute_average_paths(self, show=False):
         """
@@ -2574,51 +2675,11 @@ class SKS():
                     result = 'IN'
                 print('%-10s%-12s%-12s%-12s%-12s' % (key, round(mean,3), round(self.reference_statistics[key][0],3), round(self.reference_statistics[key][1],3), result))
         return None
-    
-
-################
-class Conduit():
-    """
-    A class for storing simulated conduits.
-    """
-    def __init__(self,iteration):
-        self.iteration = iteration
-        self.nodes     = []
-        self.edges     = []
-
-    def add_node(self,nodeID,x,y,nodeType):
-        """
-        Add a new node in the current constructed conduit.
-        
-        Parameters
-        ----------
-        nodeID:
-            ID of the node
-        x:
-            x position
-        y:
-            y position
-        nodeType:
-            0 - normal
-            1 - old karstic channel
-            2 - outlet
-        """
-        self.nodes.append((nodeID,x,y,nodeType))
-        return None
-
-    def compute_edges(self):
-        for i in range(len(self.nodes)):
-            if i == 0:
-                continue
-            node_1 = self.nodes[i-1][0]
-            node_2 = self.nodes[i][0]
-            self.edges.append((node_1,node_2))
-        return None
 
 #####################   
 class KarstNetwork():
     """
-    A class for stroring a calculated karst network.
+    A class for storing a calculated karst network.
     """
     def __init__(self, maps, points, network, stats, settings):
         self.maps     = maps

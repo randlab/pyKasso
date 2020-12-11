@@ -29,17 +29,19 @@ polygon_data     : 'inputs/polygon.txt'
 # 'random'    - full random points
 # 'import'    - import points
 # 'composite' - add n random points to imported points
-inlets_mode   : 'import'
-inlets_data   : 'inputs/gottesacker/inlets.csv'
-inlets_number : 5
+inlets_mode    : 'import'
+inlets_data    : 'inputs/gottesacker/inlets.csv'
+inlets_number  : 5
+inlets_shuffle : True
 
 ###Outlets
 # 'random'    - full random points
 # 'import'    - import points
 # 'composite' - add n random points to imported points
-outlets_mode   : 'import'
-outlets_data   : 'inputs/gottesacker/outlets.csv'
-outlets_number : 1
+outlets_mode    : 'import'
+outlets_data    : 'inputs/gottesacker/outlets.csv'
+outlets_number  : 1
+outlets_shuffle : True
 
 ######################
 ### GeologyManager ###

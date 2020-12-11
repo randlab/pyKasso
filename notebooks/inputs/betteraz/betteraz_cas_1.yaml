@@ -29,17 +29,19 @@ polygon_data     : 'inputs/betteraz/polygon_Betteraz.txt'
 # 'random'    - full random points
 # 'import'    - import points
 # 'composite' - add n random points to imported points
-inlets_mode   : 'import'
-inlets_data   : 'inputs/betteraz/inlets_betteraz_cas_1.csv'
-inlets_number : 1
+inlets_mode    : 'import'
+inlets_data    : 'inputs/betteraz/inlets_betteraz_cas_1.csv'
+inlets_number  : 1
+inlets_shuffle : True
 
 ###Outlets
 # 'random'    - full random points
 # 'import'    - import points
 # 'composite' - add n random points to imported points
-outlets_mode   : 'import'
-outlets_data   : 'inputs/betteraz/outlets_betteraz.csv'
-outlets_number : 1
+outlets_mode    : 'import'
+outlets_data    : 'inputs/betteraz/outlets_betteraz.csv'
+outlets_number  : 1
+outlets_shuffle : True
 
 ######################
 ### GeologyManager ###
