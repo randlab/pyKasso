@@ -25,23 +25,27 @@ polygon_data     : 'inputs/betteraz/polygon_Betteraz.txt'
 ### PointManager ###
 ####################
 
-###Inlets
-# 'random'    - full random points
-# 'import'    - import points
-# 'composite' - add n random points to imported points
-inlets_mode    : 'import'
-inlets_data    : 'inputs/betteraz/inlets_betteraz_cas_1.csv'
-inlets_number  : 1
-inlets_shuffle : True
-
 ###Outlets
-# 'random'    - full random points
+# 'random'    - generate n random points
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 outlets_mode    : 'import'
 outlets_data    : 'inputs/betteraz/outlets_betteraz.csv'
-outlets_number  : 1
-outlets_shuffle : True
+outlets_number  : 1    #if random or composite, how many outlets to generate
+outlets_shuffle : True #if False: do not shuffle outlet order, if True: shuffle outlet order randomly
+outlets_importance : [1] #how to iterate over outlets: length of array indicates number of iterations, each integer indicates number of outlets in that iteration, sum of integers = total number of outlets
+#to run each outlet separately:              [1,1,1,...]  
+
+###Inlets
+# 'random'    - generate n random points
+# 'import'    - import points
+# 'composite' - add n random points to imported points
+inlets_mode    : 'import'
+inlets_data    : 'inputs/betteraz/inlets_betteraz_cas_1.csv'
+inlets_number  : 5      #if random or composite, how many inlets to generate
+inlets_shuffle : True   #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
+inlets_per_outlet : [1]    #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets
+inlets_importance : [5,3,1]  #how to iterate over inlets: length of array indicates number of inlet iterations, each integer indicates number of inlets to run in that iteration, sum of integers = total number of inlets
 
 ######################
 ### GeologyManager ###
@@ -103,12 +107,9 @@ cost_ratio     : 0.25    # ratio of travel cost parallel/perpendicular to gradie
 geology_id     : [1,2] # Only for 'import' geological mode
 geology_cost   : [cost_aquifer,cost_aquiclude]
 
-importance_factor : [1,2,3]
-
 #############
 ### Other ###
 #############
-
 
 rand_seed : 1  # if 0 = total random
 verbosity : 0  # 0: display minimal output, 1: display some output; 2: display maximum output
