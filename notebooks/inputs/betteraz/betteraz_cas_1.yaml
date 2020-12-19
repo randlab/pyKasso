@@ -32,7 +32,7 @@ polygon_data     : 'inputs/betteraz/polygon_Betteraz.txt'
 outlets_mode    : 'import'
 outlets_data    : 'inputs/betteraz/outlets_betteraz.csv'
 outlets_number  : 1    #if random or composite, how many outlets to generate
-outlets_shuffle : True #if False: do not shuffle outlet order, if True: shuffle outlet order randomly
+outlets_shuffle : False #if False: do not shuffle outlet order, if True: shuffle outlet order randomly
 outlets_importance : [1] #how to iterate over outlets: length of array indicates number of iterations, each integer indicates number of outlets in that iteration, sum of integers = total number of outlets
 #to run each outlet separately:              [1,1,1,...]  
 
@@ -43,9 +43,9 @@ outlets_importance : [1] #how to iterate over outlets: length of array indicates
 inlets_mode    : 'import'
 inlets_data    : 'inputs/betteraz/inlets_betteraz_cas_1.csv'
 inlets_number  : 5      #if random or composite, how many inlets to generate
-inlets_shuffle : True   #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
+inlets_shuffle : False   #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
 inlets_per_outlet : [1]    #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets
-inlets_importance : [5,3,1]  #how to iterate over inlets: length of array indicates number of inlet iterations, each integer indicates number of inlets to run in that iteration, sum of integers = total number of inlets
+inlets_importance : [3,2,1]  #how to iterate over inlets: length of array indicates number of inlet iterations, each integer indicates number of inlets to run in that iteration, sum of integers = total number of inlets
 
 ######################
 ### GeologyManager ###
@@ -60,8 +60,8 @@ inlets_importance : [5,3,1]  #how to iterate over inlets: length of array indica
 # 'random' - For fractures only: randomly generate a fracture field
 
 #Topography
-topography_mode      : 'csv'          #null, import, gslib, csv, or image
-topography_datafile  : 'inputs/betteraz/dem_300x300.csv'
+topography_mode      : 'csv'          #null, gslib, csv, or image
+topography_datafile  : 'inputs/betteraz/random_dem300x300.csv'
 
 #Geology
 geological_mode      : 'import'        #null, import, gslib, csv, or image
@@ -96,12 +96,12 @@ algorithm      : 'Riemann2'   #'Isotropic2', 'Riemann2', which algo to use, see 
 
 #Travel cost through each feature (higher is harder to cross that feature)
 cost_out       : 0.999
-cost_aquifer   : 0.3
+cost_aquifer   : 0.4
 cost_aquiclude : 0.8
-cost_faults    : 0.1
+cost_faults    : 0.2
 cost_fractures : 0.2
-cost_conduits  : 0.001
-cost_ratio     : 0.25    # ratio of travel cost parallel/perpendicular to gradient
+cost_conduits  : 0.1
+cost_ratio     : 0.5    # ratio of travel cost parallel/perpendicular to gradient
 
 ### Formation to consider and FMM code associated
 geology_id     : [1,2] # Only for 'import' geological mode

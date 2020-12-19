@@ -2036,7 +2036,7 @@ class SKS():
         self.edges     = {} #empty dic to store edges (key: edgeID, val: [inNode, outNode])
         self.n         = 0  #start node counter at zero 
         self.e         = 0  #start edge counter at zero
-        #self.geodesics = [] #empty list to store raw fast-marching path output
+        self.geodesics = [] #empty list to store raw fast-marching path output
 
         # Set up fast-marching:
         #Note: AGD-HFM library has different indexing, so model dimensions must be [ynum,xnum],
@@ -2100,27 +2100,37 @@ class SKS():
         self._compute_outlets_map()  #assign outlet indices
 
         #Plot for debugging:
-        #f,ax = plt.subplots(1,1)
-        #ax.imshow(self.geology.data['geology']['data'], extent=self.grid.extent, origin='lower', cmap='gray_r', alpha=0.5) #for debugging
+        if self.settings['verbosity'] > 1:
+            f,ax = plt.subplots(1,1)
+            ax.imshow(self.geology.data['geology']['data'], extent=self.grid.extent, origin='lower', cmap='gray_r', alpha=0.5) #for debugging
         
         ## Set up iteration structure:
         iteration = 0                                   #initialize total iteration counter
         for outlet_iteration in range(len(self.settings['outlets_importance'])):  #loop over outlet iterations
-            #print('Total Iteration', iteration, 'Outlet iteration:', outlet_iteration)
+            if self.settings['verbosity'] > 2:
+                print('Total Iteration', iteration, 'Outlet iteration:', outlet_iteration)
             outlets_current = self.outlets[self.outlets.outlet_iteration==outlet_iteration]  #get the outlets assigned to the current outlet iteration
-            #ax.scatter(outlets_current.x,outlets_current.y, c='c')         #debugging
+            if self.settings['verbosity'] > 1:
+                ax.scatter(outlets_current.x,outlets_current.y, c='c')         #debugging
             for o,outlet in outlets_current.iterrows():                     #loop over outlets in current outlet iteration
-                #print('\t Current outlet index:', outlet.name)             #debugging
-                #ax.annotate(str(outlet_iteration), (outlet.x,outlet.y))
+                if self.settings['verbosity'] > 2:
+                    print('\t Current outlet index:', outlet.name)             #debugging
+                if self.settings['verbosity'] > 1:
+                    ax.annotate(str(outlet_iteration), (outlet.x,outlet.y))
                 inlets_outlet = self.inlets[self.inlets.outlet==outlet.name]          #get the inlets assigned to current outlet 
-                #print('\t Inlets assigned to this outlet:\n', inlets_outlet)
+                if self.settings['verbosity'] > 1:
+                    print('\t Inlets assigned to this outlet:\n', inlets_outlet)
                 for inlet_iteration in range(len(self.settings['inlets_importance'])): #loop over inlet iterations
-                    #print('\t\t Inlet iteration:', inlet_iteration)
+                    if self.settings['verbosity'] > 2:
+                        print('\t\t Inlet iteration:', inlet_iteration)
                     inlets_current = inlets_outlet[inlets_outlet.inlet_iteration==inlet_iteration] #get the inlets assigned to the current inlet iteration
-                    #print(inlets_current)                                                         #debugging
-                    #ax.scatter(inlets_current.x, inlets_current.y)
+                    if self.settings['verbosity'] > 2:
+                        print(inlets_current)                                                         #debugging
+                    if self.settings['verbosity'] > 1:
+                        ax.scatter(inlets_current.x, inlets_current.y)
                     for i,inlet in inlets_current.iterrows():                                 #loop over inlet in current inlet iteration
-                        #ax.annotate(str(outlet_iteration)+'-'+str(inlet_iteration), (inlet.x,inlet.y))  #debugging
+                        if self.settings['verbosity'] > 1:
+                            ax.annotate(str(outlet_iteration)+'-'+str(inlet_iteration), (inlet.x,inlet.y))  #debugging
                         self.outlets.loc[self.outlets.index==outlet.name, 'iteration'] = iteration   #store total iteration counter
                         self.inlets.loc[ self.inlets.index ==inlet.name,  'iteration'] = iteration   #store total iteration counter
                     
@@ -2210,16 +2220,17 @@ class SKS():
     def _compute_alpha_map(self, iteration):
         """
         Compute the alpha map: travel cost in the same direction as the gradient.
-        For most cases will be the same as the cost map.
+        Cost map * topography map, so that the cost is higher at higher elevations, encouraging conduits to go downgradient.
         """
-        self.maps['alpha'][iteration] = self.maps['cost'][iteration]
+        self.maps['alpha'][iteration] = self.maps['cost'][iteration] * self.geology.data['topography']['data']
         return None
     
     # 2
     def _compute_beta_map(self, iteration):
         """
         Compute the beta map: travel cost perpendicular to the gradient. 
-        Values should be higher than the alpha map values.
+        If beta is higher than alpha, conduits will follow the steepest gradient.
+        If beta is lower than alpha, conduits will follow contours.
         """
         self.maps['beta'][iteration] = self.maps['alpha'][iteration] / self.settings['cost_ratio']
         return None
@@ -2239,8 +2250,8 @@ class SKS():
         using the isotropic agd-hfm fast-marching algorithm, and store travel time map.
         Note: the AGD-HFM library uses different indexing, so x and y indices are reversed for inlets and outlets.
         """
-        self.fastMarching['seeds']  = self.outlets.data[:,[1,0]]              #reverse outlet indexing
-        self.fastMarching['tips']   = [inlet[[1,0]] for inlet in self.inlets if inlet[2] == iteration] #select inlets for current iteration
+        self.fastMarching['seeds']  = np.rot90([self.outlets[self.outlets.iteration==iteration].x, self.outlets[self.outlets.iteration==iteration].y], k=3)         #set the outlets for this iteration
+        self.fastMarching['tips']   = np.rot90([self.inlets[self.inlets.iteration==iteration].x, self.inlets[self.inlets.iteration==iteration].y], k=3) #select inlets for current iteration
         self.fastMarching['cost']   = self.maps['cost'][iteration]                       #set the isotropic travel cost through each cell
         self.fastMarching['verbosity'] = self.settings['verbosity']           #set verbosity of hfm run
         self.fastMarchingOutput     = self.fastMarching.Run()                 #run the fast marching algorithm and store the outputs
@@ -2260,7 +2271,7 @@ class SKS():
         self.fastMarching['verbosity'] = self.settings['verbosity']           #set verbosity of hfm run
         self.fastMarchingOutput     = self.fastMarching.Run()                 #run the fast marching algorithm and store the outputs
         self.maps['time'][iteration] = self.fastMarchingOutput['values']      #store travel time maps
-        #self.geodesics.append(self.fastMarchingOutput['geodesics'])         #store fastest travel paths
+        self.geodesics.append(self.fastMarchingOutput['geodesics'])         #store fastest travel paths
         return None
 
     # 2
