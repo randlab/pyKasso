@@ -2539,7 +2539,7 @@ class SKS():
         plt.show()
         return None
 
-    def show_network(self, data=None, ax=None, labels=['inlets', 'outlets'], title=None, cmap='cividis'):
+    def show_network(self, data=None, simplify=False, ax=None, labels=['inlets', 'outlets'], title=None, cmap='cividis'):
         """
         Show the karst network as a graph with nodes and edges. Defaults to showing latest iteration.
         Inputs: 
@@ -2557,9 +2557,18 @@ class SKS():
         if data == None:
             data = self.karst_simulations[-1]
 
+        if simplify == True:
+            nodes = data.network['nodes']   #get all nodes
+            nodes_simple = data.network['karstnet'].graph_simpl.nodes  #get indices of only the nodes in the simplified graph
+            nodes_simple = {key: nodes[key] for key in nodes_simple}   #make df of only the nodes in the simplified graph, for plotting
+            edges = data.network['edges']   #get all edges
+            edges_simple = data.network['karstnet'].graph_simpl.edges  #get indices of only the nodes in the simplified graph
+            edges_simple = {key: edges[key] for key in edges_simple}   #make df of only the nodes in the simplified graph, for p
+        else:
+            nodes = pd.DataFrame.from_dict(data.network['nodes'], orient='index', columns=['x','y','type']) #convert to pandas for easier plotting
+            edges = pd.DataFrame.from_dict(data.network['edges'], orient='index', columns=['inNode','outNode']) 
+
         #Set up data for plotting:
-        nodes = pd.DataFrame.from_dict(data.network['nodes'], orient='index', columns=['x','y','type']) #convert to pandas for easier plotting
-        edges = pd.DataFrame.from_dict(data.network['edges'], orient='index', columns=['inNode','outNode']) 
         fromX = nodes.x.loc[edges.inNode]      #calculate coordinates for link start and end points
         fromY = nodes.y.loc[edges.inNode]
         toX   = nodes.x.loc[edges.outNode]
