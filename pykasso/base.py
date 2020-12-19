@@ -24,11 +24,14 @@ import pandas   as pd
 import skfmm
 import karstnet as kn
 import matplotlib.pyplot as plt
-from   matplotlib.path import Path
+from matplotlib.path    import Path
 from matplotlib.patches import Rectangle
 
+import sympy as sp
+import shapely.geometry as sg
+
 import pyvista   as pv
-import pyvistaqt as pvqt
+import pyvistaqt as pvqt0
 
 #####
 # 1 #
@@ -138,19 +141,19 @@ class Grid():
     x0 : float
         x-coordinate origin.
     y0 : float
-	y-coordinate origin.
+        y-coordinate origin.
     z0 : float
-	z-coordinate origin.
+        z-coordinate origin.
     xnum : integer
-	Number of cells on x dimension.
+        Number of cells on x dimension.
     ynum : integer
-	Number of cells on y dimension.
+        Number of cells on y dimension.
     znum : integer
-	Number of cells on z dimension.
+        Number of cells on z dimension.
     dx : float
-	Width of a cell.
+        Width of a cell.
     dy : float
-	Length of a cell.
+        Length of a cell.
     dz : float
         Height of a cell.
 
@@ -615,10 +618,172 @@ class GeologyManager():
         return None
 
     def generate_fractures(self, fractures_densities, fractures_min_orientation, fractures_max_orientation, alpha, fractures_min_length, fractures_max_length):
-        if self.grid.znum == 1:
-            self.generate_2D_fractures(fractures_densities, fractures_min_orientation, fractures_max_orientation, alpha, fractures_min_length, fractures_max_length)
-        else:
-            self.generate_3D_fractures()
+        """
+        Generate fractures.
+
+        Parameters
+        ----------
+        fractures_densities : list
+            Fracture densities for each fracture family.
+        fractures_min_orientation : list
+            Fractures minimum orientation for each fracture family.
+        fractures_max_orientation : list
+            Fractures maximum orientation for each fracture family.
+        alpha : float
+            Degree of power law.
+        fractures_min_length : list
+            The minimum lenght of the fractures. For all the families.
+        fractures_max_length : list
+            The maximum lenght of the fractures. For all the families.
+        """
+
+        self.fractures = []
+        fracture_id = 0
+
+        ## Redefine fracturation domain
+        lenmax = max(fractures_max_length)
+        xd0, xd1, yd0, yd1, zd0, zd1 = self.grid.xlimits[0], self.grid.xlimits[1], self.grid.ylimits[0], self.grid.ylimits[1], self.grid.zlimits[0], self.grid.zlimits[1]
+        Lx, Ly, Lz = xd1-xd0, yd1-yd0, zd1-zd0
+
+        shiftx = min(Lx/2,lenmax/2)
+        shifty = min(Ly/2,lenmax/2)
+        shiftz = min(Lz/2,lenmax/2)
+
+        Lex = 2 * shiftx + Lx
+        Ley = 2 * shifty + Ly
+        Lez = 2 * shiftz + Lz
+
+        area = Lex * Ley
+        xmin = self.grid.xlimits[0] - shiftx
+        ymin = self.grid.ylimits[0] - shifty
+        zmin = self.grid.zlimits[0] - shiftz
+
+
+        ## Total numbers of fractures for each family
+        fractures_numbers = np.array(fractures_densities) * area
+
+
+        ## Calculate fractures in each family
+        for frac_family in range(len(fractures_densities)):
+
+            # Define all the constants required to randomly draw the length in distribution
+            palpha = (1-alpha[frac_family])
+            invpalpha = 1/palpha
+            fmina = fractures_min_length[frac_family]**palpha
+            frangea = fractures_max_length[frac_family]**palpha - fmina
+
+            # Define all the constants required for the orientation distribution
+            min_angle = fractures_min_orientation[frac_family]
+            max_angle = fractures_max_orientation[frac_family]
+            if min_angle > max_angle:
+                min_angle = min_angle - 360
+
+            mean_angle = (max_angle + min_angle)  / 2
+            std_angle  = (max_angle - mean_angle) / 3
+            mean_angle = math.radians(mean_angle)
+            std_angle  = math.radians(std_angle)
+
+            # Computes the kappa value for the Von Mises orientation distribution
+            func  = lambda k : std_angle**2 - 1 + mpmath.besseli(1,k) / mpmath.besseli(0,k)
+            kappa = mpmath.findroot(func,1)
+
+            # Generate poisson number for each fracture family
+            real_frac_number = np.random.poisson(fractures_numbers[frac_family])
+
+            # Loop over the individual fractures
+            for i in range(1, real_frac_number+1):
+
+                # FRACTURE CENTER LOCATION from triple uniform distribution
+                xm = xmin + np.random.random() * Lex
+                ym = ymin + np.random.random() * Ley
+                zm = zmin + np.random.random() * Lez
+
+                # FRACTURE LENGHT from truncated power law distribution
+                u = np.random.rand()
+                frac_length = ( fmina + u * frangea )**invpalpha
+                radius = frac_length/2
+
+                # FRACTURE ORIENTATION from von Mises distribution
+                frac_orientation =  np.random.vonmises(mean_angle, kappa)
+
+                # Calculate normal Vector
+                x = np.sin(frac_orientation)
+                y = np.cos(frac_orientation)
+                a = -y
+                b = x
+                c = 0
+                n = [a,b,c]
+
+                # Store calculated fracture
+                self.fractures.append(Fracture(fracture_id, frac_family, [xm,ym,zm], radius, frac_orientation, n))
+                fracture_id += 1
+
+        return None
+
+    def discretize_fractures(self):
+        """
+        Discretize generated fractures.
+        """
+        self.intersection_points = self.intersect_fractures()
+        return None
+
+    def intersect_fractures(self):
+        """
+        Discretize generated fractures.
+        """
+        self.data['fractures'] = {}
+        self.data['fractures']['data'] = np.zeros((self.grid.ynum, self.grid.xnum, self.grid.znum))
+
+        for fracture in self.fractures:
+            intersection_points = []
+            x, y, z = fracture.get_position()
+            a, b, c = fracture.get_normal()
+            fracture_plane = sp.Plane((x, y, z), normal_vector=(a, b, c))
+
+            x0 = self.grid.x[0]
+            y0 = self.grid.y[0]
+            for z in self.grid.z:
+                z_plane = sp.Plane((x0, y0, z), normal_vector=(0, 0, 1))
+                intersection_line = fracture_plane.intersection(z_plane)
+                if not intersection_line:
+                    continue
+                else :
+                    intersection_line = intersection_line[0]
+                    x1, y1, z1 = intersection_line.points[0]
+                    x2, y2, z2 = intersection_line.points[1]
+                    x1 = round(x1,2)
+                    y1 = round(y1,2)
+                    x2 = round(x2,2)
+                    y2 = round(y2,2)
+                    a = (y1-y2)/(x1-x2)
+                    b = y1 - a*x1
+
+                    x1 = self.grid.x[0]
+                    y1 = a*x1 + b
+                    x2 = self.grid.x[-1]
+                    y2 = a*x2 + b
+
+                    intersection_line = sg.LineString([(x1,y1), (x2,y2)])
+
+                for x in self.grid.x:
+                    #x_line = sp.Line3D(sp.Point3D(x, y0, z), sp.Point3D(x, y0+1, z))
+                    x_line = sg.LineString([(x, y0), (x, self.grid.y[-1])])
+                    intersection_point = intersection_line.intersection(x_line)
+                    if not hasattr(intersection_point, 'y'):
+                        continue
+                    else:
+                        y = intersection_point.y
+                    intersection_points.append([x,round(y,2),z])
+
+        return intersection_points
+
+
+
+    #def generate_fractures(self, fractures_densities, fractures_min_orientation, fractures_max_orientation, alpha, fractures_min_length, fractures_max_length):
+        #if self.grid.znum == 1:
+        #    self.generate_2D_fractures(fractures_densities, fractures_min_orientation, fractures_max_orientation, alpha, fractures_min_length, fractures_max_length)
+        #else:
+        #    self.generate_3D_fractures()
 
     def generate_2D_fractures(self, fractures_densities, fractures_min_orientation, fractures_max_orientation, alpha, fractures_min_length, fractures_max_length):
         """
@@ -870,23 +1035,43 @@ class Fracture():
         Fracture family id
     position : list
         [x0, y0, x1, y1]
-    length : float
-        Length of the fracture
+    radius : float
+        Radius of the fracture
     orientation : float
         Orientation of the fracture
+    normal : List
+        Normal vector [a, b, c]
     """
 
-    def __init__(self, ID, family, position, length, orientation):
+    def __init__(self, ID, family, position, radius, orientation, normal):
 
         self.ID          = ID
         self.family      = family
         self.position    = position
-        self.length      = length
+        self.radius      = radius
         self.orientation = orientation
+        self.normal      = normal
 
     def __repr__(self):
-        return '[id:{}, x0:{}, y0:{}, x1:{}, y1:{}, len:{}, or.:{}] \n'.format(self.ID, round(self.position[0],2), round(self.position[1],2), round(self.position[2],2), round(self.position[3],2), round(self.length,2), round(self.orientation,2))
+        return '[id:{}, fam.:{}, x:{}, y:{}, z:{}, rad:{}, or.:{}] \n'.format(self.ID, self.family, round(self.position[0],2), round(self.position[1],2), round(self.position[2],2), round(self.radius,2), round(self.orientation,2))
 
+    def get_ID(self):
+        return self.ID
+
+    def get_family(self):
+        return self.family
+
+    def get_position(self):
+        return self.position
+
+    def get_radius(self):
+        return self.radius
+
+    def get_orientation(self):
+        return self.orientation
+
+    def get_normal(self):
+        return self.normal
 
 #####
 # 3 #
