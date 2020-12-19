@@ -2558,6 +2558,7 @@ class SKS():
             data = self.karst_simulations[-1]
 
         if simplify == True:
+            #FINISH UPDATING HERE
             nodes = data.network['nodes']   #get all nodes
             nodes_simple = data.network['karstnet'].graph_simpl.nodes  #get indices of only the nodes in the simplified graph
             nodes_simple = {key: nodes[key] for key in nodes_simple}   #make df of only the nodes in the simplified graph, for plotting
