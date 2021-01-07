@@ -2539,17 +2539,18 @@ class SKS():
         plt.show()
         return None
 
-    def show_network(self, data=None, simplify=False, ax=None, labels=['inlets', 'outlets'], title=None, cmap=None, color='k', legend=True):
+    def show_network(self, data=None, simplify=False, ax=None, plot_nodes=True, labels=['inlets', 'outlets'], title=None, cmap=None, color='k', legend=True):
         """
         Show the karst network as a graph with nodes and edges. Defaults to showing latest iteration.
         Inputs: 
-        data: karst simulation object containing nodes, edges, points, etc. Can be obtained from self.karst_simulations[i]
-        ax: axis to plot on
-        label: 'none' or list of strings ['nodes','edges','inlets','outlets'], indicating which components to label
-        title: string, title of plot
-        cmap: string, colormap to use when plotting
-        color: string, single color to use when plotting (cannot have both cmap and color)
-        legend: True/False whether to display legend
+        data:   karst simulation object containing nodes, edges, points, etc. Can be obtained from self.karst_simulations[i]
+        ax:     axis to plot on
+        label:  None or list of strings ['nodes','edges','inlets','outlets'], indicating which components to label
+        title:  string, title of plot
+        cmap:   string, colormap to use when plotting
+        color:  string, single color to use when plotting (cannot have both cmap and color)
+        legend: True/False, whether to display legend
+        plot_nodes:   True/False, whether to display nodes
         """
 
         if ax == None:
@@ -2579,7 +2580,8 @@ class SKS():
         toY   = nodes.y.loc[edges.outNode]
 
         #Plot nodes and edges:
-        n = ax.scatter(nodes.y,                     nodes.x,                     c='k',         s=5)  #scatterplot nodes
+        if plot_nodes:
+            n = ax.scatter(nodes.y,                     nodes.x,                     c='k',         s=5)  #scatterplot nodes
         i = ax.scatter(data.points['inlets'].x,  data.points['inlets'].y,  c='orange',    s=30) #scatterplot inlets
         o = ax.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue', s=30) #scatterplot outlets
         e = matplotlib.lines.Line2D([0],[0])                                                  #line artist for legend 
@@ -2607,7 +2609,10 @@ class SKS():
 
         #Add legend & title:
         if legend:
-            ax.legend([i,o,n,e],['inlets','outlets','nodes','edges'])
+            if plot_nodes:
+                ax.legend([i,o,n,e],['inlets','outlets','nodes','edges'])
+            else:
+                ax.legend([i,o,e],['inlets','outlets','edges'])
         if title is not None:
             ax.set_title(title, fontsize=16)
 
