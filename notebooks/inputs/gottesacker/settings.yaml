@@ -70,8 +70,9 @@ topography_datafile : 'inputs/gottesacker/dem200x251.csv'
 #'null'   - No orientation
 #'topo'   - Calculate orientation from topography
 #'import' - Import from gslib file (in progress)
+#'contact' - Calculate from csv file of elevations or potential values 
 orientation_mode : 'topo'
-orientation_datafile : 'inputs/gottesacker/orientation.gslib' #only used if mode='contact', or 'gslib'
+orientation_datafile : 'inputs/gottesacker/scalar_map200x251.csv' #only used if mode='contact', or 'gslib'
 
 ###Faults
 # 'null'   - No faults

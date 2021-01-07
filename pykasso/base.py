@@ -2539,15 +2539,17 @@ class SKS():
         plt.show()
         return None
 
-    def show_network(self, data=None, simplify=False, ax=None, labels=['inlets', 'outlets'], title=None, cmap='cividis'):
+    def show_network(self, data=None, simplify=False, ax=None, labels=['inlets', 'outlets'], title=None, cmap=None, color='k', legend=True):
         """
         Show the karst network as a graph with nodes and edges. Defaults to showing latest iteration.
         Inputs: 
         data: karst simulation object containing nodes, edges, points, etc. Can be obtained from self.karst_simulations[i]
         ax: axis to plot on
-        label: None or list of strings ['nodes','edges','inlets','outlets'], indicating which components to label
+        label: 'none' or list of strings ['nodes','edges','inlets','outlets'], indicating which components to label
         title: string, title of plot
         cmap: string, colormap to use when plotting
+        color: string, single color to use when plotting (cannot have both cmap and color)
+        legend: True/False whether to display legend
         """
 
         if ax == None:
@@ -2558,13 +2560,14 @@ class SKS():
             data = self.karst_simulations[-1]
 
         if simplify == True:
-            #FINISH UPDATING HERE
             nodes = data.network['nodes']   #get all nodes
             nodes_simple = data.network['karstnet'].graph_simpl.nodes  #get indices of only the nodes in the simplified graph
             nodes_simple = {key: nodes[key] for key in nodes_simple}   #make df of only the nodes in the simplified graph, for plotting
             edges = data.network['edges']   #get all edges
-            edges_simple = data.network['karstnet'].graph_simpl.edges  #get indices of only the nodes in the simplified graph
-            edges_simple = {key: edges[key] for key in edges_simple}   #make df of only the nodes in the simplified graph, for p
+            edges_simple = data.network['karstnet'].graph_simpl.edges  #get only the edges in the simplified graph
+            edges_simple = {i: edge for i,edge in enumerate(edges_simple)}   #make df of only the edges in the simplified graph, for p
+            nodes = pd.DataFrame.from_dict(nodes_simple, orient='index', columns=['x','y','type']) #convert to pandas for easier plotting
+            edges = pd.DataFrame.from_dict(edges_simple, orient='index', columns=['inNode','outNode'])
         else:
             nodes = pd.DataFrame.from_dict(data.network['nodes'], orient='index', columns=['x','y','type']) #convert to pandas for easier plotting
             edges = pd.DataFrame.from_dict(data.network['edges'], orient='index', columns=['inNode','outNode']) 
@@ -2581,24 +2584,30 @@ class SKS():
         o = ax.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue', s=30) #scatterplot outlets
         e = matplotlib.lines.Line2D([0],[0])                                                  #line artist for legend 
         for ind in edges.index:                                                               #loop over edge indices
-            ax.plot((fromY.iloc[ind], toY.iloc[ind]), (fromX.iloc[ind], toX.iloc[ind]), c=plt.cm.get_cmap(cmap)(ind/len(edges)))  #plot each edge, moving along color gradient to show order
+            if cmap is not None:
+                ax.plot((fromY.iloc[ind], toY.iloc[ind]), (fromX.iloc[ind], toX.iloc[ind]), c=plt.cm.get_cmap(cmap)(ind/len(edges)))  #plot each edge, moving along color gradient to show order
+            elif color is not None:
+                ax.plot((fromY.iloc[ind], toY.iloc[ind]), (fromX.iloc[ind], toX.iloc[ind]), c=color)  #plot each edge in same color
         
         #Add labels:
-        if 'nodes' in labels:                                         #label node indices
+        if labels == None:
+            pass
+        elif 'nodes' in labels:                                         #label node indices
             for ind in nodes.index:                                   #loop over node indices
                 ax.annotate(str(ind), xy=(nodes.y[ind]-10, nodes.x[ind]))  #annotate slightly to left of each node
-        if 'edges' in labels:                                         
+        elif 'edges' in labels:                                         
             for ind in edges.index:                                   
                 ax.annotate(str(ind), xy=(edges.y[ind]-10, edges.x[ind]))  #annotate slightly to left of each edge
-        if 'inlets' in labels:                                        
+        elif 'inlets' in labels:                                        
             for index,inlet in data.points['inlets'].iterrows(): 
                 ax.annotate(str(int(inlet.outlet))+'-'+str(int(inlet.inlet_iteration)),  xy=(inlet.x-10,  inlet.y)) 
-        if 'outlets' in labels:                                       
+        elif 'outlets' in labels:                                       
             for index,outlet in data.points['outlets'].iterrows():                     
                 ax.annotate(str(int(outlet.name)), xy=(outlet.x-10, outlet.y)) 
 
         #Add legend & title:
-        ax.legend([i,o,n,e],['inlets','outlets','nodes','edges'])
+        if legend:
+            ax.legend([i,o,n,e],['inlets','outlets','nodes','edges'])
         if title is not None:
             ax.set_title(title, fontsize=16)
 

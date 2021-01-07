@@ -18,7 +18,7 @@ dy   : 10
 ### Polygon ###
 ###############
 
-data_has_polygon : True
+data_has_polygon : False
 polygon_data     : 'inputs/valley1/polygon.txt'
 
 ####################
@@ -30,10 +30,10 @@ polygon_data     : 'inputs/valley1/polygon.txt'
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 outlets_mode    : 'import'
-outlets_data    : 'inputs/valley1/outlets_multiple.txt'
+outlets_data    : 'inputs/valley1/outlet2D.txt'
 outlets_number  : 1    #if random or composite, how many outlets to generate
 outlets_shuffle : False #if False: do not shuffle outlet order, if True: shuffle outlet order randomly
-outlets_importance : [1,1] #how to iterate over outlets: length of array indicates number of iterations, each integer indicates number of outlets in that iteration, sum of integers = total number of outlets
+outlets_importance : [1] #how to iterate over outlets: length of array indicates number of iterations, each integer indicates number of outlets in that iteration, sum of integers = total number of outlets
 #to run each outlet separately:              [1,1,1,...]  
 
 ###Inlets
@@ -41,11 +41,11 @@ outlets_importance : [1,1] #how to iterate over outlets: length of array indicat
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 inlets_mode    : 'import'
-inlets_data    : 'inputs/valley1/inlets.txt'
+inlets_data    : 'inputs/valley1/inlets2D.txt'
 inlets_number  : 5      #if random or composite, how many inlets to generate
-inlets_shuffle : True   #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
-inlets_per_outlet : [1,1]    #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets
-inlets_importance : [1,1]  #how to iterate over inlets: length of array indicates number of inlet iterations, each integer indicates number of inlets to run in that iteration, sum of integers = total number of inlets
+inlets_shuffle : False   #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
+inlets_per_outlet : [1]    #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets
+inlets_importance : [1,2,3]  #how to iterate over inlets: length of array indicates number of inlet iterations, each integer indicates number of inlets to run in that iteration, sum of integers = total number of inlets
 
 ######################
 ### GeologyManager ###
@@ -87,7 +87,7 @@ faults_datafile : 'inputs/faults.gslib'
 # 'import' - Import fractures
 # 'image'  - Import fractures via image
 # 'random' - Generate random fractures
-fractures_mode     : 'random'
+fractures_mode     : 'null'
 fractures_datafile : 'inputs/fractures.gslib'
 
 # If fractures mode is 'generate'
@@ -113,11 +113,11 @@ fractures_max_length : 800
 ##See the agd-hfm library documentation for how to use these and integrate them into pyKasso: 
   #https://github.com/Mirebeau/AdaptiveGridDiscretizations/blob/master/Notebooks_FMM/Summary.ipynb
 
-algorithm : 'Riemann2'
+algorithm : 'Isotropic2'
 
 #Travel cost parallel to gradient (higher=slower/harder)
 #Must be between 0 and 1
-cost_out       : 0.5  #default: 0.999
+cost_out       : 0.999  #default: 0.999
 cost_aquifer   : 0.3    #default: 0.3
 cost_aquiclude : 0.8    #default: 0.8
 cost_faults    : 0.2    #default: 0.2
@@ -129,8 +129,8 @@ cost_ratio     : 0.5   #ratio of travel cost parallel to gradient / travel cost 
 #if ratio > 1: travel cost is lower perpendicular to gradient (paths will follow contours), increase value to increase contrast
 
 ### Formation to consider and FMM code associated
-geology_id       : [2,3] # Only for 'import' or 'csv' geological modes
-geology_cost     : [cost_aquifer, cost_aquiclude]
+geology_id       : [0,1,2,3] # Only for 'import' or 'csv' geological modes
+geology_cost     : [cost_out, cost_aquifer, cost_aquiclude, cost_aquiclude]
 
 #############
 ### Other ###
