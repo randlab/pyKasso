@@ -45,7 +45,7 @@ inlets_data    : 'inputs/valley1/inlets2D.txt'
 inlets_number  : 5      #if random or composite, how many inlets to generate
 inlets_shuffle : False   #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
 inlets_per_outlet : [1]    #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets
-inlets_importance : [1,2,3]  #how to iterate over inlets: length of array indicates number of inlet iterations, each integer indicates number of inlets to run in that iteration, sum of integers = total number of inlets
+inlets_importance : [1]  #how to iterate over inlets: length of array indicates number of inlet iterations, each integer indicates number of inlets to run in that iteration, sum of integers = total number of inlets
 
 ######################
 ### GeologyManager ###
@@ -72,6 +72,7 @@ topography_datafile : 'inputs/valley1/dem80x100.csv'
 #'topo'     - Calculate orientation from surface topography
 #'contact'  - Calculate from map of elevation of lower boundary of karst unit (as csv)
 #'gslib'    - Import from gslib file (in progress)
+
 orientation_mode : 'topo'
 orientation_datafile : 'inputs/valley1/contact80x100.csv'  #only used if mode=contact or gslib
 
@@ -118,7 +119,7 @@ algorithm : 'Isotropic2'
 #Travel cost parallel to gradient (higher=slower/harder)
 #Must be between 0 and 1
 cost_out       : 0.999  #default: 0.999
-cost_aquifer   : 0.3    #default: 0.3
+cost_aquifer   : 0.4    #default: 0.3
 cost_aquiclude : 0.8    #default: 0.8
 cost_faults    : 0.2    #default: 0.2
 cost_fractures : 0.2    #default: 0.2

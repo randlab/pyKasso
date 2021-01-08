@@ -1,0 +1,146 @@
+ ##################
+### SKS SETTINGS ###
+ ##################
+
+---
+############
+### Grid ###
+############
+
+x0   : 5
+y0   : 5
+xnum : 100
+ynum : 60
+dx   : 10
+dy   : 10
+
+###############
+### Polygon ###
+###############
+
+data_has_polygon : False
+polygon_data     : 'inputs/valley1/xsec/polygon.txt'
+
+####################
+### PointManager ###
+####################
+
+###Outlets
+# 'random'    - generate n random points
+# 'import'    - import points
+# 'composite' - add n random points to imported points
+outlets_mode    : 'import'
+outlets_data    : 'inputs/valley1/xsec/outlets2D.txt'
+outlets_number  : 1    #if random or composite, how many outlets to generate
+outlets_shuffle : False #if False: do not shuffle outlet order, if True: shuffle outlet order randomly
+outlets_importance : [1] #how to iterate over outlets: length of array indicates number of iterations, each integer indicates number of outlets in that iteration, sum of integers = total number of outlets
+#to run each outlet separately:              [1,1,1,...]  
+
+###Inlets
+# 'random'    - generate n random points
+# 'import'    - import points
+# 'composite' - add n random points to imported points
+inlets_mode    : 'import'
+inlets_data    : 'inputs/valley1/xsec/inlets2D.txt'
+inlets_number  : 5      #if random or composite, how many inlets to generate
+inlets_shuffle : False   #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
+inlets_per_outlet : [1]    #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets
+inlets_importance : [1]  #how to iterate over inlets: length of array indicates number of inlet iterations, each integer indicates number of inlets to run in that iteration, sum of integers = total number of inlets
+
+######################
+### GeologyManager ###
+######################
+###Mode options
+# 'null'   - No geology
+# 'import' - Import geology via GSLIB (old method)
+# 'gslib'  - Import geology via GSLIB (new method)
+# 'image'  - Import geology via image
+# 'csv'    - Import geology via csv
+
+#Geology:
+geological_mode     : 'csv'
+geological_datafile : 'inputs/valley1/xsec/geo60x100.csv'
+
+###Topography
+#'null'   - No topography
+#'csv'    - Import topography from csv file 
+topography_mode : 'null'
+topography_datafile : 'inputs/valley1/xsec/dem60x100.csv'
+
+###Orientation
+#'null'     - No orientation
+#'topo'     - Calculate orientation from surface topography
+#'contact'  - Calculate from map of elevation of lower boundary of karst unit (as csv)
+#'gslib'    - Import from gslib file (in progress)
+#'csv'      - Import individual files for each dimension (list a path for each dimension's file)
+
+orientation_mode : 'csv'
+orientation_datafile : ['inputs/valley1/xsec/orientationx60x100.csv', 'inputs/valley1/xsec/orientationy60x100.csv']  #only used if mode=contact, csv, or gslib
+
+###Faults
+# 'null'   - No faults
+# 'import' - Import faults
+# 'image'  - Import faults via image
+faults_mode     : 'null'
+faults_datafile : 'inputs/faults.gslib'
+
+###Fractures
+# 'null'   - No fractures
+# 'import' - Import fractures
+# 'image'  - Import fractures via image
+# 'random' - Generate random fractures
+fractures_mode     : 'null'
+fractures_datafile : 'inputs/fractures.gslib'
+
+# If fractures mode is 'generate'
+fractures_densities       : [5.83e-5,1.38e-5,2.22e-5,2.5e-5,4.16e-5,6.66e-5,5e-5]
+fractures_min_orientation : [      0,     15,     30,    60,    105,    120, 150]
+fractures_max_orientation : [     15,     30,     45,   105,    120,    150, 180]
+
+# For fracture size
+fractures_alpha      : 2
+fractures_min_length : 50
+fractures_max_length : 800
+
+###############################
+### Fast-Marching Algorithm ###
+###############################
+
+#Choose which algorithm to use:
+#'Isotropic2': agd-hfm: 2D, equivalent of skfmm
+#'Isotropic3': adg-hfm: 3D, equivalent of skfmm
+#'Riemann2'  : agd-hfm: 2D, anisotropic, requires an anisotropy vector field (topography or geologic orientation), performs well in high-relief catchments
+#'Riemann3'  : agd-hfm: 3D version of anisotropic algorithm
+#Note: There are MANY more options for fast marching algorithms built into the agd-hfm library.
+##See the agd-hfm library documentation for how to use these and integrate them into pyKasso: 
+  #https://github.com/Mirebeau/AdaptiveGridDiscretizations/blob/master/Notebooks_FMM/Summary.ipynb
+
+algorithm : 'Isotropic2'
+
+#Travel cost parallel to gradient (higher=slower/harder)
+#Must be between 0 and 1
+cost_out       : 0.999  #default: 0.999
+cost_aquifer   : 0.4    #default: 0.3
+cost_aquiclude : 0.8    #default: 0.8
+cost_faults    : 0.2    #default: 0.2
+cost_fractures : 0.2    #default: 0.2
+cost_conduits  : 0.1    #default: 0.01
+cost_ratio     : 0.5   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (default 0.25)
+#if ratio = 1: same travel cost parallel and perpendicular to gradient
+#if ratio < 1: travel cost is lower parallel to gradient (paths will follow steepest gradient), decrease value to increase contrast
+#if ratio > 1: travel cost is lower perpendicular to gradient (paths will follow contours), increase value to increase contrast
+
+### Formation to consider and FMM code associated
+geology_id       : [0,1,2] # Only for 'import' or 'csv' geological modes
+geology_cost     : [cost_out, cost_aquifer, cost_aquiclude]
+
+#############
+### Other ###
+#############
+
+# if 0 = total random
+rand_seed : 1
+
+#Verbosity: how much output to display during run 
+verbosity : 0    #0: minimal output, 1: some output; 2: maximum output
+...

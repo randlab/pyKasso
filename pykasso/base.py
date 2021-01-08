@@ -1192,6 +1192,38 @@ class SKS():
         self.settings['inlets_shuffle'] = inlets_shuffle
         return None
 
+    def set_inlets_per_outlet(self, inlets_per_outlet):
+        """
+        Define the proportion of inlets to be distributed across each outlet.
+        Length of array indicates number of outlets, 
+        each integer indicates number of inlets to assign to that outlet, 
+        sum of integers = total number of inlets
+        Useful only when iterating over inlets and outlets.
+
+        Parameter
+        ---------
+        inlets_per_outlet : [1]: a single iteration with all inlets to one outlet, [1,1,1]: three outlets with one inlet in each,
+            [1,2,3]: three outlets with one inlet in the first, 2 inlets in the second, and 3 inlets in the third. 
+        """
+        self.settings['inlets_per_outlet'] = inlets_per_outlet
+        return None
+    
+    def set_inlets_importance(self, inlets_importance):
+        """
+        Define the proportion of inlets to be distributed across each iteration.
+        Length of array indicates number of inlet iterations, 
+        each integer indicates number of inlets to run in that iteration, 
+        sum of integers = total number of inlets
+        Useful only when iterating over inlets.
+
+        Parameter
+        ---------
+        inlets_importance : [1]: a single iteration with all inlets, [1,1,1]: three iterations with one inlet in each,
+            [1,2,3]: three iterations with one inlet in the first, 2 inlets in the second, and 3 inlets in the third. 
+        """
+        self.settings['inlets_importance'] = inlets_importance
+        return None
+
     def set_outlets_mode(self, outlets_mode):
         """
         Define the outlets mode.
@@ -1245,6 +1277,22 @@ class SKS():
         self.settings['outlets_shuffle'] = outlets_shuffle
         return None
 
+    def set_outlets_importance(self, outlets_importance):
+        """
+        Define the proportion of outlets to be distributed across each iteration.
+        Length of array indicates number of outlet iterations, 
+        each integer indicates number of outlets to run in that iteration, 
+        sum of integers = total number of outlets
+        Useful only when iterating over outlets.
+
+        Parameter
+        ---------
+        outlets_importance : [1]: a single iteration with all outlets, [1,1,1]: three iterations with one outlet in each,
+            [1,2,3]: three iterations with one outlet in the first, 2 outlets in the second, and 3 outlets in the third. 
+        """
+        self.settings['outlets_importance'] = outlets_importance
+        return None
+    
     def set_geological_mode(self, geological_mode):
         """
         Define the geological mode.
@@ -1311,10 +1359,9 @@ class SKS():
         ---------
         orientation_mode : string
             'null'   - No orientation
-            'import' - Import from old gslib file format
-            'gslib'  - Import from new gslib format
-            'csv'    - Import from csv
-            'image'  - Import via image
+            'topo'   - Calculate from topography
+            'contact'- Calculate from csv file of karst unit lower contact surface
+            'csv'    - Import directly from csv files (list one file per model dimension) ['orientationx.csv', 'orientationy.csv']]
         """
         self.settings['orientation_mode'] = orientation_mode
         return None
@@ -1326,7 +1373,7 @@ class SKS():
 
         Parameter
         ---------
-        orientation_datafile : string
+        orientation_datafile : string or list of strings
             orientation datafile path. 
         """
         self.settings['orientation_datafile'] = orientation_datafile
@@ -1467,6 +1514,18 @@ class SKS():
         self.settings['fractures_max_length'] = fractures_max_length
         return None
 
+    def set_algorithm(self, algorithm):
+        """
+        Define the algorithm to use when calculating travel time to spring.
+
+        Parameter
+        ----------
+        algorithm : string, 'Isotropic2', 'Isotropic3', 'Riemann2', 'Riemann3'
+                    see AGD-HFM documentation for full list of options
+        """
+        self.settings['algorithm'] = algorithm
+        return None
+    
     def set_cost_out(self, cost_out):
         """
         Define the fast-marching value for the outside of the study area.
@@ -1572,17 +1631,6 @@ class SKS():
         geology_cost : list
         """
         self.settings['geology_cost'] = geology_cost
-        return None
-
-    def set_importance_factor(self, importance_factor):
-        """
-        Define the importance factor, and so the number of karstic conduits generation.
-
-        Parameter
-        ---------
-        importance_factor : list
-        """
-        self.settings['importance_factor'] = importance_factor
         return None
 
     def set_rand_seed(self, rand_seed):
@@ -1722,19 +1770,23 @@ class SKS():
         Update the orientation settings.
         """
         if self.settings['orientation_mode'] == 'null':
-            self.geology.set_data_null('orientation')
-        elif self.settings['orientation_mode'] == 'import':
-            self.geology.set_data('orientation', self.settings['orientation_datafile'])
-        elif self.settings['orientation_mode'] == 'gslib':
-            self.geology.set_data_from_gslib('orientation', self.settings['orientation_datafile'])
+            self.geology.set_data_null('orientationx')
+            self.geology.set_data_null('orientationy')
+        elif self.settings['orientation_mode'] == 'topo':
+            self.geology.generate_orientations(self.geology.data['topography']['data'])
+        elif self.settings['orientation_mode'] == 'contact':
+            self.geology.set_data_from_csv('contact', self.settings['orientation_datafile'])
+            self.geology.generate_orientations(self.geology.data['contact']['data'])
         elif self.settings['orientation_mode'] == 'csv':
-            self.geology.set_data_from_csv('orientation', self.settings['orientation_datafile'])
+            for i,dim in zip(len(self.settings['orientation_datafile']), ['x','y','z']):
+                self.geology.set_data_from_csv('orientation'+dim, self.settings['orientation_datafile'][i])
         else:
             print('/!\\ Error : unrecognized orientation mode', self.settings['orientation_mode'])
-            sys.exit() 
+            sys.exit()
         self.geology.compute_stats_on_data()
         if self.settings['polygon_data']:
-            self.geology_masked['orientation'] = ma.MaskedArray(self.geology.data['orientation']['data'], mask=self.mask)
+            self.geology_masked['orientationx'] = ma.MaskedArray(self.geology.data['orientationx']['data'], mask=self.mask)
+            self.geology_masked['orientationy'] = ma.MaskedArray(self.geology.data['orientationy']['data'], mask=self.mask)
         return None
 
     def update_faults(self):
@@ -1931,6 +1983,10 @@ class SKS():
         elif self.settings['orientation_mode'] == 'contact':
             geology.set_data_from_csv('contact', self.settings['orientation_datafile'])
             geology.generate_orientations(geology.data['contact']['data'])
+        elif self.settings['orientation_mode'] == 'csv':
+            for dim in range(len(self.settings['orientation_datafile'])):
+                geology.set_data_from_csv('orientation'+['x','y','z'][dim], self.settings['orientation_datafile'][dim])
+                    
         else:
             print('/!\\ Error : unrecognized orientation mode', self.settings['orientation_mode'])
             sys.exit()
@@ -1993,8 +2049,11 @@ class SKS():
         network['nodes'] = self.nodes   #store nodes list
         network['karstnet'] = k    #store karstnet network object (including graph)
         config = self.settings
-        
         self.karst_simulations.append(KarstNetwork(maps, points, network, stats, config))
+
+        # 5 - Return inlets and outlets to their original format:
+        self.inlets  = np.asarray(self.inlets)[:,0:2]
+        self.outlets = np.asarray(self.outlets)[:,0:2]
         return None
     
     # 1
@@ -2594,18 +2653,19 @@ class SKS():
         #Add labels:
         if labels == None:
             pass
-        elif 'nodes' in labels:                                         #label node indices
-            for ind in nodes.index:                                   #loop over node indices
-                ax.annotate(str(ind), xy=(nodes.y[ind]-10, nodes.x[ind]))  #annotate slightly to left of each node
-        elif 'edges' in labels:                                         
-            for ind in edges.index:                                   
-                ax.annotate(str(ind), xy=(edges.y[ind]-10, edges.x[ind]))  #annotate slightly to left of each edge
-        elif 'inlets' in labels:                                        
-            for index,inlet in data.points['inlets'].iterrows(): 
-                ax.annotate(str(int(inlet.outlet))+'-'+str(int(inlet.inlet_iteration)),  xy=(inlet.x-10,  inlet.y)) 
-        elif 'outlets' in labels:                                       
-            for index,outlet in data.points['outlets'].iterrows():                     
-                ax.annotate(str(int(outlet.name)), xy=(outlet.x-10, outlet.y)) 
+        else:
+            if 'nodes' in labels:                                         #label node indices
+                for ind in nodes.index:                                   #loop over node indices
+                    ax.annotate(str(ind), xy=(nodes.y[ind]-10, nodes.x[ind]))  #annotate slightly to left of each node
+            if 'edges' in labels:                                         
+                for ind in edges.index:                                   
+                    ax.annotate(str(ind), xy=(edges.y[ind]-10, edges.x[ind]))  #annotate slightly to left of each edge
+            if 'inlets' in labels:                                        
+                for index,inlet in data.points['inlets'].iterrows(): 
+                    ax.annotate(str(int(inlet.outlet))+'-'+str(int(inlet.inlet_iteration)),  xy=(inlet.x-(6*self.grid.dx),  inlet.y)) 
+            if 'outlets' in labels:                                       
+                for index,outlet in data.points['outlets'].iterrows():                     
+                    ax.annotate(str(int(outlet.name)), xy=(outlet.x-(4*self.grid.dx), outlet.y)) 
 
         #Add legend & title:
         if legend:
