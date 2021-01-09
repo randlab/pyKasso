@@ -65,17 +65,16 @@ geological_datafile : 'inputs/valley1/xsec/geo60x100.csv'
 #'null'   - No topography
 #'csv'    - Import topography from csv file 
 topography_mode : 'null'
-topography_datafile : 'inputs/valley1/xsec/dem60x100.csv'
+topography_datafile : 'inputs/valley1/xsec/surface60x100.csv'
 
 ###Orientation
 #'null'     - No orientation
 #'topo'     - Calculate orientation from surface topography
-#'contact'  - Calculate from map of elevation of lower boundary of karst unit (as csv)
+#'surface'  - Calculate from another surface (as csv) - useful if using surface of bottom of karst unit instead of topography
 #'gslib'    - Import from gslib file (in progress)
-#'csv'      - Import individual files for each dimension (list a path for each dimension's file)
 
-orientation_mode : 'csv'
-orientation_datafile : ['inputs/valley1/xsec/orientationx60x100.csv', 'inputs/valley1/xsec/orientationy60x100.csv']  #only used if mode=contact, csv, or gslib
+orientation_mode : 'surface'
+orientation_datafile : 'inputs/valley1/xsec/surface60x100.csv'   #only used if mode=surface, csv, or gslib
 
 ###Faults
 # 'null'   - No faults
@@ -125,7 +124,7 @@ cost_aquiclude : 0.8    #default: 0.8
 cost_faults    : 0.2    #default: 0.2
 cost_fractures : 0.2    #default: 0.2
 cost_conduits  : 0.1    #default: 0.01
-cost_ratio     : 0.5   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (default 0.25)
+cost_ratio     : 0.25   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (default 0.5)
 #if ratio = 1: same travel cost parallel and perpendicular to gradient
 #if ratio < 1: travel cost is lower parallel to gradient (paths will follow steepest gradient), decrease value to increase contrast
 #if ratio > 1: travel cost is lower perpendicular to gradient (paths will follow contours), increase value to increase contrast

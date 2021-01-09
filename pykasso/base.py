@@ -1360,8 +1360,7 @@ class SKS():
         orientation_mode : string
             'null'   - No orientation
             'topo'   - Calculate from topography
-            'contact'- Calculate from csv file of karst unit lower contact surface
-            'csv'    - Import directly from csv files (list one file per model dimension) ['orientationx.csv', 'orientationy.csv']]
+            'surface'- Calculate from csv file of a surface (useful if using lower surface of karst unit)
         """
         self.settings['orientation_mode'] = orientation_mode
         return None
@@ -1373,7 +1372,7 @@ class SKS():
 
         Parameter
         ---------
-        orientation_datafile : string or list of strings
+        orientation_datafile : string 
             orientation datafile path. 
         """
         self.settings['orientation_datafile'] = orientation_datafile
@@ -1774,12 +1773,9 @@ class SKS():
             self.geology.set_data_null('orientationy')
         elif self.settings['orientation_mode'] == 'topo':
             self.geology.generate_orientations(self.geology.data['topography']['data'])
-        elif self.settings['orientation_mode'] == 'contact':
-            self.geology.set_data_from_csv('contact', self.settings['orientation_datafile'])
-            self.geology.generate_orientations(self.geology.data['contact']['data'])
-        elif self.settings['orientation_mode'] == 'csv':
-            for i,dim in zip(len(self.settings['orientation_datafile']), ['x','y','z']):
-                self.geology.set_data_from_csv('orientation'+dim, self.settings['orientation_datafile'][i])
+        elif self.settings['orientation_mode'] == 'surface':
+            self.geology.set_data_from_csv('surface', self.settings['orientation_datafile'])
+            self.geology.generate_orientations(self.geology.data['surface']['data'])
         else:
             print('/!\\ Error : unrecognized orientation mode', self.settings['orientation_mode'])
             sys.exit()
@@ -1980,13 +1976,9 @@ class SKS():
             geology.set_data_null('orientationy')
         elif self.settings['orientation_mode'] == 'topo':
             geology.generate_orientations(geology.data['topography']['data'])
-        elif self.settings['orientation_mode'] == 'contact':
-            geology.set_data_from_csv('contact', self.settings['orientation_datafile'])
-            geology.generate_orientations(geology.data['contact']['data'])
-        elif self.settings['orientation_mode'] == 'csv':
-            for dim in range(len(self.settings['orientation_datafile'])):
-                geology.set_data_from_csv('orientation'+['x','y','z'][dim], self.settings['orientation_datafile'][dim])
-                    
+        elif self.settings['orientation_mode'] == 'surface':
+            geology.set_data_from_csv('surface', self.settings['orientation_datafile'])
+            geology.generate_orientations(geology.data['surface']['data'])          
         else:
             print('/!\\ Error : unrecognized orientation mode', self.settings['orientation_mode'])
             sys.exit()
@@ -2281,7 +2273,12 @@ class SKS():
         Compute the alpha map: travel cost in the same direction as the gradient.
         Cost map * topography map, so that the cost is higher at higher elevations, encouraging conduits to go downgradient.
         """
-        self.maps['alpha'][iteration] = self.maps['cost'][iteration] * self.geology.data['topography']['data']
+        if self.settings['topography_mode'] != 'null':
+            self.maps['alpha'][iteration] = self.maps['cost'][iteration] * self.geology.data['topography']['data']
+        elif self.settings['orientation_mode'] == 'surface':
+            self.maps['alpha'][iteration] = self.maps['cost'][iteration] * self.geology.data['surface']['data']
+        else:
+            self.maps['alpha'][iteration] = self.maps['cost'][iteration]  
         return None
     
     # 2
