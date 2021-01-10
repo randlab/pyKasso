@@ -1,1 +1,4 @@
-from pykasso.base import *
+from pykasso.grid           import *
+from pykasso.polygon        import *
+from pykasso.geologymanager import *
+from pykasso.pointmanager   import *
