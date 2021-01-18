@@ -1,18 +1,22 @@
 """
 TODO :
-- _check_geological_IDs ???
-- _compute_surface ???
-- Show data ?
-- Show fractures stats ?
+- Add 'karst' data;
+- Do we keep 'set_data_from_image()' ?;
+- Do we keep 'import' mode ? With the fill function ? old gslib format ? poubelle ?
+- show_fractures_stats() ?
+- show_fractures() ?
+- show() en cours
 """
+
 from .functions import opendatafile, loadpoints
 from .fracture  import Fracture
-from tqdm import tqdm
+from tqdm       import tqdm
 
 import sys
 import math
 import mpmath
-import numpy  as np
+import numpy             as np
+import matplotlib.pyplot as plt
 
 class GeologyManager():
     """
@@ -36,133 +40,105 @@ class GeologyManager():
         Parameters
         ----------
         data_key : str
-            Type of data : 'geology', 'faults', 'fractures' or 'karst'.
+            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
         """
         self.data[data_key] = {}
         self.data[data_key]['data']  = np.zeros((self.grid.nz, self.grid.ny, self.grid.nx))
-        occurence = self.grid.nz * self.grid.ny * self.grid.nx
-        volume    = occurence * self.grid.dx * self.grid.dy * self.grid.dz
-        self.data[data_key]['stats'] = {'ID':0, 'occurence':occurence, 'frequency':1, 'volume':volume}
         self.data[data_key]['mode']  = 'null'
         return None
 
     def set_data(self, data_key, datafile_location):
         """
-        Set data from a gslib datafile.
-        The datafile must have one column.
-        For 'faults', 'fractures' and 'karst', in the gslib datafile :
-        0 - absence
-        1 - presence
+        Set data from a datafile for an indicated data key.
 
         Parameters
         ----------
         data_key : str
-            Type of data : 'geology', 'faults', 'fractures' or 'karst'.
+            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
         datafile_location : str
-            Path of the gslib datafile.
+            Path of the datafile.
         """
         self.data[data_key]          = {}
         self.data[data_key]['data']  = self._fill(datafile_location)
-        self.data[data_key]['stats'] = self._compute_stats(data_key)
         self.data[data_key]['mode']  = 'import'
         return None
-
-    def _fill(self, datafile_location):
+        
+    def set_data_from_image(self, data_key, datafile_location):
         """
-        GSLIB Reader.
+        Set data from an image for an indicated data key.
+        
+        Parameters
+        ----------
+        data_key : string
+            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
+        datafile_location : string
+            Path of the datafile.
         """
-        # Try to open datafile
-        text = opendatafile(datafile_location)
-
-        # Control if second line is well an integer
         try:
-            nvar = int(text[1])
+           image_data = np.flipud(plt.imread(datafile_location))
         except:
-            print("- set_data() - Error : Second line of gslib file must be an integer.")
+            print('- set_data_from_image() - Error : unable to read datafile.')
             raise
-
-        # Control if second line is 1
-        if nvar is not 1:
-           sys.exit("- set_data() - Error : gslib file must have only one column.")
-
-        # Control if size declared match with gslib's size file
-        data_lines = text[2+nvar:]
-        if len(data_lines) != (self.grid.nx*self.grid.ny*self.grid.nz):
-            sys.exit("- set_data() - Error : Dimensions declared does not match with gslib file's size.")
-
-        # Get values from text files
-        data = np.zeros(len(data_lines))
-        try:
-            for data_line, k in zip(data_lines, range(len(data_lines))):
-                data[k] = data_line.strip().split()[0]
-        except:
-            print("- set_data() - Unexpected error:", sys.exc_info()[0])
-            raise
-
-        return data.reshape((self.grid.nz, self.grid.ny, self.grid.nx))
-
-    def _compute_stats(self, data_key):
+        self.data[data_key] = {}
+        self.data[data_key]['data'] = (image_data[:,:,0] == 0)*1
+        self.data[data_key]['mode'] = 'image'
+        return None
+    
+    def set_data_from_csv(self, data_key, datafile_location):
         """
-        Compute statistics on the imported data.
+        Set data from a csv file for indicated data key.
+        
+        Parameters
+        ----------
+        data_key : string
+            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
+        datafile_location : string
+            Path of the datafile.
         """
-        stats = {}
+        self.data[data_key]         = {}
+        self.data[data_key]['data'] = np.genfromtxt(datafile_location, delimiter=',')
+        self.data[data_key]['mode'] = 'csv'
+        return None
+        
+    def set_data_from_gslib(self, data_key, datafile_location):
+        """
+        Set data from a gslib file for indicated data key in the format that work with the fast marching algorithm.
+        
+        Parameters
+        ----------
+        data_key : string
+            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
+        datafile_location : string
+            Path to the datafile.
+        """
+        self.data[data_key]         = {}
+        a = np.genfromtxt(datafile_location, dtype=float, skip_header=3) #read in gslib file as float numpy array without header rows
+        a[a==0] = np.nan                                                 #replace zeros with nans (array must be float first)
+        a = np.reshape(a, (self.grid.ynum,self.grid.xnum), order='F')    #reshape to xy grid using Fortran ordering
+        self.data[data_key]['data'] = a                                  #store  
+        self.data[data_key]['mode'] = 'gslib'
+        return None
+        
+    def generate_orientations(self, surface):
+        """
+        Generate maps of x and y components of orientation.
+        
+        Parameters
+        ------------
+        surface : 2D numpy-array
+            A 2D array of the elevation or potential in cell, used to calculate the orientation (i.e. slope or dip) of that cell.
+            Use either the land surface ('topography'), the surface of the bottom of the karst unit ('contact'), or the potential returned by the geologic model 
+        """
+        self.data['orientationx'] = {}
+        self.data['orientationx']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
+        self.data['orientationy'] = {}
+        self.data['orientationy']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
+        self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(surface, self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array 
+        self.data['orientationx']['mode'] = 'topo'
+        self.data['orientationy']['mode'] = 'topo'
+        return None
 
-        # Count occurencies
-        for z in range(self.grid.nz):
-            for y in range(self.grid.ny):
-                for x in range(self.grid.nx):
-                    value = self.data[data_key]['data'][z][y][x]
-                    try:
-                        if stats.get(value) == None:
-                            stats[value] = 1
-                        else:
-                            stats[value] += 1
-                    except:
-                        print(value)
-
-        # Construct stats
-        ID        = []
-        occurence = []
-        frequency = []
-        volume    = []
-        for k in stats:
-            ID.append(k)
-            occurence.append(stats[k])
-            frequency.append(100*stats[k]/(self.grid.nx*self.grid.ny*self.grid.nz))
-            volume.append(stats[k]*self.grid.dx*self.grid.dy*self.grid.dz)
-        return {'ID':ID, 'occurence':occurence, 'frequency':frequency, 'volume':volume}
-
-    # def _check_geological_IDs(self, IDs):
-        # for ID in IDs:
-            # if ID not in self.data["geology"]["stats"]["ID"]:
-                # sys.exit("Detected geological IDs do not match which indicated ones.")
-        # self.geological_IDs = IDs
-        # return None
-
-    # def _compute_surface(self):
-        # """
-        # Compute the surface IDs and the digital elevation model.
-        # """
-        # if self.data["geology"]["mode"] is "null":
-            # self.DEM         = np.full((self.grid.ny, self.grid.nx), self.grid.nz * self.grid.dz)
-            # self.surface_IDs = np.full((self.grid.ny, self.grid.nx), 0)
-        # elif self.data["geology"]["mode"] is "import":
-            # self.DEM         = np.zeros((self.grid.ny,self.grid.nx))
-            # self.surface_IDs = np.zeros((self.grid.ny,self.grid.nx))
-            # for y in range(self.grid.ny):
-                # for x in range(self.grid.nx):
-                    # for z in range(self.grid.nz):
-                        # if self.data["geology"]["data"][z][y][x] == self.geological_IDs[0]:
-                            # if z == 0:
-                                # self.surface_IDs[y][x] = self.geological_IDs[0]
-                                # break
-                        # else:
-                            # self.DEM[y][x] = z + 1
-                            # self.surface_IDs[y][x] = self.data["geology"]["data"][z][y][x]
-            # self.DEM = self.DEM * self.grid.dz + self.grid.z0
-        # return None
-
-    def generate_fractures(self, fractures_densities, alpha, fractures_min_orientation, fractures_max_orientation, fractures_min_dip, fractures_max_dip, fractures_min_length, fractures_max_length):
+    def generate_fractures(self, fractures_densities, fractures_alpha, fractures_min_orientation, fractures_max_orientation, fractures_min_dip, fractures_max_dip, fractures_min_length, fractures_max_length):
         """
         Generate fractures as Fracture() objects.
 
@@ -170,7 +146,7 @@ class GeologyManager():
         ----------
         fractures_densities : list
             Fracture densities for each fracture family.
-        alpha : list
+        fractures_alpha : list
             Degree of power law for each fracture family.
         fractures_min_orientation : list
             Fractures minimum orientation for each fracture family.
@@ -216,7 +192,7 @@ class GeologyManager():
         for frac_family in range(len(fractures_densities)):
 
             # Define all the constants required to randomly draw the length in distribution
-            palpha = (1-alpha[frac_family])
+            palpha = (1-fractures_alpha[frac_family])
             invpalpha = 1/palpha
             fmina = fractures_min_length[frac_family]**palpha
             frangea = fractures_max_length[frac_family]**palpha - fmina
@@ -703,31 +679,79 @@ class GeologyManager():
                         self.rst2d(raster_fractures[:,:,:], i1, i2, k1, k2)
         return raster_fractures
 
-    # def _generate_fractures_maps(self):
-        # """
-        # Draw the fractures map according to generated fracturation.
-        # """
-        # fractures_maps = np.zeros((len(self.fractures)+1,self.grid.ny,self.grid.nx))
+    def _fill(self, datafile_location):
+        """
+        GSLIB Reader.
+        """
+        # Try to open datafile
+        text = opendatafile(datafile_location)
 
-        # for frac_family in self.fractures:
-            # for fracture in self.fractures[frac_family]["fractures"]:
-                # x0, y0, x1, y1 = fracture.position
-                # d = np.sqrt((x1-x0)**2 + (y1-y0)**2)
-                # D = np.sqrt((self.grid.dx/2)**2 + (self.grid.dy/2)**2)
-                # n = int(d / D)
-                # xs = np.linspace(x0, x1, n)
-                # ys = np.linspace(y0, y1, n)
+        # Control if second line is well an integer
+        try:
+            nvar = int(text[1])
+        except:
+            print("- set_data() - Error : Second line of gslib file must be an integer.")
+            raise
 
-                # for (x,y) in zip(xs, ys):
-                    # X = int(math.ceil((x - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
-                    # Y = int(math.ceil((y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
-                    # fractures_maps[frac_family][Y][X] = 1
+        # Control if second line is 1
+        if nvar is not 1:
+           sys.exit("- set_data() - Error : gslib file must have only one column.")
 
-            # self.fractures[frac_family]['frac_map'] = fractures_maps[frac_family]
-        # self.data['fractures']['data'] = (sum([fractures_maps[i] for i in range(len(self.fractures))]) > 0).astype(int)
-        # self.data['fractures']['mode'] = 'generate'
-        # return None
+        # Control if size declared match with gslib's size file
+        data_lines = text[2+nvar:]
+        if len(data_lines) != (self.grid.nx*self.grid.ny*self.grid.nz):
+            sys.exit("- set_data() - Error : Dimensions declared does not match with gslib file's size.")
 
+        # Get values from text files
+        data = np.zeros(len(data_lines))
+        try:
+            for data_line, k in zip(data_lines, range(len(data_lines))):
+                data[k] = data_line.strip().split()[0]
+        except:
+            print("- set_data() - Unexpected error:", sys.exc_info()[0])
+            raise
+
+        return data.reshape((self.grid.nz, self.grid.ny, self.grid.nx))
+
+    def compute_stats_on_data(self):
+        """
+        Compute statistics on the geologic data (not including the orientations).
+        """
+        #for key in self.data:
+        for key in ['geology', 'faults', 'fractures']:
+            stats = {}
+            for z in range(self.grid.nz):
+                for y in range(self.grid.ny):
+                    for x in range(self.grid.nx):
+                        value = self.data[key]['data'][z][y][x] 
+                        try:
+                            if stats.get(value) == None:
+                                stats[value] = 1
+                            else:
+                                stats[value] += 1
+                        except:
+                            print('Unable to comput stats for value', value)
+
+            #if self.settings['verbosity'] > 1:
+                #print('\n')
+                #print('STATS for {}'.format(key))
+                #print('%-12s%-12s%-12s%-12s' % ('ID', 'Number', '%', 'Superficy'))
+                #print(48*'-')
+            ID        = []
+            occurence = []
+            frequency = []
+            superficy = []
+            for k in stats:
+                #if self.settings['verbosity'] > 1:
+                   #print('%-12i%-12i%-12f%-12i' % (k, stats[k], 100*stats[k]/(self.grid.nx*self.grid.ny), stats[k]*self.grid.dx*self.grid.dy))
+                ID.append(k)
+                occurence.append(stats[k])
+                frequency.append(100*stats[k]/(self.grid.nx*self.grid.ny*self.grid.nz))
+                superficy.append(stats[k]*self.grid.dx*self.grid.dy*self.grid.dz)
+            self.data[key]['stats'] = {'ID':ID, 'occurence':occurence, 'frequency':frequency, 'superficy':superficy}
+        return None
+
+    """
     def show_fractures_stats(self):
     # if fractures none
         radius      = {}
@@ -746,7 +770,9 @@ class GeologyManager():
         print(orientation)
         print(dip)
         return None
-        
+    """
+    
+    """
     def show_fractures(self):
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -760,43 +786,33 @@ class GeologyManager():
         ax.set_aspect('equal', adjustable='box')
         plt.show()
         return None
-
-    # def show(self, frac_family=None):
-        # """
-        # Show the geology, faults, fractures and initial karst network maps.
-        # """
-        # grid = self._get_pyvista_grid()
-        # grid.cell_arrays["values"] = self.data["geology"]["data"].flatten(order="F")
-
-        # p = pv.Plotter(shape=(2, 2))
-
-        # p.subplot(0, 0)
-        # p.add_text("Geology", font_size=30)
-        # p.add_mesh(grid)
-
-        # p.subplot(0, 1)
-        # p.add_text("Faults", font_size=30)
-        # p.add_mesh(pv.Cube(), show_edges=True, color="tan")
-
-        # p.subplot(1, 0)
-        # p.add_text("Fractures", font_size=30)
-        # sphere = pv.Sphere()
-        # p.add_mesh(sphere, scalars=sphere.points[:, 2])
-        # p.add_scalar_bar("Z")
-        #plotter.add_axes()
-        # p.add_axes(interactive=True)
-
-        # p.subplot(1, 1)
-        # p.add_text("Karst network", font_size=30)
-        # p.add_mesh(pv.Cone(), color="g", show_edges=True)
-        # p.show_bounds(all_edges=True)
-
-        #Display the window
-        # p.show()
-
-def _extents(f):
     """
-    Little private function to correctly locate data on plots.
-    """
-    delta = f[1] - f[0]
-    return [f[0] - delta/2, f[-1] + delta/2]
+
+    def show(self, data=None, cmap='gray_r'):
+        """
+        Show data from the geology manager.
+        
+        Parameter
+        ---------
+        data : str || list (optional)
+            Data to show : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
+            By default, all data are showed.
+        """
+        if data is None:
+            data = []
+            for d in self.data:
+                data.append(d)
+                
+        if isinstance(data, str):
+            data = [data]
+        
+        nb = len(data)
+        columns = 3
+        rows    = math.ceil(nb/columns)
+        
+        f = plt.figure()
+        for i in range(1, nb):
+            f.add_subplot(rows, columns, i)
+            plt.imshow(self.data[data[i]]['data'], extent=self.grid.extent, origin='lower', cmap=cmap)
+            plt.set_title(data[i])
+        plt.show()

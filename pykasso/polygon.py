@@ -31,23 +31,22 @@ class Polygon():
         if isinstance(vertices, str):
             text     = opendatafile(vertices)
             vertices = loadpoints(text)
-
+        
         if len(vertices) < 3:
             print("- set_polygon() - Error : Not enough vertices to create a polygon (3 minimum).")
-            return None
         else:
             self.polygon = vertices
-            self.mask    = self._set_mask()
+            self.mask = self._set_mask()
         return None
 
     def _set_mask(self):
         """
         Set the mask.
         """
-        mask = np.zeros((self.grid.ny, self.grid.nx))
+        mask = np.zeros((self.grid.nx, self.grid.ny))
         for y in range(self.grid.ny):
             for x in range(self.grid.nx):
-                mask[y][x] = not int(Path(self.polygon).contains_point((self.grid.X[x][y][0],self.grid.Y[x][y][0])))
+                mask[x][y] = not int(Path(self.polygon).contains_point((self.grid.X[x][y][0],self.grid.Y[x][y][0])))
         return mask
 
     def inspect_polygon(self):
@@ -57,14 +56,14 @@ class Polygon():
 
         Returns
         -------
-            List of vertices out of the grid.
+            List of vertices out of the grid else 'None'.
         """
         if self.polygon is not None:
             unvalidated_vertices = []
             xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1]]
             ylimits = [self.grid.ylimits[0], self.grid.ylimits[1], self.grid.ylimits[1], self.grid.ylimits[0]]
             for k,(x,y) in enumerate(self.polygon):
-                if not int(Path(list(zip(xlimits,ylimits))).contains_point((x,y))):
+                if not int(Path(list(zip(xlimits, ylimits))).contains_point((x,y))):
                     unvalidated_vertices.append(k+1)
             validated_vertices = len(self.polygon) - len(unvalidated_vertices)
 
@@ -82,6 +81,13 @@ class Polygon():
         else:
             print('- inspect_polygon() - Error : no polygon to inspect. Please set a polygon.')
         return None
+
+    def clean_polygon(self):
+        """
+        Remove the polygon.
+        """
+        self.polygon = None
+        self.mask    = None
 
     def show(self):
         """

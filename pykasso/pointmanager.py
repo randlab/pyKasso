@@ -1,14 +1,15 @@
 """
 TODO :
-- geologymanager dans le constructor ???
-- generate_points // geologicalID ????
-- PAS FINI
+- Ajouter GeologyManager en argument dans le construceur :
+    + Génération d'inlet et d'outlet en fonction de la géologie
 """
 
-from .functions import opendatafile, loadpoints
+from .functions      import opendatafile, loadpoints
+from matplotlib.path import Path
 
 import sys
 import numpy             as np
+import numpy.ma          as ma
 import matplotlib.pyplot as plt
 
 class PointManager():
@@ -21,15 +22,12 @@ class PointManager():
         PointManager() class needs a Grid() object as argument.
     polygon : Polygon()
         PointManager() class needs a Polygon() object as argument.
-    geology : GeologyManager()
-        PointManager() class needs a GeologyManager() object as argument.
     """
 
-    def __init__(self, grid, polygon, geology):
+    def __init__(self, grid, polygon):
         self.points  = {}
         self.grid    = grid
         self.polygon = polygon
-        self.geology = geology
 
     def set_points(self, points_key, points):
         """
@@ -59,31 +57,32 @@ class PointManager():
             Type of points : 'inlets' or 'outlets'.
         points_number : int
             Number of points to generate.
-        geological_IDs : list
-            ????
         """
 
+        """
         if self.geology.data["geology"]["mode"] is "null":
             geological_IDs=None
 
         if geological_IDs is None:
-            if self.polygon.polygon is None:
-                rand_x = [self.grid.x0 - self.grid.dx/2 + self.grid.nx * np.random.random() * self.grid.dx for x in range(points_number)]
-                rand_y = [self.grid.y0 - self.grid.dy/2 + self.grid.ny * np.random.random() * self.grid.dy for y in range(points_number)]
-                self.points[points_key] = list(zip(rand_x,rand_y))
-            else:
-                validated_inlets = 0
-                rand_x = []
-                rand_y = []
-                while validated_inlets < points_number:
-                    x = self.grid.x0 - self.grid.dx/2 + self.grid.nx*np.random.random() * self.grid.dx
-                    y = self.grid.y0 - self.grid.dy/2 + self.grid.ny*np.random.random() * self.grid.dy
-                    if int(Path(self.polygon.polygon).contains_point((x,y))):
-                        rand_x.append(x)
-                        rand_y.append(y)
-                        validated_inlets += 1
-                self.points[points_key] = list(zip(rand_x,rand_y))
+        """
+        if self.polygon.polygon is None:
+            rand_x = [self.grid.x0 - self.grid.dx/2 + self.grid.nx * np.random.random() * self.grid.dx for x in range(points_number)]
+            rand_y = [self.grid.y0 - self.grid.dy/2 + self.grid.ny * np.random.random() * self.grid.dy for y in range(points_number)]
+            self.points[points_key] = list(zip(rand_x, rand_y))
+        else:
+            validated_inlets = 0
+            rand_x = []
+            rand_y = []
+            while validated_inlets < points_number:
+                x = self.grid.x0 - self.grid.dx/2 + self.grid.nx*np.random.random() * self.grid.dx
+                y = self.grid.y0 - self.grid.dy/2 + self.grid.ny*np.random.random() * self.grid.dy
+                if int(Path(self.polygon.polygon).contains_point((x, y))):
+                    rand_x.append(x)
+                    rand_y.append(y)
+                    validated_inlets += 1
+            self.points[points_key] = list(zip(rand_x, rand_y))
         
+        """
         # Case when geological_IDs is indicated
         else:
             validated_inlets = 0
@@ -109,6 +108,7 @@ class PointManager():
                         rand_y.append(y)
                         validated_inlets += 1
                 self.points[points_key] = list(zip(rand_x,rand_y))
+        """
         return None
 
     def composite_points(self, points_key, points, points_number):
@@ -142,14 +142,16 @@ class PointManager():
             print('- inspect_points() - Error : no points to inspect.')
             sys.exit()
         else:
+            xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1]]
+            ylimits = [self.grid.ylimits[0], self.grid.ylimits[1], self.grid.ylimits[1], self.grid.ylimits[0]]
             for key in self.points:
                 mask = []
                 unvalidated_points = []
                 for k,(x,y) in enumerate(self.points[key]):
                     if self.polygon.polygon is not None:
-                        a = not int(Path(self.polygon.polygon).contains_point((x,y)))
+                        a = not int(Path(self.polygon.polygon).contains_point((x, y)))
                     else:
-                        a = not int(Path(self.grid.limits).contains_point((x,y)))
+                        a = not int(Path(list(zip(xlimits, ylimits))).contains_point((x, y)))
                     mask.append((a,a))
                     if a:
                         unvalidated_points.append(k+1)
@@ -171,20 +173,21 @@ class PointManager():
         fig.suptitle('Show points', fontsize=16)
 
         # Grid limits
-        x,y = list(zip(*Path(self.grid.limits).to_polygons()[0]))
-        ax.plot(x,y,color='red',label='grid limits')
+        xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1], self.grid.xlimits[0]]
+        ylimits = [self.grid.ylimits[0], self.grid.ylimits[1], self.grid.ylimits[1], self.grid.ylimits[0], self.grid.ylimits[0]]
+        ax.plot(xlimits, ylimits, color='red', label='grid limits')
 
         # Polygon
         if self.polygon.polygon is not None:
             closed_polygon = self.polygon.polygon[:]
             closed_polygon.append(closed_polygon[0])
-            x,y = zip(*closed_polygon)
-            ax.plot(x,y,color='black',label='basin')
+            x, y = zip(*closed_polygon)
+            ax.plot(x, y, color='black', label='polygon')
 
         # Points
         for key in self.points:
-            x,y = zip(*self.points[key])
-            ax.plot(x,y,'o',label=key)
+            x, y = zip(*self.points[key])
+            ax.plot(x, y, 'o', label=key)
         ax.set_aspect('equal', 'box')
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         plt.show()

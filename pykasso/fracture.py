@@ -5,19 +5,19 @@ class Fracture():
     Parameters
     ----------
     ID : int
-        Fracture id
+        Fracture id.
     family : int
-        Fracture family id
+        Fracture family id.
     position : list
-        [x, y, z]
+        Position of the center of the fracture [x, y, z].
     radius : float
-        Radius of the fracture
+        Radius of the fracture.
     orientation : float
-        Orientation of the fracture
+        Orientation of the fracture.
     dip : float
-        Dip of the fracture
+        Dip of the fracture.
     normal : list
-        Normal vector [a, b, c]
+        Normal vector of the fracture [a, b, c].
     """
 
     def __init__(self, ID, family, position, radius, orientation, dip, normal):

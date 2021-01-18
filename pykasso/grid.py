@@ -1,10 +1,9 @@
-"""
-TODO :
-- Est-ce que les grilles non-structuré sont supportées ? (l-37)
-"""
-
 import math
 import numpy as np
+
+""" ??? is it true ???
+self.z0 = z0 # z coord of centerpoint of bottom left cell
+"""
 
 class Grid():
     """
@@ -14,27 +13,26 @@ class Grid():
     Parameters
     ----------
     x0 : float
-        x-coordinate origin.
+        x-coordinate of centerpoint of bottom left cell.
     y0 : float
-        y-coordinate origin.
+        y-coordinate of centerpoint of bottom left cell.
     z0 : float
-        z-coordinate origin.
+        z-coordinate of centerpoint of bottom left cell.
     nx : int
-        Number of cells on x dimension.
+        Number of cells in x direction.
     ny : int
-        Number of cells on y dimension.
+        Number of cells in y direction.
     nz : int
-        Number of cells on z dimension.
+        Number of cells in z direction.
     dx : float
-        Width of a cell.
+        Cell width in x direction.
     dy : float
-        Length of a cell.
+        Cell width in y direction.
     dz : float
-        Height of a cell.
+        Cell width in z direction.
 
     Notes
     -----
-    # ??? - On this version, dx, dy and dz must be similar. pyKasso does not support unstructured grid yet.
     - x0, y0 and z0 are considered to be in the center of the first node.
 	"""
 
@@ -50,18 +48,19 @@ class Grid():
         self.dz = dz
 
         # Calculating the meshgrid
-        self.x = np.arange(self.x0, self.x0+(self.nx)*self.dx, self.dx, dtype=np.float_)
-        self.y = np.arange(self.y0, self.y0+(self.ny)*self.dy, self.dy, dtype=np.float_)
-        self.z = np.arange(self.z0, self.z0+(self.nz)*self.dz, self.dz, dtype=np.float_)
-        self.X,self.Y,self.Z = np.meshgrid(self.x, self.y, self.z)
+        self.x = np.arange(self.x0, self.x0+(self.nx)*self.dx, self.dx, dtype=np.float_) # 1D array of centerpoints of each cell along x axis
+        self.y = np.arange(self.y0, self.y0+(self.ny)*self.dy, self.dy, dtype=np.float_) # 1D array of centerpoints of each cell along y axis
+        self.z = np.arange(self.z0, self.z0+(self.nz)*self.dz, self.dz, dtype=np.float_) # 1D array of centerpoints of each cell along z axis
+        self.X, self.Y, self.Z = np.meshgrid(self.x, self.y, self.z) # 3D array of dim (nx, ny, nz) with xyz coord of each cell's centerpoint
 
-        # Calculating the limits
+        # Calculating the limits of the grid
         self.xlimits = [self.x0-self.dx/2, self.x[-1]+self.dx/2]
         self.ylimits = [self.y0-self.dy/2, self.y[-1]+self.dy/2]
         self.zlimits = [self.z0-self.dz/2, self.z[-1]+self.dz/2]
+        self.extent  = [self.xlimits[0], self.xlimits[1], self.ylimits[0], self.ylimits[1]] # coordinates of extent for use in plt.imshow()
     
     def __str__(self):
-        return "[x0, y0, z0] : ({}, {}, {})\n[nx, ny, nz] : ({}, {}, {})\n[dx, dy, dz] : ({}, {}, {})".format(self.x0,self.y0,self.z0,self.nx,self.ny,self.nz,self.dx,self.dy,self.dz)
+        return "[x0, y0, z0] : ({}, {}, {})\n[nx, ny, nz] : ({}, {}, {})\n[dx, dy, dz] : ({}, {}, {})".format(self.x0, self.y0, self.z0, self.nx, self.ny, self.nz, self.dx, self.dy, self.dz)
         
     def get_i(self, x):
         """
@@ -75,7 +74,6 @@ class Grid():
         """
         return int(math.ceil((y - self.y0 - self.dy/2) / self.dy))
 
-    
     def get_k(self, z):
         """
         Retrieve k index with x-coordinate.
