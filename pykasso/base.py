@@ -513,7 +513,7 @@ class GeologyManager():
         ------------
         surface : array
             A 2D array of the elevation or potential in cell, used to calculate the orientation (i.e. slope or dip) of that cell.
-            Use either the land surface ('topography'), the surface of the bottom of the karst unit ('contact'), or the potential returned by the geologic model 
+            Use either the land surface ('topography'), the surface of the bottom of the karst unit ('surface'), or the potential returned by the geologic model 
         """
 
         self.data['orientationx'] = {}
@@ -1057,7 +1057,7 @@ class SKS():
         """
         Get the lower contact surface of the karst unit as a numpy-array.
         """
-        return self.geology.data['contact']['data']
+        return self.geology.data['surface']['data']
 
     def get_orientation(self):
         """
@@ -1187,7 +1187,7 @@ class SKS():
         Parameter
         ---------
         inlets_shuffle : string
-            0: don't shuffle, 1: shuffle randomly. 
+            False: don't shuffle, True: shuffle randomly. 
         """
         self.settings['inlets_shuffle'] = inlets_shuffle
         return None
@@ -1272,7 +1272,7 @@ class SKS():
         Parameter
         ---------
         outlets_shuffle : string
-            0: don't shuffle, 1: shuffle randomly. 
+            False: don't shuffle, True: shuffle randomly. 
         """
         self.settings['outlets_shuffle'] = outlets_shuffle
         return None
@@ -1701,6 +1701,8 @@ class SKS():
             sys.exit()
         self.points.inspect_points()
         self.inlets = self.points.points['inlets'][:]
+        if self.settings['inlets_shuffle'] == True:
+            np.random.shuffle(self.inlets)
         return None
 
     def update_outlets(self):
@@ -1718,6 +1720,8 @@ class SKS():
             sys.exit()
         self.points.inspect_points()
         self.outlets = self.points.points['outlets'][:]
+        if self.settings['outlets_shuffle'] == True:
+            np.random.shuffle(self.outlets)
         return None
 
     def update_geology(self):
@@ -2563,7 +2567,7 @@ class SKS():
         
         if probability == True:
             data = self._compute_average_paths()
-            
+   
         fig = plt.figure(figsize=(20,10))
         
         fig.add_subplot(131, aspect='equal')
@@ -2595,7 +2599,7 @@ class SKS():
         plt.show()
         return None
 
-    def show_network(self, data=None, simplify=False, ax=None, plot_nodes=True, labels=['inlets', 'outlets'], title=None, cmap=None, color='k', legend=True):
+    def show_network(self, data=None, simplify=False, ax=None, plot_nodes=True, labels=['inlets', 'outlets'], title=None, cmap=None, color='k', alpha=1, legend=True):
         """
         Show the karst network as a graph with nodes and edges. Defaults to showing latest iteration.
         Inputs: 
@@ -2605,6 +2609,7 @@ class SKS():
         title:  string, title of plot
         cmap:   string, colormap to use when plotting
         color:  string, single color to use when plotting (cannot have both cmap and color)
+        alpha:  float, opacity to plot with (1=opaque, 0=transparent)
         legend: True/False, whether to display legend
         plot_nodes:   True/False, whether to display nodes
         """
@@ -2637,15 +2642,15 @@ class SKS():
 
         #Plot nodes and edges:
         if plot_nodes:
-            n = ax.scatter(nodes.y,                     nodes.x,                     c='k',         s=5)  #scatterplot nodes
+            n = ax.scatter(nodes.y,              nodes.x,                  c='k',         alpha=alpha, s=5)  #scatterplot nodes
         i = ax.scatter(data.points['inlets'].x,  data.points['inlets'].y,  c='orange',    s=30) #scatterplot inlets
         o = ax.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue', s=30) #scatterplot outlets
         e = matplotlib.lines.Line2D([0],[0])                                                  #line artist for legend 
         for ind in edges.index:                                                               #loop over edge indices
             if cmap is not None:
-                ax.plot((fromY.iloc[ind], toY.iloc[ind]), (fromX.iloc[ind], toX.iloc[ind]), c=plt.cm.get_cmap(cmap)(ind/len(edges)))  #plot each edge, moving along color gradient to show order
+                ax.plot((fromY.iloc[ind], toY.iloc[ind]), (fromX.iloc[ind], toX.iloc[ind]), c=plt.cm.get_cmap(cmap)(ind/len(edges)), alpha=alpha)  #plot each edge, moving along color gradient to show order
             elif color is not None:
-                ax.plot((fromY.iloc[ind], toY.iloc[ind]), (fromX.iloc[ind], toX.iloc[ind]), c=color)  #plot each edge in same color
+                ax.plot((fromY.iloc[ind], toY.iloc[ind]), (fromX.iloc[ind], toX.iloc[ind]), c=color, alpha=alpha)  #plot each edge in same color
         
         #Add labels:
         if labels == None:

@@ -69,12 +69,12 @@ topography_datafile : 'inputs/valley1/dem80x100.csv'
 
 ###Orientation
 #'null'     - No orientation
-#'topo'     - Calculate orientation from surface topography
-#'contact'  - Calculate from map of elevation of lower boundary of karst unit (as csv)
+#'topo'     - Calculate orientation from a topography array
+#'surface'  - Calculate from array of elevation of lower boundary of karst unit (as csv)
 #'gslib'    - Import from gslib file (in progress)
 
 orientation_mode : 'topo'
-orientation_datafile : 'inputs/valley1/contact80x100.csv'  #only used if mode=contact or gslib
+orientation_datafile : 'inputs/valley1/contact80x100.csv'  #only used if mode=surface or gslib
 
 ###Faults
 # 'null'   - No faults
@@ -92,12 +92,12 @@ fractures_mode     : 'null'
 fractures_datafile : 'inputs/fractures.gslib'
 
 # If fractures mode is 'generate'
-fractures_densities       : [5.83e-5,1.38e-5,2.22e-5,2.5e-5,4.16e-5,6.66e-5,5e-5]
-fractures_min_orientation : [      0,     15,     30,    60,    105,    120, 150]
+fractures_densities       : [5.83e-5,1.38e-5,2.22e-5,2.5e-5,4.16e-5,6.66e-5,5e-5]   #number of fractures per unit area
+fractures_min_orientation : [      0,     15,     30,    60,    105,    120, 150]   
 fractures_max_orientation : [     15,     30,     45,   105,    120,    150, 180]
 
 # For fracture size
-fractures_alpha      : 2
+fractures_alpha      : 2      #power law coefficient. default: 2
 fractures_min_length : 50
 fractures_max_length : 800
 
