@@ -72,7 +72,9 @@ topography_datafile : 'inputs/gottesacker/dem200x251.csv'
 #'import' - Import from gslib file (in progress)
 # 'contact' - Calculate orientation from a 2D array of contact surface
 orientation_mode : 'topo'
-orientation_datafile : 'inputs/gottesacker/scalar_map200x251.csv' #only used if mode='contact', or 'gslib'
+orientation_datafile : 'inputs/gottesacker/contact200x251.csv' #only used if mode='contact', or 'gslib'
+#for the gempy output scalar field, use scalar_map200x251.csv
+#for the contact surface, use contact200x251.csv
 
 ###Faults
 # 'null'   - No faults
@@ -90,14 +92,14 @@ fractures_mode     : 'null'
 fractures_datafile : 'inputs/gottesacker/fractures.gslib'
 
 # If fractures mode is 'generate'
-fractures_densities       : [   3e-6,   1e-6,   2e-6,  2e-6, 2.5e-6,4.16e-6, 6.66e-6]  #smaller = spaced farther apart
-fractures_min_orientation : [      0,     15,     30,    60,    105,    120,    150]
-fractures_max_orientation : [     15,     30,     45,   105,    120,    150,    180] 
+fractures_densities       : [   6e-6,   4e-6]  #smaller = spaced farther apart
+fractures_min_orientation : [     30,    120]  #orientations taken from Goldscheider dissertation
+fractures_max_orientation : [     50,    130] 
 
 # For fracture size
-fractures_alpha      : 2
-fractures_min_length : 50
-fractures_max_length : 4000    #in map units (whatever units dx and dy are in)
+fractures_alpha      : 2      #power law coefficient
+fractures_min_length : 75    #in map units (whatever units dx and dy are in)
+fractures_max_length : 3000    
 
 ###############################
 ### Fast-Marching Algorithm ###
@@ -115,8 +117,8 @@ algorithm : 'Isotropic2'
 
 #Travel cost through each feature (higher=slower/harder, will be avoided by conduits)
 cost_out       : 0.999  
-cost_aquifer   : 0.4
-cost_aquiclude : 0.8 
+cost_aquifer   : 0.3
+cost_aquiclude : 0.6 
 cost_faults    : 0.2
 cost_fractures : 0.2
 cost_conduits  : 0.1

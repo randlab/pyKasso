@@ -91,14 +91,15 @@ faults_datafile : 'inputs/faults.gslib'
 fractures_mode     : 'null'
 fractures_datafile : 'inputs/fractures.gslib'
 
-# If fractures mode is 'generate'
-fractures_densities       : [5.83e-5,1.38e-5,2.22e-5,2.5e-5,4.16e-5,6.66e-5,5e-5]   #number of fractures per unit area
+# If fractures mode is 'generate':
+# each value in list is for a separate fracture family - length of list indicates number of families
+fractures_densities       : [5.83e-5,1.38e-5,2.22e-5,2.5e-5,4.16e-5,6.66e-5,5e-5]   #number of fractures per unit area (in map units)
 fractures_min_orientation : [      0,     15,     30,    60,    105,    120, 150]   
 fractures_max_orientation : [     15,     30,     45,   105,    120,    150, 180]
 
 # For fracture size
 fractures_alpha      : 2      #power law coefficient. default: 2
-fractures_min_length : 50
+fractures_min_length : 50     #in map units (whatever units dx and dy are in)
 fractures_max_length : 800
 
 ###############################
