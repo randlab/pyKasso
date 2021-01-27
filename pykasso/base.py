@@ -118,7 +118,8 @@ class Grid():
 	Notes
 	-----
 	- On this version, dx and dy must be similar. pyKasso does not support unstructured grid yet.  
-	- x0 and y0 are considered to be in the center of the first cell.
+	- x0 and y0 are considered to be in the center of the bottom left cell.
+    Chloe: I added a function to get the extent for external plotting, and removed the old internal function
 	"""        
     
     def __init__(self, x0, y0, xnum, ynum, dx, dy):
@@ -452,6 +453,7 @@ class GeologyManager():
     def set_data_from_image(self, data_key, datafile_location):
         """
         Set data from an image for an indicated data key.
+        Chloe: I have not tested the image import method with the new algorithm.
 
         Parameters
         ----------
@@ -473,6 +475,7 @@ class GeologyManager():
     def set_data_from_csv(self, data_key, datafile_location):
         """
         Set data from a csv file for indicated data key.
+        Chloe: I added this function to import csv files.
 
         Parameters
         ----------
@@ -489,6 +492,8 @@ class GeologyManager():
     def set_data_from_gslib(self, data_key, datafile_location):
         """
         Set data from a gslib file for indicated data key in the format that work with the fast marching algorithm.
+        Chloe: I added this new function to import gslib files & get them in the right format for the new algorithm.
+        The old function can be removed, but this function will need to be adapted to handle gslib files with multiple variables
 
         Parameters
         ----------
@@ -508,6 +513,7 @@ class GeologyManager():
     def generate_orientations(self, surface):
         """
         Generate maps of x and y components of orientation.
+        Chloe: I added this function to calculate orientations from a surface.
 
         Parameters
         ------------
@@ -755,14 +761,6 @@ class GeologyManager():
         plt.show()
         return None
 
-#def _extents(f):
-    """
-    Little private function to correctly locate data on plots.
-    """
-    #delta = f[1] - f[0]
-    #return [f[0] - delta/2, f[-1] + delta/2]
-
-
 #################
 class Fracture():
     """
@@ -878,6 +876,7 @@ class SKS():
     ################
     # get_ methods #
     ################
+    #Chloe: I added several get and set functions
 
     def get_x0(self):
         print('test')
@@ -1333,7 +1332,6 @@ class SKS():
             'import' - Import from old gslib file format
             'gslib'  - Import from new gslib format
             'csv'    - Import from csv
-            'image'  - Import via image
         """
         self.settings['topography_mode'] = topography_mode
         return None
@@ -1390,6 +1388,7 @@ class SKS():
             'gslib'  - Import from new gslib format
             'csv'    - Import from csv
             'image'  - Import via image
+        Chloe: I have not tested any of the import functions for faults with the new algorithm.
         """
         self.settings['faults_mode'] = faults_mode
         return None
@@ -1420,6 +1419,7 @@ class SKS():
             'csv'    - Import from csv
             'image'  - Import via image
             'random' - Generate random fractures
+        Chloe: I have not tested any of the import methods for fractures with the new algorithm.
         """
         self.settings['fractures_mode'] = fractures_mode
         return None
@@ -1663,7 +1663,7 @@ class SKS():
         Parameter
         ---------
         verbosity: integer 
-            0: print minimal output,  1: print medium output,  2: print max output
+            0: print minimal output,  1: print medium output,  2: print more output
         """
         self.settings['verbosity'] = verbosity
         return None
@@ -1689,6 +1689,7 @@ class SKS():
     def update_inlets(self):
         """
         Update the inlets settings.
+        Chloe: I added that the inlets are shuffled here if inlets_shuffle=True
         """
         if self.settings['inlets_mode'] == 'random':
             self.points.generate_points('inlets', self.settings['inlets_number'])
@@ -1708,6 +1709,7 @@ class SKS():
     def update_outlets(self):
         """
         Update the outlets settings.
+        Chloe: I added that the inlets are shuffled here if inlets_shuffle=True
         """
         if self.settings['outlets_mode'] == 'random':
             self.points.generate_points('outlets', self.settings['outlets_number'])
@@ -1727,11 +1729,10 @@ class SKS():
     def update_geology(self):
         """
         Update the geology settings.
+        Chloe: I added the csv and new gslib import mode option here and removed the old import mode
         """
         if self.settings['geological_mode'] == 'null':
             self.geology.set_data_null('geology')
-        elif self.settings['geological_mode'] == 'import':
-            self.geology.set_data('geology', self.settings['geological_datafile'])
         elif self.settings['geological_mode'] == 'image':
             self.geology.set_data_from_image('geology', self.settings['geological_datafile'])
         elif self.settings['geological_mode'] == 'gslib':
@@ -1749,15 +1750,12 @@ class SKS():
     def update_topography(self):
         """
         Update the topography settings.
+        Chloe: I added the csv import mode here and removed the old import function.
         """
         if self.settings['topography_mode'] == 'null':
             self.geology.set_data_null('topography')
-        elif self.settings['topography_mode'] == 'import':
-            self.geology.set_data('topography', self.settings['topography_datafile'])
         elif self.settings['topography_mode'] == 'image':
             self.geology.set_data_from_image('topography', self.settings['topography_datafile'])
-        elif self.settings['topography_mode'] == 'gslib':
-            self.geology.set_data_from_gslib('topography', self.settings['topography_datafile'])
         elif self.settings['topography_mode'] == 'csv':
             self.geology.set_data_from_csv('topography', self.settings['topography_datafile'])
         else:
@@ -1771,6 +1769,7 @@ class SKS():
     def update_orientation(self):
         """
         Update the orientation settings.
+        Chloe: this is a new function I added
         """
         if self.settings['orientation_mode'] == 'null':
             self.geology.set_data_null('orientationx')
@@ -1830,6 +1829,7 @@ class SKS():
     def update_all(self):
         """
         Update all the parameters.
+        Chloe: I added the update_orientation function
         """
         self.update_polygon()
         self.update_inlets()
@@ -1844,6 +1844,7 @@ class SKS():
     def shuffle_inlets(self):
         """
         Shuffle the inlets order.
+        Chloe: I made this its own function
         """
         np.random.shuffle(self.inlets)
         return None
@@ -1851,6 +1852,7 @@ class SKS():
     def shuffle_outlets(self):
         """
         Shuffle the outlets order.
+        Chloe: I made this its own function
         """
         np.random.shuffle(self.outlets)
         return None
@@ -1877,6 +1879,7 @@ class SKS():
     def _load_data(self):
         """
         Initialize all the data.
+        Chloe: inlet/outlet shuffling happens here.
         """
         # The grid
         self.grid    = self._set_grid(self.settings['x0'],self.settings['y0'],self.settings['xnum'],self.settings['ynum'],self.settings['dx'],self.settings['dy'])
@@ -1950,13 +1953,12 @@ class SKS():
     def _set_geology(self, grid):
         """
         Set the geology manager object.
+        #Chloe: I added the csv and new gslib options and removed the old import function
         """
         geology = GeologyManager(grid)
         # Geology
         if self.settings['geological_mode'] == 'null':
             geology.set_data_null('geology')
-        elif self.settings['geological_mode'] == 'import':
-            geology.set_data('geology', self.settings['geological_datafile'])
         elif self.settings['geological_mode'] == 'image':
             geology.set_data_from_image('geology', self.settings['geological_datafile'])
         elif self.settings['geological_mode'] == 'csv':
@@ -2028,6 +2030,7 @@ class SKS():
         self._compute_iterations_karst_network()
         
         # 3 - Calculate the karst network statistics indicators with karstnet and save karst network
+        #Chloe: Here is where the majority of the changes are.
         karstnet_edges = list(self.edges.values()) #convert to format needed by karstnet (list)
         karstnet_nodes = copy.deepcopy(self.nodes)       #convert to format needed by karstnet (dic with only coordinates) - make sure to only modify a copy!
         for key, value in karstnet_nodes.items(): #drop last item in list (the node type) for each dictionary entry
@@ -2036,6 +2039,7 @@ class SKS():
         stats = k.characterize_graph(verbose)
         
         # 4 - Store all the relevant data for this network in dictionaries:
+        #Chloe: I added/changed the storage format
         maps = self.maps.copy() 
         points = {}
         points['inlets']  = self.inlets
@@ -2048,6 +2052,7 @@ class SKS():
         self.karst_simulations.append(KarstNetwork(maps, points, network, stats, config))
 
         # 5 - Return inlets and outlets to their original format:
+        #Chloe: this is to convert inlets and outlets back from pandas dataframes
         self.inlets  = np.asarray(self.inlets)[:,0:2]
         self.outlets = np.asarray(self.outlets)[:,0:2]
         return None
@@ -2190,6 +2195,7 @@ class SKS():
                         self.inlets.loc[ self.inlets.index ==inlet.name,  'iteration'] = iteration   #store total iteration counter
                     
                     #Compute travel time maps and conduit network:
+                    #Chloe: I removed the options to use skfmm
                     if self.settings['algorithm'] == 'Isotropic2':
                         self._compute_cost_map(iteration)  
                         self._compute_time_map_isotropic(iteration) 
@@ -2306,6 +2312,7 @@ class SKS():
     # 2
     def _compute_time_map_isotropic(self, iteration):
         """
+        #Chloe: This is the new algorithm - I removed the functions for skfmm
         Compute the travel time map (how long it takes to get to the outlet from each cell),
         using the isotropic agd-hfm fast-marching algorithm, and store travel time map.
         Note: the AGD-HFM library uses different indexing, so x and y indices are reversed for inlets and outlets.
@@ -2344,6 +2351,7 @@ class SKS():
             self.maps['karst'][iteration] = self.maps['karst'][iteration-1] 
         
         #Debugging:
+        #Chloe: this should stay in since it is very useful if there are problems
         #f1,ax1 = plt.subplots(1,1, figsize=(10,10))  #debugging
         #ax1.imshow(self.maps['karst'][iteration], origin='lower', extent=self.grid.extent, cmap='gray_r')
         #ax1.imshow(self.maps['nodes'], origin='lower', extent=self.grid.extent, cmap='gray_r')
@@ -2379,6 +2387,7 @@ class SKS():
                         self.n = self.n+1                                                   #increment node counter up by one
                     else:                                                                  #if there is NOT an outlet here
                         if p > 0:                                                           #if this is not the first point in the current path
+                            #possible improvement: if the next point on the path is on an existing point, skip the current point.
                             self.nodes[self.n] = [point[0], point[1], 'junction']            #add a junction node here (with the node type for SWMM)
                             self.maps['nodes'][ix,iy] = self.n                               #update node map with node index
                             #ax1.scatter(point[1],point[0], marker='o', edgecolor='g', facecolor='none')   #debugging
@@ -2391,9 +2400,7 @@ class SKS():
                                 n_from = self.maps['nodes'][fromix,fromiy]                   #get node index of the node already in the cell where the previous point was
                                 self.edges[self.e] = [n_from, self.n]                        #add an edge connecting existing conduit node to current node
                                 self.e = self.e+1                                            #increment edge counter up by one   
-                                merge = False                                                #reset merge indicator to show that current conduit has left the path of the existing conduit
-                                #ax1.plot((self.nodes[self.n][1], self.nodes[n_from][1]),(self.nodes[self.n][0], self.nodes[n_from][0]), c='m', marker=None)
-                        else:                                                               #if this is the first point in current path
+                                merge = False                                                #reset merge indicator to show that current conduit has left                                                              #if this is the first point in current path
                             self.nodes[self.n] = [point[0], point[1], 'inlet']               #add an inlet node here (with the node type for SWMM)
                             self.maps['nodes'][ix,iy] = self.n                               #update node map with node index
                             #ax1.scatter(point[1],point[0], marker='o', edgecolor='sienna', facecolor='none')
@@ -2561,6 +2568,7 @@ class SKS():
     def show(self, data=None, title=None, probability=False):
         """
         Show the entire study domain (defaults to showing most recent simulation).
+        #Chloe: I modified this function quite a bit
         """        
         if data is None:
             data = self.karst_simulations[-1]
@@ -2572,7 +2580,7 @@ class SKS():
         
         fig.add_subplot(131, aspect='equal')
         plt.xlabel('Cost array'+str(data.maps['cost'][-1].shape))
-        plt.imshow(data.maps['cost'][-1], extent=self.grid.extent, origin='lower', cmap='gray') #darker=faster
+        plt.imshow(data.maps['cost'][-1], extent=self.grid.extent, origin='lower', cmap='gray') #darker=slower
         plt.colorbar(shrink=0.35)
 
         fig.add_subplot(132, aspect='equal')
@@ -2599,8 +2607,9 @@ class SKS():
         plt.show()
         return None
 
-    def show_network(self, data=None, simplify=False, ax=None, plot_nodes=True, labels=['inlets', 'outlets'], title=None, cmap=None, color='k', alpha=1, legend=True):
+    def show_network(self, data=None, simplify=False, ax=None, plot_nodes=True, polygon=True, labels=['inlets', 'outlets'], title=None, cmap=None, color='k', alpha=1, legend=True):
         """
+        #Chloe: This is a new function that I use to create all the figures for the paper.
         Show the karst network as a graph with nodes and edges. Defaults to showing latest iteration.
         Inputs: 
         data:   karst simulation object containing nodes, edges, points, etc. Can be obtained from self.karst_simulations[i]
@@ -2612,6 +2621,7 @@ class SKS():
         alpha:  float, opacity to plot with (1=opaque, 0=transparent)
         legend: True/False, whether to display legend
         plot_nodes:   True/False, whether to display nodes
+        polygon: True/False, whether to display the bounding polygon
         """
 
         if ax == None:
@@ -2620,6 +2630,14 @@ class SKS():
 
         if data == None:
             data = self.karst_simulations[-1]
+
+        if polygon == True:
+            if self.settings['data_has_polygon']:
+                closed_polygon = self.polygon.polygon[:]
+                closed_polygon.append(closed_polygon[0])
+                x,y = zip(*closed_polygon)
+                ax.plot(x,y, color='maroon')
+                p = matplotlib.lines.Line2D([0],[0], color='k')
 
         if simplify == True:
             nodes = data.network['nodes']   #get all nodes
@@ -2672,9 +2690,15 @@ class SKS():
         #Add legend & title:
         if legend:
             if plot_nodes:
-                ax.legend([i,o,n,e],['inlets','outlets','nodes','edges'])
+                if plot_polygon:
+                    ax.legend([i,o,n,e,p],['inlets','outlets','nodes','edges','polygon'])
+                else:
+                    ax.legend([i,o,n,e],['inlets','outlets','nodes','edges'])
             else:
-                ax.legend([i,o,e],['inlets','outlets','edges'])
+                if plot_polygon:
+                    ax.legend([i,o,e,p],['inlets','outlets','edges','polygon'])
+                else:
+                    ax.legend([i,o,e],['inlets','outlets','edges','polygon'])
         if title is not None:
             ax.set_title(title, fontsize=16)
 
@@ -2684,6 +2708,7 @@ class SKS():
     def _compute_average_paths(self, show=False):
         """
         Compute the mean of all the simulations.
+        Chloe: I have not tested this with the new format.
         """
         karst_maps = []
         for karst_simulation in self.karst_simulations:

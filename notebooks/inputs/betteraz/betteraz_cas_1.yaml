@@ -60,7 +60,7 @@ inlets_importance : [3,2,1]  #how to iterate over inlets: length of array indica
 # 'random' - For fractures only: randomly generate a fracture field
 
 #Topography
-topography_mode      : 'csv'          #null, gslib, csv, or image
+topography_mode      : 'null'          #null, gslib, csv, or image
 topography_datafile  : 'inputs/betteraz/random_dem300x300.csv'
 
 #Geology
@@ -68,7 +68,7 @@ geological_mode      : 'import'        #null, import, gslib, csv, or image
 geological_datafile  : 'inputs/betteraz/betteraz_2D_z430.gslib'
 
 #Orientation (not needed for isotropic)
-orientation_mode     : 'topo'        #null, topo, or contact
+orientation_mode     : 'null'       
 orientation_datafile : 'inputs/betteraz/orientation.gslib'
 
 #Faults
@@ -92,7 +92,7 @@ fractures_max_length : 8500
 ###############################
 ### Fast-Marching Algorithm ###
 ###############################
-algorithm      : 'Riemann2'   #'Isotropic2', 'Riemann2', which algo to use, see agd-hfm library doc for all options
+algorithm      : 'Isotropic2'   #'Isotropic2', 'Riemann2', which algo to use, see agd-hfm library doc for all options
 
 #Travel cost through each feature (higher is harder to cross that feature)
 cost_out       : 0.999
