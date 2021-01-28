@@ -518,7 +518,7 @@ class GeologyManager():
             with value 1 where the grid is touched by the line
         """
         
-        nz, ny, nx = m.shape 
+        ny, nx = m.shape 
         
         if xe < xs : # Ensuires dx always positive
             xe, xs = xs, xe
@@ -647,7 +647,7 @@ class GeologyManager():
                         j2, k2 = self.grid.get_j(intersect[2]), self.grid.get_k(intersect[3])
 
                         # Rasterize the line
-                        self.rst2d(raster_fractures[:,:,:], j1, j2, k1, k2)
+                        self.rst2d(raster_fractures[:,:,i], j1, j2, k1, k2)
 
             else : # This may not be necessary
                 # Horizontal y index of the center of the fracture
@@ -676,7 +676,7 @@ class GeologyManager():
                         i2, k2 = self.grid.get_i(intersect[2]), self.grid.get_k(intersect[3])
 
                         # Rasterize the line
-                        self.rst2d(raster_fractures[:,:,:], i1, i2, k1, k2)
+                        self.rst2d(raster_fractures[:,j,:], i1, i2, k1, k2)
         return raster_fractures
 
     def _fill(self, datafile_location):
