@@ -30,7 +30,7 @@ class GeologyManager():
 
     def __init__(self, grid):
         #data model = {key : {data : var, stats : var, mode : var}}
-        self.data  = {}   
+        self.data  = {}
         self.grid  = grid
 
     def set_data_null(self, data_key):
@@ -62,11 +62,11 @@ class GeologyManager():
         self.data[data_key]['data']  = self._fill(datafile_location)
         self.data[data_key]['mode']  = 'import'
         return None
-        
+
     def set_data_from_image(self, data_key, datafile_location):
         """
         Set data from an image for an indicated data key.
-        
+
         Parameters
         ----------
         data_key : string
@@ -83,11 +83,11 @@ class GeologyManager():
         self.data[data_key]['data'] = (image_data[:,:,0] == 0)*1
         self.data[data_key]['mode'] = 'image'
         return None
-    
+
     def set_data_from_csv(self, data_key, datafile_location):
         """
         Set data from a csv file for indicated data key.
-        
+
         Parameters
         ----------
         data_key : string
@@ -99,11 +99,11 @@ class GeologyManager():
         self.data[data_key]['data'] = np.genfromtxt(datafile_location, delimiter=',')
         self.data[data_key]['mode'] = 'csv'
         return None
-        
+
     def set_data_from_gslib(self, data_key, datafile_location):
         """
         Set data from a gslib file for indicated data key in the format that work with the fast marching algorithm.
-        
+
         Parameters
         ----------
         data_key : string
@@ -115,25 +115,25 @@ class GeologyManager():
         a = np.genfromtxt(datafile_location, dtype=float, skip_header=3) #read in gslib file as float numpy array without header rows
         a[a==0] = np.nan                                                 #replace zeros with nans (array must be float first)
         a = np.reshape(a, (self.grid.ynum,self.grid.xnum), order='F')    #reshape to xy grid using Fortran ordering
-        self.data[data_key]['data'] = a                                  #store  
+        self.data[data_key]['data'] = a                                  #store
         self.data[data_key]['mode'] = 'gslib'
         return None
-        
+
     def generate_orientations(self, surface):
         """
         Generate maps of x and y components of orientation.
-        
+
         Parameters
         ------------
         surface : 2D numpy-array
             A 2D array of the elevation or potential in cell, used to calculate the orientation (i.e. slope or dip) of that cell.
-            Use either the land surface ('topography'), the surface of the bottom of the karst unit ('contact'), or the potential returned by the geologic model 
+            Use either the land surface ('topography'), the surface of the bottom of the karst unit ('contact'), or the potential returned by the geologic model
         """
         self.data['orientationx'] = {}
         self.data['orientationx']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
         self.data['orientationy'] = {}
         self.data['orientationy']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
-        self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(surface, self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array 
+        self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(surface, self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array
         self.data['orientationx']['mode'] = 'topo'
         self.data['orientationy']['mode'] = 'topo'
         return None
@@ -162,12 +162,14 @@ class GeologyManager():
             The maximum lenght of the fractures for each fracture family.
         """
 
+        self.data['fractures'] = {}
+        self.data['fractures']['data']  = np.zeros((self.grid.nz, self.grid.ny, self.grid.nx))
         self.fractures = []
         fracture_id = 0
 
         ## Redefine fracturation domain
         lenmax = max(fractures_max_length)
-        xd0, xd1, yd0, yd1, zd0, zd1 = self.grid.xlimits[0], self.grid.xlimits[1], self.grid.ylimits[0], self.grid.ylimits[1], self.grid.zlimits[0], self.grid.zlimits[1]
+        xd0, xd1, yd0, yd1, zd0, zd1 = self.grid.xmin, self.grid.xmax, self.grid.ymin, self.grid.ymax, self.grid.zmin, self.grid.zmax
         Lx, Ly, Lz = xd1-xd0, yd1-yd0, zd1-zd0
 
         shiftx = min(Lx/2,lenmax/2)
@@ -185,7 +187,7 @@ class GeologyManager():
 
 
         ## Total numbers of fractures for each family
-        fractures_numbers = np.array(fractures_densities) * area
+        self.fractures_numbers = np.array(fractures_densities) * area
 
 
         ## Calculate fractures in each family
@@ -207,7 +209,7 @@ class GeologyManager():
             orientation_std_angle  = (orientation_max - orientation_mean_angle) / 3
             orientation_mean_angle = math.radians(orientation_mean_angle)
             orientation_std_angle  = math.radians(orientation_std_angle)
-            
+
             # Define all the constants required for the dip distribution
             if (self.grid.nz > 1):
                 dip_min = fractures_min_dip[frac_family]
@@ -219,17 +221,17 @@ class GeologyManager():
                 dip_std_angle  = (dip_max - dip_mean_angle) / 3
                 dip_mean_angle = math.radians(dip_mean_angle)
                 dip_std_angle  = math.radians(dip_std_angle)
-            
+
             # Computes the kappa value for the Von Mises orientation distribution
             orientation_func  = lambda k : orientation_std_angle**2 - 1 + mpmath.besseli(1,k) / mpmath.besseli(0,k)
             orientation_kappa = mpmath.findroot(orientation_func,1)
-            
+
             if (self.grid.nz > 1):
                 dip_func  = lambda k : dip_std_angle**2 - 1 + mpmath.besseli(1,k) / mpmath.besseli(0,k)
                 dip_kappa = mpmath.findroot(dip_func,1)
-            
+
             # Generate poisson number for each fracture family
-            real_frac_number = np.random.poisson(fractures_numbers[frac_family])
+            real_frac_number = np.random.poisson(self.fractures_numbers[frac_family])
 
             # Loop over the individual fractures
             for i in range(1, real_frac_number+1):
@@ -250,7 +252,7 @@ class GeologyManager():
                     frac_dip = np.random.vonmises(dip_mean_angle, dip_kappa)
                 else:
                     frac_dip = math.radians(90)
-                
+
                 # Calculate normal Vector
                 x = np.sin(frac_orientation) * np.cos(frac_dip)
                 y = np.cos(frac_orientation) * np.cos(frac_dip)
@@ -266,7 +268,7 @@ class GeologyManager():
 
     def float_eq(self, a, b, tolerance=1e-5):
         """
-        Returns True if the difference between a and b 
+        Returns True if the difference between a and b
         is lower than tolerance.
         """
         if np.all( np.isnan(a) ) :
@@ -275,45 +277,45 @@ class GeologyManager():
             else :
                 return False
         return np.all( abs(a-b) < tolerance )
-        
+
     def unit_intersect(self, n, d):
         """
-        Computes the intersection between a unit circle 
+        Computes the intersection between a unit circle
         and a line on a 2D plane.
-        
+
         Parameters
-        ----------        
+        ----------
         The unit circle is centered on the origin (x=0, y=0) and has
         a radius of 1.
-        
+
         The line is defined by two parameters :
-        
+
         n : numpy array of size 2
             The normal vector perpendicular to the line
             Warning : The norm of n must be 1.
-            
+
         d : floating point value
-            Defines the position of the line, it is a 
+            Defines the position of the line, it is a
             signed distance to the origin x=0, y=0.
-            It can be positive or negative. 
+            It can be positive or negative.
 
         Returns
         -------
-        [X1, X2, Y1, Y2] : numpy array with 4 floating point values 
+        [X1, X2, Y1, Y2] : numpy array with 4 floating point values
             the coordinates of the two points of intersection when the
             exists. Returns 4 np.NaN if there is no intersection
-        
+
         """
         nx, ny = n[0], n[1] # For readibility
-        
+
         if not self.float_eq( np.linalg.norm(n), 1) :
             print("WARNING - unitcintl function : norm of n must be equal to 1")
-        
+
         if np.abs(d) > 1 : # Case with no intersection
             return np.array( [ np.NaN,np.NaN,np.NaN,np.NaN ] )
-        
+
         sd = np.sqrt(1 - d**2)
-        
+
         if ny !=0 :
             X1 = d * nx + ny * sd
             X2 = d * nx - ny * sd
@@ -325,187 +327,187 @@ class GeologyManager():
             Y2 = -sd
 
         return np.array( [X1,X2,Y1,Y2] )
-        
+
     def disk_zplane_intersect(self, center, n, R, zi):
         """
-        Computes the intersection between a disk 
+        Computes the intersection between a disk
         and a horizontal plane (constant z plane) in 3D.
-        
+
         Parameters
-        ----------         
+        ----------
         The disk is defined by three parameters :
-        
+
         center : numpy array of size 3
             the 3D coordinates of the center of the disk.
-        
+
         n : numpy array of size 3
             the normal vector perpendicular to the disk
             Warning : The norm of n must be 1.
-            
+
         R : floating point value
             Radius of the disk
-            
+
         zi : floating point value
             Position of the horizontal plane along the z axis
 
         Returns
         -------
-        [x1, y1, x2, y2] : numpy array with 4 floating point values 
-            the coordinates of the two extremities of the intersection 
+        [x1, y1, x2, y2] : numpy array with 4 floating point values
+            the coordinates of the two extremities of the intersection
             between the plane and disk if there is an intersection.
             Returns 4 np.NaN if there is no intersection.
         """
-        
+
         xc, yc, zc = center[0], center[1], center[2] # For readibility
 
-        tau = R**2 - (zi - zc)**2 
-        
+        tau = R**2 - (zi - zc)**2
+
         if tau <= 0 : # Avoid computing square root of negative number
             #print("The plane does not touch the sphere")
             x1, y1, x2, y2 = np.NaN, np.NaN, np.NaN, np.NaN
-            
+
         else :
             tau = np.sqrt( tau )
             b = n[2] * (zc - zi) / tau / np.sqrt(1 - n[2]**2)
-            
+
             if b > 1 :
                 #print("The plane does not touch the disk")
                 x1, y1, x2, y2 = np.NaN, np.NaN, np.NaN, np.NaN
-                
+
             else :
                 n2 = n.copy()[0:2] # Projection on horizontal plane
                 n2 /= np.linalg.norm(n2)
                 xint = self.unit_intersect(n2, b)
-                
+
                 x1 = tau * xint[0] + xc
                 x2 = tau * xint[1] + xc
                 y1 = tau * xint[2] + yc
                 y2 = tau * xint[3] + yc
-                
+
         return np.array([x1, y1, x2, y2])
-        
+
     def disk_xplane_intersect(self, center, n, R, xi):
         """
-        Computes the intersection between a disk 
+        Computes the intersection between a disk
         and a vertical plane (constant x plane) in 3D.
-        
+
         Parameters
-        ----------         
+        ----------
         The disk is defined by three parameters :
-        
+
         center : numpy array of size 3
             the 3D coordinates of the center of the disk.
-        
+
         n : numpy array of size 3
             the normal vector perpendicular to the disk
             Warning : The norm of n must be 1.
-            
+
         R : floating point value
             Radius of the disk
-            
+
         xi : float
             Position of the vertical plane along the x axis
 
         Returns
         -------
-        [y1, z1, y2, z2] : numpy array with 4 floating point values 
-            the coordinates of the two extremities of the intersection 
+        [y1, z1, y2, z2] : numpy array with 4 floating point values
+            the coordinates of the two extremities of the intersection
             between the plane and disk if there is an intersection.
             Returns 4 np.NaN if there is no intersection.
         """
-        
+
         xc, yc, zc = center[0], center[1], center[2] # For readibility
 
-        tau = R**2 - (xi - xc)**2 
-        
+        tau = R**2 - (xi - xc)**2
+
         if tau <= 0 : # Avoid computing square root of negative number
             #print("The plane does not touch the sphere")
             y1, z1, y2, z2 = np.NaN, np.NaN, np.NaN, np.NaN
-            
+
         else :
             tau = np.sqrt( tau )
             b = n[0] * (xc - xi) / tau / np.sqrt(1 - n[0]**2)
-            
+
             if b > 1 :
                 #print("The plane does not touch the disk")
                 y1, z1, y2, z2 = np.NaN, np.NaN, np.NaN, np.NaN
-                
+
             else :
-                n2 = np.array( [n[1], n[2]] ) # Projection on vertical x plane 
+                n2 = np.array( [n[1], n[2]] ) # Projection on vertical x plane
                 n2 /= np.linalg.norm(n2)
                 xint = self.unit_intersect(n2, b)
-                
+
                 y1 = tau * xint[0] + yc
                 y2 = tau * xint[1] + yc
                 z1 = tau * xint[2] + zc
                 z2 = tau * xint[3] + zc
-                
+
         return np.array([y1, z1, y2, z2])
-        
+
     def disk_yplane_intersect(self, center, n, R, yi):
         """
-        Computes the intersection between a disk 
+        Computes the intersection between a disk
         and a vertical plane (constant y plane) in 3D.
-        
+
         Parameters
-        ----------         
+        ----------
         The disk is defined by three parameters :
-        
+
         center : numpy array of size 3
             the 3D coordinates of the center of the disk.
-        
+
         n : numpy array of size 3
             the normal vector perpendicular to the disk
             Warning : The norm of n must be 1.
-            
+
         R : floating point value
             Radius of the disk
-            
+
         yi : float
             Position of the vertical plane along the y axis
 
         Returns
         -------
-        [x1, z1, x2, z2] : numpy array with 4 floating point values 
-            the coordinates of the two extremities of the intersection 
+        [x1, z1, x2, z2] : numpy array with 4 floating point values
+            the coordinates of the two extremities of the intersection
             between the plane and disk if there is an intersection.
             Returns 4 np.NaN if there is no intersection.
         """
-        
+
         xc, yc, zc = center[0], center[1], center[2] # For readibility
 
-        tau = R**2 - (yi - yc)**2 
+        tau = R**2 - (yi - yc)**2
         if tau <= 0 : # Avoid computing square root of negative number
             #print("The plane does not touch the sphere")
             x1, z1, x2, z2 = np.NaN, np.NaN, np.NaN, np.NaN
-            
+
         else :
             tau = np.sqrt( tau )
             b = n[0] * (yc - yi) / tau / np.sqrt(1 - n[0]**2)
-            
+
             if b > 1 :
                 #print("The plane does not touch the disk")
-                x1, z1, x2, z2 = np.NaN, np.NaN, np.NaN, np.NaN        
+                x1, z1, x2, z2 = np.NaN, np.NaN, np.NaN, np.NaN
 
-                
+
             else :
-                n2 = np.array( [n[0], n[2]] ) # Projection on vertical x plane 
+                n2 = np.array( [n[0], n[2]] ) # Projection on vertical x plane
                 n2 /= np.linalg.norm(n2)
-                xint = self.unit_intersect(n2, b)    
-                
+                xint = self.unit_intersect(n2, b)
+
                 x1 = tau * xint[0] + xc
                 x2 = tau * xint[1] + xc
                 z1 = tau * xint[2] + zc
-                z2 = tau * xint[3] + zc    
-                
+                z2 = tau * xint[3] + zc
+
         return np.array([x1, z1, x2, z2])
-        
+
     def rst2d(self, m, xs, xe, ys, ye):
         """
         Rasterize a line on a 2D plane.
-        
+
         Parameters
-        ----------         
+        ----------
         m : 2D numpy array
 
         xs, xe, ys, ye : integer values
@@ -513,67 +515,67 @@ class GeologyManager():
             starting and ending location of the line
 
         Returns
-        -------        
+        -------
         m : 2D numpy array
             with value 1 where the grid is touched by the line
         """
-        
-        ny, nx = m.shape 
-        
+
+        ny, nx = m.shape
+
         if xe < xs : # Ensuires dx always positive
             xe, xs = xs, xe
             ye, ys = ys, ye
-        
+
         dx = xe - xs
         dy = ye - ys
-        
+
         if xs > nx : # The line is entirely out of the grid
             return
-            
+
         if (dx + np.abs(dy)) == 0 : # Case with a single pixel
             if (ys >= 0) and (ys < ny) :
                 m[ys, xs] = 1
             return
-        
+
         if dx >= abs(dy): # line with greater horizontal than vertical extension
             i = np.arange(max(0, xs), min(xe, nx) )
             j = np.int32( np.round((i-xs) * dy / dx + ys ) )
-            
+
             indx_ok = (j>=0) & (j<ny) # To crop the part that is out of grid
             i = i[indx_ok]
             j = j[indx_ok]
 
-        else:        
+        else:
             if ye < ys : # to ensure that arange works properly
                 xe, xs = xs, xe
-                ye, ys = ys, ye   
-                
+                ye, ys = ys, ye
+
             if ys>ny :
                 return
-            
+
             j = np.arange(max(ys, 0) , min(ye,ny) )
-            i = np.int32( np.round((j-ys) * dx / dy + xs ) ) 
-            
+            i = np.int32( np.round((j-ys) * dx / dy + xs ) )
+
             indx_ok = (i>=0) & (i<nx) # To crop the part that is out of grid
             i = i[indx_ok]
             j = j[indx_ok]
-            
+
         m[j,i] = 1
         return
-        
+
     def rasterize_fracture_network(self):
         """
         Rasterize a set of fractures on a 3D grid.
-        
+
         Returns
-        -------        
+        -------
         raster_fractures : 3D numpy array
             with value 1 where the grid is touched by a fracture
         """
-        
+
         dx, dy, dz = self.grid.dx, self.grid.dy, self.grid.dz
         nx, ny, nz = self.grid.nx, self.grid.ny, self.grid.nz
-        x0, y0, z0 = self.grid.x0, self.grid.y0, self.grid.z0    
+        x0, y0, z0 = self.grid.x0, self.grid.y0, self.grid.z0
 
         # Creates empty array to store raster of fracture indicators
         raster_fractures = np.zeros( (nz, ny, nx) )
@@ -593,7 +595,7 @@ class GeologyManager():
                 kc = ( (zc - z0) / dz  ).astype(int)
 
                 # Projected vertical extension
-                vz = R * np.sqrt( 1 - n[2]**2 ) 
+                vz = R * np.sqrt( 1 - n[2]**2 )
 
                 # Vertical extension in number of cells
                 dk = np.floor(vz / dz).astype(int)
@@ -601,7 +603,7 @@ class GeologyManager():
                 # Loop over the indices of horizontal levels
                 for k in range( max(kc-dk,0), min(kc+dk+2,nz) ) :
 
-                    # Corresponding z value 
+                    # Corresponding z value
                     zi = z0 + k * dz + dz / 2
 
                     # Computes the points of intersection of the fracture with horizontal plane
@@ -619,19 +621,19 @@ class GeologyManager():
                         # Rasterize the line
                         self.rst2d(raster_fractures[k,:,:], i1, i2, j1, j2)
 
-            elif nfx**2 < (nfz**2 + nfy**2) : # subhorizontal case 1 
+            elif nfx**2 < (nfz**2 + nfy**2) : # subhorizontal case 1
                 # Horizontal x index of the center of the fracture
                 ic = ( (xc - x0) / dx  ).astype(int)
 
                 # Projected x extension
-                vx = R * np.sqrt( 1 - n[0]**2 ) 
+                vx = R * np.sqrt( 1 - n[0]**2 )
                 # x extension in number of cells
                 di = np.floor(vx / dx).astype(int)
 
                 # Loop over the indices of horizontal levels
                 for i in range( max(ic-di,0), min(ic+di+2,nx) ) :
 
-                    # Corresponding x value 
+                    # Corresponding x value
                     xi = x0 + i * dx + dx / 2
 
                     # Computes the points of intersection of the fracture with vertical x plane
@@ -653,14 +655,14 @@ class GeologyManager():
                 # Horizontal y index of the center of the fracture
                 yc = ( (yc - y0) / dx  ).astype(int)
                 # Projected y extension
-                vy = R * np.sqrt( 1 - n[1]**2 ) 
+                vy = R * np.sqrt( 1 - n[1]**2 )
                 # x extension in number of cells
                 dj = np.floor(vy / dy).astype(int)
 
                 # Loop over the indices of horizontal levels
                 for j in range( max(jc-dj,0), min(jc+dj+2,nx) ) :
 
-                    # Corresponding x value 
+                    # Corresponding x value
                     yi = y0 + j * dy + dy / 2
 
                     # Computes the points of intersection of the fracture with vertical x plane
@@ -677,6 +679,7 @@ class GeologyManager():
 
                         # Rasterize the line
                         self.rst2d(raster_fractures[:,j,:], i1, i2, k1, k2)
+            self.data['fractures']['data'] = raster_fractures
         return raster_fractures
 
     def _fill(self, datafile_location):
@@ -723,14 +726,14 @@ class GeologyManager():
             for z in range(self.grid.nz):
                 for y in range(self.grid.ny):
                     for x in range(self.grid.nx):
-                        value = self.data[key]['data'][z][y][x] 
+                        value = self.data[key]['data'][z][y][x]
                         try:
                             if stats.get(value) == None:
                                 stats[value] = 1
                             else:
                                 stats[value] += 1
                         except:
-                            print('Unable to comput stats for value', value)
+                            print('Unable to compute stats for value :', value)
 
             #if self.settings['verbosity'] > 1:
                 #print('\n')
@@ -771,7 +774,7 @@ class GeologyManager():
         print(dip)
         return None
     """
-    
+
     """
     def show_fractures(self):
         fig = plt.figure()
@@ -791,7 +794,7 @@ class GeologyManager():
     def show(self, data=None, cmap='gray_r'):
         """
         Show data from the geology manager.
-        
+
         Parameter
         ---------
         data : str || list (optional)
@@ -802,14 +805,14 @@ class GeologyManager():
             data = []
             for d in self.data:
                 data.append(d)
-                
+
         if isinstance(data, str):
             data = [data]
-        
+
         nb = len(data)
         columns = 3
         rows    = math.ceil(nb/columns)
-        
+
         f = plt.figure()
         for i in range(1, nb):
             f.add_subplot(rows, columns, i)

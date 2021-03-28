@@ -1,3 +1,5 @@
+import os
+
 def get_settings(example=False):
     """
     Provide the datafiles settings.

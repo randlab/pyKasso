@@ -1,10 +1,6 @@
 import math
 import numpy as np
 
-""" ??? is it true ???
-self.z0 = z0 # z coord of centerpoint of bottom left cell
-"""
-
 class Grid():
     """
     Create a grid for the simulation.
@@ -58,16 +54,24 @@ class Grid():
         self.ylimits = [self.y0-self.dy/2, self.y[-1]+self.dy/2]
         self.zlimits = [self.z0-self.dz/2, self.z[-1]+self.dz/2]
         self.extent  = [self.xlimits[0], self.xlimits[1], self.ylimits[0], self.ylimits[1]] # coordinates of extent for use in plt.imshow()
-    
+
+        # Declaring some useful variables
+        self.xmin = self.xlimits[0]      #coordinate of leftmost edge of leftmost cells
+        self.xmax = self.xlimits[1]      #coordinate of rightmost edge of rightmost cells
+        self.ymin = self.ylimits[0]      #coordinate of bottom edge of bottom cells
+        self.ymax = self.ylimits[1]      #coordinate of top edge of top cells
+        self.zmin = self.zlimits[0]
+        self.zmax = self.zlimits[1]
+
     def __str__(self):
         return "[x0, y0, z0] : ({}, {}, {})\n[nx, ny, nz] : ({}, {}, {})\n[dx, dy, dz] : ({}, {}, {})".format(self.x0, self.y0, self.z0, self.nx, self.ny, self.nz, self.dx, self.dy, self.dz)
-        
+
     def get_i(self, x):
         """
         Retrieve i index with x-coordinate.
         """
-        return int(math.ceil((x - self.x0 - self.dx/2) / self.dx)) 
-    
+        return int(math.ceil((x - self.x0 - self.dx/2) / self.dx))
+
     def get_j(self, y):
         """
         Retrieve j index with x-coordinate.
@@ -79,7 +83,7 @@ class Grid():
         Retrieve k index with x-coordinate.
         """
         return int(math.ceil((z - self.z0 - self.dz/2) / self.dz))
-    
+
     def get_x(self, i):
         """
         Retrieve x-coordinate with i index.
@@ -89,7 +93,7 @@ class Grid():
             return None
         else:
             return self.x[i]
-    
+
     def get_y(self, j):
         """
         Retrieve y-coordinate with i index.
@@ -99,7 +103,7 @@ class Grid():
             return None
         else:
             return self.y[j]
-            
+
     def get_z(self, k):
         """
         Retrieve z-coordinate with i index.
@@ -109,7 +113,7 @@ class Grid():
             return None
         else:
             return self.z[k]
-            
+
     def inbox(self, x, y, z):
         """
         Return 1 if x, y and z-coordinate are inside the grid.
