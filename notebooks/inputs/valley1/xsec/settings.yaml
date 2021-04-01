@@ -123,8 +123,8 @@ cost_aquifer   : 0.4    #default: 0.3
 cost_aquiclude : 0.8    #default: 0.8
 cost_faults    : 0.2    #default: 0.2
 cost_fractures : 0.2    #default: 0.2
-cost_conduits  : 0.1    #default: 0.01
-cost_ratio     : 0.25   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (default 0.5)
+cost_conduits  : 0.01    #default: 0.01 
+cost_ratio     : 0.4   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (previous 0.25)
 #if ratio = 1: same travel cost parallel and perpendicular to gradient
 #if ratio < 1: travel cost is lower parallel to gradient (paths will follow steepest gradient), decrease value to increase contrast
 #if ratio > 1: travel cost is lower perpendicular to gradient (paths will follow contours), increase value to increase contrast
