@@ -2223,7 +2223,7 @@ class SKS():
         """
         Compute the outlets map (array indicating location of outlets as their index and everywhere else as nan).
         """
-        for i,outlet in self.outlets.iterrows():
+        for i,outlet in self._outlets.iterrows():
             X = int(math.ceil((outlet.x - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
             Y = int(math.ceil((outlet.y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
             self.maps['outlets'][Y][X] = i 
@@ -2370,7 +2370,7 @@ class SKS():
                 #Place nodes and links:
                 if np.isnan(self.maps['nodes'][ix,iy]):                                    #if there is no existing conduit node here 
                     if ~np.isnan(self.maps['outlets'][ix,iy]):                              #if there is an outlet here (cell value is not nan)
-                        outlet = self.outlets.iloc[int(self.maps['outlets'][ix,iy])]         #get the outlet coordinates using the ID in the outlets map
+                        outlet = self._outlets.iloc[int(self.maps['outlets'][ix,iy])]         #get the outlet coordinates using the ID in the outlets map
                         self.nodes[self.n]             = [outlet.y, outlet.x, 'outfall']     #add a node at the outlet coordinates (with the node type for SWMM)
                         self.maps['nodes'][ix,iy] = self.n                                   #update node map with node index
                         #ax1.scatter(outlet.x,outlet.y, marker='o', c='b')                   #debugging
