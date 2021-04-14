@@ -34,10 +34,10 @@ outlets_data    : 'inputs/valley1/outlet2D.txt'   #path to outlet file if mode i
 outlets_number  : 1                               #if random or composite, how many outlets to generate
 outlets_shuffle : False                           #if False: do not shuffle outlet order, if True: shuffle outlet order randomly
 outlets_importance : [1]                          #how to iterate over outlets
-#length of array indicates number of iterations
+#length of outlets_importance array indicates number of iterations
 #each integer indicates number of outlets in that iteration
 #for best results, sum of integers should equal total number of outlets - otherwise model will approximate
-#to run each outlet separately: [1,1,1,...]  
+#examples: if there are three outlets, to run each outlet separately: [1,1,1]; to run all outlets at once: [1]; to run first two outlets together, then third separately: [2,1]
 
 ###Inlets
 # 'random'    - generate n random points
@@ -47,8 +47,10 @@ inlets_mode    : 'import'                        #how to generate inlets
 inlets_data    : 'inputs/valley1/inlets2D.txt'   #path to inlet file if mode is import or composite. If model has a polygon, inlets must be inside polygon.
 inlets_number  : 5                               #if random or composite, how many inlets to generate
 inlets_shuffle : False                           #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
-inlets_per_outlet : [1]   #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets
+inlets_per_outlet : [1]   #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets. Order is based on input files.
 inlets_importance : [1]   #how to iterate over inlets: length of array indicates number of inlet iterations, each integer indicates number of inlets to run in that iteration, sum of integers = total number of inlets
+#see description of outlets_importance for examples of importance
+#note: number of inlet iterations CANNOT exceed the smallest number of inlets per outlet. So if one outlet has three inlets and another outlet has one inlet, there can only be one inlet iteration.
 
 ######################
 ### GeologyManager ###

@@ -2040,20 +2040,20 @@ class SKS():
         
         # 4 - Store all the relevant data for this network in dictionaries:
         #Chloe: I added/changed the storage format
-        maps = self.maps.copy() 
+        maps = copy.deepcopy(self.maps)                 #store copy of maps
         points = {}
-        points['inlets']  = self.inlets
-        points['outlets'] = self.outlets
+        points['inlets']  = copy.deepcopy(self.inlets)  #store copy of inlets in pandas df format with info about iteration and inlet/outlet assignment 
+        points['outlets'] = copy.deepcopy(self.outlets) #store copy of outlets in pandas df format with info about iteration and inlet/outlet assignment 
         network = {}
-        network['edges'] = self.edges   #store edges list
-        network['nodes'] = self.nodes   #store nodes list
-        network['karstnet'] = k    #store karstnet network object (including graph)
-        config = self.settings
+        network['edges'] = copy.deepcopy(self.edges)   #store copy of edges list
+        network['nodes'] = copy.deepcopy(self.nodes)   #store copy of nodes list
+        network['karstnet'] = copy.deepcopy(k)         #store copy of karstnet network object (including graph)
+        config = copy.deepcopy(self.settings)          #store copy of settings for the run being stored
         self.karst_simulations.append(KarstNetwork(maps, points, network, stats, config))
 
         # 5 - Return inlets and outlets to their original format:
         #Chloe: this is to convert inlets and outlets back from pandas dataframes
-        self.inlets  = np.asarray(self.inlets)[:,0:2]
+        self.inlets  = np.asarray(self.inlets)[:,0:2]    #return inlets to array format without info about iteration and inlet/outlet assignment (important for later plotting functions etc.)
         self.outlets = np.asarray(self.outlets)[:,0:2]
         return None
     
