@@ -77,10 +77,3 @@ def loadpoints(text):
         print("Unexpected error:", sys.exc_info()[0])
         raise
     return points
-
-def _extents(f):
-    """
-    Little private function to correctly locate data on plots.
-    """
-    delta = f[1] - f[0]
-    return [f[0] - delta/2, f[-1] + delta/2]

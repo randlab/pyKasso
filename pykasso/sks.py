@@ -1,10 +1,13 @@
 """
 TODO :
-- retirer geology via image ???
+- retirer geology_velocity dans fichier yaml et ici
+- retirer geology via image ??? OUI
 - _set_points
 - import methods : faire le point
 
+- karstnet issue, line 1332
 - _compute_cost_map ajouter la 3ème dimension, Ligne 1542
+
 - remettre karsten, erreurs bizarres...
 - faire du ménage dans les fonctions de visu
 - function : get_fractures_numbers ? marche pas ??
@@ -13,6 +16,10 @@ QUESTIONS
 - set_outlets_importance ? Comment intégrer ?
 - set_inlets_importance ? Comment intégrer ?
 - set_inlets_per_outlet ? Comment intégrer ?
+- set_outlets_shuffle
+- set_inlets_shuffle
+----> MAJ des fichiers yaml
+----> cela doit apparaitre dans les updates
 """
 
 """
@@ -34,6 +41,7 @@ from .grid           import Grid
 from .polygon        import Polygon
 from .geologymanager import GeologyManager
 from .pointmanager   import PointManager
+from .karstnetwork   import KarstNetwork
 from .functions      import get_settings
 
 import os

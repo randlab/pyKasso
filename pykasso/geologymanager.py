@@ -1,11 +1,17 @@
 """
 TODO :
+- documentation - topography
+- documentation - orientation
+
+- line 52
+- set_data_from_gslib (vérifier pour les cas 3D)
 - Add 'karst' data;
-- Do we keep 'set_data_from_image()' ?;
-- Do we keep 'import' mode ? With the fill function ? old gslib format ? poubelle ?
+
 - show_fractures_stats() ?
-- show_fractures() ?
+- show_fractures() ? en mode calc (voir code Chloé)
+- rajouter les diagrammes de Rose (pour les fractures)
 - show() en cours
+- Renverser les fractures
 """
 
 from .functions import opendatafile, loadpoints
@@ -61,27 +67,6 @@ class GeologyManager():
         self.data[data_key]          = {}
         self.data[data_key]['data']  = self._fill(datafile_location)
         self.data[data_key]['mode']  = 'import'
-        return None
-
-    def set_data_from_image(self, data_key, datafile_location):
-        """
-        Set data from an image for an indicated data key.
-
-        Parameters
-        ----------
-        data_key : string
-            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
-        datafile_location : string
-            Path of the datafile.
-        """
-        try:
-           image_data = np.flipud(plt.imread(datafile_location))
-        except:
-            print('- set_data_from_image() - Error : unable to read datafile.')
-            raise
-        self.data[data_key] = {}
-        self.data[data_key]['data'] = (image_data[:,:,0] == 0)*1
-        self.data[data_key]['mode'] = 'image'
         return None
 
     def set_data_from_csv(self, data_key, datafile_location):
@@ -681,40 +666,6 @@ class GeologyManager():
                         self.rst2d(raster_fractures[:,j,:], i1, i2, k1, k2)
             self.data['fractures']['data'] = raster_fractures
         return raster_fractures
-
-    def _fill(self, datafile_location):
-        """
-        GSLIB Reader.
-        """
-        # Try to open datafile
-        text = opendatafile(datafile_location)
-
-        # Control if second line is well an integer
-        try:
-            nvar = int(text[1])
-        except:
-            print("- set_data() - Error : Second line of gslib file must be an integer.")
-            raise
-
-        # Control if second line is 1
-        if nvar is not 1:
-           sys.exit("- set_data() - Error : gslib file must have only one column.")
-
-        # Control if size declared match with gslib's size file
-        data_lines = text[2+nvar:]
-        if len(data_lines) != (self.grid.nx*self.grid.ny*self.grid.nz):
-            sys.exit("- set_data() - Error : Dimensions declared does not match with gslib file's size.")
-
-        # Get values from text files
-        data = np.zeros(len(data_lines))
-        try:
-            for data_line, k in zip(data_lines, range(len(data_lines))):
-                data[k] = data_line.strip().split()[0]
-        except:
-            print("- set_data() - Unexpected error:", sys.exc_info()[0])
-            raise
-
-        return data.reshape((self.grid.nz, self.grid.ny, self.grid.nx))
 
     def compute_stats_on_data(self):
         """

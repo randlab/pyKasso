@@ -547,44 +547,6 @@
         return None
 
 
-################
-class Conduit():
-    """
-    A class for storing simulated conduits.
-    """
-    def __init__(self,iteration):
-        self.iteration = iteration
-        self.nodes     = []
-        self.edges     = []
-
-    def add_node(self,nodeID,x,y,nodeType):
-        """
-        Add a new node in the current constructed conduit.
-
-        Parameters
-        ----------
-        nodeID:
-            ID of the node
-        x:
-            x position
-        y:
-            y position
-        nodeType:
-            0 - normal
-            1 - old karstic channel
-            2 - outlet
-        """
-        self.nodes.append((nodeID,x,y,nodeType))
-        return None
-
-    def compute_edges(self):
-        for i in range(len(self.nodes)):
-            if i == 0:
-                continue
-            node_1 = self.nodes[i-1][0]
-            node_2 = self.nodes[i][0]
-            self.edges.append((node_1,node_2))
-        return None
 
 #####################
 class KarstNetwork():

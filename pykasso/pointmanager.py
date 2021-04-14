@@ -1,6 +1,6 @@
 """
 TODO :
-- Ajouter GeologyManager en argument dans le construceur :
+- Ajouter GeologyManager en argument dans le construceur ???? : OUI
     + Génération d'inlet et d'outlet en fonction de la géologie
 """
 
