@@ -30,7 +30,7 @@ polygon_data     : 'inputs/paper3/polygon.txt'
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 outlets_mode    : 'import'
-outlets_data    : 'inputs/paper3/outlets2D.txt'
+outlets_data    : 'inputs/paper3/outlets2D_reference.txt'
 outlets_number  : 3    #if random or composite, how many outlets to generate
 outlets_shuffle : False #if False: do not shuffle outlet order, if True: shuffle outlet order randomly
 outlets_importance : [1,1,1] #how to iterate over outlets: length of array indicates number of iterations, each integer indicates number of outlets in that iteration, sum of integers = total number of outlets
@@ -41,10 +41,10 @@ outlets_importance : [1,1,1] #how to iterate over outlets: length of array indic
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 inlets_mode    : 'import'
-inlets_data    : 'inputs/paper3/inlets2D.txt'
+inlets_data    : 'inputs/paper3/inlets2D_reference.txt'
 inlets_number  : 5      #if random or composite, how many inlets to generate
 inlets_shuffle : False   #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
-inlets_per_outlet : [2,1,2]    #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets [2,1,2]
+inlets_per_outlet : [1,1,1]    #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets [2,1,2]
 inlets_importance : [1]  #how to iterate over inlets: length of array indicates number of inlet iterations, each integer indicates number of inlets to run in that iteration, sum of integers = total number of inlets
 
 ######################
@@ -58,7 +58,7 @@ inlets_importance : [1]  #how to iterate over inlets: length of array indicates 
 # 'csv'    - Import geology via csv
 # 'gslib'  - Import geology via GSLIB (new version)
 geological_mode     : 'csv'
-geological_datafile : 'inputs/paper3/geo181x141.csv'                   #geo=surficial geologic map; gempy=2D map of gempy model
+geological_datafile : 'inputs/paper3/gempy181x141.csv'                   #geo=surficial geologic map; gempy=2D map of gempy model
 
 ###Topography
 #'null'   - No topography
@@ -92,9 +92,9 @@ fractures_mode     : 'random'
 fractures_datafile : 'inputs/paper3/fractures.gslib'
 
 # If fractures mode is 'generate'
-fractures_densities       : [   9e-6,   6e-6]  #smaller = spaced farther apart
+fractures_densities       : [   6e-6,   4e-6]  #smaller = spaced farther apart
 fractures_min_orientation : [     30,    120]  #orientations taken from Goldscheider dissertation
-fractures_max_orientation : [     50,    130] 
+fractures_max_orientation : [     50,    130]  
 
 # For fracture size
 fractures_alpha      : 2      #power law coefficient
@@ -117,12 +117,12 @@ algorithm : 'Riemann2'
 
 #Travel cost through each feature (higher=slower/harder, will be avoided by conduits)
 cost_out       : 0.999  
-cost_aquifer   : 0.3
-cost_aquiclude : 0.4 
-cost_faults    : 0.2
-cost_fractures : 0.2
-cost_conduits  : 0.1
-cost_ratio     : 0.4     #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (should be less than 0.5 for conduits to go downgradient,  0.25 is good)
+cost_aquifer   : 0.3    #.5
+cost_aquiclude : 0.6    #.75
+cost_faults    : 0.2    #.3
+cost_fractures : 0.2    #.3
+cost_conduits  : 0.1    #.1
+cost_ratio     : 0.5    #.4   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (should be less than 0.5 for conduits to go downgradient,  0.25 is good)
 #if ratio = 1: same travel cost parallel and perpendicular to gradient
 #if ratio < 1: travel cost is lower parallel to gradient (paths will follow steepest gradient), decrease value to increase contrast
 #if ratio > 1: travel cost is lower perpendicular to gradient (paths will follow contours), increase value to increase contrast
