@@ -1,11 +1,6 @@
 """
 TODO :
-- documentation - topography
-- documentation - orientation
-
-- line 52
-- set_data_from_gslib (vérifier pour les cas 3D)
-- Add 'karst' data;
+- maj des yaml avec les modes d'import
 
 - show_fractures_stats() ?
 - show_fractures() ? en mode calc (voir code Chloé)
@@ -23,6 +18,8 @@ import math
 import mpmath
 import numpy             as np
 import matplotlib.pyplot as plt
+
+# import concurrent.futures
 
 class GeologyManager():
     """
@@ -49,24 +46,8 @@ class GeologyManager():
             Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
         """
         self.data[data_key] = {}
-        self.data[data_key]['data']  = np.zeros((self.grid.nz, self.grid.ny, self.grid.nx))
-        self.data[data_key]['mode']  = 'null'
-        return None
-
-    def set_data(self, data_key, datafile_location):
-        """
-        Set data from a datafile for an indicated data key.
-
-        Parameters
-        ----------
-        data_key : str
-            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
-        datafile_location : str
-            Path of the datafile.
-        """
-        self.data[data_key]          = {}
-        self.data[data_key]['data']  = self._fill(datafile_location)
-        self.data[data_key]['mode']  = 'import'
+        self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz))
+        self.data[data_key]['mode'] = 'null'
         return None
 
     def set_data_from_csv(self, data_key, datafile_location):
@@ -97,10 +78,10 @@ class GeologyManager():
             Path to the datafile.
         """
         self.data[data_key]         = {}
-        a = np.genfromtxt(datafile_location, dtype=float, skip_header=3) #read in gslib file as float numpy array without header rows
-        a[a==0] = np.nan                                                 #replace zeros with nans (array must be float first)
-        a = np.reshape(a, (self.grid.ynum,self.grid.xnum), order='F')    #reshape to xy grid using Fortran ordering
-        self.data[data_key]['data'] = a                                  #store
+        a = np.genfromtxt(datafile_location, dtype=float, skip_header=3)         #read in gslib file as float numpy array without header rows
+        a[a==0] = np.nan                                                         #replace zeros with nans (array must be float first)
+        a = np.reshape(a, (self.grid.nx, self.grid.ny, self.grid.nz), order='F') #reshape to xy grid using Fortran ordering
+        self.data[data_key]['data'] = a                                          #store
         self.data[data_key]['mode'] = 'gslib'
         return None
 
@@ -115,9 +96,9 @@ class GeologyManager():
             Use either the land surface ('topography'), the surface of the bottom of the karst unit ('contact'), or the potential returned by the geologic model
         """
         self.data['orientationx'] = {}
-        self.data['orientationx']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
+        self.data['orientationx']['data'] = np.zeros((self.grid.nx, self.grid.ny))
         self.data['orientationy'] = {}
-        self.data['orientationy']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
+        self.data['orientationy']['data'] = np.zeros((self.grid.nx, self.grid.ny))
         self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(surface, self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array
         self.data['orientationx']['mode'] = 'topo'
         self.data['orientationy']['mode'] = 'topo'
@@ -148,7 +129,7 @@ class GeologyManager():
         """
 
         self.data['fractures'] = {}
-        self.data['fractures']['data']  = np.zeros((self.grid.nz, self.grid.ny, self.grid.nx))
+        self.data['fractures']['data']  = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz))
         self.fractures = []
         fracture_id = 0
 
@@ -570,7 +551,7 @@ class GeologyManager():
 
             # Get fracture geometry
             xc, yc, zc = f.get_position()
-            nfx, nfy, nfz = f.get_normal() # Could provide directly an array ### FM : ??? => n = f.get_normal()
+            nfx, nfy, nfz = f.get_normal()
             n = [nfx, nfy, nfz]
             R = f.get_radius()
 

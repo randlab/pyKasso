@@ -1,0 +1,29 @@
+1  DefaultBasement			0	#ffffff
+2  Bärschwil_Renggeri		0	#da7800
+3  Bärschwil_Liesberg		0	#fbb23d
+4  Vellerat_vorbourg		0	#d30000
+5  Vellerat_Roschenz		0	#fd774e
+6  Vellerat_HmB				0	#dea083
+7  Vellerat_bure			0	#fcded0
+8  Courgenay_LaMay			1	#0700d9
+9  Courgenay_porrentruy		1	#2964bd
+10 Reuchenette_vabenau		1	#6fb9eb
+11 Reuchenette_banne		1	#95daff
+12 Reuchenette_courtedoux	1	#9bbbd3
+13 Reuchenette_chevenez		1	#e4f4ff
+14 Quat_TERTIAIRE			0	#fffc93
+15 Chevauchement			
+16 Lias						
+17 OpalinusTon				
+18 Passwang					
+19 Hauptrogenstein			
+20 Ifental
+21 Oxfordien
+22 i5r
+23 i6a
+24 i7a_i6b
+
+
+
+Code 1 #aaffff
+Code 2 #ffaa7f

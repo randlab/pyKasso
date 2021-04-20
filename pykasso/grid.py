@@ -47,7 +47,7 @@ class Grid():
         self.x = np.arange(self.x0, self.x0+(self.nx)*self.dx, self.dx, dtype=np.float_) # 1D array of centerpoints of each cell along x axis
         self.y = np.arange(self.y0, self.y0+(self.ny)*self.dy, self.dy, dtype=np.float_) # 1D array of centerpoints of each cell along y axis
         self.z = np.arange(self.z0, self.z0+(self.nz)*self.dz, self.dz, dtype=np.float_) # 1D array of centerpoints of each cell along z axis
-        self.X, self.Y, self.Z = np.meshgrid(self.x, self.y, self.z) # 3D array of dim (nx, ny, nz) with xyz coord of each cell's centerpoint
+        self.X, self.Y, self.Z = np.meshgrid(self.x, self.y, self.z, indexing="ij")      # 3D array of dim (nx, ny, nz) with xyz coord of each cell's centerpoint
 
         # Calculating the limits of the grid
         self.xlimits = [self.x0-self.dx/2, self.x[-1]+self.dx/2]
@@ -56,10 +56,10 @@ class Grid():
         self.extent  = [self.xlimits[0], self.xlimits[1], self.ylimits[0], self.ylimits[1]] # coordinates of extent for use in plt.imshow()
 
         # Declaring some useful variables
-        self.xmin = self.xlimits[0]      #coordinate of leftmost edge of leftmost cells
-        self.xmax = self.xlimits[1]      #coordinate of rightmost edge of rightmost cells
-        self.ymin = self.ylimits[0]      #coordinate of bottom edge of bottom cells
-        self.ymax = self.ylimits[1]      #coordinate of top edge of top cells
+        self.xmin = self.xlimits[0] #coordinate of leftmost edge of leftmost cells
+        self.xmax = self.xlimits[1] #coordinate of rightmost edge of rightmost cells
+        self.ymin = self.ylimits[0] #coordinate of bottom edge of bottom cells
+        self.ymax = self.ylimits[1] #coordinate of top edge of top cells
         self.zmin = self.zlimits[0]
         self.zmax = self.zlimits[1]
 

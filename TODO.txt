@@ -1,1 +1,40 @@
-pykasso.egg-info ???
+[ISSUES]
+	- renommer un dossier enlève l'auteur du code : il faudra enlever et remettre le code je pense
+	- dans stup.py on ne peut mettre qu'un author...
+
+[QUESTIONS]
+	version 0.2.0 -> Est-ce OK ???
+    Dossier -> Delete pykasso.egg-info ???
+	Fichier -> Delete outlets2D_reference.txt ???
+	import mode : gslib / csv ? comment implémenter cela ?
+
+[CODE]
+	pyKasso/geologymanager.py
+		- Compléter le notebook avec orientation, etc...
+		- Documenter topography
+		- Documenter orientation
+		- Vérifier que set_data_from_gslib fonctionne pour les cas 3D
+		- Discrétiseur, résultats étranges quand les fractures sont presques plates
+
+	pyKasso/pointmanager.py
+		- Fonction pour générer les inlets/outlets en fonction de la géologie
+	
+	pyKasso/karstnetwork.py
+		- Compléter la doc
+
+[MAIL]		
+pyKasso/grid.py
+	- np.meshgrid(indexing='ij') : MAIL
+
+
+
+-----------------------------------
+
+
+[pour la v 0.3.0]
+	
+	pyKasso/geologymanager.py
+		- Donner la possibilité d'ajouter une cocuhe 'karst' qui représente le réseau initial
+		
+	pyKasso/karstnetwork.py
+		- Ajouter des fonctions d'export, de lecture, de gestions de données 

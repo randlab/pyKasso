@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pykasso",
-    version="0.1.0",
+    version="0.2.0",
     author="Francois Miville",
     author_email="francois.miville@unine.ch",
 	url="https://github.com/randlab/pyKasso",

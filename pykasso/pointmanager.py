@@ -1,9 +1,3 @@
-"""
-TODO :
-- Ajouter GeologyManager en argument dans le construceur ???? : OUI
-    + Génération d'inlet et d'outlet en fonction de la géologie
-"""
-
 from .functions      import opendatafile, loadpoints
 from matplotlib.path import Path
 
@@ -22,12 +16,15 @@ class PointManager():
         PointManager() class needs a Grid() object as argument.
     polygon : Polygon()
         PointManager() class needs a Polygon() object as argument.
+	geology : GeologyManager()
+		PointManager() class needs a GeologyManager() object as argument.
     """
 
-    def __init__(self, grid, polygon):
+    def __init__(self, grid, polygon, geology):
         self.points  = {}
         self.grid    = grid
         self.polygon = polygon
+        self.geology = geology
 
     def set_points(self, points_key, points):
         """

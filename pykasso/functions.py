@@ -63,7 +63,7 @@ def opendatafile(file_location):
 
 def loadpoints(text):
     """
-    Private function to load points in a text. Generally combined with '_opendatafile()'.
+    Private function to load points in a text. Generally combined with 'opendatafile()'.
     """
     points = []
     try:
