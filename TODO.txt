@@ -4,17 +4,18 @@
 
 [QUESTIONS]
 	version 0.2.0 -> Est-ce OK ???
-    Dossier -> Delete pykasso.egg-info ???
+    	Dossier -> Delete pykasso.egg-info ???
 	Fichier -> Delete outlets2D_reference.txt ???
-	import mode : gslib / csv ? comment implémenter cela ?
+	Voir notebooks -> les différences entre set_data_from_image/csv/gslib ??? 
+	Voir notebooks -> marqueurs [???]
 
 [CODE]
 	pyKasso/geologymanager.py
 		- Compléter le notebook avec orientation, etc...
 		- Documenter topography
 		- Documenter orientation
-		- Vérifier que set_data_from_gslib fonctionne pour les cas 3D
 		- Discrétiseur, résultats étranges quand les fractures sont presques plates
+		- data_from_csv() : only en 2D ???? / set_data_from_csv() : reshape, il manque la z dimension
 
 	pyKasso/pointmanager.py
 		- Fonction pour générer les inlets/outlets en fonction de la géologie

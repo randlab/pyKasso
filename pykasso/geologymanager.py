@@ -1,6 +1,6 @@
 """
 TODO :
-- maj des yaml avec les modes d'import
+- maj des yaml avec les modes d'import 'csv' / 'gslib'
 
 - show_fractures_stats() ?
 - show_fractures() ? en mode calc (voir code Chloé)
@@ -13,13 +13,14 @@ from .functions import opendatafile, loadpoints
 from .fracture  import Fracture
 from tqdm       import tqdm
 
+from skimage.io import imread
+from skimage.transform import resize
+
 import sys
 import math
 import mpmath
 import numpy             as np
 import matplotlib.pyplot as plt
-
-# import concurrent.futures
 
 class GeologyManager():
     """
@@ -83,6 +84,27 @@ class GeologyManager():
         a = np.reshape(a, (self.grid.nx, self.grid.ny, self.grid.nz), order='F') #reshape to xy grid using Fortran ordering
         self.data[data_key]['data'] = a                                          #store
         self.data[data_key]['mode'] = 'gslib'
+        return None
+
+    def set_data_from_image(self, data_key, datafile_location):
+        """
+        Set data from an image for a indicated data key.
+        Parameters
+        ----------
+        data_key : string
+            Type of data : 'geology', 'faults' or 'fractures'.
+        datafile_location : string
+            Path of the datafile.
+        """
+        try:
+            image_data = np.flipud(plt.imread(datafile_location))
+        except:
+            print('- set_data_from_image() - Error : unable to read datafile.')
+            raise
+        self.data[data_key] = {}
+        image = (image_data[:,:,0] == 0)*1
+        self.data[data_key]['data'] = resize(image, (self.grid.nx, self.grid.ny), anti_aliasing=False)
+        self.data[data_key]['mode'] = 'image'
         return None
 
     def generate_orientations(self, surface):
@@ -723,7 +745,7 @@ class GeologyManager():
         return None
     """
 
-    def show(self, data=None, cmap='gray_r'):
+    def show(self, data="geology", cmap='gray_r'):
         """
         Show data from the geology manager.
 
@@ -733,21 +755,8 @@ class GeologyManager():
             Data to show : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
             By default, all data are showed.
         """
-        if data is None:
-            data = []
-            for d in self.data:
-                data.append(d)
-
-        if isinstance(data, str):
-            data = [data]
-
-        nb = len(data)
-        columns = 3
-        rows    = math.ceil(nb/columns)
-
         f = plt.figure()
-        for i in range(1, nb):
-            f.add_subplot(rows, columns, i)
-            plt.imshow(self.data[data[i]]['data'], extent=self.grid.extent, origin='lower', cmap=cmap)
-            plt.set_title(data[i])
+        plt.imshow(self.data[data]['data'], extent=self.grid.extent, origin='lower', cmap=cmap)
+        plt.title(data)
         plt.show()
+        return None
