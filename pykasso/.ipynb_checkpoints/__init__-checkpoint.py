@@ -1,1 +1,0 @@
-from pykasso.base import *
