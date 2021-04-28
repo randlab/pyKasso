@@ -2,8 +2,6 @@
 TODO :
 - ajouter tous les modes d'imports
 - Line 1561 (support 3D)
-- https://github.com/Mirebeau/AdaptiveGridDiscretizations/issues/4
-- https://github.com/Mirebeau/AdaptiveGridDiscretizations
 
 - faire du ménage dans les fonctions de visu
 - function : get_fractures_numbers ? marche pas ??
@@ -51,7 +49,7 @@ import matplotlib.pyplot as plt
 
 class SKS():
     """
-    A super-class to manage all the previous data class and to simulate karst networks.
+    A super-class to manage all the data class and to simulate karst networks.
     """
     
     def __init__(self, yaml_settings_file = None, rand_seed = None):
@@ -68,7 +66,7 @@ class SKS():
             >>> catchment = pk.SKS()
             >>> catchment = pk.SKS('exemple.yaml')
         """
-        print('CAUTION: You are using the development version of this package.') #uncomment this to tell apart the development version and the main version
+        # print('CAUTION: You are using the development version of this package.') #uncomment this to tell apart the development version and the main version
 
         if yaml_settings_file is None:
             yaml_settings_file = os.path.dirname(os.path.abspath(__file__)) + '/' + 'default_files/settings.yaml'
@@ -558,10 +556,9 @@ class SKS():
         ---------
         geological_mode : string
             'null'   - No geology
-            'import' - Import from old gslib file format
-            'gslib'  - Import from new gslib format
-            'csv'    - Import from csv
-            'image'  - Import via image
+            'gslib'  - Import geology via gslib
+            'csv'    - Import geology via csv
+            'image'  - Import geology via image
         """
         self.settings['geological_mode'] = geological_mode
         return None
@@ -587,10 +584,8 @@ class SKS():
         ---------
         topography_mode : string
             'null'   - No topography
-            'import' - Import from old gslib file format
-            'gslib'  - Import from new gslib format
-            'csv'    - Import from csv
-            'image'  - Import via image
+            'gslib'  - Import topography via gslib
+            'csv'    - Import topography via csv
         """
         self.settings['topography_mode'] = topography_mode
         return None
@@ -643,10 +638,9 @@ class SKS():
         ---------
         faults_mode : string
             'null'   - No faults
-            'import' - Import from old gslib file format
-            'gslib'  - Import from new gslib format
-            'csv'    - Import from csv
-            'image'  - Import via image
+            'gslib'  - Import faults via gslib
+            'csv'    - Import faults via csv
+            'image'  - Import faults via image
         """
         self.settings['faults_mode'] = faults_mode
         return None
@@ -654,7 +648,7 @@ class SKS():
     def set_faults_datafile(self, faults_datafile):
         """
         Define the faults datafile path.
-        Useful only when the mode for faults is on 'import' or 'image'.
+        Useful only when the mode for faults is on 'gslib', 'csv' or 'image'.
 
         Parameter
         ---------
@@ -672,11 +666,10 @@ class SKS():
         ---------
         fractures_mode : string
             'null'   - No fractures
-            'import' - Import from old gslib file format
-            'gslib'  - Import from new gslib format
-            'csv'    - Import from csv
-            'image'  - Import via image
-            'random' - Generate random fractures
+            'gslib'  - Import fractures via gslib
+            'csv'    - Import fractures via csv
+            'image'  - Import fractures via image
+            'random' - Generate fractures randomly
         """
         self.settings['fractures_mode'] = fractures_mode
         return None
@@ -684,7 +677,7 @@ class SKS():
     def set_fractures_datafile(self, fracture_datafile):
         """
         Define the fractures datafile path.
-        Useful only when the mode for fractures is on 'import' or 'image'.
+        Useful only when the mode for fractures is on 'gslib', 'csv' or 'image'.
 
         Parameter
         ---------
@@ -899,7 +892,7 @@ class SKS():
     def set_geology_id(self, geology_id):
         """
         Define the geology id (from geology datafile) to consider in the simulation.
-        Only needed in 'import' mode.
+        Only needed in 'gslib' or 'csv' mode.
 
         Parameter
         ---------
@@ -1014,16 +1007,15 @@ class SKS():
     def update_geology(self):
         """
         Update the geology settings.
-        Chloe: I added the csv and new gslib import mode option here and removed the old import mode
         """
         if self.settings['geological_mode'] == 'null':
             self.geology.set_data_null('geology')
-        elif self.settings['geological_mode'] == 'image':
-            self.geology.set_data_from_image('geology', self.settings['geological_datafile'])
         elif self.settings['geological_mode'] == 'gslib':
             self.geology.set_data_from_gslib('geology', self.settings['geological_datafile'])
         elif self.settings['geological_mode'] == 'csv':
             self.geology.set_data_from_csv('geology', self.settings['geological_datafile'])
+        elif self.settings['geological_mode'] == 'image':
+            self.geology.set_data_from_image('geology', self.settings['geological_datafile'])
         else:
             print('/!\\ Error : unrecognized geological mode', self.settings['geological_mode'])
             sys.exit() 
@@ -1035,12 +1027,9 @@ class SKS():
     def update_topography(self):
         """
         Update the topography settings.
-        Chloe: I added the csv import mode here and removed the old import function.
         """
         if self.settings['topography_mode'] == 'null':
             self.geology.set_data_null('topography')
-        elif self.settings['topography_mode'] == 'image':
-            self.geology.set_data_from_image('topography', self.settings['topography_datafile'])
         elif self.settings['topography_mode'] == 'csv':
             self.geology.set_data_from_csv('topography', self.settings['topography_datafile'])
         else:
@@ -1078,8 +1067,10 @@ class SKS():
         """
         if self.settings['faults_mode'] == 'null':
             self.geology.set_data_null('faults')
-        elif self.settings['faults_mode'] == 'import':
-            self.geology.set_data('faults', self.settings['faults_datafile'])
+        elif self.settings['faults_mode'] == 'gslib':
+            self.geology.set_data_from_gslib('faults', self.settings['faults_datafile'])
+        elif self.settings['faults_mode'] == 'csv':
+            self.geology.set_data_from_csv('faults', self.settings['faults_datafile'])
         elif self.settings['faults_mode'] == 'image':
             self.geology.set_data_from_image('faults', self.settings['faults_datafile'])
         else:
@@ -1096,12 +1087,21 @@ class SKS():
         """
         if self.settings['fractures_mode'] == 'null':
             self.geology.set_data_null('fractures')
-        elif self.settings['fractures_mode'] == 'import':
-            self.geology.set_data('fractures', self.settings['fractures_datafile'])
+        elif self.settings['fractures_mode'] == 'gslib':
+            self.geology.set_data_from_gslib('fractures', self.settings['fractures_datafile'])
+        elif self.settings['fractures_mode'] == 'csv':
+            self.geology.set_data_from_csv('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'image':
             self.geology.set_data_from_image('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'random':
-            self.geology.generate_fractures(self.settings['fractures_numbers'], self.settings['fractures_min_orientation'], self.settings['fractures_max_orientation'], self.settings['fractures_alpha'], self.settings['fractures_min_length'], self.settings['fractures_max_length'])
+            self.geology.generate_fractures(self.settings['fractures_densities'],
+                                            self.settings['fractures_alpha'],
+                                            self.settings['fractures_min_orientation'],
+                                            self.settings['fractures_max_orientation'],
+                                            self.settings['fractures_min_dip'],
+                                            self.settings['fractures_max_dip'],
+                                            self.settings['fractures_min_length'],
+                                            self.settings['fractures_max_length'])
         else:                                                                                  
             print('/!\\ Error : unrecognized fractures mode.')
             sys.exit()
@@ -1278,8 +1278,8 @@ class SKS():
         # Faults
         if self.settings['faults_mode'] == 'null':
             geology.set_data_null('faults')
-        elif self.settings['faults_mode'] == 'import':
-            geology.set_data('faults', self.settings['faults_datafile'])
+        elif self.settings['faults_mode'] == 'gslib':
+            geology.set_data_from_gslib('faults', self.settings['faults_datafile'])
         elif self.settings['faults_mode'] == 'image':
             geology.set_data_from_image('faults', self.settings['faults_datafile'])
         else:
@@ -1289,8 +1289,8 @@ class SKS():
         # Fractures
         if self.settings['fractures_mode'] == 'null':
             geology.set_data_null('fractures')
-        elif self.settings['fractures_mode'] == 'import':
-            geology.set_data('fractures', self.settings['fractures_datafile'])
+        elif self.settings['fractures_mode'] == 'gslib':
+            geology.set_data_from_gslib('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'image':
             geology.set_data_from_image('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'random':
@@ -1536,7 +1536,7 @@ class SKS():
                 self.maps['cost'][0] = np.full((self.grid.ny, self.grid.nx), self.settings['cost_aquifer']) #every cell has the same travel cost and is part of the aquifer
             elif self.geology.data['geology']['mode'] == 'image':
                 self.maps['cost'][0] = np.where(self.geology.data['geology']['data']==1, self.settings['cost_aquiclude'], self.settings['cost_aquifer'])
-            elif self.geology.data['geology']['mode'] == 'import' or self.geology.data['geology']['mode'] == 'csv' or self.geology.data['geology']['mode'] == 'gslib':
+            elif self.geology.data['geology']['mode'] == 'csv' or self.geology.data['geology']['mode'] == 'gslib':
 
                 tableFMM = {}
                 if len(self.settings['geology_id']) != len(self.settings['geology_cost']):

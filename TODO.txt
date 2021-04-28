@@ -1,6 +1,6 @@
 [ISSUES]
 	- renommer un dossier enlève l'auteur du code : il faudra enlever et remettre le code je pense
-	- dans stup.py on ne peut mettre qu'un author...
+	- dans setup.py on ne peut mettre qu'un author...
 
 [QUESTIONS]
 	version 0.2.0 -> Est-ce OK ???
@@ -35,7 +35,7 @@ pyKasso/grid.py
 [pour la v 0.3.0]
 	
 	pyKasso/geologymanager.py
-		- Donner la possibilité d'ajouter une cocuhe 'karst' qui représente le réseau initial
+		- Donner la possibilité d'ajouter une couche 'karst' qui représente le réseau initial
 		
 	pyKasso/karstnetwork.py
 		- Ajouter des fonctions d'export, de lecture, de gestions de données 

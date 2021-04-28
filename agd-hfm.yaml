@@ -18,5 +18,6 @@ dependencies:
   - mpmath
   - pandas
   - xlrd 
+  - futures # concurrent.futures
  # conda install -n pykasso pip
  # pip install mplstereonet

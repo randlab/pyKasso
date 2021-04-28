@@ -55,17 +55,17 @@ inlets_importance : [1]
 
 ###Geology
 # 'null'  - No geology
-# 'gslib' - Import geology via GSLIB 
-# 'image' - Import geology via image
+# 'gslib' - Import geology via GSLIB
 # 'csv'   - Import geology via csv
+# 'image' - Import geology via image
 geological_mode     : 'null'
 geological_datafile : ''
 
 ###Topography
-# 'null' - No topography
-# 'csv'  - Import topography from csv file 
-topography_mode : 'null'
-topography_datafile : 'dem.csv'
+# 'null'  - No topography
+# 'csv'   - Import topography via csv
+topography_mode     : 'null'
+topography_datafile : ''
 
 ###Orientation
 # 'null'    - No orientation
@@ -75,18 +75,18 @@ orientation_mode     : 'null'
 orientation_datafile : ''
 
 ###Faults
-# 'null'   - No faults
-# 'import' - Import faults
-# 'image'  - Import faults via image
-# 'csv'    - Import faults via csv 
+# 'null'  - No faults
+# 'gslib' - Import faults
+# 'csv'   - Import faults via csv 
+# 'image' - Import faults via image
 faults_mode     : 'null'
 faults_datafile : ''
 
 ###Fractures
 # 'null'   - No fractures
-# 'import' - Import fractures
-# 'image'  - Import fractures via image
+# 'gslib'  - Import fractures
 # 'csv'    - Import fractures via csv 
+# 'image'  - Import fractures via image
 # 'random' - Generate random fractures
 fractures_mode     : 'random'
 fractures_datafile : ''
@@ -133,8 +133,8 @@ cost_ratio     : 0.5   #ratio of travel cost parallel to gradient / travel cost 
 #if ratio > 1: travel cost is lower perpendicular to gradient (paths will follow contours), increase value to increase contrast
 
 ### Formation to consider and FMM code associated
-geology_id       : [0,1,2,3] # Only for 'import' or 'csv' geological modes
-geology_cost     : [cost_out, cost_aquifer, cost_aquiclude, cost_aquiclude]
+geology_id   : [0,1,2,3] # Only for 'import' or 'csv' geological modes
+geology_cost : [cost_out, cost_aquifer, cost_aquiclude, cost_aquiclude]
 
 #############
 ### Other ###
