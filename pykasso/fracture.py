@@ -30,7 +30,7 @@ class Fracture():
         self.normal      = normal
 
     def __repr__(self):
-        return '[id:{}, fam.:{}, x:{}, y:{}, z:{}, rad:{}, or.:{}, dip.:{}] \n'.format(self.ID, self.family, round(self.position[0],2), round(self.position[1],2), round(self.position[2],2), round(self.radius,2), round(self.orientation,2), round(self.dip,2))
+        return '[id:{}, fam.:{}, x:{}, y:{}, z:{}, rad:{}, or.:{}, dip.:{}, n:({},{},{})] \n'.format(self.ID,self.family, round(self.position[0],2), round(self.position[1],2), round(self.position[2],2), round(self.radius,2), round(self.orientation,2), round(self.dip,2), round(self.normal[0],2), round(self.normal[1],2), round(self.normal[2],2))
 
     def get_ID(self):
         return self.ID

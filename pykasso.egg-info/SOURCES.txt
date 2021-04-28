@@ -3,6 +3,14 @@ README.md
 setup.py
 pykasso/__init__.py
 pykasso/base.py
+pykasso/fracture.py
+pykasso/functions.py
+pykasso/geologymanager.py
+pykasso/grid.py
+pykasso/karstnetwork.py
+pykasso/pointmanager.py
+pykasso/polygon.py
+pykasso/sks.py
 pykasso.egg-info/PKG-INFO
 pykasso.egg-info/SOURCES.txt
 pykasso.egg-info/dependency_links.txt

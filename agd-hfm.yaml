@@ -12,3 +12,11 @@ dependencies:
   - notebook
   - scipy
   - ffmpeg
+  # test
+  - tqdm
+  - scikit-image
+  - mpmath
+  - pandas
+  - xlrd 
+ # conda install -n pykasso pip
+ # pip install mplstereonet
