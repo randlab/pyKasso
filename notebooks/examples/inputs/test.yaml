@@ -58,8 +58,8 @@ inlets_importance : [1]
 # 'gslib' - Import geology via GSLIB
 # 'csv'   - Import geology via csv
 # 'image' - Import geology via image
-geological_mode     : 'gslib'
-geological_datafile : 'inputs/betteraz_2D_z430.gslib'
+geological_mode     : 'image'
+geological_datafile : 'inputs/test01.png'
 
 ###Topography
 # 'null' - No topography
@@ -79,8 +79,8 @@ orientation_datafile : ''
 # 'gslib' - Import faults
 # 'csv'   - Import faults via csv 
 # 'image' - Import faults via image
-faults_mode     : 'gslib'
-faults_datafile : 'inputs/betteraz_fault_20_2D.gslib'
+faults_mode     : 'image'
+faults_datafile : 'inputs/test02.png'
 
 ###Fractures
 # 'null'   - No fractures
@@ -88,8 +88,8 @@ faults_datafile : 'inputs/betteraz_fault_20_2D.gslib'
 # 'csv'    - Import fractures via csv 
 # 'image'  - Import fractures via image
 # 'random' - Generate random fractures
-fractures_mode     : 'random'
-fractures_datafile : 'inputs/betteraz_fault_20_2D.gslib'
+fractures_mode     : 'image'
+fractures_datafile : 'inputs/test03.png'
 
 # If fractures mode is 'generate'
 fractures_densities       : [5.83e-6,1.38e-6,2.22e-6, 2.5e-6,4.16e-6,6.66e-6,   5e-6]

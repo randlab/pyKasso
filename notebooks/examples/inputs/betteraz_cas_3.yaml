@@ -55,9 +55,9 @@ inlets_importance : [1]
 
 ###Geology
 # 'null'  - No geology
-# 'gslib' - Import geology via GSLIB 
-# 'image' - Import geology via image
+# 'gslib' - Import geology via GSLIB
 # 'csv'   - Import geology via csv
+# 'image' - Import geology via image
 geological_mode      : 'gslib'
 geological_datafile  : 'inputs/betteraz_2D_z430.gslib'
 
@@ -77,14 +77,15 @@ orientation_datafile : ''
 ###Faults
 # 'null'  - No faults
 # 'gslib' - Import faults
-# 'image' - Import faults via image
 # 'csv'   - Import faults via csv 
+# 'image' - Import faults via image
 faults_mode     : 'gslib'
 faults_datafile : 'inputs/betteraz_fault_20_2D.gslib'
 
 ###Fractures
 # 'null'   - No fractures
 # 'gslib'  - Import fractures
+# 'csv'    - Import fractures via csv 
 # 'image'  - Import fractures via image
 # 'random' - Generate random fractures
 fractures_mode     : 'random'

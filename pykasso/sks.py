@@ -2,6 +2,7 @@
 TODO :
 - ajouter tous les modes d'imports
 - Line 1561 (support 3D)
+- Line 1113 - add multithreading ?
 
 - faire du ménage dans les fonctions de visu
 - function : get_fractures_numbers ? marche pas ??
@@ -39,13 +40,15 @@ import numpy    as np
 import numpy.ma as ma
 import pandas   as pd
 
+import matplotlib
+import matplotlib.pyplot as plt
+
 import karstnet as kn
 import agd
 from agd import Eikonal
 from agd.Metrics import Riemann
 
-import matplotlib
-import matplotlib.pyplot as plt
+import concurrent.futures
 
 class SKS():
     """
@@ -1162,9 +1165,9 @@ class SKS():
         Initialize all the data.
         """
         # The grid
-        self.grid    = self._set_grid(self.settings['x0'],self.settings['y0'],self.settings['z0'],
-                                      self.settings['nx'],self.settings['ny'],self.settings['nz'],
-                                      self.settings['dx'],self.settings['dy'],self.settings['dz'])
+        self.grid = self._set_grid(self.settings['x0'],self.settings['y0'],self.settings['z0'],
+                                   self.settings['nx'],self.settings['ny'],self.settings['nz'],
+                                   self.settings['dx'],self.settings['dy'],self.settings['dz'])
         # The polygon and its mask
         self.polygon = self._set_polygon(self.grid)
         self.mask    = self.polygon.mask
@@ -1243,12 +1246,12 @@ class SKS():
         # Geology
         if self.settings['geological_mode'] == 'null':
             geology.set_data_null('geology')
-        elif self.settings['geological_mode'] == 'image':
-            geology.set_data_from_image('geology', self.settings['geological_datafile'])
-        elif self.settings['geological_mode'] == 'csv':
-            geology.set_data_from_csv('geology', self.settings['geological_datafile'])
         elif self.settings['geological_mode'] == 'gslib':
             geology.set_data_from_gslib('geology', self.settings['geological_datafile'])
+        elif self.settings['geological_mode'] == 'csv':
+            geology.set_data_from_csv('geology', self.settings['geological_datafile'])
+        elif self.settings['geological_mode'] == 'image':
+            geology.set_data_from_image('geology', self.settings['geological_datafile'])
         else:
             print('/!\\ Error : unrecognized geological mode', self.settings['geological_mode'])
             sys.exit()
@@ -1280,17 +1283,21 @@ class SKS():
             geology.set_data_null('faults')
         elif self.settings['faults_mode'] == 'gslib':
             geology.set_data_from_gslib('faults', self.settings['faults_datafile'])
+        elif self.settings['faults_mode'] == 'csv':
+            geology.set_data_from_csv('faults', self.settings['faults_datafile'])
         elif self.settings['faults_mode'] == 'image':
             geology.set_data_from_image('faults', self.settings['faults_datafile'])
         else:
             print('/!\\ Error : unrecognized faults mode', self.settings['faults_mode'])
             sys.exit()
-            
+        
         # Fractures
         if self.settings['fractures_mode'] == 'null':
             geology.set_data_null('fractures')
         elif self.settings['fractures_mode'] == 'gslib':
             geology.set_data_from_gslib('fractures', self.settings['fractures_datafile'])
+        elif self.settings['fractures_mode'] == 'csv':
+            geology.set_data_from_csv('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'image':
             geology.set_data_from_image('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'random':
@@ -1305,6 +1312,7 @@ class SKS():
         else:
             print('/!\\ Error : unrecognized fractures mode', self.settings['fractures_mode'])
             sys.exit()
+        
         return geology
     
     ##############################
@@ -1736,24 +1744,10 @@ class SKS():
             title = data
         fig.suptitle(title, fontsize=16)
         
-        if   data == 'geology':
-            d = self.geology.data['geology']['data']
-        elif data == 'faults':
-            d = self.geology.data['faults']['data']
-        elif data == 'fractures':
-            d = self.geology.data['fractures']['data']
-        elif data == 'topography':
-            d = self.geology.data['topography']['data']
-
+        # Load data
+        d = self.geology.data[data]['data']
         if mask==True:
-            if   data == 'geology':
-                d = self.geology_masked['geology']
-            elif data == 'faults':
-                d = self.geology_masked['faults']
-            elif data == 'fractures':
-                d = self.geology_masked['fractures']
-            elif data == 'topography':
-                d = self.geology_masked['topography']
+            d = self.geology_masked[data]
 
         im1 = ax1.imshow(d, extent=self.grid.extent, origin='lower', cmap=cmap) 
         fig.colorbar(im1, ax=ax1)

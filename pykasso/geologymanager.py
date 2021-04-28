@@ -80,9 +80,11 @@ class GeologyManager():
         """
         self.data[data_key]         = {}
         a = np.genfromtxt(datafile_location, dtype=float, skip_header=3)         #read in gslib file as float numpy array without header rows
-        a[a==0] = np.nan                                                         #replace zeros with nans (array must be float first)
+        if data_key is "geology":
+            a[a==0] = np.nan                                                     #replace zeros with nans (array must be float first)
         a = np.reshape(a, (self.grid.nx, self.grid.ny, self.grid.nz), order='F') #reshape to xy grid using Fortran ordering
-        self.data[data_key]['data'] = a                                          #store
+        b = np.transpose(a, (1,0,2))                                             #flip
+        self.data[data_key]['data'] = b                                          #store
         self.data[data_key]['mode'] = 'gslib'
         return None
 
@@ -102,8 +104,11 @@ class GeologyManager():
             print('- set_data_from_image() - Error : unable to read datafile.')
             raise
         self.data[data_key] = {}
+        self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz))
         image = (image_data[:,:,0] == 0)*1
-        self.data[data_key]['data'] = resize(image, (self.grid.nx, self.grid.ny), anti_aliasing=False)
+        data = resize(image, (self.grid.nx, self.grid.ny), anti_aliasing=False, preserve_range=True)
+        if self.grid.nz == 1:
+            self.data[data_key]['data'] = data[:, :, np.newaxis]
         self.data[data_key]['mode'] = 'image'
         return None
 
