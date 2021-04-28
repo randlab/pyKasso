@@ -1,8 +1,8 @@
 """
 TODO :
-- maj des yaml avec les modes d'import 'csv' / 'gslib'
+- compute_stats_on_data()
+- show_fractures_stats()
 
-- show_fractures_stats() ?
 - show_fractures() ? en mode calc (voir code Chloé)
 - rajouter les diagrammes de Rose (pour les fractures)
 - show() en cours
@@ -680,7 +680,7 @@ class GeologyManager():
             for z in range(self.grid.nz):
                 for y in range(self.grid.ny):
                     for x in range(self.grid.nx):
-                        value = self.data[key]['data'][z][y][x]
+                        value = self.data[key]['data'][x][y][z]
                         try:
                             if stats.get(value) == None:
                                 stats[value] = 1

@@ -1,0 +1,103 @@
+ ##################
+### SKS SETTINGS ###
+ ##################
+
+---
+############
+### Grid ###
+############
+
+x0   : 572510
+y0   : 250010
+xnum : 300
+ynum : 300
+dx   : 20
+dy   : 20
+
+###############
+### Polygon ###
+###############
+
+data_has_polygon : True
+polygon_data     : 'inputs/polygon_Betteraz.txt'
+
+####################
+### PointManager ###
+####################
+
+###Inlets
+# 'random'    - full random points
+# 'import'    - import points
+# 'composite' - add n random points to imported points
+inlets_mode   : 'import'
+inlets_data   : 'inputs/inlets_betteraz_cas_2.csv'
+inlets_number : 1
+
+###Outlets
+# 'random'    - full random points
+# 'import'    - import points
+# 'composite' - add n random points to imported points
+outlets_mode   : 'import'
+outlets_data   : 'inputs/outlets_betteraz.csv'
+outlets_number : 1
+
+######################
+### GeologyManager ###
+######################
+
+###Geology
+# 'null'   - No geology
+# 'import' - Import geology
+# 'image'  - Import geology via image
+geological_mode     : 'import'
+geological_datafile : 'inputs/betteraz_2D_z430.gslib'
+
+###Faults
+# 'null'   - No faults
+# 'import' - Import faults
+# 'image'  - Import faults via image
+faults_mode     : 'import'
+faults_datafile : 'inputs/betteraz_fault_20_2D.gslib'
+
+###Fractures
+# 'null'   - No fractures
+# 'import' - Import fractures
+# 'image'  - Import fractures via image
+# 'random' - Generate random fractures
+fractures_mode     : 'random'
+fractures_datafile : 'inputs/betteraz_fault_20_2D.gslib'
+
+# If fractures mode is 'generate'
+fractures_densities       : [5.83e-6,1.38e-6,2.22e-6,2.5e-6,4.16e-6,6.66e-6,5e-6]
+fractures_min_orientation : [      0,     15,     30,    60,    105,    120, 150]
+fractures_max_orientation : [     15,     30,     45,   105,    120,    150, 180]
+
+# For fracture size
+alpha : 2
+fractures_min_length : 100
+fractures_max_length : 8500
+
+###############################
+### Fast-Marching Algorithm ###
+###############################
+
+code_out       : 0.1
+code_aquifere  : 2
+code_aquiclude : 1
+code_faults    : 4
+code_fractures : 3
+code_conduits  : 5
+
+### Formation to consider and FMM code associated
+geology_id       : [1,2] # Only for 'import' geological mode
+geology_velocity : [code_aquifere,code_aquiclude]
+
+importance_factor : [1,2,3]
+
+#############
+### Other ###
+#############
+
+# if 0 = total random
+rand_seed : 1
+...

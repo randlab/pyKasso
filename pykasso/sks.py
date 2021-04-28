@@ -1,4 +1,15 @@
 """
+TODO :
+- ajouter tous les modes d'imports
+- Line 1561 (support 3D)
+- https://github.com/Mirebeau/AdaptiveGridDiscretizations/issues/4
+- https://github.com/Mirebeau/AdaptiveGridDiscretizations
+
+- faire du ménage dans les fonctions de visu
+- function : get_fractures_numbers ? marche pas ??
+"""
+
+"""
 pyKasso
 =======
 
@@ -9,816 +20,34 @@ License
 Released under the MIT license:
    Copyright (C) 2020 Univertsity of Neuchâtel - CHYN
    François Miville <francois.miville@unine.ch>
+   Chloé Fandel     <cfandel@email.arizona.edu>
+   Philippe Renard  <philippe.renard@unine.ch>
 """
 
-from .karstnetwork  import KarstNetwork
+from .grid           import Grid
+from .polygon        import Polygon
+from .geologymanager import GeologyManager
+from .pointmanager   import PointManager
+from .karstnetwork   import KarstNetwork
+from .functions      import get_settings
 
 import os
 import sys
 import copy
-import yaml # dependance
-
 import math
-import mpmath # dependance
-import numpy    as np # dependance
+
+import yaml
+import numpy    as np
 import numpy.ma as ma
-import pandas   as pd # dependance
+import pandas   as pd
 
-import matplotlib
-import matplotlib.pyplot as plt
-from   matplotlib.path import Path
-
-import karstnet as kn # dependance
-import agd # dependance
+import karstnet as kn
+import agd
 from agd import Eikonal
 from agd.Metrics import Riemann
 
-
-
-#####
-# 1 #
-###############################
-# Create a work environnement #
-###############################
-
-def get_settings(example=False):
-    """
-    Provide the datafiles settings.
-
-    Parameters
-    ----------
-    example : bool, optionnal
-        If True, pyKasso will provide you the Betteraz's files example
-    
-    Examples
-    --------
-        >>> pk.get_settings(example=True)
-    """
-    
-    # copying defaults file from source package
-    import shutil
-    import glob
-
-    path = os.path.dirname(os.path.abspath(__file__)) + '/' + 'default_files' + '/'
-    
-    if example == True:
-        
-        # create inputs directory
-        dst = 'inputs'
-        
-        if not os.path.exists(dst):
-            try:
-                os.makedirs(dst)
-                print("Directory named '", dst, "' has been created.")
-            except FileExistsError:
-                raise
-
-        path = path + 'betteraz' + '/'
-
-        srcs = glob.glob(path + '*')
-        dst  = dst + '/'
-
-        for src in srcs:
-            shutil.copy(src, dst)
-        
-    else: 
-        src = path + 'settings.yaml'
-        dst  = 'settings.yaml'
-
-        shutil.copy(src, dst)
-
-    return None
-
-
-#####
-# 2 #
-###################################
-# pyKasso class for data modeling #
-###################################
-
-###########
-class Grid():
-    """
-	Create a grid for the simulation.
-	The calculation points are located in the center of the cells, and the origin coordinates are located at the left-bottom of the grid.
-
-	Parameters
-	----------
-	x0 : float
-		x-coordinate origin (centerpoint of bottom left cell, NOT bottom left corner of bottom left cell).
-	y0 : float
-		y-coordinate origin (centerpoint of bottom left cell, NOT bottom left corner of bottom left cell).
-	xnum : integer
-		Number of cells on x dimension.
-	ynum : integer
-		Number of cells on y dimension.
-	dx : float
-		Width of a cell.
-	dy : float
-		Length of a cell.
-
-	Notes
-	-----
-	- On this version, dx and dy must be similar. pyKasso does not support unstructured grid yet.  
-	- x0 and y0 are considered to be in the center of the bottom left cell.
-    Chloe: I added a function to get the extent for external plotting, and removed the old internal function
-	"""        
-    
-    def __init__(self, x0, y0, xnum, ynum, dx, dy):
-        self.x0   = x0        #x coord of centerpoint of bottom left cell 
-        self.y0   = y0        #y coord of centerpoint of bottom left cell
-        self.xnum = xnum      #x resolution: number of cells in x direction (aka columns)
-        self.ynum = ynum      #y resolution: number of cells in y direction (aka rows)
-        self.dx   = dx        #cell width in x direction
-        self.dy   = dy        #cell width in y direction
-
-        self.x        = np.arange(self.x0,self.x0+(self.xnum)*self.dx,self.dx,dtype=np.float_)  #1D array of centerpoints of each cell along x axis
-        self.y        = np.arange(self.y0,self.y0+(self.ynum)*self.dy,self.dy,dtype=np.float_)  #1D array of centerpoints of each cell along y axis
-        self.X,self.Y = np.meshgrid(self.x,self.y)            #2D array of dim (xnum, ynum) with xy coord of each cell's centerpoint - useful for plotting
-        self.xlimits  = [self.x0-self.dx/2,self.x0-self.dx/2,self.x[-1]+self.dx/2,self.x[-1]+self.dx/2,self.x0-self.dx/2] #x coord of outermost cell edges [bottom left, top left, top right, bottom right, bottom left]
-        self.ylimits  = [self.y0-self.dy/2,self.y[-1]+self.dy/2,self.y[-1]+self.dy/2,self.y0-self.dy/2,self.y0-self.dy/2] #y coord of outermost cell edges [bottom left, top left, top right, bottom right, bottom left]
-        self.limits   = list(zip(self.xlimits,self.ylimits)) #array of tuples with coordinates of corners [(bottom left/origin), (top left), (top right), (bottom right), (bottom left/origin)]
-        self.xmin     = self.x0    - self.dx/2      #coordinate of leftmost edge of leftmost cells
-        self.xmax     = self.x[-1] + self.dx/2      #coordinate of rightmost edge of rightmost cells
-        self.ymin     = self.y0    - self.dy/2      #coordinate of bottom edge of bottom cells
-        self.ymax     = self.y[-1] + self.dy/2      #coordinate of top edge of top cells
-        self.extent   = [self.xmin, self.xmax, self.ymin, self.ymax]  #coordinates of extent for use in plt.imshow()
-
-################
-class Polygon():
-    """
-	Create a polygon manager : a class for managing a polygon as an area study delimitor.
-
-	Parameters
-	----------
-	grid : Grid()
-		Polygon() class needs a Grid() object as an argument.
-	"""
-    
-    def __init__(self, grid):
-        self.polygon = None
-        self.mask    = None
-        self.grid    = grid
-
-    def set_polygon(self, vertices):
-        """
-        Create a polygon from vertices coordinates.
-
-        Parameters
-        ----------
-        vertices : string or list
-            Location of the datafile or list of the vertices coordinates.
-        """
-        if isinstance(vertices, str):
-            text         = _opendatafile(vertices)
-            self.polygon = _loadpoints(text)
-        else:
-            self.polygon = vertices
-            
-        self.mask = self._set_mask()
-        return None
-    
-    def _set_mask(self):
-        """
-        Set the mask.
-        """
-        mask = np.zeros((self.grid.ynum, self.grid.xnum))
-        for y in range(self.grid.ynum):
-            for x in range(self.grid.xnum):
-                mask[y][x] = not int(Path(self.polygon).contains_point((self.grid.X[y][x],self.grid.Y[y][x])))
-        return mask
-
-    def inspect_polygon(self):
-        """
-        Check if the vertices of the polygon are well located inside the grid.
-        """
-        if self.polygon is not None:
-            unvalidated_vertices = []
-            for k,(x,y) in enumerate(self.polygon):
-                if not int(Path(self.grid.limits).contains_point((x,y))):
-                    unvalidated_vertices.append(k+1)
-            validated_vertices = len(self.polygon) - len(unvalidated_vertices)
-            if validated_vertices < 3:
-                print(' inspect_polygon() - Warning : not enough vertices inside the grid limits to proceed further ({} exactly).'.format(validated_vertices))
-                print("/!\\ No polygon set /!\\")
-                self.polygon = None
-                return None
-            if len(unvalidated_vertices) > 0:
-                print('- inspect_polygon() - Warning : {} vertices not inside the grid limits on {} vertices.'.format(len(unvalidated_vertices),len(self.polygon)))
-                for vertex in unvalidated_vertices:
-                    print('- vertice {}'.format(vertex))
-                return unvalidated_vertices
-        else:
-            print('- inspect_polygon() - Error : no polygon to inspect. Please set a polygon.')
-        return None
-
-    def show(self):
-        """
-        Show the delimitation of the grid and, if a polygon is present, display its limits.
-        """
-        if self.polygon is not None:
-            closed_polygon = self.polygon[:]
-            closed_polygon.append(closed_polygon[0])
-            x,y = zip(*closed_polygon)
-
-            fig, ax = plt.subplots()
-            fig.suptitle('Polygon', fontsize=16)
-            ax.plot(x,y, color='red')
-
-            ax.plot(self.grid.xlimits,self.grid.ylimits, color='black')
-            ax.set_aspect('equal', 'box')
-            plt.legend(('polygon','grid limits'), loc='center left', bbox_to_anchor=(1, 0.5))
-            plt.show()
-            return None
-        else:
-            print('- show_Polygon() - Error : no polygon to show.')
-            return None
-
-def _opendatafile(file_location):
-    """
-    Private function to simply open a file.
-    """
-    try:
-        file = open(file_location,"r")
-        text = file.readlines()
-        file.close()
-    except:
-        print("Error : impossible to open datafile.")
-        raise
-    return text
-
-def _loadpoints(text):
-    """
-    Private function to load points in a text. Generally combined with '_opendatafile()'.
-    """
-    points = []
-    try:
-        for data_line in text:
-            x, y = data_line.strip().split()
-            points.append((float(x), float(y)))
-    except ValueError:
-        print("Dimensions of data frame does not match with number of variables. Missing values or values in excess.")
-        raise
-    except:
-        print("Unexpected error:", sys.exc_info()[0])
-        raise
-    return points
-
-
-#####################
-class PointManager():
-    """
-    Create a point manager : a class for managing points and transform them to inlets or outlets.
-
-    Parameters
-    ----------
-    grid : Grid()
-        PointManager() class needs a Grid() object as an argument.
-    polygon : Polygon(), optionnal
-        PointManager() class needs a Polygon() object as an argument.
-    """
-    
-    def __init__(self, grid, polygon=None):
-        self.points  = {}
-        self.grid    = grid
-        self.polygon = polygon
-
-    def set_points(self, points_key, points):
-        """
-        Set new points.
-
-        Parameters
-        ----------
-        points_key : string
-            Type of points : 'inlets' or 'outlets'.
-        points : string or list
-            Location of the datafile or list of the points coordinates.
-        """
-        if isinstance(points, str):
-            text = _opendatafile(points)
-            self.points[points_key] = _loadpoints(text)
-        else:
-            self.points[points_key] = points
-        return None
-
-    def generate_points(self, points_key, points_number):
-        """
-        Generate random points on the grid, according to the parameters.
-
-        Parameters
-        ----------
-        points_key : string
-            Type of points : 'inlets' or 'outlets'.
-        points_number : integer
-            Number of points to generate.
-        """
-        if self.polygon.polygon is None:
-            rand_x = [self.grid.x0 - self.grid.dx/2 + self.grid.xnum*np.random.random() * self.grid.dx for x in range(points_number)]
-            rand_y = [self.grid.y0 - self.grid.dy/2 + self.grid.ynum*np.random.random() * self.grid.dy for y in range(points_number)]
-            self.points[points_key] = list(zip(rand_x,rand_y))
-        else:
-            validated_inlets = 0
-            rand_x = []
-            rand_y = []
-            while validated_inlets < points_number:
-                x = self.grid.x0 - self.grid.dx/2 + self.grid.xnum*np.random.random() * self.grid.dx
-                y = self.grid.y0 - self.grid.dy/2 + self.grid.ynum*np.random.random() * self.grid.dy
-                if int(Path(self.polygon.polygon).contains_point((x,y))):
-                    rand_x.append(x)
-                    rand_y.append(y)
-                    validated_inlets += 1
-            self.points[points_key] = list(zip(rand_x,rand_y))
-        return None
-
-    def composite_points(self, points_key, points, points_number):
-        """
-        Generate random points on the grid, and add indicated points.
-
-        Parameters
-        ----------
-        points_key : string
-            Type of points : 'inlets' or 'outlets'.
-        points : string or list
-            Location of the datafile or list of the points coordinates.
-        points_number : integer
-            Number of points to generate.
-        """
-        self.generate_points(points_key, points_number)
-        if isinstance(points, str):
-            text = _opendatafile(points)
-            other_points = _loadpoints(text)
-            self.points[points_key] += other_points
-        else:
-            self.points[points_key] += points
-        return None
-
-    def inspect_points(self):
-        """
-        Check if the points are well located inside the grid.
-        If there is no print out, so everything is OK.
-        """
-        if self.points is None:
-            print('- inspect_points() - Error : no points to inspect.')
-            sys.exit()
-        else:
-            for key in self.points:
-                mask = []
-                unvalidated_points = []
-                for k,(x,y) in enumerate(self.points[key]):
-                    if self.polygon.polygon is not None:
-                        a = not int(Path(self.polygon.polygon).contains_point((x,y)))
-                    else:
-                        a = not int(Path(self.grid.limits).contains_point((x,y)))
-                    mask.append((a,a))
-                    if a:
-                        unvalidated_points.append(k+1)
-                self.points[key] = ma.masked_array(self.points[key], mask=mask)
-                if len(unvalidated_points) > 0:
-                    print('- inspect_points() - Warning : {} {} on {} masked because not inside polygon.'.format(len(unvalidated_points),key,len(self.points[key])))
-                    for point in unvalidated_points:
-                        print('- point on line {}'.format(point))
-                if len(unvalidated_points) == len(self.points[key]):
-                    print('- inspect_points() - Error : all the "{}" are outside the domain.'.format(key))
-                    sys.exit()
-            return None
-
-    def show(self):
-        """
-        Show the delimitation of the grid, of the polygon (if present) and of the locations of the points (if present).
-        """
-        fig, ax = plt.subplots()
-        fig.suptitle('Show points', fontsize=16)
-        ax.plot(self.grid.xlimits,self.grid.ylimits,color='black',label='grid limits')
-
-        if self.polygon.polygon is not None:
-            closed_polygon = self.polygon.polygon[:]
-            closed_polygon.append(closed_polygon[0])
-            x,y = zip(*closed_polygon)
-            ax.plot(x,y,color='red',label='basin')
-
-        for key in self.points:
-            x,y = zip(*self.points[key])
-            ax.plot(x,y,'o',label=key)
-        ax.set_aspect('equal', 'box')
-        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        plt.show()
-        return None
-
-
-#######################
-class GeologyManager():
-    """
-    Create a geology manager : a class for managing geology, faults and fractures.
-
-    Parameters
-    ----------
-    grid : Grid()
-        GeologyManager() class needs a Grid() object as an argument.
-    """
-
-    def __init__(self, grid):
-        self.data  = {}   #data model = {key : {data : var, stats : var, mode : var}}
-        self.grid  = grid
-
-    def set_data_null(self, data_key):
-        """
-        Set data to 'null' for a indicated data key.
-
-        Parameters
-        ----------
-        data_key : string
-            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
-        """
-        self.data[data_key] = {}
-        self.data[data_key]['data'] = np.zeros((self.grid.ynum, self.grid.xnum)) 
-        self.data[data_key]['mode'] = 'null'
-        return None
-
-    def set_data(self, data_key, datafile_location, selected_var=0):
-        """
-        Set data from a datafile for an indicated data key.
-
-        Parameters
-        ----------
-        data_key : string
-            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
-        datafile_location : string
-            Path of the datafile.
-        selected_var : integer, optionnal
-            A way to select the column which will be extracted from the datafile.
-        """
-        self.data[data_key]         = {}
-        self.data[data_key]['data'] = self._fill(datafile_location, selected_var)
-        self.data[data_key]['mode'] = 'import'
-        return None
-
-    def set_data_from_image(self, data_key, datafile_location):
-        """
-        Set data from an image for an indicated data key.
-        Chloe: I have not tested the image import method with the new algorithm.
-
-        Parameters
-        ----------
-        data_key : string
-            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
-        datafile_location : string
-            Path of the datafile.
-        """
-        try:
-           image_data = np.flipud(plt.imread(datafile_location))
-        except:
-            print('- set_data_from_image() - Error : unable to read datafile.')
-            raise
-        self.data[data_key] = {}
-        self.data[data_key]['data'] = (image_data[:,:,0] == 0)*1
-        self.data[data_key]['mode'] = 'image'
-        return None
-
-    def set_data_from_csv(self, data_key, datafile_location):
-        """
-        Set data from a csv file for indicated data key.
-        Chloe: I added this function to import csv files.
-
-        Parameters
-        ----------
-        data_key : string
-            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
-        datafile_location : string
-            Path of the datafile.
-        """
-        self.data[data_key]         = {}
-        self.data[data_key]['data'] = np.genfromtxt(datafile_location, delimiter=',')
-        self.data[data_key]['mode'] = 'csv'
-        return None
-
-    def set_data_from_gslib(self, data_key, datafile_location):
-        """
-        Set data from a gslib file for indicated data key in the format that work with the fast marching algorithm.
-        Chloe: I added this new function to import gslib files & get them in the right format for the new algorithm.
-        The old function can be removed, but this function will need to be adapted to handle gslib files with multiple variables
-
-        Parameters
-        ----------
-        data_key : string
-            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
-        datafile_location : string
-            Path to the datafile.
-        """
-        self.data[data_key]         = {}
-        a = np.genfromtxt(datafile_location, dtype=float, skip_header=3) #read in gslib file as float numpy array without header rows
-        a[a==0] = np.nan                                                 #replace zeros with nans (array must be float first)
-        a = np.reshape(a, (self.grid.ynum,self.grid.xnum), order='F')    #reshape to xy grid using Fortran ordering
-        self.data[data_key]['data'] = a                                  #store  
-        self.data[data_key]['mode'] = 'gslib'
-        return None
-    
-    def generate_orientations(self, surface):
-        """
-        Generate maps of x and y components of orientation.
-        Chloe: I added this function to calculate orientations from a surface.
-
-        Parameters
-        ------------
-        surface : array
-            A 2D array of the elevation or potential in cell, used to calculate the orientation (i.e. slope or dip) of that cell.
-            Use either the land surface ('topography'), the surface of the bottom of the karst unit ('surface'), or the potential returned by the geologic model 
-        """
-
-        self.data['orientationx'] = {}
-        self.data['orientationx']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
-        self.data['orientationy'] = {}
-        self.data['orientationy']['data'] = np.zeros((self.grid.ynum, self.grid.xnum))
-        self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(surface, self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array 
-        self.data['orientationx']['mode'] = 'topo'
-        self.data['orientationy']['mode'] = 'topo'
-        return None
-    
-    def generate_fractures(self, fractures_numbers, fractures_min_orientation, fractures_max_orientation, fractures_alpha, fractures_min_length, fractures_max_length):
-        """
-        Generate fractures.
-
-        Parameters
-        ----------
-        fractures_numbers : list
-            Fractures number for each fracture family.
-        fractures_min_orientation : list
-            Fractures minimum orientation for each fracture family.
-        fractures_max_orientation : list
-            Fractures maximum orientation for each fracture family.
-        fractures_alpha : float
-            Degree of power law.
-        fractures_min_length : float
-            The minimum lenght of the fractures. For all the families.
-        fractures_max_length : float
-            The maximum lenght of the fractures. For all the families.
-        """
-        self.data['fractures'] = {}
-        self.data['fractures']['data'] = np.zeros((self.grid.ynum, self.grid.xnum)) #need to flip
-
-        self.fractures = {}
-        fracture_id = 0
-
-        for frac_family in range(len(fractures_numbers)):
-            fracs = []
-            min_angle = fractures_min_orientation[frac_family]
-            max_angle = fractures_max_orientation[frac_family]
-
-            if min_angle > max_angle:
-                min_angle = min_angle - 360
-
-            mean_angle = (max_angle + min_angle)  / 2
-            std_angle  = (max_angle - mean_angle) / 3
-            mean_angle = math.radians(mean_angle)
-            std_angle  = math.radians(std_angle)
-
-            func  = lambda k : std_angle**2 - 1 + mpmath.besseli(1,k) / mpmath.besseli(0,k)
-            kappa = mpmath.findroot(func,1)
-
-            # Generate poisson number for each fracture family
-            real_frac_number = np.random.poisson(fractures_numbers[frac_family])
-
-            for i in range(1, real_frac_number+1):
-                # FRACTURE CENTER LOCATION
-                # -> from double uniform distribution
-                frac_x_start = self.grid.x0 - self.grid.dx/2 + np.random.random() * self.grid.xnum * self.grid.dx
-                frac_y_start = self.grid.y0 - self.grid.dy/2 + np.random.random() * self.grid.ynum * self.grid.dy
-
-                # FRACTURE LENGHT
-                # -> from power law distribution
-                # x   = np.arange(min_fracture_length,max_fracture_length,0.01)
-                # C = 1 - np.float_power(max_fracture_length, -alpha+1) / np.float_power(min_fracture_length, -alpha+1)
-                # pdf = ((alpha - 1)/min_fracture_length) * np.float_power(x / min_fracture_length, -alpha) / C
-                # cdf = (np.float_power(min_fracture_length, -alpha+1) - np.float_power(x, -alpha+1)) / (np.float_power(min_fracture_length, -alpha+1) - np.float_power(max_fracture_length, -alpha+1))
-                # cdf_reverse = np.float_power( np.float_power(min_fracture_length, -alpha+1) - P(x) * (np.float_power(min_fracture_length, -alpha+1) - np.float_power(max_fracture_length, -alpha+1)) , (1/(-alpha+1)))
-                frac_length = np.float_power(np.float_power(fractures_min_length, -fractures_alpha+1) - np.random.rand() * (np.float_power(fractures_min_length, -fractures_alpha+1) - np.float_power(fractures_max_length, -fractures_alpha+1)) , (1/(-fractures_alpha+1)))
-
-                # FRACTURE ORIENTATION
-                # -> from von Mises distribution
-                mu = mean_angle
-                frac_orientation = math.degrees(np.random.vonmises(mu, kappa))
-                if frac_orientation < 0:
-                    frac_orientation += 360
-
-                # Create fracture object
-                fracs.append(Fracture(fracture_id, frac_family, frac_x_start, frac_y_start, frac_length, frac_orientation))
-                fracture_id += 1
-
-            # Complete fractures dictionary
-            self.fractures[frac_family] = {'frac_nbr' : real_frac_number, 'fractures' : fracs}
-
-        # Draw fractures maps
-        self._generate_fractures_maps()
-        return None
-
-    def _generate_fractures_maps(self):
-        fractures_maps = np.zeros((len(self.fractures)+1,self.grid.ynum,self.grid.xnum))
-
-        # For each family, compute segment points and draw a map
-        for frac_family in self.fractures:
-            fractures = self.fractures[frac_family]['fractures']
-            [fracture.compute_segment_points(self.grid.dx) for fracture in fractures]
-        
-            for fracture in fractures:
-                x1,y1 = fracture.coordinates[1]
-                x2,y2 = fracture.coordinates[2]
-                x,y   = (x1,y1)
-
-                if x1 - x2 > 0:
-                    fracture.growth_rate_x *= -1
-                if y1 - y2 > 0:
-                    fracture.growth_rate_y *= -1
-
-                X  = int(math.ceil((x1 - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
-                Y  = int(math.ceil((y1 - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
-                X2 = int(math.ceil((x2 - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
-                Y2 = int(math.ceil((y2 - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
-
-                while X != X2 and Y != Y2:
-                    X = int(math.ceil((x - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
-                    Y = int(math.ceil((y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
-                    if not (X < 0) and not (Y < 0) and not (X > self.grid.xnum-1) and not (Y > self.grid.ynum-1):
-                        fractures_maps[frac_family][Y][X] = 1
-                    x = x + fracture.growth_rate_x
-                    y = y + fracture.growth_rate_y
-
-            self.fractures[frac_family]['frac_map'] = fractures_maps[frac_family]
-
-        self.data['fractures']['data'] = (sum([fractures_maps[i] for i in range(len(self.fractures))]) > 0).astype(int)
-        self.data['fractures']['mode'] = 'generate'
-        return None
-
-    def _fill(self, datafile_location, selected_var=0):
-        # Try to open datafile
-        text = _opendatafile(datafile_location)
-
-        # Check if second line is an integer
-        try:
-            nvar = int(text[1])
-        except:
-            print("- set_data() - Error : Second line of gslib's file must be an integer.")
-            raise
-
-        # Control if size declared match with gslib's size file
-        data_lines = text[2+nvar:]
-        if len(data_lines) != (self.grid.xnum*self.grid.ynum):
-            print("- set_data() - Error : Dimensions declared does not match with gslib file's dimensions.")
-            return None
-
-        # Get variables names
-        dataTitles = [var_name.strip() for var_name in text[2:2+nvar]]
-        #print("Data variables's name : ", self.dataTitles)
-        if selected_var > len(dataTitles):
-            print("- set_data() - Error : Selected variable doesn't exist.")
-            return None
-
-        # Get values from text files
-        data = np.zeros((len(data_lines), nvar))
-        try:
-            for data_line, k in zip(data_lines, range(len(data_lines))):
-                data[k] = data_line.strip().split()
-        except ValueError:
-            print("- set_data() - Error : Dimensions of data frame does not match with number of variables. Missing values or values in excess.")
-            raise
-        except:
-            print("- set_data() - Unexpected error:", sys.exc_info()[0])
-            raise
-
-        # Put values in x,y matrix
-        maps = np.zeros((nvar,self.grid.ynum,self.grid.xnum))
-        for var in range(nvar):
-            k = 0
-            for y in range(self.grid.ynum):
-                for x in range(self.grid.xnum):
-                    maps[var,y,x] = data[k,var]
-                    k += 1
-
-        return maps[selected_var]
-    
-    def compute_stats_on_data(self):
-        """
-        Compute statistics on the geologic data (not including the orientations).
-        """
-        #for key in self.data:
-        for key in ['geology','faults','fractures']:
-            stats = {}
-            for y in range(self.grid.ynum):
-                for x in range(self.grid.xnum):
-                    value = self.data[key]['data'][y][x] 
-                    try:
-                        if stats.get(value) == None:
-                            stats[value] = 1
-                        else:
-                            stats[value] += 1
-                    except:
-                        print('Unable to comput stats for value', value)
-
-            #if self.settings['verbosity'] > 1:
-                #print('\n')
-                #print('STATS for {}'.format(key))
-                #print('%-12s%-12s%-12s%-12s' % ('ID', 'Number', '%', 'Superficy'))
-                #print(48*'-')
-            ID        = []
-            occurence = []
-            frequency = []
-            superficy = []
-            for k in stats:
-                #if self.settings['verbosity'] > 1:
-                   #print('%-12i%-12i%-12f%-12i' % (k, stats[k], 100*stats[k]/(self.grid.xnum*self.grid.ynum), stats[k]*self.grid.dx*self.grid.dy))
-                ID.append(k)
-                occurence.append(stats[k])
-                frequency.append(100*stats[k]/(self.grid.xnum*self.grid.ynum))
-                superficy.append(stats[k]*self.grid.dx*self.grid.dy)
-            self.data[key]['stats'] = {'ID':ID, 'occurence':occurence, 'frequency':frequency, 'superficy':superficy}
-        return None
-
-    def show(self, frac_family=None, cmap='gray_r'):
-        """
-        Show the geology, faults and fractures maps.
-        """
-        fig, (ax1,ax2,ax3) = plt.subplots(1,3,sharex=True,sharey=True, figsize=(15,5))
-        fig.suptitle('Geologic data', fontsize=16)
-
-        try:
-            im1 = ax1.imshow(self.data['geology']['data'], extent=self.grid.extent, origin='lower', cmap=cmap)
-        except:
-            im1 = []
-        ax1.set_title('Geology')
-
-        try:
-            im2 = ax2.imshow(self.data['faults']['data'], extent=self.grid.extent, origin='lower', cmap=cmap)
-        except:
-            im2 = []
-        ax2.set_title('Faults')
-
-        try:
-            if frac_family is None:
-                data = self.data['fractures']['data']
-            else:
-                data = self.fractures[frac_family]['frac_map']
-            im3 = ax3.imshow(data, extent=self.grid.extent, origin='lower', cmap=cmap)
-        except:
-            im3 = []
-        ax3.set_title('Fractures')
-
-        plt.show()
-        return None
-
-#################
-class Fracture():
-    """
-    A class for modeling fractures as objects. 
-
-    Parameters
-    ----------
-    ID : integer
-        Fracture id
-    family : integer
-        Fracture family id
-    x_start : float
-        x-coordinate of the center of the fracture
-    y_start : flaot
-        y-coordinate of the center of the fracture
-    length : float
-        Length of the fracture
-    orientation : float
-        Orientation of the fracture
-    """
-    
-    def __init__(self, ID, family, x_start, y_start, length, orientation):
-
-        self.ID           = ID
-        self.family       = family
-        self.x_start      = x_start
-        self.y_start      = y_start
-        self.length       = length
-        self.orientation  = orientation
-        self.coordinates  = []
-        self.coordinates.append(np.array((x_start,y_start)))
-
-    def __repr__(self):
-        return '[id:{}, x:{}, y:{}, len:{}, or.:{}] \n'.format(self.ID, round(self.x_start,2), round(self.y_start,2), round(self.length,2), round(self.orientation,2))
-
-    def compute_segment_points(self, dx):
-        """
-        Compute the coordinates of the points of the segment.
-        """
-        mid_length = self.length / 2
-        self.growth_rate_x = abs(math.sin(self.orientation*math.pi/180) * dx) #/ 2
-        self.growth_rate_y = abs(math.cos(self.orientation*math.pi/180) * dx) #/ 2
-        dx_point1 = mid_length * math.sin(self.orientation*math.pi/180)
-        dy_point1 = mid_length * math.cos(self.orientation*math.pi/180)
-        dx_point2 = -mid_length * math.sin(self.orientation*math.pi/180)
-        dy_point2 = -mid_length * math.cos(self.orientation*math.pi/180)
-        self.coordinates.append(self.coordinates[0] + np.array((dx_point1,dy_point1)))
-        self.coordinates.append(self.coordinates[0] + np.array((dx_point2,dy_point2)))
-        return None
-
-
-#####
-# 3 #
-##############################################
-# pyKasso class for karst network simulation #
-##############################################
+import matplotlib
+import matplotlib.pyplot as plt
 
 class SKS():
     """
@@ -857,7 +86,7 @@ class SKS():
 
         self.settings = settings
         
-        self.settings['fractures_numbers'] = [int(self.settings['xnum']*self.settings['ynum']*self.settings['dx']*self.settings['dy']*float(i)) for i in self.settings['fractures_densities']] 
+        self.settings['fractures_numbers'] = [int(self.settings['nx']*self.settings['ny']*self.settings['dx']*self.settings['dy']*float(i)) for i in self.settings['fractures_densities']] 
         
         #Set travel cost through each geologic formation
         geology_cost = []
@@ -871,6 +100,11 @@ class SKS():
         if rand_seed != None:
             np.random.seed(rand_seed)
 
+        # Avoid issues with text and numbers
+        parameters = ['fractures_densities', 'fractures_min_orientation', 'fractures_max_orientation', 'fractures_min_dip', 'fractures_max_dip', 'fractures_alpha', 'fractures_min_length', 'fractures_max_length']
+        for parameter in parameters:
+            self.settings[parameter] = [float(elem) for elem in self.settings[parameter]]
+
         self._get_reference_statistics()
         self._load_data()
         self.karst_simulations = []
@@ -878,20 +112,24 @@ class SKS():
     ################
     # get_ methods #
     ################
-    #Chloe: I added several get and set functions
 
     def get_x0(self):
-        print('test')
         return self.settings['x0']
 
     def get_y0(self):
         return self.settings['y0']
 
-    def get_xnum(self):
-        return self.settings['xnum']
+    def get_z0(self):
+        return self.settings['z0']
 
-    def get_ynum(self):
-        return self.settings['ynum']
+    def get_nx(self):
+        return self.settings['nx']
+
+    def get_ny(self):
+        return self.settings['ny']
+
+    def get_nz(self):
+        return self.settings['nz']
 
     def get_dx(self):
         return self.settings['dx']
@@ -899,11 +137,29 @@ class SKS():
     def get_dy(self):
         return self.settings['dy']
 
+    def get_dz(self):
+        return self.settings['dz']
+
     def get_data_has_polygon(self):
         return self.settings['data_has_polygon']
 
     def get_polygon_data(self):
         return self.settings['polygon_data']
+
+    def get_outlets_mode(self):
+        return self.settings['outlets_mode']
+
+    def get_outlets_data(self):
+        return self.settings['outlets_data']
+
+    def get_outlets_number(self):
+        return self.settings['outlets_number']
+
+    def get_outlets_shuffle(self):
+        return self.settings['outlets_shuffle']
+
+    def get_outlets_importance(self):
+        return self.settings['outlets_importance']
 
     def get_inlets_mode(self):
         return self.settings['inlets_mode']
@@ -917,17 +173,11 @@ class SKS():
     def get_inlets_shuffle(self):
         return self.settings['inlets_shuffle']
 
-    def get_outlets_mode(self):
-        return self.settings['outlets_mode']
+    def get_inlets_per_outlet(self):
+        return self.settings['inlets_per_outlet']
 
-    def get_outlets_data(self):
-        return self.settings['outlets_data']
-
-    def get_outlets_number(self):
-        return self.settings['outlets_number']
-
-    def get_outlets_shuffle(self):
-        return self.settings['outlets_shuffle']
+    def get_inlets_importance(self):
+        return self.settings['inlets_importance']
 
     def get_geological_mode(self):
         return self.settings['geological_mode']
@@ -968,6 +218,12 @@ class SKS():
     def get_fractures_max_orientation(self):
         return self.settings['fractures_max_orientation']
 
+    def get_fractures_min_dip(self):
+        return self.settings['fractures_min_dip']
+
+    def get_fractures_max_dip(self):
+        return self.settings['fractures_max_dip']
+
     def get_fractures_alpha(self):
         return self.settings['fractures_alpha']
 
@@ -1003,7 +259,7 @@ class SKS():
 
     def get_geology_id(self):
         return self.settings['geology_id']
-    
+
     def get_geology_cost(self):
         return self.settings['geology_cost']
 
@@ -1122,7 +378,7 @@ class SKS():
         Parameter
         ---------
         data_has_polygon : bool
-            If true, a polygon will be required. 
+            If true, a polygon will be required.
         """
         self.settings['data_has_polygon'] = data_has_polygon
         return None
@@ -1130,99 +386,14 @@ class SKS():
     def set_polygon_data(self, polygon_data):
         """
         Define the polygon datafile path.
-        Usefull only when data_has_polygon is true.
+        Useful only when data_has_polygon is true.
 
         Parameter
         ---------
         polygon_data : string or list
-            Polygon datafile path or list of vertices coordinates. 
+            Polygon datafile path or list of vertices coordinates.
         """
         self.settings['polygon_data'] = polygon_data
-        return None
-
-    def set_inlets_mode(self, inlets_mode):
-        """
-        Define the inlets mode.
-
-        Parameter
-        ---------
-        inlets_mode : string
-            'random'    - Full random points 
-            'import'    - Import points
-            'composite' - Add n random points to imported points 
-        """
-        self.settings['inlets_mode'] = inlets_mode
-        return None
-
-    def set_inlets_data(self, inlets_data):
-        """
-        Define the inlets datafile path.
-        Useful only when inlets mode is on 'import' or 'composite'.
-
-        Parameter
-        ---------
-        inlets_data : string or list
-            Inlets datafile path or list of inlets coordinates. 
-        """
-        self.settings['inlets_data'] = inlets_data
-        return None
-
-    def set_inlets_number(self, inlets_number):
-        """
-        Define the number of inlets to generate.
-        Useful only when inlets mode is on 'random' or 'composite'.
-
-        Parameter
-        ---------
-        inlets_number : string
-            Number of inlets to generate. 
-        """
-        self.settings['inlets_number'] = inlets_number
-        return None
-
-    def set_inlets_shuffle(self, inlets_shuffle):
-        """
-        Define whether to shuffle the order of the inlets randomly.
-        Useful only when iterating over inlets.
-
-        Parameter
-        ---------
-        inlets_shuffle : string
-            False: don't shuffle, True: shuffle randomly. 
-        """
-        self.settings['inlets_shuffle'] = inlets_shuffle
-        return None
-
-    def set_inlets_per_outlet(self, inlets_per_outlet):
-        """
-        Define the proportion of inlets to be distributed across each outlet.
-        Length of array indicates number of outlets, 
-        each integer indicates number of inlets to assign to that outlet, 
-        sum of integers = total number of inlets
-        Useful only when iterating over inlets and outlets.
-
-        Parameter
-        ---------
-        inlets_per_outlet : [1]: a single iteration with all inlets to one outlet, [1,1,1]: three outlets with one inlet in each,
-            [1,2,3]: three outlets with one inlet in the first, 2 inlets in the second, and 3 inlets in the third. 
-        """
-        self.settings['inlets_per_outlet'] = inlets_per_outlet
-        return None
-    
-    def set_inlets_importance(self, inlets_importance):
-        """
-        Define the proportion of inlets to be distributed across each iteration.
-        Length of array indicates number of inlet iterations, 
-        each integer indicates number of inlets to run in that iteration, 
-        sum of integers = total number of inlets
-        Useful only when iterating over inlets.
-
-        Parameter
-        ---------
-        inlets_importance : [1]: a single iteration with all inlets, [1,1,1]: three iterations with one inlet in each,
-            [1,2,3]: three iterations with one inlet in the first, 2 inlets in the second, and 3 inlets in the third. 
-        """
-        self.settings['inlets_importance'] = inlets_importance
         return None
 
     def set_outlets_mode(self, outlets_mode):
@@ -1232,9 +403,9 @@ class SKS():
         Parameter
         ---------
         outlets_mode : string
-            'random'    - Full random points 
+            'random'    - Full random points
             'import'    - Import points
-            'composite' - Add n random points to imported points 
+            'composite' - Add n random points to imported points
         """
         self.settings['outlets_mode'] = outlets_mode
         return None
@@ -1242,12 +413,12 @@ class SKS():
     def set_outlets_data(self, outlets_data):
         """
         Define the outlets datafile path.
-        Usefull only when outlets mode is on 'import' or 'composite'.
+        Useful only when outlets mode is on 'import' or 'composite'.
 
         Parameter
         ---------
         outlets_data : string or list
-            Outlets datafile path or list of outlets coordinates. 
+            Outlets datafile path or list of outlets coordinates.
         """
         self.settings['outlets_data'] = outlets_data
         return None
@@ -1255,12 +426,12 @@ class SKS():
     def set_outlets_number(self, outlets_number):
         """
         Define the number of outlets to generate.
-        Usefull only when outlets mode is on 'random' or 'composite'.
+        Useful only when outlets mode is on 'random' or 'composite'.
 
         Parameter
         ---------
         outlets_number : string
-            Number of outlets to generate. 
+            Number of outlets to generate.
         """
         self.settings['outlets_number'] = outlets_number
         return None
@@ -1273,7 +444,7 @@ class SKS():
         Parameter
         ---------
         outlets_shuffle : string
-            False: don't shuffle, True: shuffle randomly. 
+            0: don't shuffle, 1: shuffle randomly.
         """
         self.settings['outlets_shuffle'] = outlets_shuffle
         return None
@@ -1281,19 +452,104 @@ class SKS():
     def set_outlets_importance(self, outlets_importance):
         """
         Define the proportion of outlets to be distributed across each iteration.
-        Length of array indicates number of outlet iterations, 
-        each integer indicates number of outlets to run in that iteration, 
+        Length of array indicates number of outlet iterations,
+        each integer indicates number of outlets to run in that iteration,
         sum of integers = total number of outlets
         Useful only when iterating over outlets.
 
         Parameter
         ---------
         outlets_importance : [1]: a single iteration with all outlets, [1,1,1]: three iterations with one outlet in each,
-            [1,2,3]: three iterations with one outlet in the first, 2 outlets in the second, and 3 outlets in the third. 
+            [1,2,3]: three iterations with one outlet in the first, 2 outlets in the second, and 3 outlets in the third.
         """
         self.settings['outlets_importance'] = outlets_importance
         return None
-    
+
+    def set_inlets_mode(self, inlets_mode):
+        """
+        Define the inlets mode.
+
+        Parameter
+        ---------
+        inlets_mode : string
+            'random'    - Full random points
+            'import'    - Import points
+            'composite' - Add n random points to imported points
+        """
+        self.settings['inlets_mode'] = inlets_mode
+        return None
+
+    def set_inlets_data(self, inlets_data):
+        """
+        Define the inlets datafile path.
+        Useful only when inlets mode is on 'import' or 'composite'.
+
+        Parameter
+        ---------
+        inlets_data : string or list
+            Inlets datafile path or list of inlets coordinates.
+        """
+        self.settings['inlets_data'] = inlets_data
+        return None
+
+    def set_inlets_number(self, inlets_number):
+        """
+        Define the number of inlets to generate.
+        Useful only when inlets mode is on 'random' or 'composite'.
+
+        Parameter
+        ---------
+        inlets_number : string
+            Number of inlets to generate.
+        """
+        self.settings['inlets_number'] = inlets_number
+        return None
+
+    def set_inlets_shuffle(self, inlets_shuffle):
+        """
+        Define whether to shuffle the order of the inlets randomly.
+        Useful only when iterating over inlets.
+
+        Parameter
+        ---------
+        inlets_shuffle : string
+            0: don't shuffle, 1: shuffle randomly.
+        """
+        self.settings['inlets_shuffle'] = inlets_shuffle
+        return None
+
+    def set_inlets_per_outlet(self, inlets_per_outlet):
+        """
+        Define the proportion of inlets to be distributed across each outlet.
+        Length of array indicates number of outlets,
+        each integer indicates number of inlets to assign to that outlet,
+        sum of integers = total number of inlets
+        Useful only when iterating over inlets and outlets.
+
+        Parameter
+        ---------
+        inlets_per_outlet : [1]: a single iteration with all inlets to one outlet, [1,1,1]: three outlets with one inlet in each,
+            [1,2,3]: three outlets with one inlet in the first, 2 inlets in the second, and 3 inlets in the third.
+        """
+        self.settings['inlets_per_outlet'] = inlets_per_outlet
+        return None
+
+    def set_inlets_importance(self, inlets_importance):
+        """
+        Define the proportion of inlets to be distributed across each iteration.
+        Length of array indicates number of inlet iterations,
+        each integer indicates number of inlets to run in that iteration,
+        sum of integers = total number of inlets
+        Useful only when iterating over inlets.
+
+        Parameter
+        ---------
+        inlets_importance : [1]: a single iteration with all inlets, [1,1,1]: three iterations with one inlet in each,
+            [1,2,3]: three iterations with one inlet in the first, 2 inlets in the second, and 3 inlets in the third.
+        """
+        self.settings['inlets_importance'] = inlets_importance
+        return None
+
     def set_geological_mode(self, geological_mode):
         """
         Define the geological mode.
@@ -1313,12 +569,12 @@ class SKS():
     def set_geological_datafile(self, geological_datafile):
         """
         Define the geological datafile path.
-        Usefull only when geological mode is not 'null'.
+        Useful only when geological mode is not 'null'.
 
         Parameter
         ---------
         geological_datafile : string
-            Geological datafile path. 
+            Geological datafile path.
         """
         self.settings['geological_datafile'] = geological_datafile
         return None
@@ -1334,6 +590,7 @@ class SKS():
             'import' - Import from old gslib file format
             'gslib'  - Import from new gslib format
             'csv'    - Import from csv
+            'image'  - Import via image
         """
         self.settings['topography_mode'] = topography_mode
         return None
@@ -1341,12 +598,12 @@ class SKS():
     def set_topography_datafile(self, topography_datafile):
         """
         Define the topography datafile path.
-        Usefull only when topography mode is not 'null'.
+        Useful only when topography mode is not 'null'.
 
         Parameter
         ---------
         topography_datafile : string
-            topography datafile path. 
+            topography datafile path.
         """
         self.settings['topography_datafile'] = topography_datafile
         return None
@@ -1358,9 +615,9 @@ class SKS():
         Parameter
         ---------
         orientation_mode : string
-            'null'   - No orientation
-            'topo'   - Calculate from topography
-            'surface'- Calculate from csv file of a surface (useful if using lower surface of karst unit)
+            'null'    - No orientation
+            'topo'    - Calculate from topography
+            'surface' - Calculate from csv file of a surface (useful if using lower surface of karst unit)
         """
         self.settings['orientation_mode'] = orientation_mode
         return None
@@ -1372,8 +629,8 @@ class SKS():
 
         Parameter
         ---------
-        orientation_datafile : string 
-            orientation datafile path. 
+        orientation_datafile : string
+            orientation datafile path.
         """
         self.settings['orientation_datafile'] = orientation_datafile
         return None
@@ -1390,7 +647,6 @@ class SKS():
             'gslib'  - Import from new gslib format
             'csv'    - Import from csv
             'image'  - Import via image
-        Chloe: I have not tested any of the import functions for faults with the new algorithm.
         """
         self.settings['faults_mode'] = faults_mode
         return None
@@ -1398,12 +654,12 @@ class SKS():
     def set_faults_datafile(self, faults_datafile):
         """
         Define the faults datafile path.
-        Usefull only when the mode for faults is on 'import' or 'image'.
+        Useful only when the mode for faults is on 'import' or 'image'.
 
         Parameter
         ---------
         faults_datafile : string
-            Faults datafile path. 
+            Faults datafile path.
         """
         self.settings['faults_datafile'] = faults_datafile
         return None
@@ -1421,7 +677,6 @@ class SKS():
             'csv'    - Import from csv
             'image'  - Import via image
             'random' - Generate random fractures
-        Chloe: I have not tested any of the import methods for fractures with the new algorithm.
         """
         self.settings['fractures_mode'] = fractures_mode
         return None
@@ -1429,12 +684,12 @@ class SKS():
     def set_fractures_datafile(self, fracture_datafile):
         """
         Define the fractures datafile path.
-        Usefull only when the mode for fractures is on 'import' or 'image'.
+        Useful only when the mode for fractures is on 'import' or 'image'.
 
         Parameter
         ---------
         fracture_datafile : string
-            Fractures datafile path. 
+            Fractures datafile path.
         """
         self.fracture_datafile = fracture_datafile
         return None
@@ -1442,26 +697,25 @@ class SKS():
     def set_fractures_densities(self, fractures_densities):
         """
         Define the fractures densitiy for each fractures family.
-        Usefull only when the mode for fractures is on 'random'.
+        Useful only when the mode for fractures is on 'random'.
 
         Parameter
         ---------
         fractures_densities : list
-            One density for each family. 
+            One density for each family.
         """
         self.settings['fractures_densities'] = fractures_densities
-        self.settings['fractures_numbers'] = [self.settings['xnum']*self.settings['ynum']*self.settings['dx']*self.settings['dy']*i/10**6 for i in self.settings['fractures_densities']]
         return None
 
     def set_fractures_min_orientation(self, fractures_min_orientation):
         """
         Define the minimum orientation of the fracturation for each fractures family.
-        Usefull only when the mode for fractures is on 'random'.
+        Useful only when the mode for fractures is on 'random'.
 
         Parameter
         ---------
         fractures_min_orientation : list
-            One orientation for each family. 
+            One orientation for each family.
         """
         self.settings['fractures_min_orientation'] = fractures_min_orientation
         return None
@@ -1469,24 +723,51 @@ class SKS():
     def set_fractures_max_orientation(self, fractures_max_orientation):
         """
         Define the maximum orientation of the fracturation for each fractures family.
-        Usefull only when the mode for fractures is on 'random'.
+        Useful only when the mode for fractures is on 'random'.
 
         Parameter
         ---------
         fractures_max_orientation : list
-            One orientation for each family. 
+            One orientation for each family.
         """
         self.settings['fractures_max_orientation'] = fractures_max_orientation
         return None
 
-    def set_fractures_alpha(self, fractures_alpha):
+    def set_fractures_min_dip(self, fractures_min_dip):
         """
-        Define the ???.
-        Usefull only when the mode for fractures is on 'random'.
+        Define the minimum dip of the fracturation for each fractures family.
+        Useful only when the mode for fractures is on 'random'.
 
         Parameter
         ---------
-        fractures_alpha : float
+        fractures_min_dip : list
+            One dip for each family.
+        """
+        self.settings['fractures_min_dip'] = fractures_min_dip
+        return None
+
+    def set_fractures_max_dip(self, fractures_max_dip):
+        """
+        Define the maximum dip of the fracturation for each fractures family.
+        Useful only when the mode for fractures is on 'random'.
+
+        Parameter
+        ---------
+        fractures_max_dip : list
+            One dip for each family.
+        """
+        self.settings['fractures_max_dip'] = fractures_max_dip
+        return None
+
+    def set_fractures_alpha(self, fractures_alpha):
+        """
+        Define alpha, a parameter in the fracturation law.
+        Useful only when the mode for fractures is on 'random'.
+
+        Parameter
+        ---------
+        fractures_alpha : list
+            One alpha for each family.
         """
         self.settings['fractures_alpha'] = fractures_alpha
         return None
@@ -1494,11 +775,11 @@ class SKS():
     def set_fractures_min_length(self, fractures_min_length):
         """
         Define the minimum lenght for all the fractures.
-        Usefull only when the mode for fractures is on 'random'.
+        Useful only when the mode for fractures is on 'random'.
 
         Parameter
         ---------
-        fractures_min_length : float 
+        fractures_min_length : float
         """
         self.settings['fractures_min_length'] = fractures_min_length
         return None
@@ -1506,11 +787,11 @@ class SKS():
     def set_fractures_max_length(self, fractures_max_length):
         """
         Define the maximum lenght for all the fractures.
-        Usefull only when the mode for fractures is on 'random'.
+        Useful only when the mode for fractures is on 'random'.
 
         Parameter
         ---------
-        fractures_max_length : float 
+        fractures_max_length : float
         """
         self.settings['fractures_max_length'] = fractures_max_length
         return None
@@ -1520,13 +801,17 @@ class SKS():
         Define the algorithm to use when calculating travel time to spring.
 
         Parameter
-        ----------
-        algorithm : string, 'Isotropic2', 'Isotropic3', 'Riemann2', 'Riemann3'
-                    see AGD-HFM documentation for full list of options
+        ---------
+        algorithm : string
+            'Isotropic2' -
+            'Isotropic3' -
+            'Riemann2'   -
+            'Riemann3'   -
+            See AGD-HFM documentation for full list of options.
         """
         self.settings['algorithm'] = algorithm
         return None
-    
+
     def set_cost_out(self, cost_out):
         """
         Define the fast-marching value for the outside of the study area.
@@ -1602,7 +887,7 @@ class SKS():
     def set_cost_ratio(self, cost_ratio):
         """
         Define the fast-marching ratio of travel cost parallel to gradient / travel cost prependicular to gradient.
-        Should be between 0 and 0.5. 
+        Should be between 0 and 0.5.
 
         Parameter
         ---------
@@ -1615,18 +900,18 @@ class SKS():
         """
         Define the geology id (from geology datafile) to consider in the simulation.
         Only needed in 'import' mode.
-        
+
         Parameter
         ---------
         geology_id : list
         """
         self.settings['geology_id'] = geology_id
         return None
-    
+
     def set_geology_cost(self, geology_cost):
         """
         Define the travel cost to apply to each geology id.
-        
+
         Parameter
         ---------
         geology_cost : list
@@ -1661,11 +946,11 @@ class SKS():
     def set_verbosity(self, verbosity):
         """
         Define the verbosity (how much output to print during runs).
-        
+
         Parameter
         ---------
-        verbosity: integer 
-            0: print minimal output,  1: print medium output,  2: print more output
+        verbosity: integer
+            0: print minimal output,  1: print medium output,  2: print max output
         """
         self.settings['verbosity'] = verbosity
         return None
@@ -1691,7 +976,6 @@ class SKS():
     def update_inlets(self):
         """
         Update the inlets settings.
-        Chloe: I added that the inlets are shuffled here if inlets_shuffle=True
         """
         if self.settings['inlets_mode'] == 'random':
             self.points.generate_points('inlets', self.settings['inlets_number'])
@@ -1711,7 +995,6 @@ class SKS():
     def update_outlets(self):
         """
         Update the outlets settings.
-        Chloe: I added that the inlets are shuffled here if inlets_shuffle=True
         """
         if self.settings['outlets_mode'] == 'random':
             self.points.generate_points('outlets', self.settings['outlets_number'])
@@ -1771,7 +1054,6 @@ class SKS():
     def update_orientation(self):
         """
         Update the orientation settings.
-        Chloe: this is a new function I added
         """
         if self.settings['orientation_mode'] == 'null':
             self.geology.set_data_null('orientationx')
@@ -1831,7 +1113,6 @@ class SKS():
     def update_all(self):
         """
         Update all the parameters.
-        Chloe: I added the update_orientation function
         """
         self.update_polygon()
         self.update_inlets()
@@ -1846,7 +1127,6 @@ class SKS():
     def shuffle_inlets(self):
         """
         Shuffle the inlets order.
-        Chloe: I made this its own function
         """
         np.random.shuffle(self.inlets)
         return None
@@ -1854,7 +1134,6 @@ class SKS():
     def shuffle_outlets(self):
         """
         Shuffle the outlets order.
-        Chloe: I made this its own function
         """
         np.random.shuffle(self.outlets)
         return None
@@ -1881,24 +1160,25 @@ class SKS():
     def _load_data(self):
         """
         Initialize all the data.
-        Chloe: inlet/outlet shuffling happens here.
         """
         # The grid
-        self.grid    = self._set_grid(self.settings['x0'],self.settings['y0'],self.settings['xnum'],self.settings['ynum'],self.settings['dx'],self.settings['dy'])
+        self.grid    = self._set_grid(self.settings['x0'],self.settings['y0'],self.settings['z0'],
+                                      self.settings['nx'],self.settings['ny'],self.settings['nz'],
+                                      self.settings['dx'],self.settings['dy'],self.settings['dz'])
         # The polygon and its mask
         self.polygon = self._set_polygon(self.grid)
         self.mask    = self.polygon.mask
+        # The geologic data
+        self.geology = self._set_geology(self.grid)
+        self.geology.compute_stats_on_data()
         # The points
-        self.points  = self._set_points(self.grid, self.polygon)
+        self.points  = self._set_points(self.grid, self.polygon, self.geology)
         self.inlets  = self.points.points['inlets'][:]
         self.outlets = self.points.points['outlets'][:]
         if self.settings['inlets_shuffle'] == True:
             np.random.shuffle(self.inlets)
         if self.settings['outlets_shuffle'] == True:
             np.random.shuffle(self.outlets)
-        # The geologic data
-        self.geology = self._set_geology(self.grid)
-        self.geology.compute_stats_on_data()
         
         self.geology_masked = {}
         if self.mask is not None:
@@ -1907,11 +1187,11 @@ class SKS():
         
         return None
 
-    def _set_grid(self, x0, y0, xnum, ynum, dx, dy):
+    def _set_grid(self, x0, y0, z0, nx, ny, nz, dx, dy, dz):
         """
         Set the grid object.
         """
-        grid = Grid(x0, y0, xnum, ynum, dx, dy)
+        grid = Grid(x0, y0, z0, nx, ny, nz, dx, dy, dz)
         return grid
 
     def _set_polygon(self, grid):
@@ -1924,11 +1204,12 @@ class SKS():
             polygon.inspect_polygon()
         return polygon
 
-    def _set_points(self, grid, polygon):
+    def _set_points(self, grid, polygon, geology):
         """
         Set the point manager object.
         """
-        points = PointManager(grid, polygon)
+        points = PointManager(grid, polygon, geology)
+        
         ###Inlets###
         if self.settings['inlets_mode'] == 'random':
             points.generate_points('inlets', self.settings['inlets_number'])
@@ -1939,6 +1220,7 @@ class SKS():
         else:
             print('/!\\ Error : unrecognized inlets setting.')
             sys.exit()
+            
         ###Outlets###
         if self.settings['outlets_mode'] == 'random':
             points.generate_points('outlets', self.settings['outlets_number'])
@@ -1955,9 +1237,9 @@ class SKS():
     def _set_geology(self, grid):
         """
         Set the geology manager object.
-        #Chloe: I added the csv and new gslib options and removed the old import function
         """
         geology = GeologyManager(grid)
+        
         # Geology
         if self.settings['geological_mode'] == 'null':
             geology.set_data_null('geology')
@@ -1970,6 +1252,7 @@ class SKS():
         else:
             print('/!\\ Error : unrecognized geological mode', self.settings['geological_mode'])
             sys.exit()
+            
         # Topography
         if self.settings['topography_mode'] == 'null':
             geology.set_data_null('topography')
@@ -1978,6 +1261,7 @@ class SKS():
         else:
             print('/!\\ Error : unrecognized topography mode', self.settings['topography_mode'])
             sys.exit()
+            
         # Orientation
         if self.settings['orientation_mode'] == 'null':
             geology.set_data_null('orientationx')
@@ -1990,6 +1274,7 @@ class SKS():
         else:
             print('/!\\ Error : unrecognized orientation mode', self.settings['orientation_mode'])
             sys.exit()
+            
         # Faults
         if self.settings['faults_mode'] == 'null':
             geology.set_data_null('faults')
@@ -2000,6 +1285,7 @@ class SKS():
         else:
             print('/!\\ Error : unrecognized faults mode', self.settings['faults_mode'])
             sys.exit()
+            
         # Fractures
         if self.settings['fractures_mode'] == 'null':
             geology.set_data_null('fractures')
@@ -2008,7 +1294,14 @@ class SKS():
         elif self.settings['fractures_mode'] == 'image':
             geology.set_data_from_image('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'random':
-            geology.generate_fractures(self.settings['fractures_numbers'], self.settings['fractures_min_orientation'], self.settings['fractures_max_orientation'], self.settings['fractures_alpha'], self.settings['fractures_min_length'], self.settings['fractures_max_length'])
+            geology.generate_fractures(self.settings['fractures_densities'],
+                                       self.settings['fractures_alpha'],
+                                       self.settings['fractures_min_orientation'],
+                                       self.settings['fractures_max_orientation'],
+                                       self.settings['fractures_min_dip'],
+                                       self.settings['fractures_max_dip'],
+                                       self.settings['fractures_min_length'],
+                                       self.settings['fractures_max_length'])
         else:
             print('/!\\ Error : unrecognized fractures mode', self.settings['fractures_mode'])
             sys.exit()
@@ -2086,13 +1379,13 @@ class SKS():
 
         # Raster maps
         self.maps              = {}
-        self.maps['outlets']   = np.full((self.grid.ynum, self.grid.xnum), np.nan) #map of null values where each cell with an outlet will have the index of that outlet
-        self.maps['nodes']     = np.full((self.grid.ynum, self.grid.xnum), np.nan) #map of null values where each cell that has a node will be updated with that node index
-        self.maps['cost']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #cost of travel through each cell
-        self.maps['alpha']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #cost of travel along gradient through each cell
-        self.maps['beta']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #cost of travel perpendicular to gradient through each cell
-        self.maps['time']      = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #travel time to outlet from each cell
-        self.maps['karst']     = np.zeros((self.nbr_iteration, self.grid.ynum, self.grid.xnum)) #presence/absence of karst conduit in each cell
+        self.maps['outlets']   = np.full((self.grid.ny, self.grid.nx), np.nan) #map of null values where each cell with an outlet will have the index of that outlet
+        self.maps['nodes']     = np.full((self.grid.ny, self.grid.nx), np.nan) #map of null values where each cell that has a node will be updated with that node index
+        self.maps['cost']      = np.zeros((self.nbr_iteration, self.grid.ny, self.grid.nx)) #cost of travel through each cell
+        self.maps['alpha']     = np.zeros((self.nbr_iteration, self.grid.ny, self.grid.nx)) #cost of travel along gradient through each cell
+        self.maps['beta']      = np.zeros((self.nbr_iteration, self.grid.ny, self.grid.nx)) #cost of travel perpendicular to gradient through each cell
+        self.maps['time']      = np.zeros((self.nbr_iteration, self.grid.ny, self.grid.nx)) #travel time to outlet from each cell
+        self.maps['karst']     = np.zeros((self.nbr_iteration, self.grid.ny, self.grid.nx)) #presence/absence of karst conduit in each cell
         
         # Vector maps
         self.nodes     = {} #empty dic to store nodes (key: nodeID, val: [x, y, type])
@@ -2102,7 +1395,7 @@ class SKS():
         self.geodesics = [] #empty list to store raw fast-marching path output
 
         # Set up fast-marching:
-        #Note: AGD-HFM library has different indexing, so model dimensions must be [ynum,xnum],
+        #Note: AGD-HFM library has different indexing, so model dimensions must be [ny,nx],
         # and model extent must be [ymin,ymax, xmin,xmax] (NOT x0,y0)
         self.riemannMetric = []                    #this changes at every iteration, but cannot be stored?
         self.fastMarching = agd.Eikonal.dictIn({
@@ -2114,7 +1407,7 @@ class SKS():
         self.fastMarching.SetRect(                 #give the fast-marching algorithm the model grid 
             sides=[[self.grid.ymin, self.grid.ymax],    #leftmost edge, rightmost edge (NOT centerpoint)
                    [self.grid.xmin, self.grid.xmax]],   #bottom edge,   top edge (NOT centerpoint)
-            dims=[self.grid.ynum, self.grid.xnum])      #number of cells, number of cells
+            dims=[self.grid.ny, self.grid.nx])      #number of cells, number of cells
         return None
 
     # 1
@@ -2240,7 +1533,7 @@ class SKS():
         if iteration == 0:
             # Geology
             if self.geology.data['geology']['mode'] == 'null':
-                self.maps['cost'][0] = np.full((self.grid.ynum, self.grid.xnum), self.settings['cost_aquifer']) #every cell has the same travel cost and is part of the aquifer
+                self.maps['cost'][0] = np.full((self.grid.ny, self.grid.nx), self.settings['cost_aquifer']) #every cell has the same travel cost and is part of the aquifer
             elif self.geology.data['geology']['mode'] == 'image':
                 self.maps['cost'][0] = np.where(self.geology.data['geology']['data']==1, self.settings['cost_aquiclude'], self.settings['cost_aquifer'])
             elif self.geology.data['geology']['mode'] == 'import' or self.geology.data['geology']['mode'] == 'csv' or self.geology.data['geology']['mode'] == 'gslib':
@@ -2257,8 +1550,8 @@ class SKS():
                         print("- initialize_costMap() - Warning : no geology n {} found.".format(geology))
                         tableFMM[geology] = self.settings['cost_out']
                     
-                for y in range(self.grid.ynum):
-                    for x in range(self.grid.xnum):
+                for y in range(self.grid.ny):
+                    for x in range(self.grid.nx):
                         geology = self.geology.data['geology']['data'][y][x] 
                         self.maps['cost'][0][y][x] = tableFMM[geology]       
             else:
@@ -2266,10 +1559,10 @@ class SKS():
                 sys.exit()
 
             # Faults
-            self.maps['cost'][0] = np.where(self.geology.data['faults']['data'] > 0, self.settings['cost_faults'], self.maps['cost'][0])
+            self.maps['cost'][0] = np.where(self.geology.data['faults']['data'][:,:,0] > 0, self.settings['cost_faults'], self.maps['cost'][0])
     
             # Fractures
-            self.maps['cost'][0] = np.where(self.geology.data['fractures']['data'] > 0, self.settings['cost_fractures'], self.maps['cost'][0])
+            self.maps['cost'][0] = np.where(self.geology.data['fractures']['data'][:,:,0] > 0, self.settings['cost_fractures'], self.maps['cost'][0])
 
             # If out of polygon
             if self.mask is not None:
@@ -2429,72 +1722,6 @@ class SKS():
                 
                 self.maps['karst'][iteration][ix,iy] = 1                               #update karst map to put a conduit in current cell
         return None
- 
-    # 2
-    def _check_boundary_conditions(self,iteration,X,Y):
-        borders_conditions = [     #(X,Y)
-            [(0,-1),(0,1),(1,0) ], # X = 0
-            [(-1,0),(1,0),(0,1) ], # Y = 0
-            [(0,-1),(0,1),(-1,0)], # X = xnum
-            [(-1,0),(1,0),(0,-1)]] # Y = ynum
-
-        corners_conditions = [ #(X,Y)
-            [(1,0) ,(0,1) ],   # X = 0    && Y = 0
-            [(1,0) ,(0,-1)],   # X = 0    && Y = ynum
-            [(-1,0),(0,1) ],   # X = xnum && Y = ynum
-            [(-1,0),(0,-1)]]   # X = xnum && Y = 0
-
-        time_values = []
-        rank = 0
-
-        if X == 0:
-            for row in borders_conditions[0]:
-                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
-            rank  = time_values.index(min(time_values))
-            moove = borders_conditions[0][rank]
-        elif Y == 0:
-            for row in borders_conditions[1]:
-                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
-            rank  = time_values.index(min(time_values))
-            moove = borders_conditions[1][rank]
-        elif X == self.grid.xnum:
-            for row in borders_conditions[2]:
-                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
-            rank  = time_values.index(min(time_values))
-            moove = borders_conditions[2][rank]
-        elif Y == self.grid.ynum:
-            for row in borders_conditions[3]:
-                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
-            rank  = time_values.index(min(time_values))
-            moove = borders_conditions[3][rank]
-        elif (X == 0) and (Y == 0):
-            for row in corners_conditions[0]:
-                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
-            rank  = time_values.index(min(time_values))
-            moove = corners_conditions[0][rank]
-        elif (X == 0) and (Y == self.grid.ynum):
-            for row in corners_conditions[1]:
-                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
-            rank  = time_values.index(min(time_values))
-            moove = corners_conditions[1][rank]
-        elif (X == self.grid.xnum) and (Y == self.grid.ynum):
-            for row in corners_conditions[2]:
-                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
-            rank  = time_values.index(min(time_values))
-            moove = corners_conditions[2][rank]
-        elif (X == self.grid.xnum) and (Y == 0):
-            for row in corners_conditions[3]:
-                time_values.append(self.maps['time'][iteration][Y+row[1]][X+row[0]])
-            rank  = time_values.index(min(time_values))
-            moove = corners_conditions[3][rank]
-        else:
-            print('Error: none of the conditions are met.')
-
-        dx = moove[0] * self.step
-        dy = moove[1] * self.step
-        
-        return (dx,dy)
-
 
     ###########################
     # Visualization functions #
