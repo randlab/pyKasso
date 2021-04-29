@@ -93,15 +93,15 @@ fractures_datafile : 'inputs/test03.png'
 
 # If fractures mode is 'generate'
 fractures_densities       : [5.83e-6,1.38e-6]
-fractures_min_orientation : [      0,    140]
-fractures_max_orientation : [     15,    175]
-fractures_min_dip         : [     0,     40]
-fractures_max_dip         : [     10,     60]
+fractures_min_orientation : [      85,    175]
+fractures_max_orientation : [     95,    185]
+fractures_min_dip         : [      0,      0]
+fractures_max_dip         : [     10,     10]
 
 # For fracture size
 fractures_alpha      : [   2,   2]
-fractures_min_length : [ 100, 100]
-fractures_max_length : [8500,8500]
+fractures_min_length : [ 100, 3000]
+fractures_max_length : [ 1000,4000]
 
 ###############################
 ### Fast-Marching Algorithm ###

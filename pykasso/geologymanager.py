@@ -242,11 +242,11 @@ class GeologyManager():
                 if (self.grid.nz > 1):
                     frac_dip = np.random.vonmises(dip_mean_angle, dip_kappa)
                 else:
-                    frac_dip = math.radians(90)
+                    frac_dip = math.radians(0)
 
                 # Calculate normal Vector
-                x = np.sin(frac_orientation) * np.cos(frac_dip)
-                y = np.cos(frac_orientation) * np.cos(frac_dip)
+                x = np.sin(frac_orientation + np.radians(90)) * np.cos(frac_dip)
+                y = np.cos(frac_orientation + np.radians(90)) * np.cos(frac_dip)
                 z = np.sin(frac_dip)
                 a = y
                 b = -x
@@ -511,7 +511,7 @@ class GeologyManager():
             with value 1 where the grid is touched by the line
         """
 
-        ny, nx = m.shape
+        nx, ny = m.shape
 
         if xe < xs : # Ensuires dx always positive
             xe, xs = xs, xe
@@ -525,7 +525,7 @@ class GeologyManager():
 
         if (dx + np.abs(dy)) == 0 : # Case with a single pixel
             if (ys >= 0) and (ys < ny) :
-                m[ys, xs] = 1
+                m[xs, ys] = 1
             return
 
         if dx >= abs(dy): # line with greater horizontal than vertical extension
@@ -551,7 +551,7 @@ class GeologyManager():
             i = i[indx_ok]
             j = j[indx_ok]
 
-        m[j,i] = 1
+        m[i,j] = 1
         return
 
     def rasterize_fracture_network(self):
@@ -569,13 +569,13 @@ class GeologyManager():
         x0, y0, z0 = self.grid.x0, self.grid.y0, self.grid.z0
 
         # Creates empty array to store raster of fracture indicators
-        raster_fractures = np.zeros( (nz, ny, nx) )
+        raster_fractures = np.zeros( (nx, ny, nz) )
 
         # Loop over the fractures
         for f in tqdm(self.fractures, desc="Rasterizing"):
 
             # Get fracture geometry
-            xc, yc, zc = f.get_position()
+            xc, yc, zc    = f.get_position()
             nfx, nfy, nfz = f.get_normal()
             n = [nfx, nfy, nfz]
             R = f.get_radius()
@@ -610,7 +610,7 @@ class GeologyManager():
                         i2, j2 = self.grid.get_i(intersect[2]), self.grid.get_j(intersect[3])
 
                         # Rasterize the line
-                        self.rst2d(raster_fractures[k,:,:], i1, i2, j1, j2)
+                        self.rst2d(raster_fractures[:,:,k], i1, i2, j1, j2)
 
             elif nfx**2 < (nfz**2 + nfy**2) : # subhorizontal case 1
                 # Horizontal x index of the center of the fracture
@@ -640,7 +640,7 @@ class GeologyManager():
                         j2, k2 = self.grid.get_j(intersect[2]), self.grid.get_k(intersect[3])
 
                         # Rasterize the line
-                        self.rst2d(raster_fractures[:,:,i], j1, j2, k1, k2)
+                        self.rst2d(raster_fractures[i,:,:], j1, j2, k1, k2)
 
             else : # This may not be necessary
                 # Horizontal y index of the center of the fracture
@@ -671,8 +671,8 @@ class GeologyManager():
                         # Rasterize the line
                         self.rst2d(raster_fractures[:,j,:], i1, i2, k1, k2)
 
-            raster_frac = np.swapaxes(raster_fractures,0,2)
-            self.data['fractures']['data'] = raster_frac
+            #raster_frac = np.swapaxes(raster_fractures,0,2)
+            self.data['fractures']['data'] = raster_fractures
         return raster_fractures
 
     def compute_stats_on_data(self, data_key):
