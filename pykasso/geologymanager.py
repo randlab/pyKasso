@@ -33,7 +33,7 @@ class GeologyManager():
     """
 
     def __init__(self, grid):
-        #data model = {key : {data : var, stats : var, mode : var}}
+        #data model = {data_key : {data : var, stats : var, mode : var}}
         self.data  = {}
         self.grid  = grid
 
@@ -106,7 +106,7 @@ class GeologyManager():
         self.data[data_key] = {}
         self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz))
         image = (image_data[:,:,0] == 0)*1
-        data = resize(image, (self.grid.nx, self.grid.ny), anti_aliasing=False, preserve_range=True)
+        data = np.rint(resize(image, (self.grid.nx, self.grid.ny), anti_aliasing=False, preserve_range=True))
         if self.grid.nz == 1:
             self.data[data_key]['data'] = data[:, :, np.newaxis]
         self.data[data_key]['mode'] = 'image'
@@ -178,10 +178,8 @@ class GeologyManager():
         ymin = self.grid.ylimits[0] - shifty
         zmin = self.grid.zlimits[0] - shiftz
 
-
         ## Total numbers of fractures for each family
         self.fractures_numbers = np.array(fractures_densities) * area
-
 
         ## Calculate fractures in each family
         for frac_family in range(len(fractures_densities)):
@@ -672,20 +670,21 @@ class GeologyManager():
 
                         # Rasterize the line
                         self.rst2d(raster_fractures[:,j,:], i1, i2, k1, k2)
-            self.data['fractures']['data'] = raster_fractures
+
+            raster_frac = np.swapaxes(raster_fractures,0,2)
+            self.data['fractures']['data'] = raster_frac
         return raster_fractures
 
-    def compute_stats_on_data(self):
+    def compute_stats_on_data(self, data_key):
         """
         Compute statistics on the geologic data (not including the orientations).
         """
-        #for key in self.data:
-        for key in ['geology', 'faults', 'fractures']:
+        if data_key in ['geology', 'faults', 'fractures']:
             stats = {}
             for z in range(self.grid.nz):
                 for y in range(self.grid.ny):
                     for x in range(self.grid.nx):
-                        value = self.data[key]['data'][x][y][z]
+                        value = self.data[data_key]['data'][x][y][z]
                         try:
                             if stats.get(value) == None:
                                 stats[value] = 1
@@ -693,10 +692,9 @@ class GeologyManager():
                                 stats[value] += 1
                         except:
                             print('Unable to compute stats for value :', value)
-
             #if self.settings['verbosity'] > 1:
                 #print('\n')
-                #print('STATS for {}'.format(key))
+                #print('STATS for {}'.format(data_key))
                 #print('%-12s%-12s%-12s%-12s' % ('ID', 'Number', '%', 'Superficy'))
                 #print(48*'-')
             ID        = []
@@ -710,7 +708,9 @@ class GeologyManager():
                 occurence.append(stats[k])
                 frequency.append(100*stats[k]/(self.grid.nx*self.grid.ny*self.grid.nz))
                 superficy.append(stats[k]*self.grid.dx*self.grid.dy*self.grid.dz)
-            self.data[key]['stats'] = {'ID':ID, 'occurence':occurence, 'frequency':frequency, 'superficy':superficy}
+            self.data[data_key]['stats'] = {'ID':ID, 'occurence':occurence, 'frequency':frequency, 'superficy':superficy}
+        else:
+            self.data[data_key]['stats'] = np.nan
         return None
 
     """

@@ -54,7 +54,7 @@ class SKS():
     """
     A super-class to manage all the data class and to simulate karst networks.
     """
-    
+
     def __init__(self, yaml_settings_file = None, rand_seed = None):
         """
         Construct a SKS class according to the specified settings datafile.
@@ -63,7 +63,7 @@ class SKS():
         ----------
         yaml_settings_file : string
             YAML settings file location.
-            
+
         Examples
         --------
             >>> catchment = pk.SKS()
@@ -73,7 +73,7 @@ class SKS():
 
         if yaml_settings_file is None:
             yaml_settings_file = os.path.dirname(os.path.abspath(__file__)) + '/' + 'default_files/settings.yaml'
-        
+
         try:
             with open(yaml_settings_file, 'r') as stream:
                 try:
@@ -86,18 +86,18 @@ class SKS():
             raise
 
         self.settings = settings
-        
-        self.settings['fractures_numbers'] = [int(self.settings['nx']*self.settings['ny']*self.settings['dx']*self.settings['dy']*float(i)) for i in self.settings['fractures_densities']] 
-        
+
+        self.settings['fractures_numbers'] = [int(self.settings['nx']*self.settings['ny']*self.settings['dx']*self.settings['dy']*float(i)) for i in self.settings['fractures_densities']]
+
         #Set travel cost through each geologic formation
         geology_cost = []
         for elem in self.settings['geology_cost']:
             geology_cost.append(self.settings[elem])
         self.settings['geology_cost'] = geology_cost
-        
+
         if self.settings['rand_seed'] > 0:
             np.random.seed(self.settings['rand_seed'])
-            
+
         if rand_seed != None:
             np.random.seed(rand_seed)
 
@@ -346,7 +346,7 @@ class SKS():
     def get_fractures_numbers(self):
         """
         Get the number of fractures.
-        
+
         Return
         ------
         dictionnary
@@ -358,7 +358,7 @@ class SKS():
             model.append(self.geology.fractures[frac_family]['frac_nbr'])
         fracs = {'user' : user, 'model' : model}
         return fracs
-    
+
     def get_mask(self):
         """
         Get the numpy-array mask calculated if a polygon is given.
@@ -950,11 +950,11 @@ class SKS():
         """
         self.settings['verbosity'] = verbosity
         return None
-    
+
     ###################
     # update_ methods #
     ###################
-    
+
     def update_polygon(self):
         """
         Update the polygon settings.
@@ -1021,8 +1021,8 @@ class SKS():
             self.geology.set_data_from_image('geology', self.settings['geological_datafile'])
         else:
             print('/!\\ Error : unrecognized geological mode', self.settings['geological_mode'])
-            sys.exit() 
-        self.geology.compute_stats_on_data()
+            sys.exit()
+        self.geology.compute_stats_on_data('geology')
         if self.settings['polygon_data']:
             self.geology_masked['geology'] = ma.MaskedArray(self.geology.data['geology']['data'], mask=self.mask)
         return None
@@ -1037,8 +1037,8 @@ class SKS():
             self.geology.set_data_from_csv('topography', self.settings['topography_datafile'])
         else:
             print('/!\\ Error : unrecognized topography mode', self.settings['topography_mode'])
-            sys.exit() 
-        self.geology.compute_stats_on_data()
+            sys.exit()
+        self.geology.compute_stats_on_data('topography')
         if self.settings['polygon_data']:
             self.geology_masked['topography'] = ma.MaskedArray(self.geology.data['topography']['data'], mask=self.mask)
         return None
@@ -1058,7 +1058,8 @@ class SKS():
         else:
             print('/!\\ Error : unrecognized orientation mode', self.settings['orientation_mode'])
             sys.exit()
-        self.geology.compute_stats_on_data()
+        self.geology.compute_stats_on_data('orientationx')
+        self.geology.compute_stats_on_data('orientationy')
         if self.settings['polygon_data']:
             self.geology_masked['orientationx'] = ma.MaskedArray(self.geology.data['orientationx']['data'], mask=self.mask)
             self.geology_masked['orientationy'] = ma.MaskedArray(self.geology.data['orientationy']['data'], mask=self.mask)
@@ -1079,7 +1080,7 @@ class SKS():
         else:
             print('/!\\ Error : unrecognized faults mode.')
             sys.exit()
-        self.geology.compute_stats_on_data()
+        self.geology.compute_stats_on_data('faults')
         if self.settings['polygon_data']:
             self.geology_masked['faults'] = ma.MaskedArray(self.geology.data['faults']['data'], mask=self.mask)
         return None
@@ -1105,14 +1106,15 @@ class SKS():
                                             self.settings['fractures_max_dip'],
                                             self.settings['fractures_min_length'],
                                             self.settings['fractures_max_length'])
-        else:                                                                                  
+            self.geology.rasterize_fracture_network
+        else:
             print('/!\\ Error : unrecognized fractures mode.')
             sys.exit()
-        self.geology.compute_stats_on_data()
+        self.geology.compute_stats_on_data('fractures')
         if self.settings['polygon_data']:
             self.geology_masked['fractures'] = ma.MaskedArray(self.geology.data['fractures']['data'], mask=self.mask)
         return None
-    
+
     def update_all(self):
         """
         Update all the parameters.
@@ -1173,7 +1175,9 @@ class SKS():
         self.mask    = self.polygon.mask
         # The geologic data
         self.geology = self._set_geology(self.grid)
-        self.geology.compute_stats_on_data()
+        self.geology.compute_stats_on_data('geology')
+        self.geology.compute_stats_on_data('faults')
+        self.geology.compute_stats_on_data('fractures')
         # The points
         self.points  = self._set_points(self.grid, self.polygon, self.geology)
         self.inlets  = self.points.points['inlets'][:]
@@ -1182,12 +1186,12 @@ class SKS():
             np.random.shuffle(self.inlets)
         if self.settings['outlets_shuffle'] == True:
             np.random.shuffle(self.outlets)
-        
+
         self.geology_masked = {}
         if self.mask is not None:
             for key in self.geology.data:
                 self.geology_masked[key] = ma.MaskedArray(self.geology.data[key]['data'], mask=self.mask)
-        
+
         return None
 
     def _set_grid(self, x0, y0, z0, nx, ny, nz, dx, dy, dz):
@@ -1212,7 +1216,7 @@ class SKS():
         Set the point manager object.
         """
         points = PointManager(grid, polygon, geology)
-        
+
         ###Inlets###
         if self.settings['inlets_mode'] == 'random':
             points.generate_points('inlets', self.settings['inlets_number'])
@@ -1223,7 +1227,7 @@ class SKS():
         else:
             print('/!\\ Error : unrecognized inlets setting.')
             sys.exit()
-            
+
         ###Outlets###
         if self.settings['outlets_mode'] == 'random':
             points.generate_points('outlets', self.settings['outlets_number'])
@@ -1242,7 +1246,7 @@ class SKS():
         Set the geology manager object.
         """
         geology = GeologyManager(grid)
-        
+
         # Geology
         if self.settings['geological_mode'] == 'null':
             geology.set_data_null('geology')
@@ -1255,7 +1259,7 @@ class SKS():
         else:
             print('/!\\ Error : unrecognized geological mode', self.settings['geological_mode'])
             sys.exit()
-            
+
         # Topography
         if self.settings['topography_mode'] == 'null':
             geology.set_data_null('topography')
@@ -1264,7 +1268,7 @@ class SKS():
         else:
             print('/!\\ Error : unrecognized topography mode', self.settings['topography_mode'])
             sys.exit()
-            
+
         # Orientation
         if self.settings['orientation_mode'] == 'null':
             geology.set_data_null('orientationx')
@@ -1273,11 +1277,11 @@ class SKS():
             geology.generate_orientations(geology.data['topography']['data'])
         elif self.settings['orientation_mode'] == 'surface':
             geology.set_data_from_csv('surface', self.settings['orientation_datafile'])
-            geology.generate_orientations(geology.data['surface']['data'])          
+            geology.generate_orientations(geology.data['surface']['data'])
         else:
             print('/!\\ Error : unrecognized orientation mode', self.settings['orientation_mode'])
             sys.exit()
-            
+
         # Faults
         if self.settings['faults_mode'] == 'null':
             geology.set_data_null('faults')
@@ -1290,7 +1294,7 @@ class SKS():
         else:
             print('/!\\ Error : unrecognized faults mode', self.settings['faults_mode'])
             sys.exit()
-        
+
         # Fractures
         if self.settings['fractures_mode'] == 'null':
             geology.set_data_null('fractures')
@@ -1309,29 +1313,30 @@ class SKS():
                                        self.settings['fractures_max_dip'],
                                        self.settings['fractures_min_length'],
                                        self.settings['fractures_max_length'])
+            geology.rasterize_fracture_network()
         else:
             print('/!\\ Error : unrecognized fractures mode', self.settings['fractures_mode'])
             sys.exit()
-        
+
         return geology
-    
+
     ##############################
     # Karst simulation functions #
     ##############################
-    
+
     def compute_karst_network(self, verbose = False):
         """
         Compute the karst network according to the parameters.
-        
+
         Save the results in the `karst_simulations` list attribute.
         """
-        
+
         # 1 - Initialize the parameters
         self._initialize_karst_network_parameters()
-        
+
         # 2 - Compute conduits for each generation & store nodes and edges for network
         self._compute_iterations_karst_network()
-        
+
         # 3 - Calculate the karst network statistics indicators with karstnet and save karst network
         #Chloe: Here is where the majority of the changes are.
         karstnet_edges = list(self.edges.values()) #convert to format needed by karstnet (list)
@@ -1340,12 +1345,12 @@ class SKS():
             value.pop()
         k = kn.KGraph(karstnet_edges, karstnet_nodes)  #make graph - edges must be a list, and nodes must be a dic of format {nodeindex: [x,y]}
         stats = k.characterize_graph(verbose)
-        
+
         # 4 - Store all the relevant data for this network in dictionaries:
         #Chloe: I added/changed the storage format
         maps = copy.deepcopy(self.maps)                 #store copy of maps
         points = {}
-        points['inlets']  = copy.deepcopy(self._inlets)  #store copy of inlets in pandas df format with info about iteration and inlet/outlet assignment (this will be used in plotting later) 
+        points['inlets']  = copy.deepcopy(self._inlets)  #store copy of inlets in pandas df format with info about iteration and inlet/outlet assignment (this will be used in plotting later)
         points['outlets'] = copy.deepcopy(self._outlets) #store copy of outlets in pandas df format with info about iteration and inlet/outlet assignment (this will be used in plotting later)
         network = {}
         network['edges'] = copy.deepcopy(self.edges)   #store copy of edges list
@@ -1360,7 +1365,7 @@ class SKS():
         self.inlets  = np.asarray(self._inlets)[:,0:2]    #return inlets to array format without info about iteration and inlet/outlet assignment (important for later iterations)
         self.outlets = np.asarray(self._outlets)[:,0:2]   #return outlets to array format without info about iteration and inlet/outlet assignment (important for later iterations)
         return None
-    
+
     # 1
     def _initialize_karst_network_parameters(self):
         """
@@ -1372,7 +1377,7 @@ class SKS():
         self._outlets         = self._distribute_outlets(outlets_repartition)  # distribute outlets to iterations and store as a semi-private variable for internal use only
         inlets_repartition   = self._repartition_points(self.inlets, self.settings['inlets_per_outlet']) #correct for inlets_per_outlet not summing to correct number of actual inlets
         self._inlets          = self._distribute_inlets(inlets_repartition)  # distribute inlets to outlets and store as a semi-private variable for internal use only
-        
+
         inlets  = []
         for o,outlet in enumerate(self._outlets):                 #loop over outlets
             inlets_current = self._inlets[self._inlets[:,2]==o]    #select only inlets assigned to current outlet
@@ -1387,18 +1392,18 @@ class SKS():
 
         # Raster maps
         self.maps              = {}
-        self.maps['outlets']   = np.full((self.grid.ny, self.grid.nx), np.nan) #map of null values where each cell with an outlet will have the index of that outlet
-        self.maps['nodes']     = np.full((self.grid.ny, self.grid.nx), np.nan) #map of null values where each cell that has a node will be updated with that node index
-        self.maps['cost']      = np.zeros((self.nbr_iteration, self.grid.ny, self.grid.nx)) #cost of travel through each cell
-        self.maps['alpha']     = np.zeros((self.nbr_iteration, self.grid.ny, self.grid.nx)) #cost of travel along gradient through each cell
-        self.maps['beta']      = np.zeros((self.nbr_iteration, self.grid.ny, self.grid.nx)) #cost of travel perpendicular to gradient through each cell
-        self.maps['time']      = np.zeros((self.nbr_iteration, self.grid.ny, self.grid.nx)) #travel time to outlet from each cell
-        self.maps['karst']     = np.zeros((self.nbr_iteration, self.grid.ny, self.grid.nx)) #presence/absence of karst conduit in each cell
-        
+        self.maps['outlets']   = np.full((self.grid.nx, self.grid.ny), np.nan) #map of null values where each cell with an outlet will have the index of that outlet
+        self.maps['nodes']     = np.full((self.grid.nx, self.grid.ny), np.nan) #map of null values where each cell that has a node will be updated with that node index
+        self.maps['cost']      = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #cost of travel through each cell
+        self.maps['alpha']     = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #cost of travel along gradient through each cell
+        self.maps['beta']      = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #cost of travel perpendicular to gradient through each cell
+        self.maps['time']      = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #travel time to outlet from each cell
+        self.maps['karst']     = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #presence/absence of karst conduit in each cell
+
         # Vector maps
         self.nodes     = {} #empty dic to store nodes (key: nodeID, val: [x, y, type])
         self.edges     = {} #empty dic to store edges (key: edgeID, val: [inNode, outNode])
-        self.n         = 0  #start node counter at zero 
+        self.n         = 0  #start node counter at zero
         self.e         = 0  #start edge counter at zero
         self.geodesics = [] #empty list to store raw fast-marching path output
 
@@ -1412,7 +1417,7 @@ class SKS():
             'exportValues'      : 1,               #export the travel time field
             'exportGeodesicFlow': 1                #export the walker paths (i.e. the conduits)
         })
-        self.fastMarching.SetRect(                 #give the fast-marching algorithm the model grid 
+        self.fastMarching.SetRect(                 #give the fast-marching algorithm the model grid
             sides=[[self.grid.ymin, self.grid.ymax],    #leftmost edge, rightmost edge (NOT centerpoint)
                    [self.grid.xmin, self.grid.xmax]],   #bottom edge,   top edge (NOT centerpoint)
             dims=[self.grid.ny, self.grid.nx])      #number of cells, number of cells
@@ -1429,7 +1434,7 @@ class SKS():
             repartition.append(round(proportion[i]*len(points))) #number of points to use this iteration (need to round bc percentage will not result in whole number)
         repartition[-1] = len(points)-sum(repartition[0:-1])     #leftover points are assignd to last iteration
         return repartition
-    
+
     #1
     def _distribute_outlets(self, repartition):
         '''Distribute points into iteration groups based on the corrected repartition from the importance settings'''
@@ -1467,7 +1472,7 @@ class SKS():
         if self.settings['verbosity'] > 1:
             f,ax = plt.subplots(1,1)
             ax.imshow(self.geology.data['geology']['data'], extent=self.grid.extent, origin='lower', cmap='gray_r', alpha=0.5) #for debugging
-        
+
         ## Set up iteration structure:
         iteration = 0                                   #initialize total iteration counter
         for outlet_iteration in range(len(self.settings['outlets_importance'])):  #loop over outlet iterations
@@ -1481,7 +1486,7 @@ class SKS():
                     print('\t Current outlet index:', outlet.name)             #debugging
                 if self.settings['verbosity'] > 1:
                     ax.annotate(str(outlet_iteration), (outlet.x,outlet.y))
-                inlets_outlet = self._inlets[self._inlets.outlet==outlet.name]          #get the inlets assigned to current outlet 
+                inlets_outlet = self._inlets[self._inlets.outlet==outlet.name]          #get the inlets assigned to current outlet
                 if self.settings['verbosity'] > 1:
                     print('\t Inlets assigned to this outlet:\n', inlets_outlet)
                 for inlet_iteration in range(len(self.settings['inlets_importance'])): #loop over inlet iterations
@@ -1497,24 +1502,24 @@ class SKS():
                             ax.annotate(str(outlet_iteration)+'-'+str(inlet_iteration), (inlet.x,inlet.y))  #debugging
                         self._outlets.loc[self._outlets.index==outlet.name, 'iteration'] = iteration   #store total iteration counter
                         self._inlets.loc[ self._inlets.index ==inlet.name,  'iteration'] = iteration   #store total iteration counter
-                    
+
                     #Compute travel time maps and conduit network:
                     #Chloe: I removed the options to use skfmm
                     if self.settings['algorithm'] == 'Isotropic2':
-                        self._compute_cost_map(iteration)  
-                        self._compute_time_map_isotropic(iteration) 
-                        self._compute_karst_map(iteration) 
+                        self._compute_cost_map(iteration)
+                        self._compute_time_map_isotropic(iteration)
+                        self._compute_karst_map(iteration)
                     elif self.settings['algorithm'] == 'Riemann2':
-                        self._compute_cost_map(iteration)     
-                        self._compute_alpha_map(iteration) 
-                        self._compute_beta_map(iteration) 
-                        self._compute_riemann_metric(iteration) 
-                        self._compute_time_map_riemann(iteration) 
-                        self._compute_karst_map(iteration)  
+                        self._compute_cost_map(iteration)
+                        self._compute_alpha_map(iteration)
+                        self._compute_beta_map(iteration)
+                        self._compute_riemann_metric(iteration)
+                        self._compute_time_map_riemann(iteration)
+                        self._compute_karst_map(iteration)
                     else:
                         print('Unrecognized algorithm', self.settings['algorithm'])
-                    iteration = iteration + 1                                              #increment total iteration number by 1 
-                    
+                    iteration = iteration + 1                                              #increment total iteration number by 1
+
                     if self.settings['verbosity'] > 0:
                         print('iteration:{}/{}'.format(iteration+1,self.nbr_iteration))
         if self.settings['verbosity'] > 0:
@@ -1529,9 +1534,9 @@ class SKS():
         for i,outlet in self._outlets.iterrows():
             X = int(math.ceil((outlet.x - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
             Y = int(math.ceil((outlet.y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
-            self.maps['outlets'][Y][X] = i 
+            self.maps['outlets'][Y][X] = i
         return None
-    
+
     # 2
     def _compute_cost_map(self, iteration):
         """
@@ -1541,7 +1546,7 @@ class SKS():
         if iteration == 0:
             # Geology
             if self.geology.data['geology']['mode'] == 'null':
-                self.maps['cost'][0] = np.full((self.grid.ny, self.grid.nx), self.settings['cost_aquifer']) #every cell has the same travel cost and is part of the aquifer
+                self.maps['cost'][0] = np.full((self.grid.nx, self.grid.ny), self.settings['cost_aquifer']) #every cell has the same travel cost and is part of the aquifer
             elif self.geology.data['geology']['mode'] == 'image':
                 self.maps['cost'][0] = np.where(self.geology.data['geology']['data'][:,:,0]==1, self.settings['cost_aquiclude'], self.settings['cost_aquifer'])
             elif self.geology.data['geology']['mode'] == 'csv' or self.geology.data['geology']['mode'] == 'gslib':
@@ -1550,25 +1555,25 @@ class SKS():
                 if len(self.settings['geology_id']) != len(self.settings['geology_cost']):
                     print("- _compute_cost_map() - Error : number of lithologies does not match with number of FMM code.")
                     sys.exit()
-    
+
                 for geology, codeFMM in zip(self.settings['geology_id'], self.settings['geology_cost']):
                     if geology in self.geology.data['geology']['stats']['ID']:
                         tableFMM[geology] = codeFMM
                     else:
                         print("- initialize_costMap() - Warning : no geology n {} found.".format(geology))
                         tableFMM[geology] = self.settings['cost_out']
-                    
+
                 for y in range(self.grid.ny):
                     for x in range(self.grid.nx):
-                        geology = self.geology.data['geology']['data'][y][x] 
-                        self.maps['cost'][0][y][x] = tableFMM[geology]       
+                        geology = self.geology.data['geology']['data'][y][x]
+                        self.maps['cost'][0][y][x] = tableFMM[geology]
             else:
                 print('geology mode', self.geology.data['geology']['mode'], 'not supported')
                 sys.exit()
 
             # Faults
             self.maps['cost'][0] = np.where(self.geology.data['faults']['data'][:,:,0] > 0, self.settings['cost_faults'], self.maps['cost'][0])
-    
+
             # Fractures
             self.maps['cost'][0] = np.where(self.geology.data['fractures']['data'][:,:,0] > 0, self.settings['cost_fractures'], self.maps['cost'][0])
 
@@ -1578,9 +1583,9 @@ class SKS():
 
         else: #if not the first iteration
             self.maps['cost'][iteration] = self.maps['cost'][iteration-1] #set cost map to be same as previous iteration
-            self.maps['cost'][iteration] = np.where(self.maps['karst'][iteration-1] > 0, self.settings['cost_conduits'], self.maps['cost'][iteration]) #where karst conduits are present from previous iteration, set cost to conduit cost, elsewhere, leave unchanged            
+            self.maps['cost'][iteration] = np.where(self.maps['karst'][iteration-1] > 0, self.settings['cost_conduits'], self.maps['cost'][iteration]) #where karst conduits are present from previous iteration, set cost to conduit cost, elsewhere, leave unchanged
         return None
-    
+
     # 2
     def _compute_alpha_map(self, iteration):
         """
@@ -1592,13 +1597,13 @@ class SKS():
         elif self.settings['orientation_mode'] == 'surface':
             self.maps['alpha'][iteration] = self.maps['cost'][iteration] * self.geology.data['surface']['data']
         else:
-            self.maps['alpha'][iteration] = self.maps['cost'][iteration]  
+            self.maps['alpha'][iteration] = self.maps['cost'][iteration]
         return None
-    
+
     # 2
     def _compute_beta_map(self, iteration):
         """
-        Compute the beta map: travel cost perpendicular to the gradient. 
+        Compute the beta map: travel cost perpendicular to the gradient.
         If beta is higher than alpha, conduits will follow the steepest gradient.
         If beta is lower than alpha, conduits will follow contours.
         """
@@ -1612,7 +1617,7 @@ class SKS():
         """
         self.riemannMetric = agd.Metrics.Riemann.needle([self.geology.data['orientationx']['data'], self.geology.data['orientationy']['data']], self.maps['alpha'][iteration], self.maps['beta'][iteration])
         return None
-    
+
     # 2
     def _compute_time_map_isotropic(self, iteration):
         """
@@ -1628,7 +1633,7 @@ class SKS():
         self.fastMarchingOutput     = self.fastMarching.Run()                 #run the fast marching algorithm and store the outputs
         self.maps['time'][iteration] = self.fastMarchingOutput['values']  #store travel time maps
         return None
-    
+
     # 2
     def _compute_time_map_riemann(self, iteration):
         """
@@ -1648,19 +1653,19 @@ class SKS():
     # 2
     def _compute_karst_map(self, iteration):
         """
-        Compute the karst map based on the paths from agd-hfm. 
+        Compute the karst map based on the paths from agd-hfm.
         Array of all zeros, with ones in cells containing a karst conduit.
         """
         if iteration > 0:           # Get karst map from previous iteration (except for the very first iteration)
-            self.maps['karst'][iteration] = self.maps['karst'][iteration-1] 
-        
+            self.maps['karst'][iteration] = self.maps['karst'][iteration-1]
+
         #Debugging:
         #Chloe: this should stay in since it is very useful if there are problems
         #f1,ax1 = plt.subplots(1,1, figsize=(10,10))  #debugging
         #ax1.imshow(self.maps['karst'][iteration], origin='lower', extent=self.grid.extent, cmap='gray_r')
         #ax1.imshow(self.maps['nodes'], origin='lower', extent=self.grid.extent, cmap='gray_r')
         #ax1.scatter(self._outlets[self._outlets.iteration==iteration].x, self._outlets[self._outlets.iteration==iteration].y, c='c', s=100)
-        #ax1.scatter(self._inlets[self._inlets.iteration==iteration].x, self._inlets[self._inlets.iteration==iteration].y, c='orange', s=100)   
+        #ax1.scatter(self._inlets[self._inlets.iteration==iteration].x, self._inlets[self._inlets.iteration==iteration].y, c='orange', s=100)
 
         #Loop over conduit paths generated by fast marching:
         for path in self.fastMarchingOutput['geodesics']:   #loop over conduit paths in this iteration (there is one path from each inlet)
@@ -1671,7 +1676,7 @@ class SKS():
                 #ax1.scatter(point[1],point[0], c='g',s=5)  #debugging
 
                 #Place nodes and links:
-                if np.isnan(self.maps['nodes'][ix,iy]):                                    #if there is no existing conduit node here 
+                if np.isnan(self.maps['nodes'][ix,iy]):                                    #if there is no existing conduit node here
                     if ~np.isnan(self.maps['outlets'][ix,iy]):                              #if there is an outlet here (cell value is not nan)
                         outlet = self._outlets.iloc[int(self.maps['outlets'][ix,iy])]         #get the outlet coordinates using the ID in the outlets map
                         self.nodes[self.n]             = [outlet.y, outlet.x, 'outfall']     #add a node at the outlet coordinates (with the node type for SWMM)
@@ -1703,9 +1708,9 @@ class SKS():
                                 [[fromix,fromiy],error]  = self.fastMarching.IndexFromPoint(path[:,p-1]) #get xy indices of previous point in current conduit path
                                 n_from = self.maps['nodes'][fromix,fromiy]                   #get node index of the node already in the cell where the previous point was
                                 self.edges[self.e] = [n_from, self.n]                        #add an edge connecting existing conduit node to current node
-                                self.e = self.e+1                                            #increment edge counter up by one   
+                                self.e = self.e+1                                            #increment edge counter up by one
                                 merge = False                                                #reset merge indicator to show that current conduit has left                                                              #if this is the first point in current path
-                        else:                                                                #if this is the first point in the current path (counter <= 0, therefore it is an inlet)    
+                        else:                                                                #if this is the first point in the current path (counter <= 0, therefore it is an inlet)
                             self.nodes[self.n] = [point[0], point[1], 'inlet']               #add an inlet node here (with the node type for SWMM)
                             self.maps['nodes'][ix,iy] = self.n                               #update node map with node index
                             #ax1.scatter(point[1],point[0], marker='o', edgecolor='sienna', facecolor='none')
@@ -1727,13 +1732,13 @@ class SKS():
                             self.maps['nodes'][ix,iy] = self.n                                #update node map with node index
                             self.n = self.n+1                                                 #increment node counter by 1
                             #ax1.scatter(point[1],point[0], marker='o', edgecolor='g', facecolor='none')  #debugging
-                
+
                 self.maps['karst'][iteration][ix,iy] = 1                               #update karst map to put a conduit in current cell
         return None
 
     ###########################
     # Visualization functions #
-    ###########################    
+    ###########################
 
     def show_catchment(self, data='geology', title=None, mask=False, cmap='binary'):
         """
@@ -1743,13 +1748,13 @@ class SKS():
         if title is None:
             title = data
         fig.suptitle(title, fontsize=16)
-        
+
         # Load data
         d = self.geology.data[data]['data']
         if mask==True:
             d = self.geology_masked[data]
 
-        im1 = ax1.imshow(d, extent=self.grid.extent, origin='lower', cmap=cmap) 
+        im1 = ax1.imshow(d, extent=self.grid.extent, origin='lower', cmap=cmap)
         fig.colorbar(im1, ax=ax1)
         if self.settings['data_has_polygon']:
             closed_polygon = self.polygon.polygon[:]
@@ -1763,46 +1768,46 @@ class SKS():
         plt.legend(loc='upper right')
         plt.show()
         return None
-                
+
     def _show_maps(self, sim=-1, iteration=-1, cmap='binary'):
         """
         Show the simulated karst network as an image.
         """
         karst_network = self.karst_simulations[sim]
-        
+
         fig, ([ax1,ax2],[ax3,ax4]) = plt.subplots(2, 2, sharex=True, sharey=True)
         fig.suptitle('Karst Network', fontsize=16)
-        
+
         ax1.imshow(karst_network.maps['outlets'], extent=self.grid.extent, origin='lower', cmap=cmap)
         ax1.set_title('Outlets')
-        
+
         ax2.imshow(karst_network.maps['cost'][iteration], extent=self.grid.extent, origin='lower', cmap=cmap)
         ax2.set_title('Cost')
-        
+
         ax3.imshow(karst_network.maps['time'][iteration], extent=self.grid.extent, origin='lower', cmap=cmap)
         ax3.set_title('Time')
-        
+
         ax4.imshow(karst_network.maps['karst'][iteration], extent=self.grid.extent, origin='lower', cmap=cmap)
         ax4.set_title('Karst')
 
         fig.subplots_adjust(hspace=0.5)
         plt.show()
         return None
-        
+
 
     def show(self, data=None, title=None, probability=False):
         """
         Show the entire study domain (defaults to showing most recent simulation).
         #Chloe: I modified this function quite a bit
-        """        
+        """
         if data is None:
             data = self.karst_simulations[-1]
-        
+
         if probability == True:
             data = self._compute_average_paths()
-   
+
         fig = plt.figure(figsize=(20,10))
-        
+
         fig.add_subplot(131, aspect='equal')
         plt.xlabel('Cost array'+str(data.maps['cost'][-1].shape))
         plt.imshow(data.maps['cost'][-1], extent=self.grid.extent, origin='lower', cmap='gray') #darker=slower
@@ -1826,7 +1831,7 @@ class SKS():
             x,y = zip(*closed_polygon)
             plt.plot(x,y, color='red', label='polygon')
         plt.legend([i,o,p], ['inlets', 'outlets', 'catchment'], loc='upper right')
-        
+
         if title is not None:
             fig.suptitle(title, fontsize=16)
         plt.show()
@@ -1836,7 +1841,7 @@ class SKS():
         """
         #Chloe: This is a new function that I use to create all the figures for the paper.
         Show the karst network as a graph with nodes and edges. Defaults to showing latest iteration.
-        Inputs: 
+        Inputs:
         data:   karst simulation object containing nodes, edges, points, etc. Can be obtained from self.karst_simulations[i]
         ax:     axis to plot on
         label:  None or list of strings ['nodes','edges','inlets','outlets'], indicating which components to label
@@ -1875,7 +1880,7 @@ class SKS():
             edges = pd.DataFrame.from_dict(edges_simple, orient='index', columns=['inNode','outNode'])
         else:
             nodes = pd.DataFrame.from_dict(data.network['nodes'], orient='index', columns=['x','y','type']) #convert to pandas for easier plotting
-            edges = pd.DataFrame.from_dict(data.network['edges'], orient='index', columns=['inNode','outNode']) 
+            edges = pd.DataFrame.from_dict(data.network['edges'], orient='index', columns=['inNode','outNode'])
 
         #Set up data for plotting:
         fromX = nodes.x.loc[edges.inNode]      #calculate coordinates for link start and end points
@@ -1888,13 +1893,13 @@ class SKS():
             n = ax.scatter(nodes.y,              nodes.x,                  c='k',         alpha=alpha, s=5)  #scatterplot nodes
         i = ax.scatter(data.points['inlets'].x,  data.points['inlets'].y,  c='orange',    s=30) #scatterplot inlets
         o = ax.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue', s=30) #scatterplot outlets
-        e = matplotlib.lines.Line2D([0],[0])                                                  #line artist for legend 
+        e = matplotlib.lines.Line2D([0],[0])                                                  #line artist for legend
         for ind in edges.index:                                                               #loop over edge indices
             if cmap is not None:
                 ax.plot((fromY.iloc[ind], toY.iloc[ind]), (fromX.iloc[ind], toX.iloc[ind]), c=plt.cm.get_cmap(cmap)(ind/len(edges)), alpha=alpha)  #plot each edge, moving along color gradient to show order
             elif color is not None:
                 ax.plot((fromY.iloc[ind], toY.iloc[ind]), (fromX.iloc[ind], toX.iloc[ind]), c=color, alpha=alpha)  #plot each edge in same color
-        
+
         #Add labels:
         if labels == None:
             pass
@@ -1902,15 +1907,15 @@ class SKS():
             if 'nodes' in labels:                                         #label node indices
                 for ind in nodes.index:                                   #loop over node indices
                     ax.annotate(str(ind), xy=(nodes.y[ind]-10, nodes.x[ind]))  #annotate slightly to left of each node
-            if 'edges' in labels:                                         
-                for ind in edges.index:                                   
+            if 'edges' in labels:
+                for ind in edges.index:
                     ax.annotate(str(ind), xy=(edges.y[ind]-10, edges.x[ind]))  #annotate slightly to left of each edge
-            if 'inlets' in labels:                                        
-                for index,inlet in data.points['inlets'].iterrows(): 
-                    ax.annotate(str(int(inlet.outlet))+'-'+str(int(inlet.inlet_iteration)),  xy=(inlet.x-(6*self.grid.dx),  inlet.y)) 
-            if 'outlets' in labels:                                       
-                for index,outlet in data.points['outlets'].iterrows():                     
-                    ax.annotate(str(int(outlet.name)), xy=(outlet.x-(4*self.grid.dx), outlet.y)) 
+            if 'inlets' in labels:
+                for index,inlet in data.points['inlets'].iterrows():
+                    ax.annotate(str(int(inlet.outlet))+'-'+str(int(inlet.inlet_iteration)),  xy=(inlet.x-(6*self.grid.dx),  inlet.y))
+            if 'outlets' in labels:
+                for index,outlet in data.points['outlets'].iterrows():
+                    ax.annotate(str(int(outlet.name)), xy=(outlet.x-(4*self.grid.dx), outlet.y))
 
         #Add legend & title:
         if legend:
@@ -1929,7 +1934,7 @@ class SKS():
 
         return None
 
-    
+
     def _compute_average_paths(self, show=False):
         """
         Compute the mean of all the simulations.
@@ -1940,12 +1945,12 @@ class SKS():
             karst_maps.append(karst_simulation.maps['karst'][-1])
 
         karst_prob = sum(karst_maps)/len(karst_maps)
-        
+
         if self.mask is not None:
             karst_prob = np.ma.MaskedArray(karst_prob, self.mask)
-        
+
         return karst_prob
-    
+
     def compare_stats(self, data=None, mean=False):
         """
         Compare statistics between reference indicators and calculated networks.
@@ -1960,7 +1965,7 @@ class SKS():
         m_d  = []
         cvd  = []
         vars = [cpd,cv_d,cv_l,o_e,l_e,spl,m_d,cvd]
-        
+
         if data == None:
             i = -1
         else:

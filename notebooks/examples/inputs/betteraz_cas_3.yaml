@@ -92,6 +92,7 @@ fractures_mode     : 'random'
 fractures_datafile : 'inputs/betteraz_fault_20_2D.gslib'
 
 # If fractures mode is 'generate'
+# Each value in list is for a separate fracture family - length of list indicates number of families
 fractures_densities       : [5.83e-6,1.38e-6,2.22e-6, 2.5e-6,4.16e-6,6.66e-6,   5e-6]
 fractures_min_orientation : [      0,     15,     30,     60,    105,    120,    150]
 fractures_max_orientation : [     15,     30,     45,    105,    120,    150,    180]
@@ -134,8 +135,6 @@ cost_ratio     : 0.5   #ratio of travel cost parallel to gradient / travel cost 
 ### Formation to consider and FMM code associated
 geology_id   : [1,2] # Only for 'import' geological mode
 geology_cost : [cost_aquifer,cost_aquiclude]
-
-importance_factor : [1,2,3]
 
 #############
 ### Other ###

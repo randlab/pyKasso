@@ -4,7 +4,7 @@ channels:
   - agd-lbr
 dependencies:
 #  - mayavi # Incompatibility found with scipy
-  - python=3.7
+  - python=3.8
   - jupyter
   - agd
   - hfm
@@ -18,5 +18,6 @@ dependencies:
   - mpmath
   - pandas
   - xlrd 
+  - openpyxl
  # conda install -n pykasso pip
  # pip install mplstereonet
