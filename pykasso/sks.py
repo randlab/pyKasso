@@ -1543,7 +1543,7 @@ class SKS():
             if self.geology.data['geology']['mode'] == 'null':
                 self.maps['cost'][0] = np.full((self.grid.ny, self.grid.nx), self.settings['cost_aquifer']) #every cell has the same travel cost and is part of the aquifer
             elif self.geology.data['geology']['mode'] == 'image':
-                self.maps['cost'][0] = np.where(self.geology.data['geology']['data']==1, self.settings['cost_aquiclude'], self.settings['cost_aquifer'])
+                self.maps['cost'][0] = np.where(self.geology.data['geology']['data'][:,:,0]==1, self.settings['cost_aquiclude'], self.settings['cost_aquifer'])
             elif self.geology.data['geology']['mode'] == 'csv' or self.geology.data['geology']['mode'] == 'gslib':
 
                 tableFMM = {}

@@ -46,7 +46,7 @@ class Polygon():
         mask = np.zeros((self.grid.nx, self.grid.ny))
         for y in range(self.grid.ny):
             for x in range(self.grid.nx):
-                mask[x][y] = int(Path(self.polygon).contains_point((self.grid.X[x][y][0],self.grid.Y[x][y][0])))
+                mask[x][y] = not(int(Path(self.polygon).contains_point((self.grid.X[x][y][0],self.grid.Y[x][y][0]))))
         return mask
 
     def inspect_polygon(self):
