@@ -20,7 +20,7 @@ class PointManager():
 		PointManager() class needs a GeologyManager() object as argument.
     """
 
-    def __init__(self, grid, polygon, geology):
+    def __init__(self, grid, polygon, geology=None):
         self.points  = {}
         self.grid    = grid
         self.polygon = polygon
@@ -54,34 +54,40 @@ class PointManager():
             Type of points : 'inlets' or 'outlets'.
         points_number : int
             Number of points to generate.
+        geological_IDs : list
+            List of geologic facies where points can be created.
         """
-
-        """
-        if self.geology.data["geology"]["mode"] is "null":
-            geological_IDs=None
-
         if geological_IDs is None:
-        """
-        if self.polygon.polygon is None:
-            rand_x = [self.grid.x0 - self.grid.dx/2 + self.grid.nx * np.random.random() * self.grid.dx for x in range(points_number)]
-            rand_y = [self.grid.y0 - self.grid.dy/2 + self.grid.ny * np.random.random() * self.grid.dy for y in range(points_number)]
-            self.points[points_key] = list(zip(rand_x, rand_y))
-        else:
-            validated_inlets = 0
-            rand_x = []
-            rand_y = []
-            while validated_inlets < points_number:
-                x = self.grid.x0 - self.grid.dx/2 + self.grid.nx*np.random.random() * self.grid.dx
-                y = self.grid.y0 - self.grid.dy/2 + self.grid.ny*np.random.random() * self.grid.dy
-                if int(Path(self.polygon.polygon).contains_point((x, y))):
-                    rand_x.append(x)
-                    rand_y.append(y)
-                    validated_inlets += 1
-            self.points[points_key] = list(zip(rand_x, rand_y))
-        
-        """
+            if self.polygon.polygon is None:
+                rand_x = [self.grid.x0 - self.grid.dx/2 + self.grid.nx * np.random.random() * self.grid.dx for x in range(points_number)]
+                rand_y = [self.grid.y0 - self.grid.dy/2 + self.grid.ny * np.random.random() * self.grid.dy for y in range(points_number)]
+                self.points[points_key] = list(zip(rand_x, rand_y))
+            else:
+                validated_inlets = 0
+                rand_x = []
+                rand_y = []
+                while validated_inlets < points_number:
+                    x = self.grid.x0 - self.grid.dx/2 + self.grid.nx*np.random.random() * self.grid.dx
+                    y = self.grid.y0 - self.grid.dy/2 + self.grid.ny*np.random.random() * self.grid.dy
+                    if int(Path(self.polygon.polygon).contains_point((x, y))):
+                        rand_x.append(x)
+                        rand_y.append(y)
+                        validated_inlets += 1
+                self.points[points_key] = list(zip(rand_x, rand_y))
+
         # Case when geological_IDs is indicated
         else:
+            if self.geology is None:
+                print('- generate_points() - Error : no geology to consider in order to generate points.')
+                sys.exit()
+            if self.geology.data["geology"]["stats"] is None:
+                self.geology.compute_stats_on_data("geology")
+            # Keep only present ids
+            ids = self.geology.data["geology"]["stats"]["ID"]
+            new_ids = [id for id in geological_IDs if (id in ids)]
+            if not new_ids:
+                 print('- generate_points() - Error : none of the ids provided are valid.')
+                 sys.exit()
             validated_inlets = 0
             rand_x = []
             rand_y = []
@@ -90,7 +96,7 @@ class PointManager():
                 while validated_inlets < points_number:
                     x = self.grid.x0 - self.grid.dx/2 + self.grid.nx*np.random.random() * self.grid.dx
                     y = self.grid.y0 - self.grid.dy/2 + self.grid.ny*np.random.random() * self.grid.dy
-                    if self.geology.surface_IDs[get_Y(y)][get_X(x)] in geological_IDs:
+                    if self.geology.data["geology"]["data"][self.grid.get_i(x)][self.grid.get_j(y)][0] in new_ids:
                         rand_x.append(x)
                         rand_y.append(y)
                         validated_inlets += 1
@@ -100,12 +106,12 @@ class PointManager():
                 while validated_inlets < points_number:
                     x = self.grid.x0 - self.grid.dx/2 + self.grid.nx*np.random.random() * self.grid.dx
                     y = self.grid.y0 - self.grid.dy/2 + self.grid.ny*np.random.random() * self.grid.dy
-                    if (self.geology.surface_IDs[self.grid.get_j(y)][self.grid.get_i(x)] in geological_IDs) and int(Path(self.polygon.polygon).contains_point((x,y))):
-                        rand_x.append(x)
-                        rand_y.append(y)
-                        validated_inlets += 1
+                    if self.geology.data["geology"]["data"][self.grid.get_i(x)][self.grid.get_j(y)][0] in new_ids:
+                        if int(Path(self.polygon.polygon).contains_point((x,y))):
+                            rand_x.append(x)
+                            rand_y.append(y)
+                            validated_inlets += 1
                 self.points[points_key] = list(zip(rand_x,rand_y))
-        """
         return None
 
     def composite_points(self, points_key, points, points_number):
@@ -169,6 +175,15 @@ class PointManager():
         fig, ax = plt.subplots()
         fig.suptitle('Show points', fontsize=16)
 
+        # Geology
+        if self.geology is not None:
+            geology = self.geology.data['geology']['data']
+            if self.polygon.mask is not None:
+                import numpy.ma as ma
+                geology = ma.MaskedArray(geology, mask=self.polygon.mask)
+            if self.geology.data["geology"]["mode"] is "image":
+                plt.imshow(np.transpose(geology, (1,0,2)), extent=self.grid.extent, cmap='gray_r', origin="lower")
+
         # Grid limits
         xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1], self.grid.xlimits[0]]
         ylimits = [self.grid.ylimits[0], self.grid.ylimits[1], self.grid.ylimits[1], self.grid.ylimits[0], self.grid.ylimits[0]]
@@ -185,6 +200,9 @@ class PointManager():
         for key in self.points:
             x, y = zip(*self.points[key])
             ax.plot(x, y, 'o', label=key)
+
+        plt.xlim((self.grid.xlimits[0] - self.grid.dx/2, self.grid.xlimits[1] + self.grid.dx/2))
+        plt.ylim((self.grid.ylimits[0] - self.grid.dy/2, self.grid.ylimits[1] + self.grid.dy/2))
         ax.set_aspect('equal', 'box')
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         plt.show()

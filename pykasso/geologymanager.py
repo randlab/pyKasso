@@ -1,7 +1,8 @@
 """
 TODO :
-- compute_stats_on_data()
 - show_fractures_stats()
+
+- set_data_from_csv() - 3D ???
 
 - show_fractures() ? en mode calc (voir code Chloé)
 - rajouter les diagrammes de Rose (pour les fractures)
@@ -47,7 +48,7 @@ class GeologyManager():
             Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
         """
         self.data[data_key] = {}
-        self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz))
+        self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.int_)
         self.data[data_key]['mode'] = 'null'
         return None
 
@@ -58,12 +59,12 @@ class GeologyManager():
         Parameters
         ----------
         data_key : string
-            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
+            Type of data : 'geology', 'topography', 'faults' or 'fractures'.
         datafile_location : string
             Path of the datafile.
         """
         self.data[data_key]         = {}
-        self.data[data_key]['data'] = np.genfromtxt(datafile_location, delimiter=',')
+        self.data[data_key]['data'] = np.genfromtxt(datafile_location, delimiter=',', dtype=np.float_)
         self.data[data_key]['mode'] = 'csv'
         return None
 
@@ -74,12 +75,12 @@ class GeologyManager():
         Parameters
         ----------
         data_key : string
-            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
+            Type of data : 'geology', 'faults' or 'fractures'.
         datafile_location : string
             Path to the datafile.
         """
         self.data[data_key]         = {}
-        a = np.genfromtxt(datafile_location, dtype=float, skip_header=3)         #read in gslib file as float numpy array without header rows
+        a = np.genfromtxt(datafile_location, skip_header=3, dtype=np.float_)         #read in gslib file as float numpy array without header rows
         if data_key is "geology":
             a[a==0] = np.nan                                                     #replace zeros with nans (array must be float first)
         a = np.reshape(a, (self.grid.nx, self.grid.ny, self.grid.nz), order='F') #reshape to xy grid using Fortran ordering
@@ -99,16 +100,20 @@ class GeologyManager():
             Path of the datafile.
         """
         try:
-            image_data = np.flipud(plt.imread(datafile_location))
+            image_data = np.flipud(imread(datafile_location))   #we need to flip it since the data reading start from bottom
+            image_data = np.transpose(image_data, (1,0,2))      #imread return image with mxn format so we also need to transpose it
         except:
             print('- set_data_from_image() - Error : unable to read datafile.')
             raise
         self.data[data_key] = {}
-        self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz))
+        self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.float_)
         image = (image_data[:,:,0] == 0)*1
         data = np.rint(resize(image, (self.grid.nx, self.grid.ny), anti_aliasing=False, preserve_range=True))
         if self.grid.nz == 1:
             self.data[data_key]['data'] = data[:, :, np.newaxis]
+        else:
+            for z in range(self.grid.nz):
+                self.data[data_key]['data'][:,:,z] = data[:, :, np.newaxis]
         self.data[data_key]['mode'] = 'image'
         return None
 

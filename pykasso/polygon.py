@@ -31,7 +31,7 @@ class Polygon():
         if isinstance(vertices, str):
             text     = opendatafile(vertices)
             vertices = loadpoints(text)
-        
+
         if len(vertices) < 3:
             print("- set_polygon() - Error : Not enough vertices to create a polygon (3 minimum).")
         else:
@@ -43,7 +43,7 @@ class Polygon():
         """
         Set the mask.
         """
-        mask = np.zeros((self.grid.nx, self.grid.ny))
+        mask = np.zeros((self.grid.nx, self.grid.ny), dtype=np.int_)
         for y in range(self.grid.ny):
             for x in range(self.grid.nx):
                 mask[x][y] = not(int(Path(self.polygon).contains_point((self.grid.X[x][y][0],self.grid.Y[x][y][0]))))
@@ -104,7 +104,7 @@ class Polygon():
 
             xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1], self.grid.xlimits[0]]
             ylimits = [self.grid.ylimits[0], self.grid.ylimits[1], self.grid.ylimits[1], self.grid.ylimits[0], self.grid.ylimits[0]]
-            
+
             ax.plot(xlimits, ylimits, color='red')
             ax.set_aspect('equal', 'box')
             plt.legend(('polygon','grid limits'), loc='center left', bbox_to_anchor=(1, 0.5))

@@ -29,24 +29,24 @@ polygon_data     : ''
 ####################
 
 ###Outlets
-# 'random'    - full random points 
+# 'random'    - full random points
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 outlets_mode       : 'import'
 outlets_data       : [[500, 500]]
 outlets_number     : 1
-outlets_shuffle    : False 
+outlets_shuffle    : False
 outlets_importance : [1]
 
 ###Inlets
-# 'random'    - full random points 
+# 'random'    - full random points
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 inlets_mode       : 'random'
 inlets_data       : ''
 inlets_number     : 50
-inlets_shuffle    : False                     
-inlets_per_outlet : [1]   
+inlets_shuffle    : False
+inlets_per_outlet : [1]
 inlets_importance : [1]
 
 ######################
@@ -77,7 +77,7 @@ orientation_datafile : ''
 ###Faults
 # 'null'  - No faults
 # 'gslib' - Import faults
-# 'csv'   - Import faults via csv 
+# 'csv'   - Import faults via csv
 # 'image' - Import faults via image
 faults_mode     : 'null'
 faults_datafile : ''
@@ -85,7 +85,7 @@ faults_datafile : ''
 ###Fractures
 # 'null'   - No fractures
 # 'gslib'  - Import fractures
-# 'csv'    - Import fractures via csv 
+# 'csv'    - Import fractures via csv
 # 'image'  - Import fractures via image
 # 'random' - Generate random fractures
 fractures_mode     : 'random'
@@ -114,7 +114,7 @@ fractures_max_length : [4000, 4000]
 #'Riemann2'  : agd-hfm: 2D, anisotropic, requires an anisotropy vector field (topography or geologic orientation), performs well in high-relief catchments
 #'Riemann3'  : agd-hfm: 3D version of anisotropic algorithm
 #Note: There are MANY more options for fast marching algorithms built into the agd-hfm library.
-##See the agd-hfm library documentation for how to use these and integrate them into pyKasso: 
+##See the agd-hfm library documentation for how to use these and integrate them into pyKasso:
   #https://github.com/Mirebeau/AdaptiveGridDiscretizations/blob/master/Notebooks_FMM/Summary.ipynb
 
 algorithm : 'Isotropic2'
@@ -133,7 +133,7 @@ cost_ratio     : 0.5   #ratio of travel cost parallel to gradient / travel cost 
 #if ratio > 1: travel cost is lower perpendicular to gradient (paths will follow contours), increase value to increase contrast
 
 ### Formation to consider and FMM code associated
-geology_id   : [0,1,2,3] # Only for 'import' or 'csv' geological modes
+geology_id   : [0,1,2,3] # Only for 'gslib' mode
 geology_cost : [cost_out, cost_aquifer, cost_aquiclude, cost_aquiclude]
 
 #############
@@ -143,6 +143,6 @@ geology_cost : [cost_out, cost_aquifer, cost_aquiclude, cost_aquiclude]
 # if 0 = random, if 1 = same results each run
 rand_seed : 1
 
-#Verbosity: how much output to display during run 
+#Verbosity: how much output to display during run
 verbosity : 0    #0: minimal output, 1: some output; 2: more output; 3: maximum output
 ...
