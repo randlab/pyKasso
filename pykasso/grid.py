@@ -47,7 +47,8 @@ class Grid():
         self.x = np.arange(self.x0, self.x0+(self.nx)*self.dx, self.dx, dtype=np.float_) # 1D array of centerpoints of each cell along x axis
         self.y = np.arange(self.y0, self.y0+(self.ny)*self.dy, self.dy, dtype=np.float_) # 1D array of centerpoints of each cell along y axis
         self.z = np.arange(self.z0, self.z0+(self.nz)*self.dz, self.dz, dtype=np.float_) # 1D array of centerpoints of each cell along z axis
-        self.X, self.Y, self.Z = np.meshgrid(self.x, self.y, self.z, indexing="xy")      # 3D array of dim (nx, ny, nz) with xyz coord of each cell's centerpoint
+        self.X, self.Y, self.Z = np.meshgrid(self.x, self.y, self.z, indexing="ij")      # 3D array of dim (nx, ny, nz) with xyz coord of each cell's centerpoint
+        #https://numpy.org/doc/stable/reference/generated/numpy.meshgrid.html
 
         # Calculating the limits of the grid
         self.xlimits = [self.x0-self.dx/2, self.x[-1]+self.dx/2]

@@ -45,10 +45,13 @@ class GeologyManager():
         Parameters
         ----------
         data_key : str
-            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
+            Type of data : 'geology', 'faults', 'fractures', 'topography' or 'orientation',.
         """
         self.data[data_key] = {}
-        self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.int_)
+        if data_key in ['topography', 'orientationx', 'orientationy']:
+            self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny), dtype=np.int_)
+        else:
+            self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.int_)
         self.data[data_key]['mode'] = 'null'
         return None
 
@@ -59,12 +62,19 @@ class GeologyManager():
         Parameters
         ----------
         data_key : string
-            Type of data : 'geology', 'topography', 'faults' or 'fractures'.
+            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
         datafile_location : string
             Path of the datafile.
         """
+        # FM : Only for model with nz=1
         self.data[data_key]         = {}
-        self.data[data_key]['data'] = np.genfromtxt(datafile_location, delimiter=',', dtype=np.float_)
+        data = np.genfromtxt(datafile_location, delimiter=',', dtype=np.float_)
+        if data_key in ['topography', 'orientation']:
+            self.data[data_key]['data'] = data
+        else:
+            self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.float_)
+            for z in range(self.grid.nz):
+                self.data[data_key]['data'][:,:,z] = data[:, :]#, np.newaxis]
         self.data[data_key]['mode'] = 'csv'
         return None
 
@@ -100,8 +110,8 @@ class GeologyManager():
             Path of the datafile.
         """
         try:
-            image_data = np.flipud(imread(datafile_location))   #we need to flip it since the data reading start from bottom
-            image_data = np.transpose(image_data, (1,0,2))      #imread return image with mxn format so we also need to transpose it
+            image_data = np.flipud(imread(datafile_location)) #we need to flip it since the data reading start from bottom
+            image_data = np.transpose(image_data, (1,0,2))    #imread return image with mxn format so we also need to transpose it
         except:
             print('- set_data_from_image() - Error : unable to read datafile.')
             raise
@@ -109,11 +119,8 @@ class GeologyManager():
         self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.float_)
         image = (image_data[:,:,0] == 0)*1
         data = np.rint(resize(image, (self.grid.nx, self.grid.ny), anti_aliasing=False, preserve_range=True))
-        if self.grid.nz == 1:
-            self.data[data_key]['data'] = data[:, :, np.newaxis]
-        else:
-            for z in range(self.grid.nz):
-                self.data[data_key]['data'][:,:,z] = data[:, :, np.newaxis]
+        for z in range(self.grid.nz):
+            self.data[data_key]['data'][:,:,z] = data[:, :]#, np.newaxis]
         self.data[data_key]['mode'] = 'image'
         return None
 

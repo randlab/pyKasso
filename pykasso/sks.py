@@ -1040,7 +1040,7 @@ class SKS():
             sys.exit()
         self.geology.compute_stats_on_data('topography')
         if self.settings['polygon_data']:
-            self.geology_masked['topography'] = ma.MaskedArray(self.geology.data['topography']['data'], mask=self.mask)
+            self.geology_masked['topography'] = ma.MaskedArray(self.geology.data['topography']['data'], mask=self.mask[:,:,0])
         return None
 
     def update_orientation(self):
@@ -1061,8 +1061,8 @@ class SKS():
         self.geology.compute_stats_on_data('orientationx')
         self.geology.compute_stats_on_data('orientationy')
         if self.settings['polygon_data']:
-            self.geology_masked['orientationx'] = ma.MaskedArray(self.geology.data['orientationx']['data'], mask=self.mask)
-            self.geology_masked['orientationy'] = ma.MaskedArray(self.geology.data['orientationy']['data'], mask=self.mask)
+            self.geology_masked['orientationx'] = ma.MaskedArray(self.geology.data['orientationx']['data'], mask=self.mask[:,:,0])
+            self.geology_masked['orientationy'] = ma.MaskedArray(self.geology.data['orientationy']['data'], mask=self.mask[:,:,0])
         return None
 
     def update_faults(self):
@@ -1189,8 +1189,11 @@ class SKS():
 
         self.geology_masked = {}
         if self.mask is not None:
+            mask = self.mask
             for key in self.geology.data:
-                self.geology_masked[key] = ma.MaskedArray(self.geology.data[key]['data'], mask=self.mask)
+                if key in ['topography', 'orientationx', 'orientationy']:
+                    mask = self.mask[:,:,0]
+                self.geology_masked[key] = ma.MaskedArray(self.geology.data[key]['data'], mask=mask)
 
         return None
 
@@ -1563,10 +1566,11 @@ class SKS():
                         print("- initialize_costMap() - Warning : no geology n {} found.".format(geology))
                         tableFMM[geology] = self.settings['cost_out']
 
-                for y in range(self.grid.ny):
-                    for x in range(self.grid.nx):
-                        geology = self.geology.data['geology']['data'][y][x]
-                        self.maps['cost'][0][y][x] = tableFMM[geology]
+                for z in range(self.grid.nz):
+                    for y in range(self.grid.ny):
+                        for x in range(self.grid.nx):
+                            geology = self.geology.data['geology']['data'][x][y][z]
+                            self.maps['cost'][0][x][y] = tableFMM[geology]
             else:
                 print('geology mode', self.geology.data['geology']['mode'], 'not supported')
                 sys.exit()
@@ -1579,7 +1583,7 @@ class SKS():
 
             # If out of polygon
             if self.mask is not None:
-                self.maps['cost'][0] = np.where(self.mask==1, self.settings['cost_out'], self.maps['cost'][0])
+                self.maps['cost'][0] = np.where(self.mask[:,:,0]==1, self.settings['cost_out'], self.maps['cost'][0])
 
         else: #if not the first iteration
             self.maps['cost'][iteration] = self.maps['cost'][iteration-1] #set cost map to be same as previous iteration
@@ -1752,9 +1756,18 @@ class SKS():
         # Load data
         d = self.geology.data[data]['data']
         if mask==True:
-            d = self.geology_masked[data]
-
-        im1 = ax1.imshow(d, extent=self.grid.extent, origin='lower', cmap=cmap)
+            if self.mask is not None:
+                d = self.geology_masked[data]
+            else:
+                return "Error : no mask to plot."
+        if data in ["topography", "orientationx", "orientationy"]:
+            d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
+            im1 = ax1.imshow(d, extent=self.grid.extent, cmap=cmap, origin="lower")
+        elif self.geology.data[data]["mode"] in ["image", "csv"]:
+            d = np.flipud(np.transpose(d, (1,0,2))) # we need to reverse transformations from geologymanager
+            im1 = ax1.imshow(d , extent=self.grid.extent, cmap='gray_r')
+        else:
+            im1 = ax1.imshow(d, extent=self.grid.extent, cmap=cmap)#, origin="lower")
         fig.colorbar(im1, ax=ax1)
         if self.settings['data_has_polygon']:
             closed_polygon = self.polygon.polygon[:]
@@ -1798,7 +1811,6 @@ class SKS():
     def show(self, data=None, title=None, probability=False):
         """
         Show the entire study domain (defaults to showing most recent simulation).
-        #Chloe: I modified this function quite a bit
         """
         if data is None:
             data = self.karst_simulations[-1]
@@ -1810,11 +1822,13 @@ class SKS():
 
         fig.add_subplot(131, aspect='equal')
         plt.xlabel('Cost array'+str(data.maps['cost'][-1].shape))
-        plt.imshow(data.maps['cost'][-1], extent=self.grid.extent, origin='lower', cmap='gray') #darker=slower
+        d = np.transpose(data.maps['cost'][-1], (1,0)) # imshow read MxN and we have NxM
+        plt.imshow(d, extent=self.grid.extent, origin='lower', cmap='gray') #darker=slower
         plt.colorbar(shrink=0.35)
 
         fig.add_subplot(132, aspect='equal')
         plt.xlabel('Travel time array'+str(data.maps['time'][-1].shape))
+        d = np.transpose(data.maps['time'][-1], (1,0)) # imshow read MxN and we have NxM
         plt.imshow(data.maps['time'][-1], extent=self.grid.extent, origin='lower', cmap='cividis') #darker=faster
         plt.colorbar(shrink=0.35)
 

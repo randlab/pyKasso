@@ -182,7 +182,8 @@ class PointManager():
                 import numpy.ma as ma
                 geology = ma.MaskedArray(geology, mask=self.polygon.mask)
             if self.geology.data["geology"]["mode"] is "image":
-                plt.imshow(np.transpose(geology, (1,0,2)), extent=self.grid.extent, cmap='gray_r', origin="lower")
+                geology = np.flipud(np.transpose(geology, (1,0,2))) # we need to reverse transformations from geologymanager
+            plt.imshow(geology , extent=self.grid.extent, cmap='gray_r')
 
         # Grid limits
         xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1], self.grid.xlimits[0]]

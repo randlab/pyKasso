@@ -43,10 +43,12 @@ class Polygon():
         """
         Set the mask.
         """
-        mask = np.zeros((self.grid.nx, self.grid.ny), dtype=np.int_)
+        mask = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.int_)
         for y in range(self.grid.ny):
             for x in range(self.grid.nx):
-                mask[x][y] = not(int(Path(self.polygon).contains_point((self.grid.X[x][y][0],self.grid.Y[x][y][0]))))
+                mask[x][y][0] = not(int(Path(self.polygon).contains_point((self.grid.X[x][y][0],self.grid.Y[x][y][0]))))
+        for z in range(self.grid.nz):
+            mask[:,:,z] = mask[:,:,0]
         return mask
 
     def inspect_polygon(self):
