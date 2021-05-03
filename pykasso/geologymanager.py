@@ -1,12 +1,13 @@
 """
+A clarifier :
+- set_data_from_csv
+    - sens de complétion ???
+- set_data_from_gslib
+    - If value==0, it will replaced by nan ???
+
 TODO :
-- show_fractures_stats()
+- show_fractures_stats() // show_fractures() : diagrammes de Rose (voir code de Chloé) [mplstereonet]
 
-- set_data_from_csv() - 3D ???
-
-- show_fractures() ? en mode calc (voir code Chloé)
-- rajouter les diagrammes de Rose (pour les fractures)
-- show() en cours
 - Renverser les fractures
 """
 
@@ -40,12 +41,18 @@ class GeologyManager():
 
     def set_data_null(self, data_key):
         """
-        Set data to 'null' for an indicated data key.
+        Set data to 'null' for an the indicated data key.
+
+        For 'topography', 'orientationx' and 'orientationy' returns :
+        np.zeros((nx,ny))
+
+        Otherwise returns:
+        np.zeros((nx,ny,nz))
 
         Parameters
         ----------
         data_key : str
-            Type of data : 'geology', 'faults', 'fractures', 'topography' or 'orientation',.
+            Type of data : 'geology', 'faults', 'fractures', 'topography', 'orientationx' or 'orientationy'.
         """
         self.data[data_key] = {}
         if data_key in ['topography', 'orientationx', 'orientationy']:
@@ -57,24 +64,30 @@ class GeologyManager():
 
     def set_data_from_csv(self, data_key, datafile_location):
         """
-        Set data from a csv file for indicated data key.
+        Set data from a csv file for the indicated data key.
+        Delimiter is ','.
+
+        If nz > 1, the layer is horizontally repeated.
 
         Parameters
         ----------
         data_key : string
-            Type of data : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
+            Type of data : 'geology', 'topography', 'surface' (orientation), 'faults' or 'fractures'.
         datafile_location : string
             Path of the datafile.
         """
-        # FM : Only for model with nz=1
-        self.data[data_key]         = {}
-        data = np.genfromtxt(datafile_location, delimiter=',', dtype=np.float_)
-        if data_key in ['topography', 'orientation']:
+        self.data[data_key] = {}
+        try:
+            data = np.genfromtxt(datafile_location, delimiter=',', dtype=np.float_)
+        except:
+            print('- set_data_from_csv() - Error : unable to read datafile.')
+            raise
+        if data_key in ['topography', 'surface']:
             self.data[data_key]['data'] = data
         else:
             self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.float_)
             for z in range(self.grid.nz):
-                self.data[data_key]['data'][:,:,z] = data[:, :]#, np.newaxis]
+                self.data[data_key]['data'][:,:,z] = data
         self.data[data_key]['mode'] = 'csv'
         return None
 
@@ -89,19 +102,27 @@ class GeologyManager():
         datafile_location : string
             Path to the datafile.
         """
-        self.data[data_key]         = {}
-        a = np.genfromtxt(datafile_location, skip_header=3, dtype=np.float_)         #read in gslib file as float numpy array without header rows
-        if data_key is "geology":
-            a[a==0] = np.nan                                                     #replace zeros with nans (array must be float first)
-        a = np.reshape(a, (self.grid.nx, self.grid.ny, self.grid.nz), order='F') #reshape to xy grid using Fortran ordering
-        b = np.transpose(a, (1,0,2))                                             #flip
-        self.data[data_key]['data'] = b                                          #store
+        self.data[data_key] = {}
+        try:
+            data = np.genfromtxt(datafile_location, skip_header=3, dtype=np.float_)    #read in gslib file as float numpy array without header rows
+        except:
+            print('- set_data_from_gslib() - Error : unable to read datafile.')
+            raise
+        #if data_key is "geology":
+        #a[a==0] = np.nan                                                       #replace zeros with nans (array must be float first)
+        data = np.reshape(data, (self.grid.nx, self.grid.ny, self.grid.nz), order='F')#reshape to xy grid using Fortran ordering
+        data = np.transpose(data, (1,0,2))                                            #flip
+        self.data[data_key]['data'] = data                                        #store
         self.data[data_key]['mode'] = 'gslib'
         return None
 
     def set_data_from_image(self, data_key, datafile_location):
         """
         Set data from an image for a indicated data key.
+        The size of the image should be the same that the size of the grid.
+        If nz > 1, the layer is horizontally repeated.
+        set_data_from_image() usage is not recommended, it should be used only for quick testing.
+
         Parameters
         ----------
         data_key : string
@@ -111,16 +132,16 @@ class GeologyManager():
         """
         try:
             image_data = np.flipud(imread(datafile_location)) #we need to flip it since the data reading start from bottom
-            image_data = np.transpose(image_data, (1,0,2))    #imread return image with mxn format so we also need to transpose it
         except:
             print('- set_data_from_image() - Error : unable to read datafile.')
             raise
+        image_data = np.transpose(image_data, (1,0,2))    #imread return image with mxn format so we also need to transpose it
         self.data[data_key] = {}
         self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.float_)
         image = (image_data[:,:,0] == 0)*1
         data = np.rint(resize(image, (self.grid.nx, self.grid.ny), anti_aliasing=False, preserve_range=True))
         for z in range(self.grid.nz):
-            self.data[data_key]['data'][:,:,z] = data[:, :]#, np.newaxis]
+            self.data[data_key]['data'][:,:,z] = data
         self.data[data_key]['mode'] = 'image'
         return None
 
@@ -769,11 +790,17 @@ class GeologyManager():
         Parameter
         ---------
         data : str || list (optional)
-            Data to show : 'geology', 'topography', 'orientation', 'faults' or 'fractures'.
+            Data to show : 'geology', 'topography', 'orientationx', 'orientationy' 'faults' or 'fractures'.
             By default, all data are showed.
         """
-        f = plt.figure()
-        plt.imshow(self.data[data]['data'], extent=self.grid.extent, origin='lower', cmap=cmap)
+        fig, ax1 = plt.subplots()
+        d = self.data[data]['data']
+        if data in ['topography', 'surface', 'orientationx', 'orientationy']:
+            d = np.transpose(d, (1,0))
+        else:
+            d = np.transpose(d, (1,0,2))
+        im = ax1.imshow(d, extent=self.grid.extent, origin='lower', cmap=cmap)
+        fig.colorbar(im, ax=ax1)
         plt.title(data)
         plt.show()
         return None

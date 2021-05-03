@@ -5,33 +5,18 @@
 [QUESTIONS]
 	version 0.2.0 -> Est-ce OK ???
     	Dossier -> Delete pykasso.egg-info ???
-	Fichier -> Delete outlets2D_reference.txt ???
 	Voir notebooks -> les différences entre set_data_from_image/csv/gslib ??? 
-	Voir notebooks -> marqueurs [???]
 
 [CODE]
 	pyKasso/geologymanager.py
-		- Compléter le notebook avec orientation, etc...
 		- Documenter topography
 		- Documenter orientation
 		- Discrétiseur, résultats étranges quand les fractures sont presques plates
-		- data_from_csv() : only en 2D ???? / set_data_from_csv() : reshape, il manque la z dimension
-
-	pyKasso/pointmanager.py
-		- Fonction pour générer les inlets/outlets en fonction de la géologie
 	
 	pyKasso/karstnetwork.py
 		- Compléter la doc
 
-[MAIL]		
-pyKasso/grid.py
-	- np.meshgrid(indexing='ij') : MAIL
-
-
-
 -----------------------------------
-
-
 [pour la v 0.3.0]
 	
 	pyKasso/geologymanager.py
@@ -40,17 +25,17 @@ pyKasso/grid.py
 	pyKasso/karstnetwork.py
 		- Ajouter des fonctions d'export, de lecture, de gestions de données 
         
-    pykasso/sks.py
-        - multi-thread sur update_all() et les fonctions de chargement ?
-        import threading
-        t1 = threading.Thread(target=self.update_polygon)
-        t2 = threading.Thread(target=self.update_inlets)
-        t3 = threading.Thread(target=self.update_outlets)
-        t4 = threading.Thread(target=self.update_geology)
-        t5 = threading.Thread(target=self.update_topography)
-        t6 = threading.Thread(target=self.update_orientation)
-        t7 = threading.Thread(target=self.update_faults)
-        t8 = threading.Thread(target=self.update_fractures)
-        threads = [t1, t2, t3, t4, t5, t6, t7, t8]
-        [t.start() for t in threads]
-        [t.join()  for t in threads]
+    	pykasso/sks.py
+        	- multi-thread sur update_all() et les fonctions de chargement ?
+        	import threading
+        	t1 = threading.Thread(target=self.update_polygon)
+        	t2 = threading.Thread(target=self.update_inlets)
+        	t3 = threading.Thread(target=self.update_outlets)
+        	t4 = threading.Thread(target=self.update_geology)
+        	t5 = threading.Thread(target=self.update_topography)
+        	t6 = threading.Thread(target=self.update_orientation)
+        	t7 = threading.Thread(target=self.update_faults)
+        	t8 = threading.Thread(target=self.update_fractures)
+        	threads = [t1, t2, t3, t4, t5, t6, t7, t8]
+        	[t.start() for t in threads]
+       		[t.join()  for t in threads]

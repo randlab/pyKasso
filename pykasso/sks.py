@@ -1507,7 +1507,6 @@ class SKS():
                         self._inlets.loc[ self._inlets.index ==inlet.name,  'iteration'] = iteration   #store total iteration counter
 
                     #Compute travel time maps and conduit network:
-                    #Chloe: I removed the options to use skfmm
                     if self.settings['algorithm'] == 'Isotropic2':
                         self._compute_cost_map(iteration)
                         self._compute_time_map_isotropic(iteration)
@@ -1537,7 +1536,7 @@ class SKS():
         for i,outlet in self._outlets.iterrows():
             X = int(math.ceil((outlet.x - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
             Y = int(math.ceil((outlet.y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
-            self.maps['outlets'][Y][X] = i
+            self.maps['outlets'][X][Y] = i
         return None
 
     # 2
@@ -1651,7 +1650,7 @@ class SKS():
         self.fastMarching['verbosity'] = self.settings['verbosity']           #set verbosity of hfm run
         self.fastMarchingOutput     = self.fastMarching.Run()                 #run the fast marching algorithm and store the outputs
         self.maps['time'][iteration] = self.fastMarchingOutput['values']      #store travel time maps
-        self.geodesics.append(self.fastMarchingOutput['geodesics'])         #store fastest travel paths
+        self.geodesics.append(self.fastMarchingOutput['geodesics'])           #store fastest travel paths
         return None
 
     # 2
@@ -1763,7 +1762,7 @@ class SKS():
         if data in ["topography", "orientationx", "orientationy"]:
             d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
             im1 = ax1.imshow(d, extent=self.grid.extent, cmap=cmap, origin="lower")
-        elif self.geology.data[data]["mode"] in ["image", "csv"]:
+        elif self.geology.data[data]["mode"] in ["image", "csv", "null"]:
             d = np.flipud(np.transpose(d, (1,0,2))) # we need to reverse transformations from geologymanager
             im1 = ax1.imshow(d , extent=self.grid.extent, cmap='gray_r')
         else:
@@ -1820,21 +1819,26 @@ class SKS():
 
         fig = plt.figure(figsize=(20,10))
 
+        # Cost map
         fig.add_subplot(131, aspect='equal')
         plt.xlabel('Cost array'+str(data.maps['cost'][-1].shape))
         d = np.transpose(data.maps['cost'][-1], (1,0)) # imshow read MxN and we have NxM
         plt.imshow(d, extent=self.grid.extent, origin='lower', cmap='gray') #darker=slower
         plt.colorbar(shrink=0.35)
 
+        # Travel time map
         fig.add_subplot(132, aspect='equal')
         plt.xlabel('Travel time array'+str(data.maps['time'][-1].shape))
         d = np.transpose(data.maps['time'][-1], (1,0)) # imshow read MxN and we have NxM
         plt.imshow(data.maps['time'][-1], extent=self.grid.extent, origin='lower', cmap='cividis') #darker=faster
         plt.colorbar(shrink=0.35)
 
+        # Karst map
         fig.add_subplot(133, aspect='equal')
         plt.xlabel('Karst array'+str(data.maps['time'][-1].shape))
-        plt.imshow(data.maps['karst'][-1], extent=self.grid.extent, origin='lower', cmap='gray_r') #darker=conduits
+        d = data.maps['karst'][-1]
+        #d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
+        plt.imshow(d, extent=self.grid.extent, origin='lower', cmap='gray_r') #darker=conduits
         plt.colorbar(shrink=0.35)
         i = plt.scatter(data.points['inlets'].x,  data.points['inlets'].y,  c='orange')
         o = plt.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue')
