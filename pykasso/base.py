@@ -1794,6 +1794,8 @@ class SKS():
         """
         if self.settings['faults_mode'] == 'null':
             self.geology.set_data_null('faults')
+        elif self.settings['faults_mode'] == 'csv':
+            self.geology.set_data_from_csv('faults', self.settings['faults_datafile'])
         elif self.settings['faults_mode'] == 'import':
             self.geology.set_data('faults', self.settings['faults_datafile'])
         elif self.settings['faults_mode'] == 'image':
@@ -1812,6 +1814,8 @@ class SKS():
         """
         if self.settings['fractures_mode'] == 'null':
             self.geology.set_data_null('fractures')
+        elif self.settings['fractures_mode'] == 'csv':
+            self.geology.set_data_from_csv('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'import':
             self.geology.set_data('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'image':
@@ -1991,6 +1995,8 @@ class SKS():
         # Faults
         if self.settings['faults_mode'] == 'null':
             geology.set_data_null('faults')
+        elif self.settings['faults_mode'] == 'csv':
+            geology.set_data_from_csv('faults', self.settings['faults_datafile'])
         elif self.settings['faults_mode'] == 'import':
             geology.set_data('faults', self.settings['faults_datafile'])
         elif self.settings['faults_mode'] == 'image':
@@ -2001,6 +2007,8 @@ class SKS():
         # Fractures
         if self.settings['fractures_mode'] == 'null':
             geology.set_data_null('fractures')
+        elif self.settings['fractures_mode'] == 'csv':
+            geology.set_data_from_csv('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'import':
             geology.set_data('fractures', self.settings['fractures_datafile'])
         elif self.settings['fractures_mode'] == 'image':

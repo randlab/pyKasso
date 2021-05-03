@@ -30,10 +30,10 @@ polygon_data     : 'inputs/paper3/polygon.txt'
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 outlets_mode    : 'import'
-outlets_data    : 'inputs/paper3/outlets2D_reference.txt'
-outlets_number  : 3    #if random or composite, how many outlets to generate
+outlets_data    : 'inputs/paper3/outlets2D_hi_res.txt'
+outlets_number  : 1    #if random or composite, how many outlets to generate
 outlets_shuffle : False #if False: do not shuffle outlet order, if True: shuffle outlet order randomly
-outlets_importance : [1,1,1] #how to iterate over outlets: length of array indicates number of iterations, each integer indicates number of outlets in that iteration, sum of integers = total number of outlets
+outlets_importance : [1] #how to iterate over outlets: length of array indicates number of iterations, each integer indicates number of outlets in that iteration, sum of integers = total number of outlets
 #to run each outlet separately:              [1,1,1,...]  
 
 ###Inlets
@@ -41,10 +41,10 @@ outlets_importance : [1,1,1] #how to iterate over outlets: length of array indic
 # 'import'    - import points
 # 'composite' - add n random points to imported points
 inlets_mode    : 'import'
-inlets_data    : 'inputs/paper3/inlets2D_reference.txt'
-inlets_number  : 5      #if random or composite, how many inlets to generate
+inlets_data    : 'inputs/paper3/inlets2D_hi_res.txt'
+inlets_number  : 1      #if random or composite, how many inlets to generate
 inlets_shuffle : False   #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
-inlets_per_outlet : [1,1,1]    #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets [2,1,2]
+inlets_per_outlet : [1]    #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets [2,1,2]
 inlets_importance : [1]  #how to iterate over inlets: length of array indicates number of inlet iterations, each integer indicates number of inlets to run in that iteration, sum of integers = total number of inlets
 
 ######################
@@ -79,9 +79,9 @@ orientation_datafile : 'inputs/paper3/contact.csv' #only used if mode='contact',
 ###Faults
 # 'null'   - No faults
 # 'import' - Import faults
-# 'image'  - Import faults via image
-faults_mode     : 'null'
-faults_datafile : 'inputs/paper3/faults1806x1404.png'
+# 'image'  - Import faults via image (png)
+faults_mode     : 'csv'
+faults_datafile : 'inputs/paper3/faults1806x1404.csv'
 
 ###Fractures
 # 'null'   - No fractures
@@ -98,7 +98,7 @@ fractures_max_orientation : [     50,    130]
 
 # For fracture size
 fractures_alpha      : 2      #power law coefficient
-fractures_min_length : 75    #in map units (whatever units dx and dy are in)
+fractures_min_length : 5      #in map units (whatever units dx and dy are in)
 fractures_max_length : 3000    
 
 ###############################
