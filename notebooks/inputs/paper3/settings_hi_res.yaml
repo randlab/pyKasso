@@ -19,7 +19,7 @@ dy   : 5
 ###############
 
 data_has_polygon : False
-polygon_data     : 'inputs/paper3/polygon.txt'
+polygon_data     : 'inputs/paper3/polygon_mahdtal.txt'
 
 ####################
 ### PointManager ###
@@ -92,9 +92,9 @@ fractures_mode     : 'random'
 fractures_datafile : 'inputs/paper3/fractures1806x1404.gslib'
 
 # If fractures mode is 'generate'
-fractures_densities       : [   6e-6,   4e-6]  #smaller = spaced farther apart
-fractures_min_orientation : [     30,    120]  #orientations taken from Goldscheider dissertation
-fractures_max_orientation : [     50,    130]  
+fractures_densities       : [4e-5, 5e-5, 5e-5, 3e-4, 3e-4, 4e-5]  #smaller = spaced farther apart
+fractures_min_orientation : [20,   39,   55,   110,  120,  135]  #orientations taken from Goldscheider dissertation
+fractures_max_orientation : [35,   41,   65,   120,  140,  170]  
 
 # For fracture size
 fractures_alpha      : 2      #power law coefficient
