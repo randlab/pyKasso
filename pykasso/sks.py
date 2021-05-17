@@ -1375,11 +1375,11 @@ class SKS():
         Initialize the karst network parameters.
         """
         #Iterations
-        self.nbr_iteration   = len(self.settings['outlets_importance'])*len(self.settings['inlets_importance']) #total number of iterations that will occur
-        outlets_repartition  = self._repartition_points(self.outlets, self.settings['outlets_importance']) #correct for outlets_importance not summing to correct number of actual outlets
-        self._outlets         = self._distribute_outlets(outlets_repartition)  # distribute outlets to iterations and store as a semi-private variable for internal use only
-        inlets_repartition   = self._repartition_points(self.inlets, self.settings['inlets_per_outlet']) #correct for inlets_per_outlet not summing to correct number of actual inlets
-        self._inlets          = self._distribute_inlets(inlets_repartition)  # distribute inlets to outlets and store as a semi-private variable for internal use only
+        self.nbr_iteration  = len(self.settings['outlets_importance'])*len(self.settings['inlets_importance']) #total number of iterations that will occur
+        outlets_repartition = self._repartition_points(self.outlets, self.settings['outlets_importance']) #correct for outlets_importance not summing to correct number of actual outlets
+        self._outlets       = self._distribute_outlets(outlets_repartition)  # distribute outlets to iterations and store as a semi-private variable for internal use only
+        inlets_repartition  = self._repartition_points(self.inlets, self.settings['inlets_per_outlet']) #correct for inlets_per_outlet not summing to correct number of actual inlets
+        self._inlets        = self._distribute_inlets(inlets_repartition)  # distribute inlets to outlets and store as a semi-private variable for internal use only
 
         inlets  = []
         for o,outlet in enumerate(self._outlets):                 #loop over outlets
@@ -1390,7 +1390,7 @@ class SKS():
                 for j in range(n):               #loop over each inlet in current iteration
                     inlets.append((inlets_current[i,0], inlets_current[i,1], inlets_current[i,2], inlets_current[i,3], inlets_current[i,4], k))
                     i += 1
-        self._inlets  = pd.DataFrame(inlets,       columns = ['x','y', 'outlet', 'outletx', 'outlety', 'inlet_iteration']) #store as pandas df for easier handling
+        self._inlets  = pd.DataFrame(inlets,        columns = ['x','y', 'outlet', 'outletx', 'outlety', 'inlet_iteration']) #store as pandas df for easier handling
         self._outlets = pd.DataFrame(self._outlets, columns = ['x','y', 'outlet_iteration']) #store as df for easier indexing
 
         # Raster maps
@@ -1624,17 +1624,19 @@ class SKS():
     # 2
     def _compute_time_map_isotropic(self, iteration):
         """
-        #Chloe: This is the new algorithm - I removed the functions for skfmm
         Compute the travel time map (how long it takes to get to the outlet from each cell),
         using the isotropic agd-hfm fast-marching algorithm, and store travel time map.
         Note: the AGD-HFM library uses different indexing, so x and y indices are reversed for inlets and outlets.
         """
-        self.fastMarching['seeds']  = np.rot90([self._outlets[self._outlets.iteration==iteration].x, self._outlets[self._outlets.iteration==iteration].y], k=3)         #set the outlets for this iteration
-        self.fastMarching['tips']   = np.rot90([self._inlets[self._inlets.iteration==iteration].x, self._inlets[self._inlets.iteration==iteration].y], k=3) #select inlets for current iteration
-        self.fastMarching['cost']   = self.maps['cost'][iteration]                       #set the isotropic travel cost through each cell
+        self.fastMarching['seeds'] = np.rot90([self._outlets[self._outlets.iteration==iteration].x, self._outlets[self._outlets.iteration==iteration].y], k=3)         #set the outlets for this iteration
+        self.fastMarching['tips']  = np.rot90([self._inlets[self._inlets.iteration==iteration].x, self._inlets[self._inlets.iteration==iteration].y], k=3) #select inlets for current iteration
+        self.fastMarching['cost']  = np.transpose(self.maps['cost'][iteration])
+        #self.fastMarching['seeds']  = np.rot90([self._outlets[self._outlets.iteration==iteration].x, self._outlets[self._outlets.iteration==iteration].y], k=3)         #set the outlets for this iteration
+        #self.fastMarching['tips']   = np.rot90([self._inlets[self._inlets.iteration==iteration].x, self._inlets[self._inlets.iteration==iteration].y], k=3) #select inlets for current iteration
+        #self.fastMarching['cost']   = self.maps['cost'][iteration]                      #set the isotropic travel cost through each cell
         self.fastMarching['verbosity'] = self.settings['verbosity']           #set verbosity of hfm run
-        self.fastMarchingOutput     = self.fastMarching.Run()                 #run the fast marching algorithm and store the outputs
-        self.maps['time'][iteration] = self.fastMarchingOutput['values']  #store travel time maps
+        self.fastMarchingOutput      = self.fastMarching.Run()                 #run the fast marching algorithm and store the outputs
+        self.maps['time'][iteration] = np.transpose(self.fastMarchingOutput['values'])  #store travel time maps
         return None
 
     # 2
@@ -1664,11 +1666,11 @@ class SKS():
 
         #Debugging:
         #Chloe: this should stay in since it is very useful if there are problems
-        #f1,ax1 = plt.subplots(1,1, figsize=(10,10))  #debugging
-        #ax1.imshow(self.maps['karst'][iteration], origin='lower', extent=self.grid.extent, cmap='gray_r')
-        #ax1.imshow(self.maps['nodes'], origin='lower', extent=self.grid.extent, cmap='gray_r')
-        #ax1.scatter(self._outlets[self._outlets.iteration==iteration].x, self._outlets[self._outlets.iteration==iteration].y, c='c', s=100)
-        #ax1.scatter(self._inlets[self._inlets.iteration==iteration].x, self._inlets[self._inlets.iteration==iteration].y, c='orange', s=100)
+        f1,ax1 = plt.subplots(1,1, figsize=(10,10))  #debugging
+        ax1.imshow(self.maps['karst'][iteration], origin='lower', extent=self.grid.extent, cmap='gray_r')
+        ax1.imshow(self.maps['nodes'], origin='lower', extent=self.grid.extent, cmap='gray_r')
+        ax1.scatter(self._outlets[self._outlets.iteration==iteration].x, self._outlets[self._outlets.iteration==iteration].y, c='c', s=100)
+        ax1.scatter(self._inlets[self._inlets.iteration==iteration].x, self._inlets[self._inlets.iteration==iteration].y, c='orange', s=100)
 
         #Loop over conduit paths generated by fast marching:
         for path in self.fastMarchingOutput['geodesics']:   #loop over conduit paths in this iteration (there is one path from each inlet)
@@ -1736,7 +1738,7 @@ class SKS():
                             self.n = self.n+1                                                 #increment node counter by 1
                             #ax1.scatter(point[1],point[0], marker='o', edgecolor='g', facecolor='none')  #debugging
 
-                self.maps['karst'][iteration][ix,iy] = 1                               #update karst map to put a conduit in current cell
+                self.maps['karst'][iteration][ix, iy] = 1                               #update karst map to put a conduit in current cell
         return None
 
     ###########################
@@ -1821,22 +1823,25 @@ class SKS():
 
         # Cost map
         fig.add_subplot(131, aspect='equal')
-        plt.xlabel('Cost array'+str(data.maps['cost'][-1].shape))
-        d = np.transpose(data.maps['cost'][-1], (1,0)) # imshow read MxN and we have NxM
+        d = data.maps['cost'][-1]
+        plt.xlabel('Cost array'+str(d.shape))
+        d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
         plt.imshow(d, extent=self.grid.extent, origin='lower', cmap='gray') #darker=slower
         plt.colorbar(shrink=0.35)
 
         # Travel time map
         fig.add_subplot(132, aspect='equal')
-        plt.xlabel('Travel time array'+str(data.maps['time'][-1].shape))
-        d = np.transpose(data.maps['time'][-1], (1,0)) # imshow read MxN and we have NxM
+        d = data.maps['time'][-1]
+        plt.xlabel('Travel time array'+str(d.shape))
+        print(d[:,50])
+        d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
         plt.imshow(data.maps['time'][-1], extent=self.grid.extent, origin='lower', cmap='cividis') #darker=faster
         plt.colorbar(shrink=0.35)
 
         # Karst map
         fig.add_subplot(133, aspect='equal')
-        plt.xlabel('Karst array'+str(data.maps['time'][-1].shape))
         d = data.maps['karst'][-1]
+        plt.xlabel('Karst array'+str(d.shape))
         #d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
         plt.imshow(d, extent=self.grid.extent, origin='lower', cmap='gray_r') #darker=conduits
         plt.colorbar(shrink=0.35)

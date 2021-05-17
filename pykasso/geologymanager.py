@@ -1,7 +1,5 @@
 """
 A clarifier :
-- set_data_from_csv
-    - sens de complétion ???
 - set_data_from_gslib
     - If value==0, it will replaced by nan ???
 
@@ -131,17 +129,21 @@ class GeologyManager():
             Path of the datafile.
         """
         try:
-            image_data = np.flipud(imread(datafile_location)) #we need to flip it since the data reading start from bottom
+            image = imread(datafile_location)
         except:
             print('- set_data_from_image() - Error : unable to read datafile.')
             raise
-        image_data = np.transpose(image_data, (1,0,2))    #imread return image with mxn format so we also need to transpose it
         self.data[data_key] = {}
+        # Store image for show() methods
+        image = (image[:,:,0] == 0)*1
+        image = np.rint(resize(image, (self.grid.nx, self.grid.ny), anti_aliasing=False, preserve_range=True))
+        self.data[data_key]['img'] = image
+        # Store data
         self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.float_)
-        image = (image_data[:,:,0] == 0)*1
-        data = np.rint(resize(image, (self.grid.nx, self.grid.ny), anti_aliasing=False, preserve_range=True))
+        image_data = np.flipud(image)      #we need to flip it since the data reading start from bottom
+        image_data = np.transpose(image_data, (1,0)) #imread return image with mxn format so we also need to transpose it
         for z in range(self.grid.nz):
-            self.data[data_key]['data'][:,:,z] = data
+            self.data[data_key]['data'][:,:,z] = image_data
         self.data[data_key]['mode'] = 'image'
         return None
 
@@ -717,7 +719,13 @@ class GeologyManager():
             for z in range(self.grid.nz):
                 for y in range(self.grid.ny):
                     for x in range(self.grid.nx):
-                        value = self.data[data_key]['data'][x][y][z]
+                        try:
+                            value = self.data[data_key]['data'][x][y][z]
+                        except:
+                            print(data_key)
+                            print(self.data[data_key]['data'])
+                            print(x,y,z)
+                            print(self.data[data_key]['data'][x][y][z])
                         try:
                             if stats.get(value) == None:
                                 stats[value] = 1
@@ -794,12 +802,18 @@ class GeologyManager():
             By default, all data are showed.
         """
         fig, ax1 = plt.subplots()
-        d = self.data[data]['data']
-        if data in ['topography', 'surface', 'orientationx', 'orientationy']:
-            d = np.transpose(d, (1,0))
+        origin = None
+        #if data in ['topography', 'surface', 'orientationx', 'orientationy']:
+        #    d = np.transpose(d, (1,0))
+        #else:
+        #    d = np.transpose(d, (1,0,2))
+        if 'img' in self.data[data]:
+            d = self.data[data]['img']
         else:
-            d = np.transpose(d, (1,0,2))
-        im = ax1.imshow(d, extent=self.grid.extent, origin='lower', cmap=cmap)
+            d = self.data[data]['data']
+        if self.data[data]['mode'] in ['gslib', 'csv']:
+            origin="lower"
+        im = ax1.imshow(d, extent=self.grid.extent, cmap=cmap, origin=origin)
         fig.colorbar(im, ax=ax1)
         plt.title(data)
         plt.show()

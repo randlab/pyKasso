@@ -174,16 +174,24 @@ class PointManager():
         """
         fig, ax = plt.subplots()
         fig.suptitle('Show points', fontsize=16)
-
         # Geology
         if self.geology is not None:
-            geology = self.geology.data['geology']['data']
+            origin = None
+            if 'img' in self.geology.data['geology']:
+                d = self.geology.data['geology']['img']
+                if self.polygon.mask is not None:
+                    import numpy.ma as ma
+                    mask = np.transpose(self.polygon.mask)
+                    d = ma.MaskedArray(d, mask=mask)
+            else:
+                d = self.geology.data['geology']['data']
+            if self.geology.data['geology']['mode'] in ['gslib', 'csv']:
+                origin="lower"
             if self.polygon.mask is not None:
                 import numpy.ma as ma
-                geology = ma.MaskedArray(geology, mask=self.polygon.mask)
-            if self.geology.data["geology"]["mode"] is "image":
-                geology = np.flipud(np.transpose(geology, (1,0,2))) # we need to reverse transformations from geologymanager
-            plt.imshow(geology , extent=self.grid.extent, cmap='gray_r')
+                d = ma.MaskedArray(d, mask=self.polygon.mask)
+                #geology = np.flipud(np.transpose(geology, (1,0,2))) # we need to reverse transformations from geologymanager
+            plt.imshow(d , extent=self.grid.extent, cmap='gray_r')#, origin=origin)
 
         # Grid limits
         xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1], self.grid.xlimits[0]]

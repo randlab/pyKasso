@@ -2,20 +2,29 @@
 
 pyKasso is a python3 project intended to simulate stochastic karst network.
 
-Version 0.1.0 - April 2020
+Version 0.2.0 - May 2021
 
+## Authors
+
+François Miville <francois.miville@unine.ch> - Code architecture and data model
+Chloé Fandel     <cfandel@email.arizona.edu> - Anisotropic FMM implementation
+Philippe Renard  <philippe.renard@unine.ch>  - Fracture discretizer
 
 ## Installation
+You can install the requirements for pykasso with the environment.yaml file:
+```
+conda env update -n pykasso --file environment.yaml
+```
 
-Install from source (from project main directory):
+Then install pykasso from source (from project main directory):
 ```
 pip install .
 ```
 
-# Dependencies
+### Dependencies
 
 pyKasso requires the following python packages to function properly:
-- [agd-hfm](https://github.com/Mirebeau/AdaptiveGridDiscretizations) 
+- [agd-hfm](https://github.com/Mirebeau/AdaptiveGridDiscretizations)
 	- On non-windows machines or for python 3.7, use `conda install agd -c agd-lbr`
 	- On windows with python 3.8+:
 		- clone the agd repository from GitHub
