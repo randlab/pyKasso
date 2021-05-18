@@ -136,7 +136,7 @@ class GeologyManager():
         self.data[data_key] = {}
         # Store image for show() methods
         image = (image[:,:,0] == 0)*1
-        image = np.rint(resize(image, (self.grid.nx, self.grid.ny), anti_aliasing=False, preserve_range=True))
+        image = np.rint(resize(image, (self.grid.ny, self.grid.nx), anti_aliasing=False, preserve_range=True))
         self.data[data_key]['img'] = image
         # Store data
         self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.float_)
