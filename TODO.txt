@@ -1,6 +1,7 @@
 [ISSUES]
 	- renommer un dossier enlève l'auteur du code : il faudra enlever et remettre le code je pense
 	- dans setup.py on ne peut mettre qu'un author...
+    - se mettre d'accord avec les conventions de remplissage pour set_data_from_csv/gslib/image
 
 [QUESTIONS]
 	version 0.2.0 -> Est-ce OK ???
@@ -21,6 +22,7 @@
 	
 	pyKasso/geologymanager.py
 		- Donner la possibilité d'ajouter une couche 'karst' qui représente le réseau initial
+        - set_data_from_pickle() ? 
 		
 	pyKasso/karstnetwork.py
 		- Ajouter des fonctions d'export, de lecture, de gestions de données 

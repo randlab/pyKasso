@@ -183,27 +183,18 @@ class PointManager():
                 if self.polygon.mask is not None:
                     import numpy.ma as ma
                     mask = self.polygon.mask
-                    #mask = np.flipud(mask)
                     mask = np.transpose(mask, (1,0,2))
                     mask = np.flipud(mask)
-                    #
-                    #mask = np.rot90(np.flipud(self.polygon.mask), k=3)
-                    #data = np.transpose(data)
-    
-                    #data = np.flipud(data)
-                    
                     data = ma.MaskedArray(data, mask=mask)
             else:
-                data = self.geology.data['geology']['data']
-            if self.geology.data['geology']['mode'] in ['gslib', 'csv']:
-                origin="lower"
-            if self.polygon.mask is not None:
-                import numpy.ma as ma
-                #mask = np.flipud(np.transpose(self.polygon.mask))
-                #data = ma.MaskedArray(data, mask=mask)
-                #data = ma.MaskedArray(data, mask=self.polygon.mask)
-                #geology = np.flipud(np.transpose(geology, (1,0,2))) # we need to reverse transformations from geologymanager
-            plt.imshow(data, extent=self.grid.extent, cmap='gray_r')#, origin=origin)
+                data = np.transpose(self.geology.data['geology']['data'], (1,0,2)) # because imshow MxN
+                if self.geology.data['geology']['mode'] in ['gslib', 'csv']:
+                    origin="lower"
+                #if self.polygon.mask is not None:
+                #    import numpy.ma as ma
+                #    mask = self.polygon.mask
+                #    data = ma.MaskedArray(data, mask=mask)
+            plt.imshow(data, extent=self.grid.extent, cmap='gray_r', origin=origin)
 
         # Grid limits
         xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1], self.grid.xlimits[0]]

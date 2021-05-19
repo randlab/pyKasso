@@ -1833,9 +1833,8 @@ class SKS():
         fig.add_subplot(132, aspect='equal')
         d = data.maps['time'][-1]
         plt.xlabel('Travel time array'+str(d.shape))
-        print(d[:,50])
         d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
-        plt.imshow(data.maps['time'][-1], extent=self.grid.extent, origin='lower', cmap='cividis') #darker=faster
+        plt.imshow(d, extent=self.grid.extent, origin='lower', cmap='cividis') #darker=faster
         plt.colorbar(shrink=0.35)
 
         # Karst map
@@ -1845,15 +1844,15 @@ class SKS():
         #d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
         plt.imshow(d, extent=self.grid.extent, origin='lower', cmap='gray_r') #darker=conduits
         plt.colorbar(shrink=0.35)
-        i = plt.scatter(data.points['inlets'].x,  data.points['inlets'].y,  c='orange')
-        o = plt.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue')
-        p = matplotlib.patches.Rectangle((0,0),0,0, ec='r', fc='none')
-        if self.settings['data_has_polygon']:
-            closed_polygon = self.polygon.polygon[:]
-            closed_polygon.append(closed_polygon[0])
-            x,y = zip(*closed_polygon)
-            plt.plot(x,y, color='red', label='polygon')
-        plt.legend([i,o,p], ['inlets', 'outlets', 'catchment'], loc='upper right')
+        #i = plt.scatter(data.points['inlets'].x,  data.points['inlets'].y,  c='orange')
+        #o = plt.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue')
+        #p = matplotlib.patches.Rectangle((0,0),0,0, ec='r', fc='none')
+        #if self.settings['data_has_polygon']:
+        #    closed_polygon = self.polygon.polygon[:]
+        #    closed_polygon.append(closed_polygon[0])
+        #    x,y = zip(*closed_polygon)
+        #    plt.plot(x,y, color='red', label='polygon')
+        #plt.legend([i,o,p], ['inlets', 'outlets', 'catchment'], loc='upper right')
 
         if title is not None:
             fig.suptitle(title, fontsize=16)

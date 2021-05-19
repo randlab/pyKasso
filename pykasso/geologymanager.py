@@ -67,6 +67,9 @@ class GeologyManager():
 
         If nz > 1, the layer is horizontally repeated.
 
+        x direction : from West to East
+        y direction : from North to South
+
         Parameters
         ----------
         data_key : string
@@ -77,6 +80,7 @@ class GeologyManager():
         self.data[data_key] = {}
         try:
             data = np.genfromtxt(datafile_location, delimiter=',', dtype=np.float_)
+            data = np.transpose(data)
         except:
             print('- set_data_from_csv() - Error : unable to read datafile.')
             raise
@@ -107,10 +111,9 @@ class GeologyManager():
             print('- set_data_from_gslib() - Error : unable to read datafile.')
             raise
         #if data_key is "geology":
-        #a[a==0] = np.nan                                                       #replace zeros with nans (array must be float first)
+        #a[a==0] = np.nan                                                             #replace zeros with nans (array must be float first)
         data = np.reshape(data, (self.grid.nx, self.grid.ny, self.grid.nz), order='F')#reshape to xy grid using Fortran ordering
-        data = np.transpose(data, (1,0,2))                                            #flip
-        self.data[data_key]['data'] = data                                        #store
+        self.data[data_key]['data'] = data                                            #store
         self.data[data_key]['mode'] = 'gslib'
         return None
 
@@ -145,6 +148,19 @@ class GeologyManager():
         for z in range(self.grid.nz):
             self.data[data_key]['data'][:,:,z] = image_data
         self.data[data_key]['mode'] = 'image'
+        return None
+
+    def set_data_from_pickle(self, data_key, datafile_location):
+        """
+        Set data from a pickle data file.
+
+        Parameters
+        ----------
+        data_key : string
+            Type of data : 'geology', 'faults' or 'fractures'.
+        datafile_location : string
+            Path of the datafile.
+        """
         return None
 
     def generate_orientations(self, surface):
@@ -803,14 +819,12 @@ class GeologyManager():
         """
         fig, ax1 = plt.subplots()
         origin = None
-        #if data in ['topography', 'surface', 'orientationx', 'orientationy']:
-        #    d = np.transpose(d, (1,0))
-        #else:
-        #    d = np.transpose(d, (1,0,2))
         if 'img' in self.data[data]:
             d = self.data[data]['img']
+        elif data in ['topography', 'surface', 'orientationx', 'orientationy']:
+            d = np.transpose(self.data[data]['data'], (1,0))
         else:
-            d = self.data[data]['data']
+            d = np.transpose(self.data[data]['data'], (1,0,2)) # because imshow MxN
         if self.data[data]['mode'] in ['gslib', 'csv']:
             origin="lower"
         im = ax1.imshow(d, extent=self.grid.extent, cmap=cmap, origin=origin)
