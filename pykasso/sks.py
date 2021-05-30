@@ -1,6 +1,5 @@
 """
 TODO :
-- ajouter tous les modes d'imports
 - Line 1561 (support 3D)
 - Line 1113 - add multithreading ?
 
@@ -1341,25 +1340,28 @@ class SKS():
         self._compute_iterations_karst_network()
 
         # 3 - Calculate the karst network statistics indicators with karstnet and save karst network
-        #Chloe: Here is where the majority of the changes are.
         karstnet_edges = list(self.edges.values()) #convert to format needed by karstnet (list)
-        karstnet_nodes = copy.deepcopy(self.nodes)       #convert to format needed by karstnet (dic with only coordinates) - make sure to only modify a copy!
-        for key, value in karstnet_nodes.items(): #drop last item in list (the node type) for each dictionary entry
+        karstnet_nodes = copy.deepcopy(self.nodes) #convert to format needed by karstnet (dic with only coordinates) - make sure to only modify a copy!
+        for key, value in karstnet_nodes.items():  #drop last item in list (the node type) for each dictionary entry
             value.pop()
-        k = kn.KGraph(karstnet_edges, karstnet_nodes)  #make graph - edges must be a list, and nodes must be a dic of format {nodeindex: [x,y]}
-        stats = k.characterize_graph(verbose)
+        try:
+            k = kn.KGraph(karstnet_edges, karstnet_nodes)  #make graph - edges must be a list, and nodes must be a dic of format {nodeindex: [x,y]}
+            stats = k.characterize_graph(verbose)
+        except:
+            print("kn.KGraph() failed, $stats and $k set to None")
+            k = None
+            stats = None
 
         # 4 - Store all the relevant data for this network in dictionaries:
-        #Chloe: I added/changed the storage format
-        maps = copy.deepcopy(self.maps)                 #store copy of maps
+        maps = copy.deepcopy(self.maps)                  #store copy of maps
         points = {}
         points['inlets']  = copy.deepcopy(self._inlets)  #store copy of inlets in pandas df format with info about iteration and inlet/outlet assignment (this will be used in plotting later)
         points['outlets'] = copy.deepcopy(self._outlets) #store copy of outlets in pandas df format with info about iteration and inlet/outlet assignment (this will be used in plotting later)
         network = {}
-        network['edges'] = copy.deepcopy(self.edges)   #store copy of edges list
-        network['nodes'] = copy.deepcopy(self.nodes)   #store copy of nodes list
-        network['karstnet'] = copy.deepcopy(k)         #store copy of karstnet network object (including graph)
-        config = copy.deepcopy(self.settings)          #store copy of settings for the run being stored
+        network['edges'] = copy.deepcopy(self.edges) #store copy of edges list
+        network['nodes'] = copy.deepcopy(self.nodes) #store copy of nodes list
+        network['karstnet'] = copy.deepcopy(k)       #store copy of karstnet network object (including graph)
+        config = copy.deepcopy(self.settings)        #store copy of settings for the run being stored
         self.karst_simulations.append(KarstNetwork(maps, points, network, stats, config))
 
         # 5 - Return inlets and outlets to their original format:
@@ -1394,14 +1396,14 @@ class SKS():
         self._outlets = pd.DataFrame(self._outlets, columns = ['x','y', 'outlet_iteration']) #store as df for easier indexing
 
         # Raster maps
-        self.maps              = {}
-        self.maps['outlets']   = np.full((self.grid.nx, self.grid.ny), np.nan) #map of null values where each cell with an outlet will have the index of that outlet
-        self.maps['nodes']     = np.full((self.grid.nx, self.grid.ny), np.nan) #map of null values where each cell that has a node will be updated with that node index
-        self.maps['cost']      = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #cost of travel through each cell
-        self.maps['alpha']     = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #cost of travel along gradient through each cell
-        self.maps['beta']      = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #cost of travel perpendicular to gradient through each cell
-        self.maps['time']      = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #travel time to outlet from each cell
-        self.maps['karst']     = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #presence/absence of karst conduit in each cell
+        self.maps            = {}
+        self.maps['outlets'] = np.full((self.grid.nx, self.grid.ny), np.nan) #map of null values where each cell with an outlet will have the index of that outlet
+        self.maps['nodes']   = np.full((self.grid.nx, self.grid.ny), np.nan) #map of null values where each cell that has a node will be updated with that node index
+        self.maps['cost']    = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #cost of travel through each cell
+        self.maps['alpha']   = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #cost of travel along gradient through each cell
+        self.maps['beta']    = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #cost of travel perpendicular to gradient through each cell
+        self.maps['time']    = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #travel time to outlet from each cell
+        self.maps['karst']   = np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny)) #presence/absence of karst conduit in each cell
 
         # Vector maps
         self.nodes     = {} #empty dic to store nodes (key: nodeID, val: [x, y, type])
@@ -1411,7 +1413,7 @@ class SKS():
         self.geodesics = [] #empty list to store raw fast-marching path output
 
         # Set up fast-marching:
-        #Note: AGD-HFM library has different indexing, so model dimensions must be [ny,nx],
+        # Note: AGD-HFM library has different indexing, so model dimensions must be [ny,nx],
         # and model extent must be [ymin,ymax, xmin,xmax] (NOT x0,y0)
         self.riemannMetric = []                    #this changes at every iteration, but cannot be stored?
         self.fastMarching = agd.Eikonal.dictIn({
@@ -1534,8 +1536,8 @@ class SKS():
         Compute the outlets map (array indicating location of outlets as their index and everywhere else as nan).
         """
         for i,outlet in self._outlets.iterrows():
-            X = int(math.ceil((outlet.x - self.grid.x0 - self.grid.dx/2) / self.grid.dx))
-            Y = int(math.ceil((outlet.y - self.grid.y0 - self.grid.dy/2) / self.grid.dy))
+            X = self.grid.get_i(outlet.x)
+            Y = self.grid.get_j(outlet.y)
             self.maps['outlets'][X][Y] = i
         return None
 
@@ -1618,7 +1620,10 @@ class SKS():
         """
         Compute the riemann metric: Define the Riemannian metric needed as input for the anisotropic fast marching.
         """
-        self.riemannMetric = agd.Metrics.Riemann.needle([self.geology.data['orientationx']['data'], self.geology.data['orientationy']['data']], self.maps['alpha'][iteration], self.maps['beta'][iteration])
+        self.riemannMetric = agd.Metrics.Riemann.needle([self.geology.data['orientationx']['data'],
+                                                        self.geology.data['orientationy']['data']],
+                                                        self.maps['alpha'][iteration],
+                                                        self.maps['beta'][iteration])
         return None
 
     # 2
@@ -1646,13 +1651,13 @@ class SKS():
         using the anisotropic agd-hfm fast-marching algorithm, and store travel time map.
         Note: the AGD-HFM library uses different indexing, so x and y indices are reversed for inlets and outlets.
         """
-        self.fastMarching['seeds']  = np.rot90([self._outlets[self._outlets.iteration==iteration].x, self._outlets[self._outlets.iteration==iteration].y], k=3)   #set the outlets for this iteration
-        self.fastMarching['tips']   = np.rot90([self._inlets[self._inlets.iteration==iteration].x, self._inlets[self._inlets.iteration==iteration].y], k=3)       #select inlets for current iteration
-        self.fastMarching['metric'] = self.riemannMetric                      #set the travel cost through each cell
-        self.fastMarching['verbosity'] = self.settings['verbosity']           #set verbosity of hfm run
-        self.fastMarchingOutput     = self.fastMarching.Run()                 #run the fast marching algorithm and store the outputs
-        self.maps['time'][iteration] = self.fastMarchingOutput['values']      #store travel time maps
-        self.geodesics.append(self.fastMarchingOutput['geodesics'])           #store fastest travel paths
+        self.fastMarching['seeds']     = np.rot90([self._outlets[self._outlets.iteration==iteration].x, self._outlets[self._outlets.iteration==iteration].y], k=3)   #set the outlets for this iteration
+        self.fastMarching['tips']      = np.rot90([self._inlets[self._inlets.iteration==iteration].x, self._inlets[self._inlets.iteration==iteration].y], k=3)       #select inlets for current iteration
+        self.fastMarching['metric']    = self.riemannMetric                #set the travel cost through each cell
+        self.fastMarching['verbosity'] = self.settings['verbosity']        #set verbosity of hfm run
+        self.fastMarchingOutput        = self.fastMarching.Run()           #run the fast marching algorithm and store the outputs
+        self.maps['time'][iteration]   = self.fastMarchingOutput['values'] #store travel time maps
+        self.geodesics.append(self.fastMarchingOutput['geodesics'])        #store fastest travel paths
         return None
 
     # 2
@@ -1666,18 +1671,18 @@ class SKS():
 
         #Debugging:
         #Chloe: this should stay in since it is very useful if there are problems
-        f1,ax1 = plt.subplots(1,1, figsize=(10,10))  #debugging
-        ax1.imshow(self.maps['karst'][iteration], origin='lower', extent=self.grid.extent, cmap='gray_r')
-        ax1.imshow(self.maps['nodes'], origin='lower', extent=self.grid.extent, cmap='gray_r')
-        ax1.scatter(self._outlets[self._outlets.iteration==iteration].x, self._outlets[self._outlets.iteration==iteration].y, c='c', s=100)
-        ax1.scatter(self._inlets[self._inlets.iteration==iteration].x, self._inlets[self._inlets.iteration==iteration].y, c='orange', s=100)
+        #f1,ax1 = plt.subplots(1,1, figsize=(10,10))  #debugging
+        #ax1.imshow(self.maps['karst'][iteration], origin='lower', extent=self.grid.extent, cmap='gray_r')
+        #ax1.imshow(self.maps['nodes'], origin='lower', extent=self.grid.extent, cmap='gray_r')
+        #ax1.scatter(self._outlets[self._outlets.iteration==iteration].x, self._outlets[self._outlets.iteration==iteration].y, c='c', s=100)
+        #ax1.scatter(self._inlets[self._inlets.iteration==iteration].x, self._inlets[self._inlets.iteration==iteration].y, c='orange', s=100)
 
         #Loop over conduit paths generated by fast marching:
         for path in self.fastMarchingOutput['geodesics']:   #loop over conduit paths in this iteration (there is one path from each inlet)
             merge = False                                   #reset indicator for whether this conduit has merged with an existing conduit
             for p in range(path.shape[1]):                  #loop over points making up this conduit path
                 point = path[:,p]                           #get coordinates of current point
-                [[ix,iy],error]  = self.fastMarching.IndexFromPoint(point) #convert to coordinates to indices
+                [[iy,ix],error]  = self.fastMarching.IndexFromPoint(point) #convert to coordinates to indices, /!\ returning iy first then ix 
                 #ax1.scatter(point[1],point[0], c='g',s=5)  #debugging
 
                 #Place nodes and links:
@@ -1841,18 +1846,18 @@ class SKS():
         fig.add_subplot(133, aspect='equal')
         d = data.maps['karst'][-1]
         plt.xlabel('Karst array'+str(d.shape))
-        #d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
+        d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
         plt.imshow(d, extent=self.grid.extent, origin='lower', cmap='gray_r') #darker=conduits
         plt.colorbar(shrink=0.35)
-        #i = plt.scatter(data.points['inlets'].x,  data.points['inlets'].y,  c='orange')
-        #o = plt.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue')
-        #p = matplotlib.patches.Rectangle((0,0),0,0, ec='r', fc='none')
-        #if self.settings['data_has_polygon']:
-        #    closed_polygon = self.polygon.polygon[:]
-        #    closed_polygon.append(closed_polygon[0])
-        #    x,y = zip(*closed_polygon)
-        #    plt.plot(x,y, color='red', label='polygon')
-        #plt.legend([i,o,p], ['inlets', 'outlets', 'catchment'], loc='upper right')
+        i = plt.scatter(data.points['inlets'].x,  data.points['inlets'].y,  c='orange')
+        o = plt.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue')
+        p = matplotlib.patches.Rectangle((0,0),0,0, ec='r', fc='none')
+        if self.settings['data_has_polygon']:
+            closed_polygon = self.polygon.polygon[:]
+            closed_polygon.append(closed_polygon[0])
+            x,y = zip(*closed_polygon)
+            plt.plot(x,y, color='red', label='polygon')
+        plt.legend([i,o,p], ['inlets', 'outlets', 'catchment'], loc='upper right')
 
         if title is not None:
             fig.suptitle(title, fontsize=16)
