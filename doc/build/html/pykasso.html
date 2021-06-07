@@ -1,0 +1,1798 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>pykasso package &mdash; pyKasso v0.2.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pyKasso
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">pykasso package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-pykasso.fracture">pykasso.fracture module</a></li>
+<li><a class="reference internal" href="#module-pykasso.functions">pykasso.functions module</a></li>
+<li><a class="reference internal" href="#module-pykasso.geologymanager">pykasso.geologymanager module</a></li>
+<li><a class="reference internal" href="#module-pykasso.grid">pykasso.grid module</a></li>
+<li><a class="reference internal" href="#module-pykasso.karstnetwork">pykasso.karstnetwork module</a></li>
+<li><a class="reference internal" href="#module-pykasso.pointmanager">pykasso.pointmanager module</a></li>
+<li><a class="reference internal" href="#module-pykasso.polygon">pykasso.polygon module</a></li>
+<li><a class="reference internal" href="#module-pykasso.sks">pykasso.sks module</a></li>
+<li><a class="reference internal" href="#module-pykasso">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyKasso</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>pykasso package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/pykasso.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="pykasso-package">
+<h1>pykasso package<a class="headerlink" href="#pykasso-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-pykasso.fracture">
+<span id="pykasso-fracture-module"></span><h2>pykasso.fracture module<a class="headerlink" href="#module-pykasso.fracture" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="pykasso.fracture.Fracture">
+<em class="property">class </em><code class="sig-prename descclassname">pykasso.fracture.</code><code class="sig-name descname">Fracture</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ID</span></em>, <em class="sig-param"><span class="n">family</span></em>, <em class="sig-param"><span class="n">position</span></em>, <em class="sig-param"><span class="n">radius</span></em>, <em class="sig-param"><span class="n">orientation</span></em>, <em class="sig-param"><span class="n">dip</span></em>, <em class="sig-param"><span class="n">normal</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.fracture.Fracture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for modeling fractures as objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ID</strong> (<em>int</em>) – Fracture id.</p></li>
+<li><p><strong>family</strong> (<em>int</em>) – Fracture family id.</p></li>
+<li><p><strong>position</strong> (<em>list</em>) – Position of the center of the fracture [x, y, z].</p></li>
+<li><p><strong>radius</strong> (<em>float</em>) – Radius of the fracture.</p></li>
+<li><p><strong>orientation</strong> (<em>float</em>) – Orientation of the fracture.</p></li>
+<li><p><strong>dip</strong> (<em>float</em>) – Dip of the fracture.</p></li>
+<li><p><strong>normal</strong> (<em>list</em>) – Normal vector of the fracture [a, b, c].</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pykasso.fracture.Fracture.get_ID">
+<code class="sig-name descname">get_ID</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.fracture.Fracture.get_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.fracture.Fracture.get_dip">
+<code class="sig-name descname">get_dip</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.fracture.Fracture.get_dip" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.fracture.Fracture.get_family">
+<code class="sig-name descname">get_family</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.fracture.Fracture.get_family" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.fracture.Fracture.get_normal">
+<code class="sig-name descname">get_normal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.fracture.Fracture.get_normal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.fracture.Fracture.get_orientation">
+<code class="sig-name descname">get_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.fracture.Fracture.get_orientation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.fracture.Fracture.get_position">
+<code class="sig-name descname">get_position</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.fracture.Fracture.get_position" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.fracture.Fracture.get_radius">
+<code class="sig-name descname">get_radius</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.fracture.Fracture.get_radius" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pykasso.functions">
+<span id="pykasso-functions-module"></span><h2>pykasso.functions module<a class="headerlink" href="#module-pykasso.functions" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="pykasso.functions.get_settings">
+<code class="sig-prename descclassname">pykasso.functions.</code><code class="sig-name descname">get_settings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">example</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.functions.get_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide the datafiles settings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>example</strong> (<em>bool</em><em>, </em><em>optionnal</em>) – If True, pyKasso will provide you the Betteraz’s files example</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pk</span><span class="o">.</span><span class="n">get_settings</span><span class="p">(</span><span class="n">example</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pykasso.functions.loadpoints">
+<code class="sig-prename descclassname">pykasso.functions.</code><code class="sig-name descname">loadpoints</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">text</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.functions.loadpoints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Private function to load points in a text. Generally combined with ‘opendatafile()’.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pykasso.functions.opendatafile">
+<code class="sig-prename descclassname">pykasso.functions.</code><code class="sig-name descname">opendatafile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_location</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.functions.opendatafile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Private function to simply open a file.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pykasso.geologymanager">
+<span id="pykasso-geologymanager-module"></span><h2>pykasso.geologymanager module<a class="headerlink" href="#module-pykasso.geologymanager" title="Permalink to this headline">¶</a></h2>
+<p>A clarifier :
+- set_data_from_gslib</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>If value==0, it will replaced by nan ???</p></li>
+</ul>
+</div></blockquote>
+<p>TODO :
+- show_fractures_stats() // show_fractures() : diagrammes de Rose (voir code de Chloé) [mplstereonet]</p>
+<ul class="simple">
+<li><p>Renverser les fractures</p></li>
+</ul>
+<dl class="py class">
+<dt id="pykasso.geologymanager.GeologyManager">
+<em class="property">class </em><code class="sig-prename descclassname">pykasso.geologymanager.</code><code class="sig-name descname">GeologyManager</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Create a geology manager : a class for managing geology, faults and fractures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>grid</strong> (<a class="reference internal" href="#pykasso.grid.Grid" title="pykasso.grid.Grid"><em>Grid</em></a><em>(</em><em>)</em>) – GeologyManager() class needs a Grid() object as argument.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.compute_stats_on_data">
+<code class="sig-name descname">compute_stats_on_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_key</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.compute_stats_on_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute statistics on the geologic data (not including the orientations).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.disk_xplane_intersect">
+<code class="sig-name descname">disk_xplane_intersect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">center</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">R</span></em>, <em class="sig-param"><span class="n">xi</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.disk_xplane_intersect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the intersection between a disk
+and a vertical plane (constant x plane) in 3D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>disk is defined by three parameters</strong> (<em>The</em>) – </p></li>
+<li><p><strong>center</strong> (<em>numpy array of size 3</em>) – the 3D coordinates of the center of the disk.</p></li>
+<li><p><strong>n</strong> (<em>numpy array of size 3</em>) – the normal vector perpendicular to the disk
+Warning : The norm of n must be 1.</p></li>
+<li><p><strong>R</strong> (<em>floating point value</em>) – Radius of the disk</p></li>
+<li><p><strong>xi</strong> (<em>float</em>) – Position of the vertical plane along the x axis</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>[y1, z1, y2, z2]</strong> – the coordinates of the two extremities of the intersection
+between the plane and disk if there is an intersection.
+Returns 4 np.NaN if there is no intersection.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array with 4 floating point values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.disk_yplane_intersect">
+<code class="sig-name descname">disk_yplane_intersect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">center</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">R</span></em>, <em class="sig-param"><span class="n">yi</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.disk_yplane_intersect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the intersection between a disk
+and a vertical plane (constant y plane) in 3D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>disk is defined by three parameters</strong> (<em>The</em>) – </p></li>
+<li><p><strong>center</strong> (<em>numpy array of size 3</em>) – the 3D coordinates of the center of the disk.</p></li>
+<li><p><strong>n</strong> (<em>numpy array of size 3</em>) – the normal vector perpendicular to the disk
+Warning : The norm of n must be 1.</p></li>
+<li><p><strong>R</strong> (<em>floating point value</em>) – Radius of the disk</p></li>
+<li><p><strong>yi</strong> (<em>float</em>) – Position of the vertical plane along the y axis</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>[x1, z1, x2, z2]</strong> – the coordinates of the two extremities of the intersection
+between the plane and disk if there is an intersection.
+Returns 4 np.NaN if there is no intersection.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array with 4 floating point values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.disk_zplane_intersect">
+<code class="sig-name descname">disk_zplane_intersect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">center</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">R</span></em>, <em class="sig-param"><span class="n">zi</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.disk_zplane_intersect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the intersection between a disk
+and a horizontal plane (constant z plane) in 3D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>disk is defined by three parameters</strong> (<em>The</em>) – </p></li>
+<li><p><strong>center</strong> (<em>numpy array of size 3</em>) – the 3D coordinates of the center of the disk.</p></li>
+<li><p><strong>n</strong> (<em>numpy array of size 3</em>) – the normal vector perpendicular to the disk
+Warning : The norm of n must be 1.</p></li>
+<li><p><strong>R</strong> (<em>floating point value</em>) – Radius of the disk</p></li>
+<li><p><strong>zi</strong> (<em>floating point value</em>) – Position of the horizontal plane along the z axis</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>[x1, y1, x2, y2]</strong> – the coordinates of the two extremities of the intersection
+between the plane and disk if there is an intersection.
+Returns 4 np.NaN if there is no intersection.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array with 4 floating point values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.float_eq">
+<code class="sig-name descname">float_eq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">b</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">1e-05</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.float_eq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the difference between a and b
+is lower than tolerance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.generate_fractures">
+<code class="sig-name descname">generate_fractures</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fractures_densities</span></em>, <em class="sig-param"><span class="n">fractures_alpha</span></em>, <em class="sig-param"><span class="n">fractures_min_orientation</span></em>, <em class="sig-param"><span class="n">fractures_max_orientation</span></em>, <em class="sig-param"><span class="n">fractures_min_dip</span></em>, <em class="sig-param"><span class="n">fractures_max_dip</span></em>, <em class="sig-param"><span class="n">fractures_min_length</span></em>, <em class="sig-param"><span class="n">fractures_max_length</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.generate_fractures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate fractures as Fracture() objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fractures_densities</strong> (<em>list</em>) – Fracture densities for each fracture family.</p></li>
+<li><p><strong>fractures_alpha</strong> (<em>list</em>) – Degree of power law for each fracture family.</p></li>
+<li><p><strong>fractures_min_orientation</strong> (<em>list</em>) – Fractures minimum orientation for each fracture family.</p></li>
+<li><p><strong>fractures_max_orientation</strong> (<em>list</em>) – Fractures maximum orientation for each fracture family.</p></li>
+<li><p><strong>fractures_min_dip</strong> (<em>list</em>) – Fractures minimum dip for each fracture family.</p></li>
+<li><p><strong>fractures_max_dip</strong> (<em>list</em>) – Fractures maximum dip for each fracture family.</p></li>
+<li><p><strong>fractures_min_length</strong> (<em>list</em>) – The minimum lenght of the fractures for each fracture family.</p></li>
+<li><p><strong>fractures_max_length</strong> (<em>list</em>) – The maximum lenght of the fractures for each fracture family.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.generate_orientations">
+<code class="sig-name descname">generate_orientations</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">surface</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.generate_orientations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate maps of x and y components of orientation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>surface</strong> (<em>2D numpy-array</em>) – A 2D array of the elevation or potential in cell, used to calculate the orientation (i.e. slope or dip) of that cell.
+Use either the land surface (‘topography’), the surface of the bottom of the karst unit (‘contact’), or the potential returned by the geologic model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.rasterize_fracture_network">
+<code class="sig-name descname">rasterize_fracture_network</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.rasterize_fracture_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rasterize a set of fractures on a 3D grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>raster_fractures</strong> – with value 1 where the grid is touched by a fracture</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>3D numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.rst2d">
+<code class="sig-name descname">rst2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">xs</span></em>, <em class="sig-param"><span class="n">xe</span></em>, <em class="sig-param"><span class="n">ys</span></em>, <em class="sig-param"><span class="n">ye</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.rst2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rasterize a line on a 2D plane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<em>2D numpy array</em>) – </p></li>
+<li><p><strong>xs</strong> (<em>integer values</em>) – indices of positions on the grid m
+starting and ending location of the line</p></li>
+<li><p><strong>xe</strong> (<em>integer values</em>) – indices of positions on the grid m
+starting and ending location of the line</p></li>
+<li><p><strong>ys</strong> (<em>integer values</em>) – indices of positions on the grid m
+starting and ending location of the line</p></li>
+<li><p><strong>ye</strong> (<em>integer values</em>) – indices of positions on the grid m
+starting and ending location of the line</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>m</strong> – with value 1 where the grid is touched by the line</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>2D numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.set_data_from_csv">
+<code class="sig-name descname">set_data_from_csv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_key</span></em>, <em class="sig-param"><span class="n">datafile_location</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.set_data_from_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set data from a csv file for the indicated data key.
+Delimiter is ‘,’.</p>
+<p>If nz &gt; 1, the layer is horizontally repeated.</p>
+<p>x direction : from West to East
+y direction : from North to South</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_key</strong> (<em>string</em>) – Type of data : ‘geology’, ‘topography’, ‘surface’ (orientation), ‘faults’ or ‘fractures’.</p></li>
+<li><p><strong>datafile_location</strong> (<em>string</em>) – Path of the datafile.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.set_data_from_gslib">
+<code class="sig-name descname">set_data_from_gslib</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_key</span></em>, <em class="sig-param"><span class="n">datafile_location</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.set_data_from_gslib" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set data from a gslib file for indicated data key in the format that work with the fast marching algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_key</strong> (<em>string</em>) – Type of data : ‘geology’, ‘faults’ or ‘fractures’.</p></li>
+<li><p><strong>datafile_location</strong> (<em>string</em>) – Path to the datafile.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.set_data_from_image">
+<code class="sig-name descname">set_data_from_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_key</span></em>, <em class="sig-param"><span class="n">datafile_location</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.set_data_from_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set data from an image for a indicated data key.
+The size of the image should be the same that the size of the grid.
+If nz &gt; 1, the layer is horizontally repeated.
+set_data_from_image() usage is not recommended, it should be used only for quick testing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_key</strong> (<em>string</em>) – Type of data : ‘geology’, ‘faults’ or ‘fractures’.</p></li>
+<li><p><strong>datafile_location</strong> (<em>string</em>) – Path of the datafile.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.set_data_from_pickle">
+<code class="sig-name descname">set_data_from_pickle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_key</span></em>, <em class="sig-param"><span class="n">datafile_location</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.set_data_from_pickle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set data from a pickle data file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_key</strong> (<em>string</em>) – Type of data : ‘geology’, ‘faults’ or ‘fractures’.</p></li>
+<li><p><strong>datafile_location</strong> (<em>string</em>) – Path of the datafile.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.set_data_null">
+<code class="sig-name descname">set_data_null</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_key</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.set_data_null" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set data to ‘null’ for an the indicated data key.</p>
+<p>For ‘topography’, ‘orientationx’ and ‘orientationy’ returns :
+np.zeros((nx,ny))</p>
+<p>Otherwise returns:
+np.zeros((nx,ny,nz))</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data_key</strong> (<em>str</em>) – Type of data : ‘geology’, ‘faults’, ‘fractures’, ‘topography’, ‘orientationx’ or ‘orientationy’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.show">
+<code class="sig-name descname">show</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">'geology'</span></em>, <em class="sig-param"><span class="n">cmap</span><span class="o">=</span><span class="default_value">'gray_r'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show data from the geology manager.</p>
+<dl class="simple">
+<dt>data<span class="classifier">str || list (optional)</span></dt><dd><p>Data to show : ‘geology’, ‘topography’, ‘orientationx’, ‘orientationy’ ‘faults’ or ‘fractures’.
+By default, all data are showed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.geologymanager.GeologyManager.unit_intersect">
+<code class="sig-name descname">unit_intersect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.geologymanager.GeologyManager.unit_intersect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the intersection between a unit circle
+and a line on a 2D plane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>unit circle is centered on the origin</strong><strong> (</strong><strong>x=0</strong> (<em>The</em>) – </p></li>
+<li><p><strong>and has</strong> (<em>y=0</em><em>)</em>) – </p></li>
+<li><p><strong>radius of 1.</strong> (<em>a</em>) – </p></li>
+<li><p><strong>line is defined by two parameters</strong> (<em>The</em>) – </p></li>
+<li><p><strong>n</strong> (<em>numpy array of size 2</em>) – The normal vector perpendicular to the line
+Warning : The norm of n must be 1.</p></li>
+<li><p><strong>d</strong> (<em>floating point value</em>) – Defines the position of the line, it is a
+signed distance to the origin x=0, y=0.
+It can be positive or negative.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>[X1, X2, Y1, Y2]</strong> – the coordinates of the two points of intersection when the
+exists. Returns 4 np.NaN if there is no intersection</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array with 4 floating point values</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pykasso.grid">
+<span id="pykasso-grid-module"></span><h2>pykasso.grid module<a class="headerlink" href="#module-pykasso.grid" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="pykasso.grid.Grid">
+<em class="property">class </em><code class="sig-prename descclassname">pykasso.grid.</code><code class="sig-name descname">Grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x0</span></em>, <em class="sig-param"><span class="n">y0</span></em>, <em class="sig-param"><span class="n">z0</span></em>, <em class="sig-param"><span class="n">nx</span></em>, <em class="sig-param"><span class="n">ny</span></em>, <em class="sig-param"><span class="n">nz</span></em>, <em class="sig-param"><span class="n">dx</span></em>, <em class="sig-param"><span class="n">dy</span></em>, <em class="sig-param"><span class="n">dz</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.grid.Grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Create a grid for the simulation.
+The calculation points are located in the center of the cells, and the origin coordinates are located at the left-bottom of the grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x0</strong> (<em>float</em>) – x-coordinate of centerpoint of bottom left cell.</p></li>
+<li><p><strong>y0</strong> (<em>float</em>) – y-coordinate of centerpoint of bottom left cell.</p></li>
+<li><p><strong>z0</strong> (<em>float</em>) – z-coordinate of centerpoint of bottom left cell.</p></li>
+<li><p><strong>nx</strong> (<em>int</em>) – Number of cells in x direction.</p></li>
+<li><p><strong>ny</strong> (<em>int</em>) – Number of cells in y direction.</p></li>
+<li><p><strong>nz</strong> (<em>int</em>) – Number of cells in z direction.</p></li>
+<li><p><strong>dx</strong> (<em>float</em>) – Cell width in x direction.</p></li>
+<li><p><strong>dy</strong> (<em>float</em>) – Cell width in y direction.</p></li>
+<li><p><strong>dz</strong> (<em>float</em>) – Cell width in z direction.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>x0, y0 and z0 are considered to be in the center of the first node.</p></li>
+</ul>
+<dl class="py method">
+<dt id="pykasso.grid.Grid.get_i">
+<code class="sig-name descname">get_i</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.grid.Grid.get_i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve i index with x-coordinate.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.grid.Grid.get_j">
+<code class="sig-name descname">get_j</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.grid.Grid.get_j" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve j index with x-coordinate.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.grid.Grid.get_k">
+<code class="sig-name descname">get_k</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">z</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.grid.Grid.get_k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve k index with x-coordinate.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.grid.Grid.get_x">
+<code class="sig-name descname">get_x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.grid.Grid.get_x" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve x-coordinate with i index.
+Return none if i index is outside the grid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.grid.Grid.get_y">
+<code class="sig-name descname">get_y</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">j</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.grid.Grid.get_y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve y-coordinate with i index.
+Return none if j index is outside the grid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.grid.Grid.get_z">
+<code class="sig-name descname">get_z</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.grid.Grid.get_z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve z-coordinate with i index.
+Return none if k index is outside the grid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.grid.Grid.inbox">
+<code class="sig-name descname">inbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">z</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.grid.Grid.inbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return 1 if x, y and z-coordinate are inside the grid.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pykasso.karstnetwork">
+<span id="pykasso-karstnetwork-module"></span><h2>pykasso.karstnetwork module<a class="headerlink" href="#module-pykasso.karstnetwork" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="pykasso.karstnetwork.KarstNetwork">
+<em class="property">class </em><code class="sig-prename descclassname">pykasso.karstnetwork.</code><code class="sig-name descname">KarstNetwork</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">maps</span></em>, <em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">network</span></em>, <em class="sig-param"><span class="n">stats</span></em>, <em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.karstnetwork.KarstNetwork" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for storing a calculated karst network.</p>
+<blockquote>
+<div><p>Parameters</p>
+</div></blockquote>
+<dl class="simple">
+<dt>maps<span class="classifier">int</span></dt><dd><ul class="simple">
+<li></li>
+</ul>
+</dd>
+<dt>points<span class="classifier">int</span></dt><dd><ul class="simple">
+<li></li>
+</ul>
+</dd>
+<dt>network<span class="classifier">list</span></dt><dd><ul class="simple">
+<li></li>
+</ul>
+</dd>
+<dt>stats<span class="classifier">float</span></dt><dd><ul class="simple">
+<li></li>
+</ul>
+</dd>
+<dt>settings<span class="classifier">float</span></dt><dd><ul class="simple">
+<li></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pykasso.pointmanager">
+<span id="pykasso-pointmanager-module"></span><h2>pykasso.pointmanager module<a class="headerlink" href="#module-pykasso.pointmanager" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="pykasso.pointmanager.PointManager">
+<em class="property">class </em><code class="sig-prename descclassname">pykasso.pointmanager.</code><code class="sig-name descname">PointManager</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grid</span></em>, <em class="sig-param"><span class="n">polygon</span></em>, <em class="sig-param"><span class="n">geology</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.pointmanager.PointManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Create a point manager : a class for managing points and transform them to inlets or outlets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grid</strong> (<a class="reference internal" href="#pykasso.grid.Grid" title="pykasso.grid.Grid"><em>Grid</em></a><em>(</em><em>)</em>) – PointManager() class needs a Grid() object as argument.</p></li>
+<li><p><strong>polygon</strong> (<a class="reference internal" href="#pykasso.polygon.Polygon" title="pykasso.polygon.Polygon"><em>Polygon</em></a><em>(</em><em>)</em>) – <p>PointManager() class needs a Polygon() object as argument.
+geology : GeologyManager()</p>
+<blockquote>
+<div><p>PointManager() class needs a GeologyManager() object as argument.</p>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pykasso.pointmanager.PointManager.composite_points">
+<code class="sig-name descname">composite_points</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points_key</span></em>, <em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">points_number</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.pointmanager.PointManager.composite_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate random points on the grid, and add indicated points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points_key</strong> (<em>string</em>) – Type of points : ‘inlets’ or ‘outlets’.</p></li>
+<li><p><strong>points</strong> (<em>string</em><em> or </em><em>list</em>) – Location of the datafile or list of the points coordinates.</p></li>
+<li><p><strong>points_number</strong> (<em>integer</em>) – Number of points to generate.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.pointmanager.PointManager.generate_points">
+<code class="sig-name descname">generate_points</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points_key</span></em>, <em class="sig-param"><span class="n">points_number</span></em>, <em class="sig-param"><span class="n">geological_IDs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.pointmanager.PointManager.generate_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate random points on the grid, according to the parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points_key</strong> (<em>str</em>) – Type of points : ‘inlets’ or ‘outlets’.</p></li>
+<li><p><strong>points_number</strong> (<em>int</em>) – Number of points to generate.</p></li>
+<li><p><strong>geological_IDs</strong> (<em>list</em>) – List of geologic facies where points can be created.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.pointmanager.PointManager.inspect_points">
+<code class="sig-name descname">inspect_points</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.pointmanager.PointManager.inspect_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the points are well located inside the grid.
+If there is no print out, so everything is OK.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.pointmanager.PointManager.set_points">
+<code class="sig-name descname">set_points</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points_key</span></em>, <em class="sig-param"><span class="n">points</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.pointmanager.PointManager.set_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set new points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points_key</strong> (<em>str</em>) – Type of points : ‘inlets’ or ‘outlets’.</p></li>
+<li><p><strong>points</strong> (<em>str || list</em>) – Location of the datafile or list of the points coordinates like [[x1,y1],[x2,y2],[xn,yn]].</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.pointmanager.PointManager.show">
+<code class="sig-name descname">show</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.pointmanager.PointManager.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the delimitation of the grid, of the polygon (if present) and of the locations of the points (if present).</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pykasso.polygon">
+<span id="pykasso-polygon-module"></span><h2>pykasso.polygon module<a class="headerlink" href="#module-pykasso.polygon" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="pykasso.polygon.Polygon">
+<em class="property">class </em><code class="sig-prename descclassname">pykasso.polygon.</code><code class="sig-name descname">Polygon</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.polygon.Polygon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Create a polygon manager : a class for managing a polygon as an area study delimitor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>grid</strong> (<a class="reference internal" href="#pykasso.grid.Grid" title="pykasso.grid.Grid"><em>Grid</em></a><em>(</em><em>)</em>) – Polygon() class needs a Grid() object as argument.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pykasso.polygon.Polygon.clean_polygon">
+<code class="sig-name descname">clean_polygon</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.polygon.Polygon.clean_polygon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the polygon.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.polygon.Polygon.inspect_polygon">
+<code class="sig-name descname">inspect_polygon</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.polygon.Polygon.inspect_polygon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the vertices of the polygon are located inside the grid or not.
+If all the vertices are outside the grid, the polygon is rested to none.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List of vertices out of the grid else ‘None’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.polygon.Polygon.set_polygon">
+<code class="sig-name descname">set_polygon</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vertices</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.polygon.Polygon.set_polygon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a polygon from vertices coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>vertices</strong> (<em>str || list</em>) – Location of the datafile or list of the vertices coordinates like [[x1,y1],[x2,y2],[xn,yn]].</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.polygon.Polygon.show">
+<code class="sig-name descname">show</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.polygon.Polygon.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the delimitation of the grid and, if a polygon is present, display its limits.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pykasso.sks">
+<span id="pykasso-sks-module"></span><h2>pykasso.sks module<a class="headerlink" href="#module-pykasso.sks" title="Permalink to this headline">¶</a></h2>
+<p>TODO :
+- ajouter tous les modes d’imports
+- Line 1561 (support 3D)
+- Line 1113 - add multithreading ?</p>
+<ul class="simple">
+<li><p>faire du ménage dans les fonctions de visu</p></li>
+<li><p>function : get_fractures_numbers ? marche pas ??</p></li>
+</ul>
+<dl class="py class">
+<dt id="pykasso.sks.SKS">
+<em class="property">class </em><code class="sig-prename descclassname">pykasso.sks.</code><code class="sig-name descname">SKS</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">yaml_settings_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rand_seed</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A super-class to manage all the data class and to simulate karst networks.</p>
+<dl class="py method">
+<dt id="pykasso.sks.SKS.compare_stats">
+<code class="sig-name descname">compare_stats</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mean</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.compare_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare statistics between reference indicators and calculated networks.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.compute_karst_network">
+<code class="sig-name descname">compute_karst_network</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.compute_karst_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the karst network according to the parameters.</p>
+<p>Save the results in the <cite>karst_simulations</cite> list attribute.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_algorithm">
+<code class="sig-name descname">get_algorithm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_algorithm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_contact_surface">
+<code class="sig-name descname">get_contact_surface</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_contact_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the lower contact surface of the karst unit as a numpy-array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_cost_aquiclude">
+<code class="sig-name descname">get_cost_aquiclude</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_cost_aquiclude" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_cost_aquifer">
+<code class="sig-name descname">get_cost_aquifer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_cost_aquifer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_cost_conduits">
+<code class="sig-name descname">get_cost_conduits</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_cost_conduits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_cost_faults">
+<code class="sig-name descname">get_cost_faults</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_cost_faults" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_cost_fractures">
+<code class="sig-name descname">get_cost_fractures</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_cost_fractures" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_cost_out">
+<code class="sig-name descname">get_cost_out</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_cost_out" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_cost_ratio">
+<code class="sig-name descname">get_cost_ratio</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_cost_ratio" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_data_has_polygon">
+<code class="sig-name descname">get_data_has_polygon</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_data_has_polygon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_dx">
+<code class="sig-name descname">get_dx</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_dx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_dy">
+<code class="sig-name descname">get_dy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_dy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_dz">
+<code class="sig-name descname">get_dz</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_dz" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_faults">
+<code class="sig-name descname">get_faults</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_faults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the faults data as a numpy-array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_faults_datafile">
+<code class="sig-name descname">get_faults_datafile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_faults_datafile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_faults_mode">
+<code class="sig-name descname">get_faults_mode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_faults_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_fractures">
+<code class="sig-name descname">get_fractures</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fractures_family</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_fractures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the fractures as a numpy-array.</p>
+<dl class="simple">
+<dt>fractures_family<span class="classifier">integer</span></dt><dd><p>First family is 0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_fractures_alpha">
+<code class="sig-name descname">get_fractures_alpha</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_fractures_alpha" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_fractures_datafile">
+<code class="sig-name descname">get_fractures_datafile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_fractures_datafile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_fractures_densities">
+<code class="sig-name descname">get_fractures_densities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_fractures_densities" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_fractures_max_dip">
+<code class="sig-name descname">get_fractures_max_dip</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_fractures_max_dip" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_fractures_max_length">
+<code class="sig-name descname">get_fractures_max_length</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_fractures_max_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_fractures_max_orientation">
+<code class="sig-name descname">get_fractures_max_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_fractures_max_orientation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_fractures_min_dip">
+<code class="sig-name descname">get_fractures_min_dip</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_fractures_min_dip" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_fractures_min_length">
+<code class="sig-name descname">get_fractures_min_length</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_fractures_min_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_fractures_min_orientation">
+<code class="sig-name descname">get_fractures_min_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_fractures_min_orientation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_fractures_mode">
+<code class="sig-name descname">get_fractures_mode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_fractures_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_fractures_numbers">
+<code class="sig-name descname">get_fractures_numbers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_fractures_numbers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of fractures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionnary with the number of fractures given by user, and with the number of fractures calculated.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dictionnary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_geological_datafile">
+<code class="sig-name descname">get_geological_datafile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_geological_datafile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_geological_mode">
+<code class="sig-name descname">get_geological_mode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_geological_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_geology">
+<code class="sig-name descname">get_geology</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_geology" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the geological data as a numpy-array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_geology_cost">
+<code class="sig-name descname">get_geology_cost</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_geology_cost" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_geology_id">
+<code class="sig-name descname">get_geology_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_geology_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_importance_factor">
+<code class="sig-name descname">get_importance_factor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_importance_factor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_inlets">
+<code class="sig-name descname">get_inlets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_inlets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the inlets as an array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_inlets_data">
+<code class="sig-name descname">get_inlets_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_inlets_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_inlets_importance">
+<code class="sig-name descname">get_inlets_importance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_inlets_importance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_inlets_mode">
+<code class="sig-name descname">get_inlets_mode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_inlets_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_inlets_number">
+<code class="sig-name descname">get_inlets_number</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_inlets_number" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_inlets_per_outlet">
+<code class="sig-name descname">get_inlets_per_outlet</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_inlets_per_outlet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_inlets_shuffle">
+<code class="sig-name descname">get_inlets_shuffle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_inlets_shuffle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_mask">
+<code class="sig-name descname">get_mask</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the numpy-array mask calculated if a polygon is given.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_nx">
+<code class="sig-name descname">get_nx</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_nx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_ny">
+<code class="sig-name descname">get_ny</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_ny" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_nz">
+<code class="sig-name descname">get_nz</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_nz" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_orientation">
+<code class="sig-name descname">get_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the orientation data as two numpy arrays (for x and y components).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_orientation_datafile">
+<code class="sig-name descname">get_orientation_datafile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_orientation_datafile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_orientation_mode">
+<code class="sig-name descname">get_orientation_mode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_orientation_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_outlets">
+<code class="sig-name descname">get_outlets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_outlets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the outlets as an array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_outlets_data">
+<code class="sig-name descname">get_outlets_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_outlets_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_outlets_importance">
+<code class="sig-name descname">get_outlets_importance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_outlets_importance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_outlets_mode">
+<code class="sig-name descname">get_outlets_mode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_outlets_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_outlets_number">
+<code class="sig-name descname">get_outlets_number</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_outlets_number" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_outlets_shuffle">
+<code class="sig-name descname">get_outlets_shuffle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_outlets_shuffle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_polygon_data">
+<code class="sig-name descname">get_polygon_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_polygon_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_polygon_vertices">
+<code class="sig-name descname">get_polygon_vertices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_polygon_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the polygon vertices as a list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_rand_seed">
+<code class="sig-name descname">get_rand_seed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_rand_seed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_topography">
+<code class="sig-name descname">get_topography</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_topography" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the topography data as a numpy-array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_topography_datafile">
+<code class="sig-name descname">get_topography_datafile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_topography_datafile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_topography_mode">
+<code class="sig-name descname">get_topography_mode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_topography_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_verbosity">
+<code class="sig-name descname">get_verbosity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_verbosity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_x0">
+<code class="sig-name descname">get_x0</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_x0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_y0">
+<code class="sig-name descname">get_y0</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_y0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.get_z0">
+<code class="sig-name descname">get_z0</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.get_z0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.increment_rand_seed">
+<code class="sig-name descname">increment_rand_seed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.increment_rand_seed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increment by one the value of the random seed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_algorithm">
+<code class="sig-name descname">set_algorithm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">algorithm</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the algorithm to use when calculating travel time to spring.</p>
+<dl class="simple">
+<dt>algorithm<span class="classifier">string</span></dt><dd><p>‘Isotropic2’ -
+‘Isotropic3’ -
+‘Riemann2’   -
+‘Riemann3’   -
+See AGD-HFM documentation for full list of options.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_cost_aquiclude">
+<code class="sig-name descname">set_cost_aquiclude</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cost_aquiclude</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_cost_aquiclude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the fast-marching value for the aquiclude cells.
+Should be between 0 and 1 and higher than aquiclude but lower than cost_out</p>
+<p>cost_aquiclude : float  (default: 0.8)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_cost_aquifer">
+<code class="sig-name descname">set_cost_aquifer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cost_aquifer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_cost_aquifer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the fast-marching value for the aquifer cells.
+Should be between 0 and 1 and lower than aquiclude but higher than conduits.</p>
+<p>cost_aquifer : float  (default: 0.3)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_cost_conduits">
+<code class="sig-name descname">set_cost_conduits</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cost_conduits</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_cost_conduits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the fast-marching value for the conduits cells.
+Should be between 0 and 1 but lower than aquifer (for conduits to preferentially follow each other)</p>
+<p>cost_conduits : float  (default: 0.01)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_cost_faults">
+<code class="sig-name descname">set_cost_faults</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cost_faults</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_cost_faults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the fast-marching value for the faults cells.
+Should be between 0 and 1 and between conduits and cost_out. Higher = conduit will avoid faults, lower = conduits will follow faults</p>
+<p>cost_faults : float  (default: 0.2)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_cost_fractures">
+<code class="sig-name descname">set_cost_fractures</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cost_fractures</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_cost_fractures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the fast-marching value for the fractures cells.
+Should be between 0 and 1 and between conduits and cost_out. Higher = conduit will avoid fractures, lower = conduits will follow fractures</p>
+<p>cost_fractures : float (default: 0.2)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_cost_out">
+<code class="sig-name descname">set_cost_out</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cost_out</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_cost_out" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the fast-marching value for the outside of the study area.
+The value must be between 0 and 1 and should be high to avoid unrealistic conduits.</p>
+<p>cost_out : float  (default: 0.999)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_cost_ratio">
+<code class="sig-name descname">set_cost_ratio</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cost_ratio</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_cost_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the fast-marching ratio of travel cost parallel to gradient / travel cost prependicular to gradient.
+Should be between 0 and 0.5.</p>
+<p>cost_ratio : float  (default: 0.25)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_data_has_polygon">
+<code class="sig-name descname">set_data_has_polygon</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_has_polygon</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_data_has_polygon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define if study area will be focused on a polygon delimitations.</p>
+<dl class="simple">
+<dt>data_has_polygon<span class="classifier">bool</span></dt><dd><p>If true, a polygon will be required.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_faults_datafile">
+<code class="sig-name descname">set_faults_datafile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">faults_datafile</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_faults_datafile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the faults datafile path.
+Useful only when the mode for faults is on ‘gslib’, ‘csv’ or ‘image’.</p>
+<dl class="simple">
+<dt>faults_datafile<span class="classifier">string</span></dt><dd><p>Faults datafile path.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_faults_mode">
+<code class="sig-name descname">set_faults_mode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">faults_mode</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_faults_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the mode for the faults.</p>
+<dl class="simple">
+<dt>faults_mode<span class="classifier">string</span></dt><dd><p>‘null’   - No faults
+‘gslib’  - Import faults via gslib
+‘csv’    - Import faults via csv
+‘image’  - Import faults via image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_fractures_alpha">
+<code class="sig-name descname">set_fractures_alpha</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fractures_alpha</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_fractures_alpha" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define alpha, a parameter in the fracturation law.
+Useful only when the mode for fractures is on ‘random’.</p>
+<dl class="simple">
+<dt>fractures_alpha<span class="classifier">list</span></dt><dd><p>One alpha for each family.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_fractures_datafile">
+<code class="sig-name descname">set_fractures_datafile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fracture_datafile</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_fractures_datafile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the fractures datafile path.
+Useful only when the mode for fractures is on ‘gslib’, ‘csv’ or ‘image’.</p>
+<dl class="simple">
+<dt>fracture_datafile<span class="classifier">string</span></dt><dd><p>Fractures datafile path.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_fractures_densities">
+<code class="sig-name descname">set_fractures_densities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fractures_densities</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_fractures_densities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the fractures densitiy for each fractures family.
+Useful only when the mode for fractures is on ‘random’.</p>
+<dl class="simple">
+<dt>fractures_densities<span class="classifier">list</span></dt><dd><p>One density for each family.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_fractures_max_dip">
+<code class="sig-name descname">set_fractures_max_dip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fractures_max_dip</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_fractures_max_dip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the maximum dip of the fracturation for each fractures family.
+Useful only when the mode for fractures is on ‘random’.</p>
+<dl class="simple">
+<dt>fractures_max_dip<span class="classifier">list</span></dt><dd><p>One dip for each family.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_fractures_max_length">
+<code class="sig-name descname">set_fractures_max_length</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fractures_max_length</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_fractures_max_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the maximum lenght for all the fractures.
+Useful only when the mode for fractures is on ‘random’.</p>
+<p>fractures_max_length : float</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_fractures_max_orientation">
+<code class="sig-name descname">set_fractures_max_orientation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fractures_max_orientation</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_fractures_max_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the maximum orientation of the fracturation for each fractures family.
+Useful only when the mode for fractures is on ‘random’.</p>
+<dl class="simple">
+<dt>fractures_max_orientation<span class="classifier">list</span></dt><dd><p>One orientation for each family.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_fractures_min_dip">
+<code class="sig-name descname">set_fractures_min_dip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fractures_min_dip</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_fractures_min_dip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the minimum dip of the fracturation for each fractures family.
+Useful only when the mode for fractures is on ‘random’.</p>
+<dl class="simple">
+<dt>fractures_min_dip<span class="classifier">list</span></dt><dd><p>One dip for each family.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_fractures_min_length">
+<code class="sig-name descname">set_fractures_min_length</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fractures_min_length</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_fractures_min_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the minimum lenght for all the fractures.
+Useful only when the mode for fractures is on ‘random’.</p>
+<p>fractures_min_length : float</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_fractures_min_orientation">
+<code class="sig-name descname">set_fractures_min_orientation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fractures_min_orientation</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_fractures_min_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the minimum orientation of the fracturation for each fractures family.
+Useful only when the mode for fractures is on ‘random’.</p>
+<dl class="simple">
+<dt>fractures_min_orientation<span class="classifier">list</span></dt><dd><p>One orientation for each family.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_fractures_mode">
+<code class="sig-name descname">set_fractures_mode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fractures_mode</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_fractures_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the mode for the fractures.</p>
+<dl class="simple">
+<dt>fractures_mode<span class="classifier">string</span></dt><dd><p>‘null’   - No fractures
+‘gslib’  - Import fractures via gslib
+‘csv’    - Import fractures via csv
+‘image’  - Import fractures via image
+‘random’ - Generate fractures randomly</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_geological_datafile">
+<code class="sig-name descname">set_geological_datafile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geological_datafile</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_geological_datafile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the geological datafile path.
+Useful only when geological mode is not ‘null’.</p>
+<dl class="simple">
+<dt>geological_datafile<span class="classifier">string</span></dt><dd><p>Geological datafile path.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_geological_mode">
+<code class="sig-name descname">set_geological_mode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geological_mode</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_geological_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the geological mode.</p>
+<dl class="simple">
+<dt>geological_mode<span class="classifier">string</span></dt><dd><p>‘null’   - No geology
+‘gslib’  - Import geology via gslib
+‘csv’    - Import geology via csv
+‘image’  - Import geology via image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_geology_cost">
+<code class="sig-name descname">set_geology_cost</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geology_cost</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_geology_cost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the travel cost to apply to each geology id.</p>
+<p>geology_cost : list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_geology_id">
+<code class="sig-name descname">set_geology_id</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geology_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_geology_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the geology id (from geology datafile) to consider in the simulation.
+Only needed in ‘gslib’ or ‘csv’ mode.</p>
+<p>geology_id : list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_inlets_data">
+<code class="sig-name descname">set_inlets_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inlets_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_inlets_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the inlets datafile path.
+Useful only when inlets mode is on ‘import’ or ‘composite’.</p>
+<dl class="simple">
+<dt>inlets_data<span class="classifier">string or list</span></dt><dd><p>Inlets datafile path or list of inlets coordinates.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_inlets_importance">
+<code class="sig-name descname">set_inlets_importance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inlets_importance</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_inlets_importance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the proportion of inlets to be distributed across each iteration.
+Length of array indicates number of inlet iterations,
+each integer indicates number of inlets to run in that iteration,
+sum of integers = total number of inlets
+Useful only when iterating over inlets.</p>
+<dl class="simple">
+<dt>inlets_importance<span class="classifier">[1]: a single iteration with all inlets, [1,1,1]: three iterations with one inlet in each,</span></dt><dd><p>[1,2,3]: three iterations with one inlet in the first, 2 inlets in the second, and 3 inlets in the third.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_inlets_mode">
+<code class="sig-name descname">set_inlets_mode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inlets_mode</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_inlets_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the inlets mode.</p>
+<dl class="simple">
+<dt>inlets_mode<span class="classifier">string</span></dt><dd><p>‘random’    - Full random points
+‘import’    - Import points
+‘composite’ - Add n random points to imported points</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_inlets_number">
+<code class="sig-name descname">set_inlets_number</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inlets_number</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_inlets_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the number of inlets to generate.
+Useful only when inlets mode is on ‘random’ or ‘composite’.</p>
+<dl class="simple">
+<dt>inlets_number<span class="classifier">string</span></dt><dd><p>Number of inlets to generate.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_inlets_per_outlet">
+<code class="sig-name descname">set_inlets_per_outlet</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inlets_per_outlet</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_inlets_per_outlet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the proportion of inlets to be distributed across each outlet.
+Length of array indicates number of outlets,
+each integer indicates number of inlets to assign to that outlet,
+sum of integers = total number of inlets
+Useful only when iterating over inlets and outlets.</p>
+<dl class="simple">
+<dt>inlets_per_outlet<span class="classifier">[1]: a single iteration with all inlets to one outlet, [1,1,1]: three outlets with one inlet in each,</span></dt><dd><p>[1,2,3]: three outlets with one inlet in the first, 2 inlets in the second, and 3 inlets in the third.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_inlets_shuffle">
+<code class="sig-name descname">set_inlets_shuffle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inlets_shuffle</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_inlets_shuffle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define whether to shuffle the order of the inlets randomly.
+Useful only when iterating over inlets.</p>
+<dl class="simple">
+<dt>inlets_shuffle<span class="classifier">string</span></dt><dd><p>0: don’t shuffle, 1: shuffle randomly.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_orientation_datafile">
+<code class="sig-name descname">set_orientation_datafile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">orientation_datafile</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_orientation_datafile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the orientation datafile path.
+Usefull only when orientation mode is not ‘null’.</p>
+<dl class="simple">
+<dt>orientation_datafile<span class="classifier">string</span></dt><dd><p>orientation datafile path.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_orientation_mode">
+<code class="sig-name descname">set_orientation_mode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">orientation_mode</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_orientation_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the orientation mode.</p>
+<dl class="simple">
+<dt>orientation_mode<span class="classifier">string</span></dt><dd><p>‘null’    - No orientation
+‘topo’    - Calculate from topography
+‘surface’ - Calculate from csv file of a surface (useful if using lower surface of karst unit)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_outlets_data">
+<code class="sig-name descname">set_outlets_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">outlets_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_outlets_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the outlets datafile path.
+Useful only when outlets mode is on ‘import’ or ‘composite’.</p>
+<dl class="simple">
+<dt>outlets_data<span class="classifier">string or list</span></dt><dd><p>Outlets datafile path or list of outlets coordinates.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_outlets_importance">
+<code class="sig-name descname">set_outlets_importance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">outlets_importance</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_outlets_importance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the proportion of outlets to be distributed across each iteration.
+Length of array indicates number of outlet iterations,
+each integer indicates number of outlets to run in that iteration,
+sum of integers = total number of outlets
+Useful only when iterating over outlets.</p>
+<dl class="simple">
+<dt>outlets_importance<span class="classifier">[1]: a single iteration with all outlets, [1,1,1]: three iterations with one outlet in each,</span></dt><dd><p>[1,2,3]: three iterations with one outlet in the first, 2 outlets in the second, and 3 outlets in the third.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_outlets_mode">
+<code class="sig-name descname">set_outlets_mode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">outlets_mode</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_outlets_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the outlets mode.</p>
+<dl class="simple">
+<dt>outlets_mode<span class="classifier">string</span></dt><dd><p>‘random’    - Full random points
+‘import’    - Import points
+‘composite’ - Add n random points to imported points</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_outlets_number">
+<code class="sig-name descname">set_outlets_number</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">outlets_number</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_outlets_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the number of outlets to generate.
+Useful only when outlets mode is on ‘random’ or ‘composite’.</p>
+<dl class="simple">
+<dt>outlets_number<span class="classifier">string</span></dt><dd><p>Number of outlets to generate.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_outlets_shuffle">
+<code class="sig-name descname">set_outlets_shuffle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">outlets_shuffle</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_outlets_shuffle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define whether to shuffle the order of the outlets randomly.
+Useful only when iterating over outlets.</p>
+<dl class="simple">
+<dt>outlets_shuffle<span class="classifier">string</span></dt><dd><p>0: don’t shuffle, 1: shuffle randomly.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_polygon_data">
+<code class="sig-name descname">set_polygon_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">polygon_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_polygon_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the polygon datafile path.
+Useful only when data_has_polygon is true.</p>
+<dl class="simple">
+<dt>polygon_data<span class="classifier">string or list</span></dt><dd><p>Polygon datafile path or list of vertices coordinates.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_rand_seed">
+<code class="sig-name descname">set_rand_seed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rand_seed</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_rand_seed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the random seed.
+May help for reproduicity.</p>
+<p>rand_seed : integer</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_topography_datafile">
+<code class="sig-name descname">set_topography_datafile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">topography_datafile</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_topography_datafile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the topography datafile path.
+Useful only when topography mode is not ‘null’.</p>
+<dl class="simple">
+<dt>topography_datafile<span class="classifier">string</span></dt><dd><p>topography datafile path.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_topography_mode">
+<code class="sig-name descname">set_topography_mode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">topography_mode</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_topography_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the topography mode.</p>
+<dl class="simple">
+<dt>topography_mode<span class="classifier">string</span></dt><dd><p>‘null’   - No topography
+‘gslib’  - Import topography via gslib
+‘csv’    - Import topography via csv</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.set_verbosity">
+<code class="sig-name descname">set_verbosity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbosity</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.set_verbosity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the verbosity (how much output to print during runs).</p>
+<dl class="simple">
+<dt>verbosity: integer</dt><dd><p>0: print minimal output,  1: print medium output,  2: print max output</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.show">
+<code class="sig-name descname">show</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">probability</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the entire study domain (defaults to showing most recent simulation).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.show_catchment">
+<code class="sig-name descname">show_catchment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">'geology'</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mask</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cmap</span><span class="o">=</span><span class="default_value">'binary'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.show_catchment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the entire study domain.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.show_network">
+<code class="sig-name descname">show_network</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">simplify</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">plot_nodes</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">polygon</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">labels</span><span class="o">=</span><span class="default_value">['inlets', 'outlets']</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cmap</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">'k'</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">legend</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.show_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>#Chloe: This is a new function that I use to create all the figures for the paper.
+Show the karst network as a graph with nodes and edges. Defaults to showing latest iteration.
+Inputs:
+data:   karst simulation object containing nodes, edges, points, etc. Can be obtained from self.karst_simulations[i]
+ax:     axis to plot on
+label:  None or list of strings [‘nodes’,’edges’,’inlets’,’outlets’], indicating which components to label
+title:  string, title of plot
+cmap:   string, colormap to use when plotting
+color:  string, single color to use when plotting (cannot have both cmap and color)
+alpha:  float, opacity to plot with (1=opaque, 0=transparent)
+legend: True/False, whether to display legend
+plot_nodes:   True/False, whether to display nodes
+polygon: True/False, whether to display the bounding polygon</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.shuffle_inlets">
+<code class="sig-name descname">shuffle_inlets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.shuffle_inlets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shuffle the inlets order.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.shuffle_outlets">
+<code class="sig-name descname">shuffle_outlets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.shuffle_outlets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shuffle the outlets order.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.update_all">
+<code class="sig-name descname">update_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.update_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update all the parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.update_faults">
+<code class="sig-name descname">update_faults</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.update_faults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the faults settings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.update_fractures">
+<code class="sig-name descname">update_fractures</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.update_fractures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the fractures settings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.update_geology">
+<code class="sig-name descname">update_geology</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.update_geology" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the geology settings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.update_inlets">
+<code class="sig-name descname">update_inlets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.update_inlets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the inlets settings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.update_orientation">
+<code class="sig-name descname">update_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.update_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the orientation settings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.update_outlets">
+<code class="sig-name descname">update_outlets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.update_outlets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the outlets settings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.update_polygon">
+<code class="sig-name descname">update_polygon</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.update_polygon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the polygon settings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykasso.sks.SKS.update_topography">
+<code class="sig-name descname">update_topography</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pykasso.sks.SKS.update_topography" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the topography settings.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pykasso">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pykasso" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, F. Miville.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

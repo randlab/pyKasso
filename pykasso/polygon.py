@@ -6,15 +6,23 @@ import matplotlib.pyplot as plt
 
 class Polygon():
     """
-	Create a polygon manager : a class for managing a polygon as an area study delimitor.
+    Class modeling the catchment delimitation of the studied domain.
+    """
+    
+    def __init__(self, grid):
+        """
+	Create a polygon manager on a Grid instance.
 
 	Parameters
 	----------
-	grid : Grid()
-		Polygon() class needs a Grid() object as argument.
-	"""
+	grid : Grid instance
+	    The polygon must be set on the studied grid.
 
-    def __init__(self, grid):
+	Examples
+        --------
+        >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 1, 1, 1)
+        >>> poly = pk.Polygon(grid)
+	"""
         self.grid    = grid
         self.polygon = None
         self.mask    = None
@@ -22,11 +30,20 @@ class Polygon():
     def set_polygon(self, vertices):
         """
         Create a polygon from vertices coordinates.
+        Polygon is stored in self.polygon.
+        The polygon is stored in a 'polygon' attribute.
 
         Parameters
         ----------
-        vertices : str || list
-            Location of the datafile or list of the vertices coordinates like [[x1,y1],[x2,y2],[xn,yn]].
+        vertices : str || array
+            Location of the datafile or array of the vertices coordinates like [[x1,y1],[x2,y2],[xn,yn]].
+   
+        Examples
+        --------
+        >>> poly = pk.Polygon(grid)
+        >>> poly.set_polygon([[0,0], [0,10], [10,0]])
+        >>> poly.set_polygon("polygon.csv")
+        >>> print(poly.polygon)
         """
         if isinstance(vertices, str):
             text     = opendatafile(vertices)
@@ -42,6 +59,7 @@ class Polygon():
     def _set_mask(self):
         """
         Set the mask.
+        If a polygon is set, points outside the polygon can be hidden with a mask.
         """
         mask = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.int_)
         for y in range(self.grid.ny):
@@ -54,11 +72,18 @@ class Polygon():
     def inspect_polygon(self):
         """
         Check if the vertices of the polygon are located inside the grid or not.
-        If all the vertices are outside the grid, the polygon is rested to none.
+        If all the vertices are outside the grid, the polygon is reseted to none.
 
         Returns
         -------
-            List of vertices out of the grid else 'None'.
+        result : array || None
+            Array of vertices out of the grid else 'None'.
+
+        Examples
+        --------
+        >>> poly = pk.Polygon(grid)
+        >>> poly.set_polygon("polygon.csv")
+        >>> out_pts = poly.inspect_polygon()
         """
         if self.polygon is not None:
             unvalidated_vertices = []
@@ -86,7 +111,11 @@ class Polygon():
 
     def clean_polygon(self):
         """
-        Remove the polygon.
+        Remove the polygon. Set the 'polygon' and 'mask' attributes to none.
+
+        Examples
+        --------
+        >>> poly.clean_polygon()
         """
         self.polygon = None
         self.mask    = None
@@ -94,6 +123,10 @@ class Polygon():
     def show(self):
         """
         Show the delimitation of the grid and, if a polygon is present, display its limits.
+
+        Examples
+        --------
+        >>> poly.show()
         """
         if self.polygon is not None:
             closed_polygon = self.polygon[:]

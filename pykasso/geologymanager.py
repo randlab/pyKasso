@@ -13,7 +13,7 @@ from .functions import opendatafile, loadpoints
 from .fracture  import Fracture
 from tqdm       import tqdm
 
-from skimage.io import imread
+from skimage.io        import imread
 from skimage.transform import resize
 
 import sys
@@ -24,18 +24,35 @@ import matplotlib.pyplot as plt
 
 class GeologyManager():
     """
-    Create a geology manager : a class for managing geology, faults and fractures.
-
-    Parameters
-    ----------
-    grid : Grid()
-        GeologyManager() class needs a Grid() object as argument.
+    Class modeling the geologic data of the studied domain.
     """
 
     def __init__(self, grid):
-        #data model = {data_key : {data : var, stats : var, mode : var}}
-        self.data  = {}
-        self.grid  = grid
+        """
+        Create a geology manager on a Grid instance.
+        This class is designed to handle geology, faults and fractures data.
+        Data is stored in a 'data' attribute as a dictionnary.
+        The data model is set as follow :
+        {data_key :
+            {
+            data  : array,
+            stats : array,
+            mode  : str
+            }
+        }
+
+        Parameters
+        ----------
+        grid : Grid instance
+            The geology manager must be set on the studied grid.
+
+        Examples
+        --------
+        >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 1, 1, 1)
+        >>> geol = pk.GeologyManager(grid)
+        """
+        self.data = {}
+        self.grid = grid
 
     def set_data_null(self, data_key):
         """

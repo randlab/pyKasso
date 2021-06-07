@@ -1,26 +1,33 @@
 class Fracture():
     """
-    A class for modeling fractures as objects.
-
-    Parameters
-    ----------
-    ID : int
-        Fracture id.
-    family : int
-        Fracture family id.
-    position : list
-        Position of the center of the fracture [x, y, z].
-    radius : float
-        Radius of the fracture.
-    orientation : float
-        Orientation of the fracture.
-    dip : float
-        Dip of the fracture.
-    normal : list
-        Normal vector of the fracture [a, b, c].
+    Class modeling fractures as objects.
     """
-
+    
     def __init__(self, ID, family, position, radius, orientation, dip, normal):
+        """
+        Create a fracture according to the parameters.
+        
+        Parameters
+        ----------
+        ID : int
+            Fracture id.
+        family : int
+            Fracture family id.
+        position : array
+            Position of the center of the fracture [x, y, z].
+        radius : float
+            Radius of the fracture.
+        orientation : float
+            Orientation of the fracture.
+        dip : float
+            Dip of the fracture.
+        normal : array
+            Normal vector of the fracture [a, b, c].
+
+        Examples
+        --------
+        >>> frac = pk.Fracture(0, 0, (10,10,10), 5, 180, 90, (1,0,0))
+        """
         self.ID          = ID
         self.family      = family
         self.position    = position

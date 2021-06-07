@@ -8,19 +8,30 @@ import matplotlib.pyplot as plt
 
 class PointManager():
     """
-    Create a point manager : a class for managing points and transform them to inlets or outlets.
-
-    Parameters
-    ----------
-    grid : Grid()
-        PointManager() class needs a Grid() object as argument.
-    polygon : Polygon()
-        PointManager() class needs a Polygon() object as argument.
-	geology : GeologyManager()
-		PointManager() class needs a GeologyManager() object as argument.
+    Class modeling the inlets and the outlets of the studied karst network's domain.
     """
 
     def __init__(self, grid, polygon, geology=None):
+        """
+        Create a point manager on a Grid instance.
+        This class is designed to handle points and transform them into inlets or outlets.
+
+        Parameters
+        ----------
+        grid : Grid instance
+            The point manager must be set on the studied grid.
+        polygon : Polygon instance
+            The point manager needs a Polygon instance even if it's empty.
+	geology : GeologyManager instance, optionnal
+	    The point manager can use geologic data as parameters.
+
+        Examples
+        --------
+        >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 1, 1, 1)
+        >>> poly = pk.Polygon(grid)
+        >>> geol = pk.GeologyManager(grid)
+        >>> pts  = pk.PointManager(grid, poly, geol)
+        """
         self.points  = {}
         self.grid    = grid
         self.polygon = polygon
@@ -34,8 +45,13 @@ class PointManager():
         ----------
         points_key : str
             Type of points : 'inlets' or 'outlets'.
-        points : str || list
-            Location of the datafile or list of the points coordinates like [[x1,y1],[x2,y2],[xn,yn]].
+        points : str || array
+            Location of the datafile or array of the points coordinates like [[x1,y1],[x2,y2],[xn,yn]].
+
+        Examples
+        --------
+        >>> pts.set_points("inlets", [[0,0], [10,10]])
+        >>> pts.set_points("outlets", "outlets.csv")
         """
         if isinstance(points, str):
             text = opendatafile(points)
@@ -46,7 +62,7 @@ class PointManager():
 
     def generate_points(self, points_key, points_number, geological_IDs=None):
         """
-        Generate random points on the grid, according to the parameters.
+        Generate random points on the grid according to the parameters.
 
         Parameters
         ----------
@@ -54,8 +70,13 @@ class PointManager():
             Type of points : 'inlets' or 'outlets'.
         points_number : int
             Number of points to generate.
-        geological_IDs : list
+        geological_IDs : array, optionnal
             List of geologic facies where points can be created.
+
+        Examples
+        --------
+        >>> pts.generate_points("inlets", 20)
+        >>> pts.generate_points("outlets", 3, geological_IDs=[0,2])
         """
         if geological_IDs is None:
             if self.polygon.polygon is None:
@@ -114,20 +135,27 @@ class PointManager():
                 self.points[points_key] = list(zip(rand_x,rand_y))
         return None
 
-    def composite_points(self, points_key, points, points_number):
+    def composite_points(self, points_key, points, points_number, geological_IDs=None):
         """
-        Generate random points on the grid, and add indicated points.
+        Generate random points on the grid, and add user indicated points.
 
         Parameters
         ----------
-        points_key : string
+        points_key : str
             Type of points : 'inlets' or 'outlets'.
-        points : string or list
+        points : str || array
             Location of the datafile or list of the points coordinates.
-        points_number : integer
+        points_number : int
             Number of points to generate.
+        geological_IDs : array, optionnal
+            List of geologic facies where points can be created.
+
+        Examples
+        --------
+        >>> pts.composite_points("inlets", "inlets.csv", 20)
+        >>> pts.composite_points("outlets", [[25,25]], 3, geological_IDs=[1])
         """
-        self.generate_points(points_key, points_number)
+        self.generate_points(points_key, points_number, geological_IDs)
         if isinstance(points, str):
             text = opendatafile(points)
             other_points = loadpoints(text)
@@ -140,6 +168,10 @@ class PointManager():
         """
         Check if the points are well located inside the grid.
         If there is no print out, so everything is OK.
+
+        Examples
+        --------
+        >>> pts.inspect_points()
         """
         if self.points is None:
             print('- inspect_points() - Error : no points to inspect.')
@@ -171,6 +203,10 @@ class PointManager():
     def show(self):
         """
         Show the delimitation of the grid, of the polygon (if present) and of the locations of the points (if present).
+
+        Examples
+        --------
+        >>> pts.show()
         """
         fig, ax = plt.subplots()
         fig.suptitle('Show points', fontsize=16)

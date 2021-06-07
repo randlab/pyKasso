@@ -1,3 +1,7 @@
+"""
+Common functions can be wrote and grouped here.
+"""
+
 import os
 
 def get_settings(example=False):
@@ -11,7 +15,7 @@ def get_settings(example=False):
 
     Examples
     --------
-        >>> pk.get_settings(example=True)
+    >>> pk.get_settings(example=True)
     """
 
     # copying defaults file from source package
@@ -50,7 +54,7 @@ def get_settings(example=False):
 
 def opendatafile(file_location):
     """
-    Private function to simply open a file.
+    Read a file.
     """
     try:
         file = open(file_location,"r")
