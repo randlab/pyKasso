@@ -1,12 +1,25 @@
 """
-A clarifier :
-- set_data_from_gslib
-    - If value==0, it will replaced by nan ???
+Documentation
+    - set_data_from_csv
+        * Faire le point
+        * Vérifier que c'est juste
+    - set_data_from_gslib
+        * Vérifier que c'est juste
+    - generate_orientations
+        * Ajouter examples
+    - rasterize_fracture_network
+        * À compléter
+    - compute_stats_on_data
+        * À compléter
+
+A clarifier
+    - set_data_from_gslib
+        * If value==0, it will replaced by nan ???
 
 TODO :
 - show_fractures_stats() // show_fractures() : diagrammes de Rose (voir code de Chloé) [mplstereonet]
-
 - Renverser les fractures
+- _set_data_from_pickle
 """
 
 from .functions import opendatafile, loadpoints
@@ -56,18 +69,21 @@ class GeologyManager():
 
     def set_data_null(self, data_key):
         """
-        Set data to 'null' for an the indicated data key.
+        Set data to 'null' for the indicated data key in the 'data' dictionnnary attribute.
 
-        For 'topography', 'orientationx' and 'orientationy' returns :
-        np.zeros((nx,ny))
+        For 'topography', 'orientationx' and 'orientationy' set : np.zeros((nx,ny))
 
-        Otherwise returns:
-        np.zeros((nx,ny,nz))
+        Otherwise set : np.zeros((nx,ny,nz))
 
         Parameters
         ----------
         data_key : str
             Type of data : 'geology', 'faults', 'fractures', 'topography', 'orientationx' or 'orientationy'.
+
+        Examples
+        --------
+        >>> geol.set_data_null('geology')
+        >>> print(geol.data['geology'])
         """
         self.data[data_key] = {}
         if data_key in ['topography', 'orientationx', 'orientationy']:
@@ -79,20 +95,25 @@ class GeologyManager():
 
     def set_data_from_csv(self, data_key, datafile_location):
         """
-        Set data from a csv file for the indicated data key.
+        Set data from a csv file for the indicated data key in the 'data' dictionnnary attribute.
         Delimiter is ','.
 
-        If nz > 1, the layer is horizontally repeated.
+        If Grid.nz > 1, the layer is horizontally repeated.
 
         x direction : from West to East
         y direction : from North to South
 
         Parameters
         ----------
-        data_key : string
+        data_key : str
             Type of data : 'geology', 'topography', 'surface' (orientation), 'faults' or 'fractures'.
-        datafile_location : string
+        datafile_location : str
             Path of the datafile.
+
+        Examples
+        --------
+        >>> geol.set_data_from_csv('geology', 'geology.csv')
+        >>> print(geol.data['geology'])
         """
         self.data[data_key] = {}
         try:
@@ -112,14 +133,23 @@ class GeologyManager():
 
     def set_data_from_gslib(self, data_key, datafile_location):
         """
-        Set data from a gslib file for indicated data key in the format that work with the fast marching algorithm.
+        Set data from a gslib file for indicated data key in the 'data' dictionnnary attribute.
+
+        x direction : from west to east
+        y direction : from north to south
+        z direction : from bottom to top
 
         Parameters
         ----------
-        data_key : string
+        data_key : str
             Type of data : 'geology', 'faults' or 'fractures'.
-        datafile_location : string
+        datafile_location : str
             Path to the datafile.
+
+        Examples
+        --------
+        >>> geol.set_data_from_gslib('geology', 'geology.gslib')
+        >>> print(geol.data['geology'])
         """
         self.data[data_key] = {}
         try:
@@ -136,17 +166,22 @@ class GeologyManager():
 
     def set_data_from_image(self, data_key, datafile_location):
         """
-        Set data from an image for a indicated data key.
-        The size of the image should be the same that the size of the grid.
+        Set data from an image for a indicated data key in the 'data' dictionnnary attribute.
+        The size of the image should be the same that the size of the grid but this is optional.
         If nz > 1, the layer is horizontally repeated.
-        set_data_from_image() usage is not recommended, it should be used only for quick testing.
+        This method usage is not recommended, it should be used only for quick testing.
 
         Parameters
         ----------
-        data_key : string
+        data_key : str
             Type of data : 'geology', 'faults' or 'fractures'.
-        datafile_location : string
+        datafile_location : str
             Path of the datafile.
+
+        Examples
+        --------
+        >>> geol.set_data_from_image('geology', 'geology.jpg')
+        >>> print(geol.data['geology'])
         """
         try:
             image = imread(datafile_location)
@@ -160,23 +195,28 @@ class GeologyManager():
         self.data[data_key]['img'] = image
         # Store data
         self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.float_)
-        image_data = np.flipud(image)      #we need to flip it since the data reading start from bottom
+        image_data = np.flipud(image)                #we need to flip it since the data reading start from bottom
         image_data = np.transpose(image_data, (1,0)) #imread return image with mxn format so we also need to transpose it
         for z in range(self.grid.nz):
             self.data[data_key]['data'][:,:,z] = image_data
         self.data[data_key]['mode'] = 'image'
         return None
 
-    def set_data_from_pickle(self, data_key, datafile_location):
+    def _set_data_from_pickle(self, data_key, datafile_location):
         """
         Set data from a pickle data file.
 
         Parameters
         ----------
-        data_key : string
+        data_key : str
             Type of data : 'geology', 'faults' or 'fractures'.
-        datafile_location : string
+        datafile_location : str
             Path of the datafile.
+
+        Examples
+        --------
+        >>> geol.set_data_from_pickle('geology', 'geology.pickle')
+        >>> print(geol.data['geology'])
         """
         return None
 
@@ -188,7 +228,11 @@ class GeologyManager():
         ------------
         surface : 2D numpy-array
             A 2D array of the elevation or potential in cell, used to calculate the orientation (i.e. slope or dip) of that cell.
-            Use either the land surface ('topography'), the surface of the bottom of the karst unit ('contact'), or the potential returned by the geologic model
+            Use either the land surface ('topography'), the surface of the bottom of the karst unit ('contact'), or the potential returned by the geologic model.
+
+        Examples
+        --------
+        >>>
         """
         self.data['orientationx'] = {}
         self.data['orientationx']['data'] = np.zeros((self.grid.nx, self.grid.ny))
@@ -201,26 +245,38 @@ class GeologyManager():
 
     def generate_fractures(self, fractures_densities, fractures_alpha, fractures_min_orientation, fractures_max_orientation, fractures_min_dip, fractures_max_dip, fractures_min_length, fractures_max_length):
         """
-        Generate fractures as Fracture() objects.
+        Generate fractures as Fracture instances according to the parameters.
 
         Parameters
         ----------
-        fractures_densities : list
+        fractures_densities : array
             Fracture densities for each fracture family.
-        fractures_alpha : list
+        fractures_alpha : array
             Degree of power law for each fracture family.
-        fractures_min_orientation : list
+        fractures_min_orientation : array
             Fractures minimum orientation for each fracture family.
-        fractures_max_orientation : list
+        fractures_max_orientation : array
             Fractures maximum orientation for each fracture family.
-        fractures_min_dip : list
+        fractures_min_dip : array
             Fractures minimum dip for each fracture family.
-        fractures_max_dip : list
+        fractures_max_dip : array
             Fractures maximum dip for each fracture family.
-        fractures_min_length : list
+        fractures_min_length : array
             The minimum lenght of the fractures for each fracture family.
-        fractures_max_length : list
+        fractures_max_length : array
             The maximum lenght of the fractures for each fracture family.
+
+        Examples
+        --------
+        >>> geol.generate_fractures(fractures_densities = [0.00005,0.0001],
+                                    fractures_alpha = [2, 2],
+                                    fractures_min_orientation = [340, 70],
+                                    fractures_max_orientation = [20, 110],
+                                    fractures_min_dip = [80, 40],
+                                    fractures_max_dip = [90, 50],
+                                    fractures_min_length : [ 100, 100],
+                                    fractures_max_length : [4000, 4000])
+        >>> print(geol.fractures)
         """
 
         self.data['fractures'] = {}
@@ -325,7 +381,7 @@ class GeologyManager():
                 fracture_id += 1
         return None
 
-    def float_eq(self, a, b, tolerance=1e-5):
+    def _float_eq(self, a, b, tolerance=1e-5):
         """
         Returns True if the difference between a and b
         is lower than tolerance.
@@ -337,7 +393,7 @@ class GeologyManager():
                 return False
         return np.all( abs(a-b) < tolerance )
 
-    def unit_intersect(self, n, d):
+    def _unit_intersect(self, n, d):
         """
         Computes the intersection between a unit circle
         and a line on a 2D plane.
@@ -367,7 +423,7 @@ class GeologyManager():
         """
         nx, ny = n[0], n[1] # For readibility
 
-        if not self.float_eq( np.linalg.norm(n), 1) :
+        if not self._float_eq( np.linalg.norm(n), 1) :
             print("WARNING - unitcintl function : norm of n must be equal to 1")
 
         if np.abs(d) > 1 : # Case with no intersection
@@ -387,7 +443,7 @@ class GeologyManager():
 
         return np.array( [X1,X2,Y1,Y2] )
 
-    def disk_zplane_intersect(self, center, n, R, zi):
+    def _disk_zplane_intersect(self, center, n, R, zi):
         """
         Computes the intersection between a disk
         and a horizontal plane (constant z plane) in 3D.
@@ -436,7 +492,7 @@ class GeologyManager():
             else :
                 n2 = n.copy()[0:2] # Projection on horizontal plane
                 n2 /= np.linalg.norm(n2)
-                xint = self.unit_intersect(n2, b)
+                xint = self._unit_intersect(n2, b)
 
                 x1 = tau * xint[0] + xc
                 x2 = tau * xint[1] + xc
@@ -445,7 +501,7 @@ class GeologyManager():
 
         return np.array([x1, y1, x2, y2])
 
-    def disk_xplane_intersect(self, center, n, R, xi):
+    def _disk_xplane_intersect(self, center, n, R, xi):
         """
         Computes the intersection between a disk
         and a vertical plane (constant x plane) in 3D.
@@ -494,7 +550,7 @@ class GeologyManager():
             else :
                 n2 = np.array( [n[1], n[2]] ) # Projection on vertical x plane
                 n2 /= np.linalg.norm(n2)
-                xint = self.unit_intersect(n2, b)
+                xint = self._unit_intersect(n2, b)
 
                 y1 = tau * xint[0] + yc
                 y2 = tau * xint[1] + yc
@@ -503,7 +559,7 @@ class GeologyManager():
 
         return np.array([y1, z1, y2, z2])
 
-    def disk_yplane_intersect(self, center, n, R, yi):
+    def _disk_yplane_intersect(self, center, n, R, yi):
         """
         Computes the intersection between a disk
         and a vertical plane (constant y plane) in 3D.
@@ -552,7 +608,7 @@ class GeologyManager():
             else :
                 n2 = np.array( [n[0], n[2]] ) # Projection on vertical x plane
                 n2 /= np.linalg.norm(n2)
-                xint = self.unit_intersect(n2, b)
+                xint = self._unit_intersect(n2, b)
 
                 x1 = tau * xint[0] + xc
                 x2 = tau * xint[1] + xc
@@ -561,7 +617,7 @@ class GeologyManager():
 
         return np.array([x1, z1, x2, z2])
 
-    def rst2d(self, m, xs, xe, ys, ye):
+    def _rst2d(self, m, xs, xe, ys, ye):
         """
         Rasterize a line on a 2D plane.
 
@@ -626,6 +682,7 @@ class GeologyManager():
         """
         Rasterize a set of fractures on a 3D grid.
 
+
         Returns
         -------
         raster_fractures : 3D numpy array
@@ -666,7 +723,7 @@ class GeologyManager():
                     zi = z0 + k * dz + dz / 2
 
                     # Computes the points of intersection of the fracture with horizontal plane
-                    intersect = self.disk_zplane_intersect([xc, yc, zc], n, R, zi)
+                    intersect = self._disk_zplane_intersect([xc, yc, zc], n, R, zi)
 
                     # If there is an intersection
                     if np.isfinite( intersect[0] ) :
@@ -678,7 +735,7 @@ class GeologyManager():
                         i2, j2 = self.grid.get_i(intersect[2]), self.grid.get_j(intersect[3])
 
                         # Rasterize the line
-                        self.rst2d(raster_fractures[:,:,k], i1, i2, j1, j2)
+                        self._rst2d(raster_fractures[:,:,k], i1, i2, j1, j2)
 
             elif nfx**2 < (nfz**2 + nfy**2) : # subhorizontal case 1
                 # Horizontal x index of the center of the fracture
@@ -696,7 +753,7 @@ class GeologyManager():
                     xi = x0 + i * dx + dx / 2
 
                     # Computes the points of intersection of the fracture with vertical x plane
-                    intersect = self.disk_xplane_intersect([xc, yc, zc], n, R, xi)
+                    intersect = self._disk_xplane_intersect([xc, yc, zc], n, R, xi)
 
                     # If there is an intersection
                     if np.isfinite( intersect[0] ) :
@@ -708,7 +765,7 @@ class GeologyManager():
                         j2, k2 = self.grid.get_j(intersect[2]), self.grid.get_k(intersect[3])
 
                         # Rasterize the line
-                        self.rst2d(raster_fractures[i,:,:], j1, j2, k1, k2)
+                        self._rst2d(raster_fractures[i,:,:], j1, j2, k1, k2)
 
             else : # This may not be necessary
                 # Horizontal y index of the center of the fracture
@@ -725,7 +782,7 @@ class GeologyManager():
                     yi = y0 + j * dy + dy / 2
 
                     # Computes the points of intersection of the fracture with vertical x plane
-                    intersect = self.disk_yplane_intersect([xc, yc, zc], n, R, yi)
+                    intersect = self._disk_yplane_intersect([xc, yc, zc], n, R, yi)
 
                     # If there is an intersection
                     if np.isfinite( intersect[0] ) :
@@ -737,7 +794,7 @@ class GeologyManager():
                         i2, k2 = self.grid.get_i(intersect[2]), self.grid.get_k(intersect[3])
 
                         # Rasterize the line
-                        self.rst2d(raster_fractures[:,j,:], i1, i2, k1, k2)
+                        self._rst2d(raster_fractures[:,j,:], i1, i2, k1, k2)
 
             #raster_frac = np.swapaxes(raster_fractures,0,2)
             self.data['fractures']['data'] = raster_fractures
@@ -826,13 +883,19 @@ class GeologyManager():
 
     def show(self, data="geology", cmap='gray_r'):
         """
-        Show data from the geology manager.
+        Show data of the geology manager.
 
         Parameter
         ---------
-        data : str || list (optional)
+        data : str || array, optional
             Data to show : 'geology', 'topography', 'orientationx', 'orientationy' 'faults' or 'fractures'.
             By default, all data are showed.
+        cmap : str
+            Color map, 'gray_r' by default.
+
+        Examples
+        --------
+        >>> geol.show()
         """
         fig, ax1 = plt.subplots()
         origin = None

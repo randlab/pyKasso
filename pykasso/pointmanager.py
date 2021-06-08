@@ -22,8 +22,8 @@ class PointManager():
             The point manager must be set on the studied grid.
         polygon : Polygon instance
             The point manager needs a Polygon instance even if it's empty.
-	geology : GeologyManager instance, optionnal
-	    The point manager can use geologic data as parameters.
+        geology : GeologyManager instance, optionnal
+	       The point manager can use geologic data as parameters.
 
         Examples
         --------

@@ -36,7 +36,7 @@ class Grid():
         Examples
         --------
         >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 1, 1, 1)
-	"""
+        """
         self.x0 = x0
         self.y0 = y0
         self.z0 = z0
@@ -203,9 +203,9 @@ class Grid():
         else:
             return self.z[k]
 
-    def inbox(self, x, y, z):
+    def is_inbox(self, x, y, z):
         """
-        Test if a (x, y, z) point is inside the grid. Return 1 if true.
+        Test if a (x, y, z) point is inside the grid.
 
         Parameters
         ----------

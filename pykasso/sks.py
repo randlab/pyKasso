@@ -51,7 +51,7 @@ import concurrent.futures
 
 class SKS():
     """
-    A super-class to manage all the data class and to simulate karst networks.
+    Super-class managing all the data classes and simulating stochastic karst networks.
     """
 
     def __init__(self, yaml_settings_file = None, rand_seed = None):
@@ -60,14 +60,15 @@ class SKS():
 
         Parameters
         ----------
-        yaml_settings_file : string
+        yaml_settings_file : str
             YAML settings file location.
 
         Examples
         --------
-            >>> catchment = pk.SKS()
-            >>> catchment = pk.SKS('exemple.yaml')
+        >>> catchment = pk.SKS()
+        >>> catchment = pk.SKS('example.yaml')
         """
+
         # print('CAUTION: You are using the development version of this package.') #uncomment this to tell apart the development version and the main version
 
         if yaml_settings_file is None:
@@ -114,36 +115,113 @@ class SKS():
     ################
 
     def get_x0(self):
+        """
+        Get the origin x-coordinate used in the model.
+
+        Examples
+        --------
+        >>> x0 = catchment.get_x0()
+        """
         return self.settings['x0']
 
     def get_y0(self):
+        """
+        Get the origin y-coordinate used in the model.
+
+        Examples
+        --------
+        >>> y0 = catchment.get_y0()
+        """
         return self.settings['y0']
 
     def get_z0(self):
+        """
+        Get the origin z-coordinate used in the model.
+
+        Examples
+        --------
+        >>> z0 = catchment.get_z0()
+        """
         return self.settings['z0']
 
     def get_nx(self):
+        """
+        Get the number of nodes in the x direction used in the model.
+
+        Examples
+        --------
+        >>> nx = catchment.get_nx()
+        """
         return self.settings['nx']
 
     def get_ny(self):
+        """
+        Get the number of cells in the y direction used in the model.
+
+        Examples
+        --------
+        >>> ny = catchment.get_ny()
+        """
         return self.settings['ny']
 
     def get_nz(self):
+        """
+        Get the number of cells in the z direction used in the model.
+
+        Examples
+        --------
+        >>> nz = catchment.get_nz()
+        """
         return self.settings['nz']
 
     def get_dx(self):
+        """
+        Get the width of cells in the x direction used in the model.
+
+        Examples
+        --------
+        >>> dx = catchment.get_dx()
+        """
         return self.settings['dx']
 
     def get_dy(self):
+        """
+        Get the width of cells in the y direction used in the model.
+
+        Examples
+        --------
+        >>> dy = catchment.get_dy()
+        """
         return self.settings['dy']
 
     def get_dz(self):
+        """
+        Get the width of cells in the z direction used in the model.
+
+        Examples
+        --------
+        >>> dz = catchment.get_dz()
+        """
         return self.settings['dz']
 
     def get_data_has_polygon(self):
+        """
+        Get the boolean value which indicates if a polygon is used or not.
+
+        Examples
+        --------
+        >>> has_polygon = catchment.get_data_has_polygon()
+        """
         return self.settings['data_has_polygon']
 
     def get_polygon_data(self):
+        """
+        Get the vertices of the polygon.
+
+        Examples
+        --------
+        >>> polygon_vertices = catchment.get_polygon_data()
+        """
         return self.settings['polygon_data']
 
     def get_outlets_mode(self):
@@ -1682,7 +1760,7 @@ class SKS():
             merge = False                                   #reset indicator for whether this conduit has merged with an existing conduit
             for p in range(path.shape[1]):                  #loop over points making up this conduit path
                 point = path[:,p]                           #get coordinates of current point
-                [[iy,ix],error]  = self.fastMarching.IndexFromPoint(point) #convert to coordinates to indices, /!\ returning iy first then ix 
+                [[iy,ix],error]  = self.fastMarching.IndexFromPoint(point) #convert to coordinates to indices, /!\ returning iy first then ix
                 #ax1.scatter(point[1],point[0], c='g',s=5)  #debugging
 
                 #Place nodes and links:

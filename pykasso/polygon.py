@@ -8,21 +8,21 @@ class Polygon():
     """
     Class modeling the catchment delimitation of the studied domain.
     """
-    
+
     def __init__(self, grid):
         """
-	Create a polygon manager on a Grid instance.
+        Create a polygon manager on a Grid instance.
 
-	Parameters
-	----------
-	grid : Grid instance
-	    The polygon must be set on the studied grid.
+        Parameters
+        ----------
+        grid : Grid instance
+            The polygon must be set on the studied grid.
 
-	Examples
+        Examples
         --------
         >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 1, 1, 1)
         >>> poly = pk.Polygon(grid)
-	"""
+        """
         self.grid    = grid
         self.polygon = None
         self.mask    = None
@@ -30,20 +30,21 @@ class Polygon():
     def set_polygon(self, vertices):
         """
         Create a polygon from vertices coordinates.
-        Polygon is stored in self.polygon.
-        The polygon is stored in a 'polygon' attribute.
+        The polygon is stored in 'polygon' attribute.
+        It also create a mask and store it in 'mask' attribute.
 
         Parameters
         ----------
         vertices : str || array
             Location of the datafile or array of the vertices coordinates like [[x1,y1],[x2,y2],[xn,yn]].
-   
+
         Examples
         --------
         >>> poly = pk.Polygon(grid)
         >>> poly.set_polygon([[0,0], [0,10], [10,0]])
         >>> poly.set_polygon("polygon.csv")
         >>> print(poly.polygon)
+        >>> print(poly.mask)
         """
         if isinstance(vertices, str):
             text     = opendatafile(vertices)
@@ -58,7 +59,6 @@ class Polygon():
 
     def _set_mask(self):
         """
-        Set the mask.
         If a polygon is set, points outside the polygon can be hidden with a mask.
         """
         mask = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.int_)
@@ -77,7 +77,7 @@ class Polygon():
         Returns
         -------
         result : array || None
-            Array of vertices out of the grid else 'None'.
+            Array of vertices out of the grid, else 'None'.
 
         Examples
         --------
