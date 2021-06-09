@@ -62,8 +62,8 @@ geological_mode     : 'null'
 geological_datafile : ''
 
 ###Topography
-# 'null'  - No topography
-# 'csv'   - Import topography via csv
+# 'null' - No topography
+# 'csv'  - Import topography via csv
 topography_mode     : 'null'
 topography_datafile : ''
 

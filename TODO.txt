@@ -1,3 +1,55 @@
+Urgent
+-> Finir la documentation
+-> Regarder ce qu'il se passe avec karstnet
+-> Faire un exemple 2 avec le Betteraz
+-> Tester les examples anisotropic de Chlo�
+
+-> Terminer 
+    + class_02_GeologyManager_2D_case.ipynb
+    + class_05_SKS.ipynb
+    + class_06_KarstNetwork.ipynb
+        
+SKS.py
+"""
+TODO :
+- Line 1561 (support 3D)
+- Line 1113 - add multithreading ?
+
+- Karstnet ???
+
+- faire du ménage dans les fonctions de visu
+- function : get_fractures_numbers ? marche pas ??
+"""
+------------------------------------------------------
+GeologyManager.py
+"""
+Documentation
+    - set_data_from_csv
+        * Faire le point
+        * Vérifier que c'est juste
+    - set_data_from_gslib
+        * Vérifier que c'est juste
+    - generate_orientations
+        * Ajouter examples
+    - rasterize_fracture_network
+        * À compléter
+    - compute_stats_on_data
+        * À compléter
+
+A clarifier
+    - set_data_from_gslib
+        * If value==0, it will replaced by nan ???
+
+TODO :
+- show_fractures_stats() // show_fractures() : diagrammes de Rose (voir code de Chloé) [mplstereonet]
+- Renverser les fractures
+- _set_data_from_pickle
+"""
+
+
+
+-----------------------------------------
+
 [ISSUES]
 	- renommer un dossier enl�ve l'auteur du code : il faudra enlever et remettre le code je pense
 	- dans setup.py on ne peut mettre qu'un author...

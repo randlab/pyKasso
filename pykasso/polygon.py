@@ -77,7 +77,7 @@ class Polygon():
         Returns
         -------
         result : array || None
-            Array of vertices out of the grid, else 'None'.
+            Array of vertices out of the grid, else none type.
 
         Examples
         --------
@@ -111,7 +111,7 @@ class Polygon():
 
     def clean_polygon(self):
         """
-        Remove the polygon. Set the 'polygon' and 'mask' attributes to none.
+        Remove the polygon. Set the 'polygon' and 'mask' attributes to none type.
 
         Examples
         --------

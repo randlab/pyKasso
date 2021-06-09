@@ -41,7 +41,7 @@ class Fracture():
 
     def get_ID(self):
         """
-        Return ID of the fracture.
+        Return the ID of the fracture.
 
         Examples
         --------
@@ -51,7 +51,7 @@ class Fracture():
 
     def get_family(self):
         """
-        Return family ID of the fracture.
+        Return the family ID of the fracture.
 
         Examples
         --------

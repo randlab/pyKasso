@@ -1,27 +1,3 @@
-"""
-Documentation
-    - set_data_from_csv
-        * Faire le point
-        * Vérifier que c'est juste
-    - set_data_from_gslib
-        * Vérifier que c'est juste
-    - generate_orientations
-        * Ajouter examples
-    - rasterize_fracture_network
-        * À compléter
-    - compute_stats_on_data
-        * À compléter
-
-A clarifier
-    - set_data_from_gslib
-        * If value==0, it will replaced by nan ???
-
-TODO :
-- show_fractures_stats() // show_fractures() : diagrammes de Rose (voir code de Chloé) [mplstereonet]
-- Renverser les fractures
-- _set_data_from_pickle
-"""
-
 from .functions import opendatafile, loadpoints
 from .fracture  import Fracture
 from tqdm       import tqdm
@@ -798,6 +774,7 @@ class GeologyManager():
 
             #raster_frac = np.swapaxes(raster_fractures,0,2)
             self.data['fractures']['data'] = raster_fractures
+            self.data['fractures']['mode'] = 'random'
         return raster_fractures
 
     def compute_stats_on_data(self, data_key):

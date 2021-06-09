@@ -1,13 +1,4 @@
 """
-TODO :
-- Line 1561 (support 3D)
-- Line 1113 - add multithreading ?
-
-- faire du ménage dans les fonctions de visu
-- function : get_fractures_numbers ? marche pas ??
-"""
-
-"""
 pyKasso
 =======
 
@@ -19,7 +10,7 @@ Released under the MIT license:
    Copyright (C) 2020 Univertsity of Neuchâtel - CHYN
    François Miville <francois.miville@unine.ch>
    Chloé Fandel     <cfandel@email.arizona.edu>
-   Philippe Renard  <philippe.renard@unine.ch>
+   Philippe Renard   <philippe.renard@unine.ch>
 """
 
 from .grid           import Grid
@@ -46,8 +37,6 @@ import karstnet as kn
 import agd
 from agd import Eikonal
 from agd.Metrics import Riemann
-
-import concurrent.futures
 
 class SKS():
     """
