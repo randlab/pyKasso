@@ -8,7 +8,7 @@ from skimage.transform import resize
 import sys
 import math
 import mpmath
-import numpy             as np
+import numpy    as np
 import matplotlib.pyplot as plt
 
 class GeologyManager():
@@ -25,7 +25,9 @@ class GeologyManager():
         {data_key :
             {
             data  : array,
-            stats : array,
+            img   : array,
+            mask  : array,
+            stats : dict,
             mode  : str
             }
         }
@@ -40,8 +42,8 @@ class GeologyManager():
         >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 1, 1, 1)
         >>> geol = pk.GeologyManager(grid)
         """
-        self.data = {}
-        self.grid = grid
+        self.data    = {}
+        self.grid    = grid
 
     def set_data_null(self, data_key):
         """
@@ -62,10 +64,14 @@ class GeologyManager():
         >>> print(geol.data['geology'])
         """
         self.data[data_key] = {}
+
         if data_key in ['topography', 'orientationx', 'orientationy']:
             self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny), dtype=np.int_)
+            self.data[data_key]['img']  = np.zeros((self.grid.nx, self.grid.ny), dtype=np.int_)
         else:
             self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.int_)
+            self.data[data_key]['img']  = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.int_)
+
         self.data[data_key]['mode'] = 'null'
         return None
 
@@ -94,16 +100,18 @@ class GeologyManager():
         self.data[data_key] = {}
         try:
             data = np.genfromtxt(datafile_location, delimiter=',', dtype=np.float_)
-            data = np.transpose(data)
         except:
             print('- set_data_from_csv() - Error : unable to read datafile.')
             raise
         if data_key in ['topography', 'surface']:
-            self.data[data_key]['data'] = data
+            self.data[data_key]['data'] = np.transpose(data)
+            self.data[data_key]['img']  = np.flipud(data)
         else:
             self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.float_)
+            self.data[data_key]['img']  = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.float_)
             for z in range(self.grid.nz):
-                self.data[data_key]['data'][:,:,z] = data
+                self.data[data_key]['data'][:,:,z] = np.transpose(data)
+                self.data[data_key]['img'] [:,:,z] = np.flipud(data)
         self.data[data_key]['mode'] = 'csv'
         return None
 
@@ -111,9 +119,9 @@ class GeologyManager():
         """
         Set data from a gslib file for indicated data key in the 'data' dictionnnary attribute.
 
-        x direction : from west to east
-        y direction : from north to south
-        z direction : from bottom to top
+        x-direction : from west to east
+        y-direction : from south to north
+        z-direction : from bottom to top
 
         Parameters
         ----------
@@ -137,6 +145,7 @@ class GeologyManager():
         #a[a==0] = np.nan                                                             #replace zeros with nans (array must be float first)
         data = np.reshape(data, (self.grid.nx, self.grid.ny, self.grid.nz), order='F')#reshape to xy grid using Fortran ordering
         self.data[data_key]['data'] = data                                            #store
+        self.data[data_key]['img']  = np.flipud(np.transpose(data, (1,0,2)))
         self.data[data_key]['mode'] = 'gslib'
         return None
 
@@ -214,7 +223,11 @@ class GeologyManager():
         self.data['orientationx']['data'] = np.zeros((self.grid.nx, self.grid.ny))
         self.data['orientationy'] = {}
         self.data['orientationy']['data'] = np.zeros((self.grid.nx, self.grid.ny))
+
         self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(surface, self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array
+
+        self.data['orientationx']['img']  = np.flipud(np.transpose(self.data['orientationx']['data']))
+        self.data['orientationy']['img']  = np.flipud(np.transpose(self.data['orientationy']['data']))
         self.data['orientationx']['mode'] = 'topo'
         self.data['orientationy']['mode'] = 'topo'
         return None
@@ -658,11 +671,10 @@ class GeologyManager():
         """
         Rasterize a set of fractures on a 3D grid.
 
-
         Returns
         -------
         raster_fractures : 3D numpy array
-            with value 1 where the grid is touched by a fracture
+            With value 1 where the grid is touched by a fracture
         """
 
         dx, dy, dz = self.grid.dx, self.grid.dy, self.grid.dz
@@ -774,100 +786,55 @@ class GeologyManager():
 
             #raster_frac = np.swapaxes(raster_fractures,0,2)
             self.data['fractures']['data'] = raster_fractures
+            self.data['fractures']['img']  = np.transpose(raster_fractures, (1,0,2))
             self.data['fractures']['mode'] = 'random'
         return raster_fractures
 
     def compute_stats_on_data(self, data_key):
         """
-        Compute statistics on the geologic data (not including the orientations).
+        Compute statistics (occurence, frequency and superficy) on the geologic data.
+
+        Parameters
+        ----------
+        data_key : str
+            Type of data : 'geology', 'faults', 'fractures'.
+
+        Examples
+        --------
+        >>> geol.compute_stats_on_data("geology")
+        >>> print(geol.data["geology"]["stats"])
         """
         if data_key in ['geology', 'faults', 'fractures']:
-            stats = {}
-            for z in range(self.grid.nz):
-                for y in range(self.grid.ny):
-                    for x in range(self.grid.nx):
-                        try:
-                            value = self.data[data_key]['data'][x][y][z]
-                        except:
-                            print(data_key)
-                            print(self.data[data_key]['data'])
-                            print(x,y,z)
-                            print(self.data[data_key]['data'][x][y][z])
-                        try:
-                            if stats.get(value) == None:
-                                stats[value] = 1
-                            else:
-                                stats[value] += 1
-                        except:
-                            print('Unable to compute stats for value :', value)
-            #if self.settings['verbosity'] > 1:
-                #print('\n')
-                #print('STATS for {}'.format(data_key))
-                #print('%-12s%-12s%-12s%-12s' % ('ID', 'Number', '%', 'Superficy'))
-                #print(48*'-')
-            ID        = []
-            occurence = []
-            frequency = []
-            superficy = []
-            for k in stats:
-                #if self.settings['verbosity'] > 1:
-                   #print('%-12i%-12i%-12f%-12i' % (k, stats[k], 100*stats[k]/(self.grid.nx*self.grid.ny), stats[k]*self.grid.dx*self.grid.dy))
-                ID.append(k)
-                occurence.append(stats[k])
-                frequency.append(100*stats[k]/(self.grid.nx*self.grid.ny*self.grid.nz))
-                superficy.append(stats[k]*self.grid.dx*self.grid.dy*self.grid.dz)
-            self.data[data_key]['stats'] = {'ID':ID, 'occurence':occurence, 'frequency':frequency, 'superficy':superficy}
+            data = self.data[data_key]["data"]
+            unique, counts = np.unique(data, return_counts=True)
+            occurence, frequency, superficy = [], [], []
+            for nbr in counts:
+                occurence.append(nbr)
+                frequency.append(100*nbr/(self.grid.nx*self.grid.ny*self.grid.nz))
+                superficy.append(nbr*self.grid.dx*self.grid.dy*self.grid.dz)
+            self.data[data_key]['stats'] = {'ID':unique, 'occurence':occurence, 'frequency':frequency, 'superficy':superficy}
         else:
             self.data[data_key]['stats'] = np.nan
         return None
 
-    """
-    def show_fractures_stats(self):
-    # if fractures none
-        radius      = {}
-        orientation = {}
-        dip         = {}
-        for family in range(self.fractures[-1].get_family()+1):
-            radius[family]      = []
-            orientation[family] = []
-            dip[family]         = []
-            for frac in self.fractures:
-                if (family == frac.get_family()):
-                    radius[family].append(frac.get_radius())
-                    orientation[family].append(frac.get_orientation())
-                    dip[family].append(frac.get_dip())
-        print(radius)
-        print(orientation)
-        print(dip)
-        return None
-    """
 
-    """
-    def show_fractures(self):
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        for frac_family in self.fractures:
-            for frac in self.fractures[frac_family]["fractures"]:
-                x0 = frac.position[0]
-                y0 = frac.position[1]
-                x1 = frac.position[2]
-                y1 = frac.position[3]
-                plt.plot([x0, x1], [y0, y1] ,'orange')
-        ax.set_aspect('equal', adjustable='box')
-        plt.show()
+    def _show_fractures_stats(self):
+        """
+
+        """
         return None
-    """
+
 
     def show(self, data="geology", cmap='gray_r'):
         """
         Show data of the geology manager.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         data : str || array, optional
             Data to show : 'geology', 'topography', 'orientationx', 'orientationy' 'faults' or 'fractures'.
             By default, all data are showed.
-        cmap : str
+        cmap : str, optional
             Color map, 'gray_r' by default.
 
         Examples
@@ -875,6 +842,8 @@ class GeologyManager():
         >>> geol.show()
         """
         fig, ax1 = plt.subplots()
+        d = self.data[data]['img']
+        """
         origin = None
         if 'img' in self.data[data]:
             d = self.data[data]['img']
@@ -884,7 +853,8 @@ class GeologyManager():
             d = np.transpose(self.data[data]['data'], (1,0,2)) # because imshow MxN
         if self.data[data]['mode'] in ['gslib', 'csv']:
             origin="lower"
-        im = ax1.imshow(d, extent=self.grid.extent, cmap=cmap, origin=origin)
+        """
+        im = ax1.imshow(d, extent=self.grid.extent, cmap=cmap)
         fig.colorbar(im, ax=ax1)
         plt.title(data)
         plt.show()

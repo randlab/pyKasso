@@ -87,8 +87,10 @@ class SKS():
         if self.settings['rand_seed'] > 0:
             np.random.seed(self.settings['rand_seed'])
 
+        """ ???
         if rand_seed != None:
             np.random.seed(rand_seed)
+        """
 
         # Avoid issues with text and numbers
         parameters = ['fractures_densities', 'fractures_min_orientation', 'fractures_max_orientation', 'fractures_min_dip', 'fractures_max_dip', 'fractures_alpha', 'fractures_min_length', 'fractures_max_length']
@@ -1172,7 +1174,7 @@ class SKS():
                                             self.settings['fractures_max_dip'],
                                             self.settings['fractures_min_length'],
                                             self.settings['fractures_max_length'])
-            self.geology.rasterize_fracture_network
+            self.geology.rasterize_fracture_network()
         else:
             print('/!\\ Error : unrecognized fractures mode.')
             sys.exit()
@@ -1397,7 +1399,7 @@ class SKS():
         """
         Compute the karst network according to the parameters.
 
-        Save the results in the `karst_simulations` list attribute.
+        Save the results in the `karst_simulations` attribute as an array.
         """
 
         # 1 - Initialize the parameters
@@ -1813,34 +1815,33 @@ class SKS():
                 self.maps['karst'][iteration][ix, iy] = 1                               #update karst map to put a conduit in current cell
         return None
 
-    ###########################
-    # Visualization functions #
-    ###########################
+    #########################
+    # Visualization methods #
+    #########################
 
-    def show_catchment(self, data='geology', title=None, mask=False, cmap='binary'):
+    def show_catchment(self, data='geology', title=None, cmap='binary'):
         """
         Show the entire study domain.
+
+        Parameters
+        ----------
+        data : str, optional
+            Data to show : 'geology', 'topography', 'orientationx', 'orientationy' 'faults' or 'fractures'.
+            By default : 'geology'.
+        title : str, optional
+            Title of the plot. If 'None', 'data' becomes the label.
+        cmap : str, optional
+            Color map, 'binary' by default.
         """
         fig, ax1 = plt.subplots()
         if title is None:
             title = data
         fig.suptitle(title, fontsize=16)
 
-        # Load data
-        d = self.geology.data[data]['data']
-        if mask==True:
-            if self.mask is not None:
-                d = self.geology_masked[data]
-            else:
-                return "Error : no mask to plot."
-        if data in ["topography", "orientationx", "orientationy"]:
-            d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
-            im1 = ax1.imshow(d, extent=self.grid.extent, cmap=cmap, origin="lower")
-        elif self.geology.data[data]["mode"] in ["image", "csv", "null"]:
-            d = np.flipud(np.transpose(d, (1,0,2))) # we need to reverse transformations from geologymanager
-            im1 = ax1.imshow(d , extent=self.grid.extent, cmap='gray_r')
-        else:
-            im1 = ax1.imshow(d, extent=self.grid.extent, cmap=cmap)#, origin="lower")
+        # Load data to show
+        d = self.geology.data[data]['img']
+        im1 = ax1.imshow(d, extent=self.grid.extent, cmap=cmap)
+
         fig.colorbar(im1, ax=ax1)
         if self.settings['data_has_polygon']:
             closed_polygon = self.polygon.polygon[:]
@@ -1935,17 +1936,29 @@ class SKS():
         """
         #Chloe: This is a new function that I use to create all the figures for the paper.
         Show the karst network as a graph with nodes and edges. Defaults to showing latest iteration.
-        Inputs:
-        data:   karst simulation object containing nodes, edges, points, etc. Can be obtained from self.karst_simulations[i]
-        ax:     axis to plot on
-        label:  None or list of strings ['nodes','edges','inlets','outlets'], indicating which components to label
-        title:  string, title of plot
-        cmap:   string, colormap to use when plotting
-        color:  string, single color to use when plotting (cannot have both cmap and color)
-        alpha:  float, opacity to plot with (1=opaque, 0=transparent)
-        legend: True/False, whether to display legend
-        plot_nodes:   True/False, whether to display nodes
-        polygon: True/False, whether to display the bounding polygon
+
+        Parameters
+        ----------
+        data:
+            karst simulation object containing nodes, edges, points, etc. Can be obtained from self.karst_simulations[i]
+        ax :
+            axis to plot on
+        label :
+            None or list of strings ['nodes','edges','inlets','outlets'], indicating which components to label
+        title : str
+            title of plot
+        cmap : str
+            colormap to use when plotting
+        color : str
+            single color to use when plotting (cannot have both cmap and color)
+        alpha : float
+            opacity to plot with (1=opaque, 0=transparent)
+        legend : bool
+            whether to display legend
+        plot_nodes : bool
+            whether to display nodes
+        polygon : bool
+            whether to display the bounding polygon
         """
 
         if ax == None:
