@@ -1,17 +1,17 @@
 """
-Common functions can be wrote and grouped here.
+Common functions that can be wrote and grouped here.
 """
 
 import os
 
 def get_settings(example=None):
     """
-    Provide the datafiles settings.
+    Provides the datafiles settings.
 
     Parameters
     ----------
-    example : str, optionnal
-        'betteraz'.
+    example : str, optional
+        Examples available : 'betteraz'.
 
     Examples
     --------
@@ -54,7 +54,16 @@ def get_settings(example=None):
 
 def opendatafile(file_location):
     """
-    Read a file.
+    Reads a file.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    Examples
+    --------
     """
     try:
         file = open(file_location,"r")
@@ -67,7 +76,16 @@ def opendatafile(file_location):
 
 def loadpoints(text):
     """
-    Load points in a text. Generally combined with 'opendatafile()'.
+    Loads points in a text. Generally combined with 'opendatafile()'.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    Examples
+    --------
     """
     points = []
     try:

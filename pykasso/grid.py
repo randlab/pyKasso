@@ -8,7 +8,7 @@ class Grid():
 
     def __init__(self, x0, y0, z0, nx, ny, nz, dx, dy, dz):
         """
-        Create a structured grid according to the parameters.
+        Creates a structured grid according to the parameters.
         The calculation points are located in the center of the cells.
         The origin (x0, y0, z0) is located at the left-bottom of the grid.
 
@@ -21,17 +21,17 @@ class Grid():
         z0 : float
             z-coordinate of centerpoint of bottom left cell.
         nx : int
-            Number of cells in x direction.
+            Number of cells in the x-direction.
         ny : int
-            Number of cells in y direction.
+            Number of cells in the y-direction.
         nz : int
-            Number of cells in z direction.
+            Number of cells in the z-direction.
         dx : float
-            Cell width in x direction.
+            Cell width in the x-direction.
         dy : float
-            Cell width in y direction.
+            Cell width in the y-direction.
         dz : float
-            Cell width in z direction.
+            Cell width in the z-direction.
 
         Examples
         --------
@@ -73,12 +73,12 @@ class Grid():
 
     def get_i(self, x):
         """
-        Retrieve i-index with x-coordinate.
+        Retrieves i-index with x-coordinate.
 
         Parameters
         ----------
         x : float
-            x-coordinate to test.
+            x-coordinate.
 
         Returns
         -------
@@ -93,12 +93,12 @@ class Grid():
 
     def get_j(self, y):
         """
-        Retrieve j-index with y-coordinate.
+        Retrieves j-index with y-coordinate.
 
         Parameters
         ----------
         y : float
-            y-coordinate to test.
+            y-coordinate.
 
         Returns
         -------
@@ -113,12 +113,12 @@ class Grid():
 
     def get_k(self, z):
         """
-        Retrieve k-index with z-coordinate.
+        Retrieves k-index with z-coordinate.
 
         Parameters
         ----------
         z : float
-            z-coordinate to test.
+            z-coordinate.
 
         Returns
         -------
@@ -133,13 +133,13 @@ class Grid():
 
     def get_x(self, i):
         """
-        Retrieve x-coordinate with i-index.
-        Return none type if i-index is outside the grid.
+        Retrieves x-coordinate with i-index.
+        Returns none type if i-index is outside the grid.
 
         Parameters
         ----------
         i : int
-            i-index to test.
+            i-index.
 
         Returns
         -------
@@ -157,13 +157,13 @@ class Grid():
 
     def get_y(self, j):
         """
-        Retrieve y-coordinate with j-index.
-        Return none type if j-index is outside the grid.
+        Retrieves y-coordinate with j-index.
+        Returns none type if j-index is outside the grid.
 
         Parameters
         ----------
         j : int
-            j-index to test.
+            j-index.
 
         Returns
         -------
@@ -181,13 +181,13 @@ class Grid():
 
     def get_z(self, k):
         """
-        Retrieve z-coordinate with k-index.
-        Return none type if k-index is outside the grid.
+        Retrieves z-coordinate with k-index.
+        Returns none type if k-index is outside the grid.
 
         Parameters
         ----------
         k : int
-            k-index to test.
+            k-index.
 
         Returns
         -------
@@ -205,7 +205,7 @@ class Grid():
 
     def is_inbox(self, x, y, z):
         """
-        Test if a (x, y, z) point is inside the grid.
+        Tests if a (x, y, z) point is inside the grid.
 
         Parameters
         ----------
@@ -218,12 +218,12 @@ class Grid():
 
         Returns
         -------
-        result : bool
-            1 if True.
+        result : int
+            1 if True. 0 if False.
 
         Examples
         --------
-        >>> bool = grid.inbox(0.53, 11.4, 6.0)
+        >>> test = grid.is_inbox(0.53, 11.4, 6.0)
         """
         i, j, k = self.get_i(x), self.get_j(y), self.get_k(z)
         return ( (k-self.nz)*k <= 0 ) and ( (j-self.ny)*j <= 0 ) and ( (i-self.nx)*i <= 0 )

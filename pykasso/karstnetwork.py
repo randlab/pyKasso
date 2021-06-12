@@ -5,20 +5,20 @@ class KarstNetwork():
 
     def __init__(self, maps, points, network, stats, settings):
         """
-        Creates an object and stores within all the results computed by SKS instance.
+        Creates an object and stores within all the results computed by the SKS instance.
 
         Parameters
         ----------
         maps : array
             Data.
         points : array
-            Inlets and oulets used for the simulation.
+            Inlets and outlets used for the simulation.
         network : array
-
+            Karst network.
         stats : array
             Statistics calculated for the karst network.
         settings : dict
-            Dictionnary of the settings used for the simulation.
+            Dictionary of the settings used for the simulation.
         """
         self.maps     = maps
         self.points   = points

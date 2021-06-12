@@ -45,7 +45,7 @@ class SKS():
 
     def __init__(self, yaml_settings_file = None, rand_seed = None):
         """
-        Construct a SKS class according to the specified settings datafile.
+        Constructs a SKS class according to the specified settings datafile.
 
         Parameters
         ----------
@@ -84,13 +84,9 @@ class SKS():
             geology_cost.append(self.settings[elem])
         self.settings['geology_cost'] = geology_cost
 
+        # Set random seed according to parameters
         if self.settings['rand_seed'] > 0:
             np.random.seed(self.settings['rand_seed'])
-
-        """ ???
-        if rand_seed != None:
-            np.random.seed(rand_seed)
-        """
 
         # Avoid issues with text and numbers
         parameters = ['fractures_densities', 'fractures_min_orientation', 'fractures_max_orientation', 'fractures_min_dip', 'fractures_max_dip', 'fractures_alpha', 'fractures_min_length', 'fractures_max_length']
@@ -105,249 +101,80 @@ class SKS():
     # get_ methods #
     ################
 
-    def get_x0(self):
+    def get_parameter(self, parameter):
         """
-        Get the origin x-coordinate used in the model.
+        Gets the actual value of the asked parameter.
 
-        Examples
-        --------
-        >>> x0 = catchment.get_x0()
+        Parameters
+        ----------
+        parameter : str
+            'x0' :
+            'y0' :
+            'z0' :
+            'nx' :
+            'ny' :
+            'nz' :
+            'dx' :
+            'dy' :
+            'dz' :
+            'data_has_polygon' :
+            'polygon_data' :
+            'outlets_mode' :
+            'outlets_data' :
+            'outlets_number' :
+            'outlets_shuffle' :
+            'outlets_importance' :
+            'inlets_mode' :
+            'inlets_data' :
+            'inlets_number' :
+            'inlets_shuffle' :
+            'inlets_per_outlet' :
+            'inlets_importance' :
+            'geological_mode' :
+            'geological_datafile' :
+            'topography_mode' :
+            'topography_datafile' :
+            'orientation_mode' :
+            'orientation_datafile' :
+            'faults_mode' :
+            'faults_datafile' :
+            'fractures_mode' :
+            'fractures_datafile' :
+            'fractures_densities' :
+            'fractures_min_orientation' :
+            'fractures_max_orientation' :
+            'fractures_min_dip' :
+            'fractures_max_dip' :
+            'fractures_alpha' :
+            'fractures_min_length' :
+            'fractures_max_length' :
+            'algorithm' :
+            'cost_out' :
+            'cost_aquifer' :
+            'cost_aquiclude' :
+            'cost_faults' :
+            'cost_fractures' :
+            'cost_conduits' :
+            'cost_ratio' :
+            'geology_id' :
+            'geology_cost' :
+            'importance_factor' :
+            'rand_seed' :
+            'verbosity' :
         """
-        return self.settings['x0']
-
-    def get_y0(self):
-        """
-        Get the origin y-coordinate used in the model.
-
-        Examples
-        --------
-        >>> y0 = catchment.get_y0()
-        """
-        return self.settings['y0']
-
-    def get_z0(self):
-        """
-        Get the origin z-coordinate used in the model.
-
-        Examples
-        --------
-        >>> z0 = catchment.get_z0()
-        """
-        return self.settings['z0']
-
-    def get_nx(self):
-        """
-        Get the number of nodes in the x direction used in the model.
-
-        Examples
-        --------
-        >>> nx = catchment.get_nx()
-        """
-        return self.settings['nx']
-
-    def get_ny(self):
-        """
-        Get the number of cells in the y direction used in the model.
-
-        Examples
-        --------
-        >>> ny = catchment.get_ny()
-        """
-        return self.settings['ny']
-
-    def get_nz(self):
-        """
-        Get the number of cells in the z direction used in the model.
-
-        Examples
-        --------
-        >>> nz = catchment.get_nz()
-        """
-        return self.settings['nz']
-
-    def get_dx(self):
-        """
-        Get the width of cells in the x direction used in the model.
-
-        Examples
-        --------
-        >>> dx = catchment.get_dx()
-        """
-        return self.settings['dx']
-
-    def get_dy(self):
-        """
-        Get the width of cells in the y direction used in the model.
-
-        Examples
-        --------
-        >>> dy = catchment.get_dy()
-        """
-        return self.settings['dy']
-
-    def get_dz(self):
-        """
-        Get the width of cells in the z direction used in the model.
-
-        Examples
-        --------
-        >>> dz = catchment.get_dz()
-        """
-        return self.settings['dz']
-
-    def get_data_has_polygon(self):
-        """
-        Get the boolean value which indicates if a polygon is used or not.
-
-        Examples
-        --------
-        >>> has_polygon = catchment.get_data_has_polygon()
-        """
-        return self.settings['data_has_polygon']
-
-    def get_polygon_data(self):
-        """
-        Get the vertices of the polygon.
-
-        Examples
-        --------
-        >>> polygon_vertices = catchment.get_polygon_data()
-        """
-        return self.settings['polygon_data']
-
-    def get_outlets_mode(self):
-        return self.settings['outlets_mode']
-
-    def get_outlets_data(self):
-        return self.settings['outlets_data']
-
-    def get_outlets_number(self):
-        return self.settings['outlets_number']
-
-    def get_outlets_shuffle(self):
-        return self.settings['outlets_shuffle']
-
-    def get_outlets_importance(self):
-        return self.settings['outlets_importance']
-
-    def get_inlets_mode(self):
-        return self.settings['inlets_mode']
-
-    def get_inlets_data(self):
-        return self.settings['inlets_data']
-
-    def get_inlets_number(self):
-        return self.settings['inlets_number']
-
-    def get_inlets_shuffle(self):
-        return self.settings['inlets_shuffle']
-
-    def get_inlets_per_outlet(self):
-        return self.settings['inlets_per_outlet']
-
-    def get_inlets_importance(self):
-        return self.settings['inlets_importance']
-
-    def get_geological_mode(self):
-        return self.settings['geological_mode']
-
-    def get_geological_datafile(self):
-        return self.settings['geological_datafile']
-
-    def get_topography_mode(self):
-        return self.settings['topography_mode']
-
-    def get_topography_datafile(self):
-        return self.settings['topography_datafile']
-
-    def get_orientation_mode(self):
-        return self.settings['orientation_mode']
-
-    def get_orientation_datafile(self):
-        return self.settings['orientation_datafile']
-
-    def get_faults_mode(self):
-        return self.settings['faults_mode']
-
-    def get_faults_datafile(self):
-        return self.settings['faults_datafile']
-
-    def get_fractures_mode(self):
-        return self.settings['fractures_mode']
-
-    def get_fractures_datafile(self):
-        return self.settings['fractures_datafile']
-
-    def get_fractures_densities(self):
-        return self.settings['fractures_densities']
-
-    def get_fractures_min_orientation(self):
-        return self.settings['fractures_min_orientation']
-
-    def get_fractures_max_orientation(self):
-        return self.settings['fractures_max_orientation']
-
-    def get_fractures_min_dip(self):
-        return self.settings['fractures_min_dip']
-
-    def get_fractures_max_dip(self):
-        return self.settings['fractures_max_dip']
-
-    def get_fractures_alpha(self):
-        return self.settings['fractures_alpha']
-
-    def get_fractures_min_length(self):
-        return self.settings['fractures_min_length']
-
-    def get_fractures_max_length(self):
-        return self.settings['fractures_max_length']
-
-    def get_algorithm(self):
-        return self.settings['algorithm']
-
-    def get_cost_out(self):
-        return self.settings['cost_out']
-
-    def get_cost_aquifer(self):
-        return self.settings['cost_aquifer']
-
-    def get_cost_aquiclude(self):
-        return self.settings['cost_aquiclude']
-
-    def get_cost_faults(self):
-        return self.settings['cost_faults']
-
-    def get_cost_fractures(self):
-        return self.settings['cost_fractures']
-
-    def get_cost_conduits(self):
-        return self.settings['cost_conduits']
-
-    def get_cost_ratio(self):
-        return self.settings['cost_ratio']
-
-    def get_geology_id(self):
-        return self.settings['geology_id']
-
-    def get_geology_cost(self):
-        return self.settings['geology_cost']
-
-    def get_importance_factor(self):
-        return self.settings['importance_factor']
-
-    def get_rand_seed(self):
-        return self.settings['rand_seed']
-
-    def get_verbosity(self):
-        return self.settings['verbosity']
-
-    ##################################
-    # get_ methods for uploaded data #
-    ##################################
+        return self.settings[parameter]
 
     def get_polygon_vertices(self):
         """
-        Get the polygon vertices as a list.
+        Gets the polygon vertices as an array.
+
+        Returns
+        -------
+        result : array
+
+        Examples
+        --------
+        >>> polygon_vertices = catchment.get_polygon_vertices()
         """
         if self.polygon.polygon is None:
             print("No polygon set.")
@@ -357,68 +184,70 @@ class SKS():
 
     def get_inlets(self):
         """
-        Get the inlets as an array.
+        Gets the inlets location as an array.
+
+        Returns
+        -------
+        result : array
+
+        Examples
+        --------
+        >>> inlets = catchment.get_inlets()
         """
         return self.inlets
 
     def get_outlets(self):
         """
-        Get the outlets as an array.
+        Gets the outlets location as an array.
+
+        Returns
+        -------
+        result : array
+
+        Examples
+        --------
+        >>> outlets = catchment.get_outlets()
         """
         return self.outlets
 
-    def get_geology(self):
+    def get_data(self, data_key):
         """
-        Get the geological data as a numpy-array.
-        """
-        return self.geology.data['geology']['data']
+        Get the data according to the indicated data key.
 
-    def get_topography(self):
-        """
-        Get the topography data as a numpy-array.
-        """
-        return self.geology.data['topography']['data']
+        Parameters
+        ----------
+        data_key : str
+            'geology'      :
+            'faults'       :
+            'fractures'    :
+            'topography'   :
+            'surface'      :
+            'orientationx' :
+            'orientationy' :
 
-    def get_contact_surface(self):
-        """
-        Get the lower contact surface of the karst unit as a numpy-array.
-        """
-        return self.geology.data['surface']['data']
+        Returns
+        -------
+        result : numpy array
 
-    def get_orientation(self):
+        Examples
+        --------
+        >>> geol = catchment.get_data('geology')
+        >>> surf = catchment.get_data('surface')
         """
-        Get the orientation data as two numpy arrays (for x and y components).
-        """
-        return [self.geology.data['orientationx']['data'], self.geology.data['orientationy']['data']]
-
-    def get_faults(self):
-        """
-        Get the faults data as a numpy-array.
-        """
-        return self.geology.data['faults']['data']
-
-    def get_fractures(self, fractures_family=None):
-        """
-        Get the fractures as a numpy-array.
-
-        Parameter
-        ---------
-        fractures_family : integer
-            First family is 0
-        """
-        if fractures_family is None:
-            return self.geology.data['fractures']['data']
-        else:
-            return self.geology.fractures[fractures_family]['frac_map']
+        return self.geology.data[data_key]['data']
 
     def get_fractures_numbers(self):
         """
-        Get the number of fractures.
+        Gets the number of fractures.
 
-        Return
-        ------
-        dictionnary
-            A dictionnary with the number of fractures given by user, and with the number of fractures calculated.
+        Returns
+        -------
+        result : dict
+            A dictionary with the number of fractures given by user, and with the number of fractures calculated by the model.
+
+        Examples
+        --------
+        >>> frac_nbr = catchment.get_fractures_numbers()
         """
         user = self.fractures_numbers
         model = []
@@ -429,10 +258,20 @@ class SKS():
 
     def get_mask(self):
         """
-        Get the numpy-array mask calculated if a polygon is given.
+        Gets the numpy-array mask calculated if a polygon is given.
+
+        Returns
+        -------
+        mask : numpy array
+            Returns none type if no mask is present.
+
+        Examples
+        --------
+        >>> mask = catchment.get_mask()
         """
         if self.mask is None:
-            return 'No mask to return.'
+            print('No mask to return.')
+            return None
         else:
             return self.mask
 
@@ -442,24 +281,24 @@ class SKS():
 
     def set_data_has_polygon(self, data_has_polygon):
         """
-        Define if study area will be focused on a polygon delimitations.
+        Defines if a polygon is used or not.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         data_has_polygon : bool
-            If true, a polygon will be required.
+            If true, a polygon must be set with 'set_polygon_data()'.
         """
         self.settings['data_has_polygon'] = data_has_polygon
         return None
 
     def set_polygon_data(self, polygon_data):
         """
-        Define the polygon datafile path.
+        Defines the polygon vertices. datafile path.
         Useful only when data_has_polygon is true.
 
         Parameter
         ---------
-        polygon_data : string or list
+        polygon_data : str || array
             Polygon datafile path or list of vertices coordinates.
         """
         self.settings['polygon_data'] = polygon_data
@@ -1025,7 +864,12 @@ class SKS():
 
     def update_polygon(self):
         """
-        Update the polygon settings.
+        Updates the polygon settings.
+        Applies to the model the new parameters given with the 'set_' methods.
+
+        Examples
+        --------
+        >>> catchment.update_polygon()
         """
         if self.settings['data_has_polygon']:
             self.polygon.set_polygon(self.settings['polygon_data'])

@@ -13,8 +13,8 @@ class PointManager():
 
     def __init__(self, grid, polygon, geology=None):
         """
-        Create a point manager on a Grid instance.
-        This class is designed to handle points and transform them into inlets or outlets.
+        Creates a point manager on a Grid instance.
+        This class is designed to handle points and to transform them into inlets or outlets.
 
         Parameters
         ----------
@@ -22,7 +22,7 @@ class PointManager():
             The point manager must be set on the studied grid.
         polygon : Polygon instance
             The point manager needs a Polygon instance even if it's empty.
-        geology : GeologyManager instance, optionnal
+        geology : GeologyManager instance, optional
 	       The point manager can use geologic data as parameters.
 
         Examples
@@ -39,7 +39,7 @@ class PointManager():
 
     def set_points(self, points_key, points):
         """
-        Set new points.
+        Sets new points for the indicated points key.
 
         Parameters
         ----------
@@ -62,7 +62,7 @@ class PointManager():
 
     def generate_points(self, points_key, points_number, geological_IDs=None):
         """
-        Generate random points on the grid according to the parameters.
+        Generates random points on the grid according to the parameters.
 
         Parameters
         ----------
@@ -70,7 +70,7 @@ class PointManager():
             Type of points : 'inlets' or 'outlets'.
         points_number : int
             Number of points to generate.
-        geological_IDs : array, optionnal
+        geological_IDs : array, optional
             List of geologic facies where points can be created.
 
         Examples
@@ -137,7 +137,7 @@ class PointManager():
 
     def composite_points(self, points_key, points, points_number, geological_IDs=None):
         """
-        Generate random points on the grid, and add user indicated points.
+        Generates random points and combines it with user indicated points.
 
         Parameters
         ----------
@@ -147,7 +147,7 @@ class PointManager():
             Location of the datafile or list of the points coordinates.
         points_number : int
             Number of points to generate.
-        geological_IDs : array, optionnal
+        geological_IDs : array, optional
             List of geologic facies where points can be created.
 
         Examples
@@ -166,8 +166,8 @@ class PointManager():
 
     def inspect_points(self):
         """
-        Check if the points are well located inside the grid.
-        If there is no print out, so everything is OK.
+        Checks if the points are well located inside the grid, or well inside the polygon if one is provided.
+        Prints out only when an issue is encountered.
 
         Examples
         --------
@@ -202,7 +202,7 @@ class PointManager():
 
     def show(self):
         """
-        Show the delimitation of the grid, of the polygon (if present) and of the locations of the points (if present).
+        Shows the delimitations of the grid, of the polygon (if present) and of the locations of the points (if present).
 
         Examples
         --------
@@ -212,25 +212,8 @@ class PointManager():
         fig.suptitle('Show points', fontsize=16)
 
         # Geology
-        origin = None
-        if 'geology' in self.geology.data:
-            if 'img' in self.geology.data['geology']:
-                data = self.geology.data['geology']['img']
-                if self.polygon.mask is not None:
-                    import numpy.ma as ma
-                    mask = self.polygon.mask
-                    mask = np.transpose(mask, (1,0,2))
-                    mask = np.flipud(mask)
-                    data = ma.MaskedArray(data, mask=mask)
-            else:
-                data = np.transpose(self.geology.data['geology']['data'], (1,0,2)) # because imshow MxN
-                if self.geology.data['geology']['mode'] in ['gslib', 'csv']:
-                    origin="lower"
-                #if self.polygon.mask is not None:
-                #    import numpy.ma as ma
-                #    mask = self.polygon.mask
-                #    data = ma.MaskedArray(data, mask=mask)
-            plt.imshow(data, extent=self.grid.extent, cmap='gray_r', origin=origin)
+        d = self.geology.data["geology"]['img']
+        plt.imshow(d, extent=self.grid.extent, cmap=cmap)
 
         # Grid limits
         xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1], self.grid.xlimits[0]]

@@ -2,11 +2,11 @@ class Fracture():
     """
     Class modeling fractures as objects.
     """
-    
+
     def __init__(self, ID, family, position, radius, orientation, dip, normal):
         """
-        Create a fracture according to the parameters.
-        
+        Creates a fracture according to the parameters.
+
         Parameters
         ----------
         ID : int
@@ -41,7 +41,7 @@ class Fracture():
 
     def get_ID(self):
         """
-        Return the ID of the fracture.
+        Returns the ID of the fracture.
 
         Examples
         --------
@@ -51,7 +51,7 @@ class Fracture():
 
     def get_family(self):
         """
-        Return the family ID of the fracture.
+        Returns the family ID of the fracture.
 
         Examples
         --------
@@ -61,7 +61,7 @@ class Fracture():
 
     def get_position(self):
         """
-        Return an array with the (x, y, z) coordinates of the center of the fracture.
+        Returns an array with the (x, y, z) coordinates of the center of the fracture.
 
         Examples
         --------
@@ -71,7 +71,7 @@ class Fracture():
 
     def get_radius(self):
         """
-        Return the radius of the fracture.
+        Returns the radius of the fracture.
 
         Examples
         --------
@@ -81,17 +81,17 @@ class Fracture():
 
     def get_orientation(self):
         """
-        Return the orientation of the fracture.
+        Returns the orientation of the fracture.
 
         Examples
         --------
         >>> orien = frac.get_orientation()
         """
         return self.orientation
-        
+
     def get_dip(self):
         """
-        Return the dip of the fracture.
+        Returns the dip of the fracture.
 
         Examples
         --------
@@ -101,7 +101,7 @@ class Fracture():
 
     def get_normal(self):
         """
-        Return an array with the (a, b, c) vector component of the normal of the fracture.
+        Returns an array with the (a, b, c) vector component of the normal of the fracture.
 
         Examples
         --------

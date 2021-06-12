@@ -1,4 +1,3 @@
-from .functions import opendatafile, loadpoints
 from .fracture  import Fracture
 from tqdm       import tqdm
 
@@ -18,15 +17,14 @@ class GeologyManager():
 
     def __init__(self, grid):
         """
-        Create a geology manager on a Grid instance.
+        Creates a geology manager on a Grid instance.
         This class is designed to handle geology, faults and fractures data.
-        Data is stored in a 'data' attribute as a dictionnary.
+        Data is stored in a the 'data' attribute as a dictionnary.
         The data model is set as follow :
         {data_key :
             {
             data  : array,
             img   : array,
-            mask  : array,
             stats : dict,
             mode  : str
             }
@@ -47,11 +45,11 @@ class GeologyManager():
 
     def set_data_null(self, data_key):
         """
-        Set data to 'null' for the indicated data key in the 'data' dictionnnary attribute.
+        Sets data to 'null' mode for the indicated data key in the 'data' dictionary attribute.
 
-        For 'topography', 'orientationx' and 'orientationy' set : np.zeros((nx,ny))
+        For data keys 'topography', 'orientationx' and 'orientationy' sets : np.zeros((nx,ny))
 
-        Otherwise set : np.zeros((nx,ny,nz))
+        Otherwise, sets : np.zeros((nx,ny,nz))
 
         Parameters
         ----------
@@ -77,13 +75,13 @@ class GeologyManager():
 
     def set_data_from_csv(self, data_key, datafile_location):
         """
-        Set data from a csv file for the indicated data key in the 'data' dictionnnary attribute.
+        Sets data from a csv file for the indicated data key in the 'data' dictionary attribute.
         Delimiter is ','.
 
         If Grid.nz > 1, the layer is horizontally repeated.
 
-        x direction : from West to East
-        y direction : from North to South
+        x-direction : from West to East
+        y-direction : from North to South
 
         Parameters
         ----------
@@ -117,7 +115,7 @@ class GeologyManager():
 
     def set_data_from_gslib(self, data_key, datafile_location):
         """
-        Set data from a gslib file for indicated data key in the 'data' dictionnnary attribute.
+        Sets data from a gslib file for the indicated data key in the 'data' dictionary attribute.
 
         x-direction : from west to east
         y-direction : from south to north
@@ -151,8 +149,8 @@ class GeologyManager():
 
     def set_data_from_image(self, data_key, datafile_location):
         """
-        Set data from an image for a indicated data key in the 'data' dictionnnary attribute.
-        The size of the image should be the same that the size of the grid but this is optional.
+        Sets data from an image for the indicated data key in the 'data' dictionary attribute.
+        The size of the image should be the same that the size of the grid, but this is optional.
         If nz > 1, the layer is horizontally repeated.
         This method usage is not recommended, it should be used only for quick testing.
 
@@ -189,7 +187,7 @@ class GeologyManager():
 
     def _set_data_from_pickle(self, data_key, datafile_location):
         """
-        Set data from a pickle data file.
+        Sets data from a pickle data file.
 
         Parameters
         ----------
@@ -207,7 +205,7 @@ class GeologyManager():
 
     def generate_orientations(self, surface):
         """
-        Generate maps of x and y components of orientation.
+        Generates maps of x and y components of orientation.
 
         Parameters
         ------------
@@ -217,7 +215,7 @@ class GeologyManager():
 
         Examples
         --------
-        >>>
+        >>> geol.generate_orientations(surf)
         """
         self.data['orientationx'] = {}
         self.data['orientationx']['data'] = np.zeros((self.grid.nx, self.grid.ny))
@@ -234,7 +232,7 @@ class GeologyManager():
 
     def generate_fractures(self, fractures_densities, fractures_alpha, fractures_min_orientation, fractures_max_orientation, fractures_min_dip, fractures_max_dip, fractures_min_length, fractures_max_length):
         """
-        Generate fractures as Fracture instances according to the parameters.
+        Generates fractures as Fracture instances according to the parameters.
 
         Parameters
         ----------
@@ -251,9 +249,9 @@ class GeologyManager():
         fractures_max_dip : array
             Fractures maximum dip for each fracture family.
         fractures_min_length : array
-            The minimum lenght of the fractures for each fracture family.
+            The minimum length of the fractures for each fracture family.
         fractures_max_length : array
-            The maximum lenght of the fractures for each fracture family.
+            The maximum length of the fractures for each fracture family.
 
         Examples
         --------
@@ -669,7 +667,7 @@ class GeologyManager():
 
     def rasterize_fracture_network(self):
         """
-        Rasterize a set of fractures on a 3D grid.
+        Rasterizes a set of fractures on a 3D grid.
 
         Returns
         -------
@@ -792,7 +790,7 @@ class GeologyManager():
 
     def compute_stats_on_data(self, data_key):
         """
-        Compute statistics (occurence, frequency and superficy) on the geologic data.
+        Computes statistics (occurrence, frequency and area) of the geologic data.
 
         Parameters
         ----------
@@ -807,12 +805,12 @@ class GeologyManager():
         if data_key in ['geology', 'faults', 'fractures']:
             data = self.data[data_key]["data"]
             unique, counts = np.unique(data, return_counts=True)
-            occurence, frequency, superficy = [], [], []
+            occurrence, frequency, area = [], [], []
             for nbr in counts:
-                occurence.append(nbr)
+                occurrence.append(nbr)
                 frequency.append(100*nbr/(self.grid.nx*self.grid.ny*self.grid.nz))
-                superficy.append(nbr*self.grid.dx*self.grid.dy*self.grid.dz)
-            self.data[data_key]['stats'] = {'ID':unique, 'occurence':occurence, 'frequency':frequency, 'superficy':superficy}
+                area.append(nbr*self.grid.dx*self.grid.dy*self.grid.dz)
+            self.data[data_key]['stats'] = {'ID':unique, 'occurrence':occurrence, 'frequency':frequency, 'area':area}
         else:
             self.data[data_key]['stats'] = np.nan
         return None
@@ -827,7 +825,7 @@ class GeologyManager():
 
     def show(self, data="geology", cmap='gray_r'):
         """
-        Show data of the geology manager.
+        Shows data of the geology manager.
 
         Parameters
         ----------

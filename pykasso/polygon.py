@@ -11,7 +11,7 @@ class Polygon():
 
     def __init__(self, grid):
         """
-        Create a polygon manager on a Grid instance.
+        Creates a polygon manager on a Grid instance.
 
         Parameters
         ----------
@@ -29,14 +29,14 @@ class Polygon():
 
     def set_polygon(self, vertices):
         """
-        Create a polygon from vertices coordinates.
-        The polygon is stored in 'polygon' attribute.
-        It also create a mask and store it in 'mask' attribute.
+        Creates a polygon from vertices coordinates.
+        The polygon is stored in the 'polygon' attribute.
+        It also creates a mask and stores it in the 'mask' attribute.
 
         Parameters
         ----------
         vertices : str || array
-            Location of the datafile or array of the vertices coordinates like [[x1,y1],[x2,y2],[xn,yn]].
+            Location of the datafile, or array of the vertices coordinates like [[x1,y1],[x2,y2],[xn,yn]].
 
         Examples
         --------
@@ -71,13 +71,13 @@ class Polygon():
 
     def inspect_polygon(self):
         """
-        Check if the vertices of the polygon are located inside the grid or not.
-        If all the vertices are outside the grid, the polygon is reseted to none.
+        Checks if the vertices of the polygon are located inside the grid or not.
+        If all the vertices are outside the grid, the polygon is reset to none.
 
         Returns
         -------
         result : array || None
-            Array of vertices out of the grid, else none type.
+            Array of vertices out of the grid, else returns none type.
 
         Examples
         --------
@@ -111,7 +111,7 @@ class Polygon():
 
     def clean_polygon(self):
         """
-        Remove the polygon. Set the 'polygon' and 'mask' attributes to none type.
+        Removes the polygon. Sets the 'polygon' and the 'mask' attributes to none type.
 
         Examples
         --------
@@ -122,7 +122,7 @@ class Polygon():
 
     def show(self):
         """
-        Show the delimitation of the grid and, if a polygon is present, display its limits.
+        Shows the delimitation of the grid and, if a polygon is present, displays its limits.
 
         Examples
         --------
