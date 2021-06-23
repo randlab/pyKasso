@@ -1106,7 +1106,6 @@ class SKS():
                 if key in ['topography', 'orientationx', 'orientationy']:
                     mask = self.mask[:,:,0]
                 self.geology_masked[key] = ma.MaskedArray(self.geology.data[key]['data'], mask=mask)
-
         return None
 
     def _set_grid(self, x0, y0, z0, nx, ny, nz, dx, dy, dz):
@@ -1611,7 +1610,7 @@ class SKS():
                                 self.e = self.e+1                                             #increment edge counter up by one
                                 #ax1.plot((self.nodes[self.n][0], self.nodes[self.n-1][0]),(self.nodes[self.n][1], self.nodes[self.n-1][1]))
                             else:                                                          #if this conduit HAS merged with an existing conduit
-                                [[fromix,fromiy],error]  = self.fastMarching.IndexFromPoint(path[:,p-1]) #get xy indices of previous point in current conduit path
+                                [[fromiy,fromix],error] = self.fastMarching.IndexFromPoint(path[:,p-1]) #get xy indices of previous point in current conduit path
                                 n_from = self.maps['nodes'][fromix,fromiy]                    #get node index of the node already in the cell where the previous point was
                                 self.edges[self.e] = [n_from, self.n]                         #add an edge connecting existing conduit node to current node
                                 self.e = self.e+1                                             #increment edge counter up by one
@@ -1620,7 +1619,7 @@ class SKS():
                     else:                                                                  #if there is NOT an outlet here
                         if p > 0:                                                           #if this is not the first point in the current path
                             #possible improvement: if the next point on the path is on an existing point, skip the current point.
-                            self.nodes[self.n] = [point[0], point[1], 'junction']            #add a junction node here (with the node type for SWMM)
+                            self.nodes[self.n] = [point[1], point[0], 'junction']            #add a junction node here (with the node type for SWMM)
                             self.maps['nodes'][ix,iy] = self.n                               #update node map with node index
                             #ax1.scatter(point[1],point[0], marker='o', edgecolor='g', facecolor='none')   #debugging
                             if merge == False:                                              #if this conduit has not merged with an existing conduit
@@ -1628,13 +1627,13 @@ class SKS():
                                 self.e = self.e+1                                            #increment edge counter up by one
                                 #ax1.plot((self.nodes[self.n][1], self.nodes[self.n-1][1]),(self.nodes[self.n][0], self.nodes[self.n-1][0]), c='gold', marker=None)
                             else:                                                           #if this conduit HAS merged with an existing conduit
-                                [[fromix,fromiy],error]  = self.fastMarching.IndexFromPoint(path[:,p-1]) #get xy indices of previous point in current conduit path
+                                [[fromiy,fromix],error] = self.fastMarching.IndexFromPoint(path[:,p-1]) #get xy indices of previous point in current conduit path
                                 n_from = self.maps['nodes'][fromix,fromiy]                   #get node index of the node already in the cell where the previous point was
                                 self.edges[self.e] = [n_from, self.n]                        #add an edge connecting existing conduit node to current node
                                 self.e = self.e+1                                            #increment edge counter up by one
                                 merge = False                                                #reset merge indicator to show that current conduit has left                                                              #if this is the first point in current path
                         else:                                                                #if this is the first point in the current path (counter <= 0, therefore it is an inlet)
-                            self.nodes[self.n] = [point[0], point[1], 'inlet']               #add an inlet node here (with the node type for SWMM)
+                            self.nodes[self.n] = [point[1], point[0], 'inlet']               #add an inlet node here (with the node type for SWMM)
                             self.maps['nodes'][ix,iy] = self.n                               #update node map with node index
                             #ax1.scatter(point[1],point[0], marker='o', edgecolor='sienna', facecolor='none')
                         self.n = self.n+1                                                   #increment node counter up by one
@@ -1651,7 +1650,7 @@ class SKS():
                             merge = True                                                     #add a flag indicating that this conduit has merged into an existing one
                             #ax1.plot((self.nodes[self.n-1][1], self.nodes[n_existing][1]),(self.nodes[self.n-1][0], self.nodes[n_existing][0]), c='r', marker=None)
                         else:                                                                #if this is the first point in the current path (i.e. the inlet is on an exising conduit)
-                            self.nodes[self.n] = [point[0], point[1], 'inlet']                #add a node here (with the node type for SWMM)- this will cause there to be two nodes in the same cell
+                            self.nodes[self.n] = [point[1], point[0], 'inlet']                #add a node here (with the node type for SWMM)- this will cause there to be two nodes in the same cell
                             self.maps['nodes'][ix,iy] = self.n                                #update node map with node index
                             self.n = self.n+1                                                 #increment node counter by 1
                             #ax1.scatter(point[1],point[0], marker='o', edgecolor='g', facecolor='none')  #debugging

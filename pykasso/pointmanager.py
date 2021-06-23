@@ -212,8 +212,12 @@ class PointManager():
         fig.suptitle('Show points', fontsize=16)
 
         # Geology
-        d = self.geology.data["geology"]['img']
-        plt.imshow(d, extent=self.grid.extent, cmap=cmap)
+        if self.geology is not None:
+            try:
+                d = self.geology.data['geology']['img'][:,:,0]
+                plt.imshow(d, extent=self.grid.extent, cmap='gray_r')
+            except:
+                None
 
         # Grid limits
         xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1], self.grid.xlimits[0]]
