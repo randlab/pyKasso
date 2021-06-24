@@ -17,6 +17,6 @@ dependencies:
   - scikit-image
   - mpmath
   - pandas
-  - xlrd 
+  - xlrd
  # conda install -n pykasso pip
  # pip install mplstereonet

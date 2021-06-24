@@ -78,28 +78,31 @@ class PointManager():
         >>> pts.generate_points("inlets", 20)
         >>> pts.generate_points("outlets", 3, geological_IDs=[0,2])
         """
+        random_x = lambda : self.grid.x0 - self.grid.dx/2 + self.grid.nx * np.random.random() * self.grid.dx
+        random_y = lambda : self.grid.y0 - self.grid.dy/2 + self.grid.ny * np.random.random() * self.grid.dy
+
+        # With geology, without polygon
         if geological_IDs is None:
             if self.polygon.polygon is None:
-                rand_x = [self.grid.x0 - self.grid.dx/2 + self.grid.nx * np.random.random() * self.grid.dx for x in range(points_number)]
-                rand_y = [self.grid.y0 - self.grid.dy/2 + self.grid.ny * np.random.random() * self.grid.dy for y in range(points_number)]
+                rand_x = [random_x() for x in range(points_number)]
+                rand_y = [random_y() for y in range(points_number)]
                 self.points[points_key] = list(zip(rand_x, rand_y))
+        # Without geology, with polygon
             else:
                 validated_inlets = 0
-                rand_x = []
-                rand_y = []
+                rand_x, rand_y = [], []
                 while validated_inlets < points_number:
-                    x = self.grid.x0 - self.grid.dx/2 + self.grid.nx*np.random.random() * self.grid.dx
-                    y = self.grid.y0 - self.grid.dy/2 + self.grid.ny*np.random.random() * self.grid.dy
-                    if int(Path(self.polygon.polygon).contains_point((x, y))):
+                    x, y = random_x(), random_y()
+                    if int(self.polygon.polygon.contains_point((x, y))):
                         rand_x.append(x)
                         rand_y.append(y)
                         validated_inlets += 1
                 self.points[points_key] = list(zip(rand_x, rand_y))
 
-        # Case when geological_IDs is indicated
+        # With geology
         else:
             if self.geology is None:
-                print('- generate_points() - Error : no geology to consider in order to generate points.')
+                print('- generate_points() - ERROR : no geology to consider in order to generate points.')
                 sys.exit()
             if self.geology.data["geology"]["stats"] is None:
                 self.geology.compute_stats_on_data("geology")
@@ -107,16 +110,14 @@ class PointManager():
             ids = self.geology.data["geology"]["stats"]["ID"]
             new_ids = [id for id in geological_IDs if (id in ids)]
             if not new_ids:
-                 print('- generate_points() - Error : none of the ids provided are valid.')
+                 print('- generate_points() - ERROR : none of the geology ids provided are valid.')
                  sys.exit()
             validated_inlets = 0
-            rand_x = []
-            rand_y = []
+            rand_x, rand_y = [], []
             # Without polygon
             if self.polygon.polygon is None:
                 while validated_inlets < points_number:
-                    x = self.grid.x0 - self.grid.dx/2 + self.grid.nx*np.random.random() * self.grid.dx
-                    y = self.grid.y0 - self.grid.dy/2 + self.grid.ny*np.random.random() * self.grid.dy
+                    x, y = random_x(), random_y()
                     if self.geology.data["geology"]["data"][self.grid.get_i(x)][self.grid.get_j(y)][0] in new_ids:
                         rand_x.append(x)
                         rand_y.append(y)
@@ -125,10 +126,9 @@ class PointManager():
             # With polygon
             else:
                 while validated_inlets < points_number:
-                    x = self.grid.x0 - self.grid.dx/2 + self.grid.nx*np.random.random() * self.grid.dx
-                    y = self.grid.y0 - self.grid.dy/2 + self.grid.ny*np.random.random() * self.grid.dy
+                    x, y = random_x(), random_y()
                     if self.geology.data["geology"]["data"][self.grid.get_i(x)][self.grid.get_j(y)][0] in new_ids:
-                        if int(Path(self.polygon.polygon).contains_point((x,y))):
+                        if int(self.polygon.polygon.contains_point((x,y))):
                             rand_x.append(x)
                             rand_y.append(y)
                             validated_inlets += 1
@@ -174,29 +174,23 @@ class PointManager():
         >>> pts.inspect_points()
         """
         if self.points is None:
-            print('- inspect_points() - Error : no points to inspect.')
+            print('- inspect_points() - ERROR : no points to inspect.')
             sys.exit()
         else:
-            xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1]]
-            ylimits = [self.grid.ylimits[0], self.grid.ylimits[1], self.grid.ylimits[1], self.grid.ylimits[0]]
             for key in self.points:
-                mask = []
-                unvalidated_points = []
-                for k,(x,y) in enumerate(self.points[key]):
-                    if self.polygon.polygon is not None:
-                        a = not int(Path(self.polygon.polygon).contains_point((x, y)))
-                    else:
-                        a = not int(Path(list(zip(xlimits, ylimits))).contains_point((x, y)))
-                    mask.append((a,a))
-                    if a:
-                        unvalidated_points.append(k+1)
-                self.points[key] = ma.masked_array(self.points[key], mask=mask)
-                if len(unvalidated_points) > 0:
-                    print('- inspect_points() - Warning : {} {} on {} masked because not inside polygon.'.format(len(unvalidated_points),key,len(self.points[key])))
-                    for point in unvalidated_points:
-                        print('- point on line {}'.format(point))
-                if len(unvalidated_points) == len(self.points[key]):
-                    print('- inspect_points() - Error : all the "{}" are outside the domain.'.format(key))
+                if self.polygon.polygon is not None:
+                    logicals = np.logical_and(self.polygon.polygon.contains_points(self.points[key]), self.grid.path.contains_points(self.points[key]))
+                else:
+                    logicals = self.grid.path.contains_points(self.points[key])
+
+                for i, value in enumerate(logicals):
+                    if value is True:
+                        print('- inspect_points() - WARNING : point n°{} {} removed because not inside inside the polygon or the domain.'.format(i, self.points[key][i]))
+
+                self.points[key] = [list(point) for (point, logical) in zip(self.points[key], logicals) if logical]
+
+                if not self.points[key]:
+                    print('- inspect_points() - ERROR : all the {} have been removed '.format(key))
                     sys.exit()
             return None
 
@@ -208,8 +202,10 @@ class PointManager():
         --------
         >>> pts.show()
         """
+        import matplotlib.patches as mp
+
         fig, ax = plt.subplots()
-        fig.suptitle('Show points', fontsize=16)
+        fig.suptitle('Points', fontsize=16)
 
         # Geology
         if self.geology is not None:
@@ -220,16 +216,13 @@ class PointManager():
                 None
 
         # Grid limits
-        xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1], self.grid.xlimits[0]]
-        ylimits = [self.grid.ylimits[0], self.grid.ylimits[1], self.grid.ylimits[1], self.grid.ylimits[0], self.grid.ylimits[0]]
-        ax.plot(xlimits, ylimits, color='red', label='grid limits')
+        p1 = mp.PathPatch(self.grid.path, lw=2, fill=0, edgecolor='red', label='grid limits')
+        ax.add_patch(p1)
 
         # Polygon
         if self.polygon.polygon is not None:
-            closed_polygon = self.polygon.polygon[:]
-            closed_polygon.append(closed_polygon[0])
-            x, y = zip(*closed_polygon)
-            ax.plot(x, y, color='black', label='polygon')
+            p2 = mp.PathPatch(self.polygon.polygon, lw=2, fill=0, edgecolor='orange', label='polygon')
+            ax.add_patch(p2)
 
         # Points
         for key in self.points:
@@ -238,7 +231,8 @@ class PointManager():
 
         plt.xlim((self.grid.xlimits[0] - self.grid.dx/2, self.grid.xlimits[1] + self.grid.dx/2))
         plt.ylim((self.grid.ylimits[0] - self.grid.dy/2, self.grid.ylimits[1] + self.grid.dy/2))
+
         ax.set_aspect('equal', 'box')
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         plt.show()
-        return None
+        return fig

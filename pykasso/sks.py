@@ -874,7 +874,6 @@ class SKS():
         if self.settings['data_has_polygon']:
             self.polygon.set_polygon(self.settings['polygon_data'])
             self.mask = self.polygon.mask
-            self.polygon.inspect_polygon()
         else:
             self.polygon.polygon = None
             self.polygon.mask = None
@@ -1122,7 +1121,6 @@ class SKS():
         polygon = Polygon(grid)
         if self.settings['data_has_polygon']:
             polygon.set_polygon(self.settings['polygon_data'])
-            polygon.inspect_polygon()
         return polygon
 
     def _set_points(self, grid, polygon, geology):
@@ -1370,7 +1368,7 @@ class SKS():
         i = 0              #point counter
         for k,n in enumerate(repartition):        #get iteration index and number of points being assigned to that iteration
             for j in range(n):                    #loop over each point in current iteration
-                inlets.append((self.inlets[i][0], self.inlets[i][1], k, self.outlets[k,0], self.outlets[k,1]))   #append point with its iteration number
+                inlets.append((self.inlets[i][0], self.inlets[i][1], k, self.outlets[k][0], self.outlets[k][1]))   #append point with its iteration number
                 i += 1                                                                #increment point index by 1
         return np.asarray(inlets)
 
@@ -1601,7 +1599,7 @@ class SKS():
                 if np.isnan(self.maps['nodes'][ix,iy]):                                    #if there is no existing conduit node here
                     if ~np.isnan(self.maps['outlets'][ix,iy]):                              #if there is an outlet here (cell value is not nan)
                         outlet = self._outlets.iloc[int(self.maps['outlets'][ix,iy])]         #get the outlet coordinates using the ID in the outlets map
-                        self.nodes[self.n]             = [outlet.y, outlet.x, 'outfall']     #add a node at the outlet coordinates (with the node type for SWMM)
+                        self.nodes[self.n]        = [outlet.x, outlet.y, 'outfall']           #add a node at the outlet coordinates (with the node type for SWMM)
                         self.maps['nodes'][ix,iy] = self.n                                   #update node map with node index
                         #ax1.scatter(outlet.x,outlet.y, marker='o', c='b')                   #debugging
                         if p > 0:                                                           #if this is not the first point (i.e. the inlet) in the current path
@@ -1687,17 +1685,17 @@ class SKS():
 
         fig.colorbar(im1, ax=ax1)
         if self.settings['data_has_polygon']:
-            closed_polygon = self.polygon.polygon[:]
-            closed_polygon.append(closed_polygon[0])
-            x,y = zip(*closed_polygon)
-            ax1.plot(x,y, color='red', label='polygon')
+            import matplotlib.patches as mp
+            p1 = mp.PathPatch(self.polygon.polygon, lw=2, fill=0, edgecolor='red', label='polygon')
+            ax1.add_patch(p1)
+
         for key in self.points.points:
             x,y = zip(*self.points.points[key])
             ax1.plot(x,y,'o',label=key)
         ax1.set_aspect('equal', 'box')
         plt.legend(loc='upper right')
         plt.show()
-        return None
+        return fig
 
     def _show_maps(self, sim=-1, iteration=-1, cmap='binary'):
         """
@@ -1764,7 +1762,7 @@ class SKS():
         o = plt.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue')
         p = matplotlib.patches.Rectangle((0,0),0,0, ec='r', fc='none')
         if self.settings['data_has_polygon']:
-            closed_polygon = self.polygon.polygon[:]
+            closed_polygon = self.polygon.vertices[:]
             closed_polygon.append(closed_polygon[0])
             x,y = zip(*closed_polygon)
             plt.plot(x,y, color='red', label='polygon')
@@ -1773,7 +1771,7 @@ class SKS():
         if title is not None:
             fig.suptitle(title, fontsize=16)
         plt.show()
-        return None
+        return fig
 
     def show_network(self, data=None, simplify=False, ax=None, plot_nodes=True, polygon=True, labels=['inlets', 'outlets'], title=None, cmap=None, color='k', alpha=1, legend=True):
         """

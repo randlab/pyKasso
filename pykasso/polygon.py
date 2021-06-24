@@ -1,6 +1,8 @@
-from .functions      import opendatafile, loadpoints
-from matplotlib.path import Path
+from .functions       import opendatafile, loadpoints
+from matplotlib.path  import Path
 
+import sys
+import copy
 import numpy             as np
 import matplotlib.pyplot as plt
 
@@ -23,15 +25,17 @@ class Polygon():
         >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 1, 1, 1)
         >>> poly = pk.Polygon(grid)
         """
-        self.grid    = grid
-        self.polygon = None
-        self.mask    = None
+        self.grid     = grid
+        self.vertices = None
+        self.polygon  = None
+        self.mask     = None
 
     def set_polygon(self, vertices):
         """
         Creates a polygon from vertices coordinates.
         The polygon is stored in the 'polygon' attribute.
-        It also creates a mask and stores it in the 'mask' attribute.
+        It creates a mask and stores it in the 'mask' attribute.
+        It stores the polygon surface in a 'surface' attribute.
 
         Parameters
         ----------
@@ -53,98 +57,90 @@ class Polygon():
         if len(vertices) < 3:
             print("- set_polygon() - Error : Not enough vertices to create a polygon (3 minimum).")
         else:
-            self.polygon = vertices
-            self.mask = self._set_mask()
+            self.vertices = vertices
+            dc_vertices = copy.deepcopy(vertices)
+            dc_vertices.append(vertices[0])
+            self.polygon = Path(dc_vertices)
+            self.mask    = self._set_mask()
+            self._inspect_polygon()
         return None
 
     def _set_mask(self):
         """
-        If a polygon is set, points outside the polygon can be hidden with a mask.
+        If a polygon is set, cells outside the polygon can be hidden with a mask.
         """
         mask = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.int_)
         for y in range(self.grid.ny):
             for x in range(self.grid.nx):
-                mask[x][y][0] = not(int(Path(self.polygon).contains_point((self.grid.X[x][y][0],self.grid.Y[x][y][0]))))
+                mask[x][y][0] = not(int(self.polygon.contains_point((self.grid.X[x][y][0],self.grid.Y[x][y][0]))))
         for z in range(self.grid.nz):
             mask[:,:,z] = mask[:,:,0]
         return mask
 
-    def inspect_polygon(self):
+    def _inspect_polygon(self):
         """
         Checks if the vertices of the polygon are located inside the grid or not.
         If all the vertices are outside the grid, the polygon is reset to none.
-
-        Returns
-        -------
-        result : array || None
-            Array of vertices out of the grid, else returns none type.
-
-        Examples
-        --------
-        >>> poly = pk.Polygon(grid)
-        >>> poly.set_polygon("polygon.csv")
-        >>> out_pts = poly.inspect_polygon()
         """
-        if self.polygon is not None:
-            unvalidated_vertices = []
-            xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1]]
-            ylimits = [self.grid.ylimits[0], self.grid.ylimits[1], self.grid.ylimits[1], self.grid.ylimits[0]]
-            for k,(x,y) in enumerate(self.polygon):
-                if not int(Path(list(zip(xlimits, ylimits))).contains_point((x,y))):
-                    unvalidated_vertices.append(k+1)
-            validated_vertices = len(self.polygon) - len(unvalidated_vertices)
+        unvalidated_vertices = []
 
-            if len(unvalidated_vertices) == len(self.polygon):
-                print('- inspect_polygon() - Warning : 0 vertices inside the grid limits. Polygon is reseted to none.'.format(len(unvalidated_vertices),len(self.polygon)))
-                self.polygon = None
-                self.mask    = None
-                return None
+        for k,(x,y) in enumerate(self.vertices):
+            if not int(self.grid.path.contains_point((x,y))):
+                unvalidated_vertices.append(k)
 
-            if len(unvalidated_vertices) > 0:
-                print('- inspect_polygon() - Warning : {} vertices not inside the grid limits on {} vertices.'.format(len(unvalidated_vertices),len(self.polygon)))
-                for vertex in unvalidated_vertices:
-                    print('- vertice {}'.format(vertex))
-                return unvalidated_vertices
-        else:
-            print('- inspect_polygon() - Error : no polygon to inspect. Please set a polygon.')
+        if len(unvalidated_vertices) == len(self.vertices):
+            print('- inspect_polygon() - ERROR : 0 vertice inside the grid limits.')
+            self.remove_polygon()
+            sys.exit()
+
+        if len(unvalidated_vertices) > 0:
+            print('- inspect_polygon() - WARNING : {}/{} vertices not inside the grid limits.'.format(len(unvalidated_vertices), len(self.vertices)))
+            for vertex in unvalidated_vertices:
+                print('- vertex {} : {}'.format(vertex, self.vertices[vertex]))
+
         return None
 
-    def clean_polygon(self):
+    def remove_polygon(self):
         """
-        Removes the polygon. Sets the 'polygon' and the 'mask' attributes to none type.
+        Removes the polygon. Sets the 'polygon', the 'vertices' and the 'mask' attributes to none type.
 
         Examples
         --------
-        >>> poly.clean_polygon()
+        >>> poly.remove_polygon()
         """
-        self.polygon = None
-        self.mask    = None
+        self.polygon  = None
+        self.vertices = None
+        self.mask     = None
 
     def show(self):
         """
         Shows the delimitation of the grid and, if a polygon is present, displays its limits.
 
+        Returns
+        -------
+        result : pyplot
+
         Examples
         --------
         >>> poly.show()
         """
-        if self.polygon is not None:
-            closed_polygon = self.polygon[:]
-            closed_polygon.append(closed_polygon[0])
-            x,y = zip(*closed_polygon)
+        import matplotlib.patches as mp
 
+        if self.vertices is not None:
             fig, ax = plt.subplots()
-            fig.suptitle('Show polygon', fontsize=16)
-            ax.plot(x,y, color='black')
+            fig.suptitle('polygon', fontsize=16)
 
-            xlimits = [self.grid.xlimits[0], self.grid.xlimits[0], self.grid.xlimits[1], self.grid.xlimits[1], self.grid.xlimits[0]]
-            ylimits = [self.grid.ylimits[0], self.grid.ylimits[1], self.grid.ylimits[1], self.grid.ylimits[0], self.grid.ylimits[0]]
+            p1 = mp.PathPatch(self.grid.path, lw=2, fill=0, edgecolor='red')
+            p2 = mp.PathPatch(self.polygon,   lw=2, fill=0, edgecolor='orange')
+            ax.add_patch(p1)
+            ax.add_patch(p2)
 
-            ax.plot(xlimits, ylimits, color='red')
+            plt.xlim((self.grid.xlimits[0] - self.grid.dx/2, self.grid.xlimits[1] + self.grid.dx/2))
+            plt.ylim((self.grid.ylimits[0] - self.grid.dy/2, self.grid.ylimits[1] + self.grid.dy/2))
+
             ax.set_aspect('equal', 'box')
             plt.legend(('polygon','grid limits'), loc='center left', bbox_to_anchor=(1, 0.5))
-            plt.show()
-            return None
+            return fig
         else:
-            print('- show_Polygon() - Error : no polygon to show.')
+            print('- show() - ERROR : no polygon to show.')
             return None

@@ -1,3 +1,5 @@
+from matplotlib.path  import Path
+
 import math
 import numpy as np
 
@@ -67,6 +69,14 @@ class Grid():
         self.ymax = self.ylimits[1] # coordinates of top edge of top cells
         self.zmin = self.zlimits[0] # coordinates of deepest edge of deeptest cells
         self.zmax = self.zlimits[1] # coordinates of shallowest edge of shallowest cells
+
+        # Misc
+        self.area   = (nx * dx) * (ny * dy)
+        self.volume = self.area * (nz * dz)
+
+        x_path = [self.xlimits[0], self.xlimits[0], self.xlimits[1], self.xlimits[1], self.xlimits[0]]
+        y_path = [self.ylimits[0], self.ylimits[1], self.ylimits[1], self.ylimits[0], self.ylimits[0]]
+        self.path = Path(list(zip(x_path, y_path)))
 
     def __str__(self):
         return "[x0, y0, z0] : ({}, {}, {})\n[nx, ny, nz] : ({}, {}, {})\n[dx, dy, dz] : ({}, {}, {})".format(self.x0, self.y0, self.z0, self.nx, self.ny, self.nz, self.dx, self.dy, self.dz)
