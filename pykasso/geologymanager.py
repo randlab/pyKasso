@@ -105,11 +105,9 @@ class GeologyManager():
             self.data[data_key]['data'] = np.transpose(data)
             self.data[data_key]['img']  = np.flipud(data)
         else:
-            self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.float_)
-            self.data[data_key]['img']  = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.float_)
-            for z in range(self.grid.nz):
-                self.data[data_key]['data'][:,:,z] = np.transpose(data)
-                self.data[data_key]['img'] [:,:,z] = np.flipud(data)
+            self.data[data_key]['data'] = np.repeat(np.transpose(data)[:, :, np.newaxis], self.grid.nz, axis=2)
+            self.data[data_key]['img']  = np.repeat(np.flipud(data)   [:, :, np.newaxis], self.grid.nz, axis=2)
+
         self.data[data_key]['mode'] = 'csv'
         return None
 
@@ -177,11 +175,10 @@ class GeologyManager():
         image = np.rint(resize(image, (self.grid.ny, self.grid.nx), anti_aliasing=False, preserve_range=True))
         self.data[data_key]['img'] = image
         # Store data
-        self.data[data_key]['data'] = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz), dtype=np.float_)
         image_data = np.flipud(image)                #we need to flip it since the data reading start from bottom
         image_data = np.transpose(image_data, (1,0)) #imread return image with mxn format so we also need to transpose it
-        for z in range(self.grid.nz):
-            self.data[data_key]['data'][:,:,z] = image_data
+        self.data[data_key]['data'] = np.repeat(image_data[:, :, np.newaxis], self.grid.nz, axis=2)
+
         self.data[data_key]['mode'] = 'image'
         return None
 
@@ -218,14 +215,13 @@ class GeologyManager():
         >>> geol.generate_orientations(surf)
         """
         self.data['orientationx'] = {}
-        self.data['orientationx']['data'] = np.zeros((self.grid.nx, self.grid.ny))
         self.data['orientationy'] = {}
+        self.data['orientationx']['data'] = np.zeros((self.grid.nx, self.grid.ny))
         self.data['orientationy']['data'] = np.zeros((self.grid.nx, self.grid.ny))
-
         self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(surface, self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array
-
         self.data['orientationx']['img']  = np.flipud(np.transpose(self.data['orientationx']['data']))
         self.data['orientationy']['img']  = np.flipud(np.transpose(self.data['orientationy']['data']))
+        
         self.data['orientationx']['mode'] = 'topo'
         self.data['orientationy']['mode'] = 'topo'
         return None
@@ -721,6 +717,7 @@ class GeologyManager():
                         i2, j2 = self.grid.get_i(intersect[2]), self.grid.get_j(intersect[3])
 
                         # Rasterize the line
+                        print(k, i1, i2, j1, j2)
                         self._rst2d(raster_fractures[:,:,k], i1, i2, j1, j2)
 
             elif nfx**2 < (nfz**2 + nfy**2) : # subhorizontal case 1

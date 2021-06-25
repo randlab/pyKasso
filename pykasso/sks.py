@@ -1100,9 +1100,9 @@ class SKS():
 
         self.geology_masked = {}
         if self.mask is not None:
-            mask = self.mask
             for key in self.geology.data:
-                if key in ['topography', 'orientationx', 'orientationy']:
+                mask = self.mask
+                if key in ['topography', 'orientationx', 'orientationy', 'surface']:
                     mask = self.mask[:,:,0]
                 self.geology_masked[key] = ma.MaskedArray(self.geology.data[key]['data'], mask=mask)
         return None
