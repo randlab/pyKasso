@@ -48,6 +48,9 @@ TODO :
 - _set_data_from_pickle
 """
 
+Pas ultra clair de ce qu'il faut faire lorsqu'il y a plusieurs outlets.
+Peut-être ajouter un système qui vérifie que tout est OK?
+
 -----------------------------------------
 
 [ISSUES]

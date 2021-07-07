@@ -1723,15 +1723,12 @@ class SKS():
         return None
 
 
-    def show(self, data=None, title=None, probability=False):
+    def show(self, data=None, title=None):
         """
         Show the entire study domain (defaults to showing most recent simulation).
         """
         if data is None:
             data = self.karst_simulations[-1]
-
-        if probability == True:
-            data = self._compute_average_paths()
 
         fig = plt.figure(figsize=(20,10))
 
@@ -1883,7 +1880,7 @@ class SKS():
         return None
 
 
-    def _compute_average_paths(self, show=False):
+    def compute_average_paths(self):
         """
         Compute the mean of all the simulations.
         Chloe: I have not tested this with the new format.
@@ -1897,7 +1894,15 @@ class SKS():
         if self.mask is not None:
             karst_prob = np.ma.MaskedArray(karst_prob, self.mask)
 
-        return karst_prob
+        fig, ax = plt.subplots(figsize=(10,10))
+        ax.set_aspect('equal')
+        karst_prob = np.transpose(karst_prob, (1,0))
+        im = plt.imshow(karst_prob, extent=self.grid.extent, origin='lower', cmap='gray_r')
+        cax = fig.add_axes([ax.get_position().x1+0.01,ax.get_position().y0,0.02,ax.get_position().height])
+        plt.colorbar(im, cax=cax)
+        plt.show()
+
+        return fig
 
     def compare_stats(self, data=None, mean=False):
         """

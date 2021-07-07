@@ -221,7 +221,7 @@ class GeologyManager():
         self.data['orientationx']['data'], self.data['orientationy']['data'] = np.gradient(surface, self.grid.dx, self.grid.dy, axis=(0,1))   #x and y components of gradient in each cell of array
         self.data['orientationx']['img']  = np.flipud(np.transpose(self.data['orientationx']['data']))
         self.data['orientationy']['img']  = np.flipud(np.transpose(self.data['orientationy']['data']))
-        
+
         self.data['orientationx']['mode'] = 'topo'
         self.data['orientationy']['mode'] = 'topo'
         return None
@@ -717,7 +717,6 @@ class GeologyManager():
                         i2, j2 = self.grid.get_i(intersect[2]), self.grid.get_j(intersect[3])
 
                         # Rasterize the line
-                        print(k, i1, i2, j1, j2)
                         self._rst2d(raster_fractures[:,:,k], i1, i2, j1, j2)
 
             elif nfx**2 < (nfz**2 + nfy**2) : # subhorizontal case 1
