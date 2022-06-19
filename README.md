@@ -9,6 +9,7 @@ It contains examples for a simple valley, Gottesacker, and Tsanfleuron.
 
 
 ## Installation
+Note: This may not work on non-Windows machines
 
 1. Clone this repository and make sure you are in the correct branch.
     - Go to this branch's GitHub page [here](https://github.com/randlab/pyKasso/tree/replace-fast-marching-with-HFM)
@@ -29,7 +30,9 @@ It contains examples for a simple valley, Gottesacker, and Tsanfleuron.
 	- Change the paths in the notebook to your local paths
 	- Try to run the notebook
     
-OR, older simpler version:
+Note: You may need to install some of the packages listed in the dependencies below if they didn't get installed properly from the environment.yml file. 
+
+OR, try the older simpler install version:
 
 Install from source (from project main directory):
 ```
@@ -54,13 +57,14 @@ pyKasso requires the following python packages to function properly:
 - pandas
 - matplotlib
 - xlrd
+- openpyxl
 - [skfmm](https://github.com/scikit-fmm/scikit-fmm) use `conda install scikit-fmm`
 - [karstnet](https://github.com/UniNE-CHYN/karstnet) use `pip install -e your\path\to\karstnet`
 	- networkx
 	- scipy
 	- mplstereonet (Note: cannot install with conda - use pip)
 
-To be able to use pykasso with swmmpy, the following packages are also needed:
+To be able to use pykasso with swmmpy (optional!), the following packages are also needed:
 - rasterio (Note: this will also install gdal? But may need to do a separate `conda install gdal` first)
 - shapely
 - pyproj
@@ -68,8 +72,6 @@ To be able to use pykasso with swmmpy, the following packages are also needed:
 - swmmtoolbox (Note: cannot install with conda - use pip)
 
 
-
-
 ## Examples
 
-Please have a look on the notebooks examples in ``notebooks/``.
+The folder `notebooks/`.
