@@ -1,0 +1,12 @@
+wildhorn : 999966
+eocene : ffcc66
+
+urgo : 99cc99
+e.barremian : cccc99
+hauterivian : cccc33
+val.calc: 99cc66
+berriasian : 339999
+malm: 99cccc
+dogger : ffcc99
+
+UH: ff6666

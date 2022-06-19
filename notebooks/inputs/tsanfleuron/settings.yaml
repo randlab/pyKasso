@@ -1,0 +1,149 @@
+ ##################
+### SKS SETTINGS ###
+ ##################
+
+---
+############
+### Grid ###
+############
+
+x0   : 582806        #x coordinate of centerpoint of bottom left cell
+y0   : 126111        #y coordinate of centerpoint of bottom left cell
+xnum : 789      #number of cells in the x direction (columns)
+ynum : 598       #number of cells in the y direction (rows)
+dx   : 10       #cell width in the x direction
+dy   : 10       #cell width in the y direction
+
+###############
+### Polygon ###
+###############
+
+data_has_polygon : True                         #True/False: whether a polygon is provided
+polygon_data     : 'inputs/tsanfleuron/polygon.txt'  #path to the polygon file (txt file of coordinate points of vertices in order)
+
+####################
+### PointManager ###
+####################
+
+###Outlets
+# 'random'    - generate n random points
+# 'import'    - import points from text file
+# 'composite' - add n random points to imported points
+outlets_mode    : 'import'
+outlets_data    : 'inputs/tsanfleuron/outlet2D.txt'   #path to outlet file if mode is import or composite. If model has a polygon, points must be inside polygon.
+outlets_number  : 1                               #if random or composite, how many outlets to generate
+outlets_shuffle : False                           #if False: do not shuffle outlet order, if True: shuffle outlet order randomly
+outlets_importance : [1]                          #how to iterate over outlets
+#length of outlets_importance array indicates number of iterations
+#each integer indicates number of outlets in that iteration
+#for best results, sum of integers should equal total number of outlets - otherwise model will approximate
+#examples: if there are three outlets, to run each outlet separately: [1,1,1]; to run all outlets at once: [1]; to run first two outlets together, then third separately: [2,1]
+
+###Inlets
+# 'random'    - generate n random points
+# 'import'    - import points from text file
+# 'composite' - add n random points to imported points
+inlets_mode    : 'import'                        #how to generate inlets
+inlets_data    : 'inputs/tsanfleuron/inlets2D.txt'   #path to inlet file if mode is import or composite. If model has a polygon, inlets must be inside polygon.
+inlets_number  : 10                               #if random or composite, how many inlets to generate
+inlets_shuffle : False                           #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
+inlets_per_outlet : [1]   #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets. Order is based on input files.
+inlets_importance : [1]   #how to iterate over inlets: length of array indicates number of inlet iterations, each integer indicates number of inlets to run in that iteration, sum of integers = total number of inlets
+#see description of outlets_importance for examples of importance
+#note: number of inlet iterations CANNOT exceed the smallest number of inlets per outlet. So if one outlet has three inlets and another outlet has one inlet, there can only be one inlet iteration.
+
+######################
+### GeologyManager ###
+######################
+###Mode options
+# 'null'   - No geology
+# 'gslib'  - Import geology via GSLIB 
+# 'image'  - Import geology via image
+# 'csv'    - Import geology via csv
+
+#Geology:
+geological_mode     : 'null'
+geological_datafile : 'inputs/tsanfleuron/geo80x100.csv'
+
+###Topography
+#'null'   - No topography
+#'csv'    - Import topography from csv file 
+topography_mode : 'null'
+topography_datafile : 'inputs/tsanfleuron/dem80x100.csv'
+
+###Orientation
+#'null'     - No orientation
+#'topo'     - Calculate orientation from a topography array
+#'surface'  - Calculate from array of elevation of lower boundary of karst unit (as csv)
+
+orientation_mode : 'surface'
+orientation_datafile : 'inputs/tsanfleuron/contact598x789.csv'  #path to data file to import, only used if mode=surface 
+
+###Faults
+# 'null'   - No faults
+# 'import' - Import faults
+# 'image'  - Import faults via image
+faults_mode     : 'null'
+faults_datafile :  None
+
+###Fractures
+# 'null'   - No fractures
+# 'import' - Import fractures
+# 'image'  - Import fractures via image
+# 'random' - Generate random fractures
+fractures_mode     : 'null'
+fractures_datafile : None
+
+# If fractures mode is 'generate':
+# each value in list is for a separate fracture family - length of list indicates number of families
+fractures_densities       : [5.83e-5,1.38e-5,2.22e-5,2.5e-5,4.16e-5,6.66e-5,5e-5]   #number of fractures per unit area (in map units)
+fractures_min_orientation : [      0,     15,     30,    60,    105,    120, 150]   
+fractures_max_orientation : [     15,     30,     45,   105,    120,    150, 180]
+
+# For fracture size
+fractures_alpha      : 2      #power law coefficient. default: 2
+fractures_min_length : 50     #in map units (whatever units dx and dy are in)
+fractures_max_length : 800
+
+###############################
+### Fast-Marching Algorithm ###
+###############################
+
+#Choose which algorithm to use:
+#'Isotropic2': agd-hfm: 2D, equivalent of skfmm
+#'Isotropic3': adg-hfm: 3D, equivalent of skfmm
+#'Riemann2'  : agd-hfm: 2D, anisotropic, requires an anisotropy vector field (topography or geologic orientation), performs well in high-relief catchments
+#'Riemann3'  : agd-hfm: 3D version of anisotropic algorithm
+#Note: There are MANY more options for fast marching algorithms built into the agd-hfm library.
+##See the agd-hfm library documentation for how to use these and integrate them into pyKasso: 
+  #https://github.com/Mirebeau/AdaptiveGridDiscretizations/blob/master/Notebooks_FMM/Summary.ipynb
+
+algorithm : 'Isotropic2'
+
+#Travel cost parallel to gradient (higher=slower/harder)
+#Must be between 0 and 1
+cost_out       : 0.999  #default: 0.999
+cost_aquifer   : 0.4    #default: 0.4
+cost_aquiclude : 0.8    #default: 0.8
+cost_faults    : 0.2    #default: 0.2
+cost_fractures : 0.2    #default: 0.2
+cost_conduits  : 0.1    #default: 0.1
+cost_ratio     : 0.5   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (default 0.25)
+#if ratio = 1: same travel cost parallel and perpendicular to gradient
+#if ratio < 1: travel cost is lower parallel to gradient (paths will follow steepest gradient), decrease value to increase contrast
+#if ratio > 1: travel cost is lower perpendicular to gradient (paths will follow contours), increase value to increase contrast
+
+### Formation to consider and FMM code associated
+geology_id       : [0,1,2] # Only for 'import' or 'csv' geological modes
+geology_cost     : [cost_out, cost_aquifer, cost_aquiclude]
+
+#############
+### Other ###
+#############
+
+# if 0 =  random, if 1 = same results each run
+rand_seed : 1
+
+#Verbosity: how much output to display during run 
+verbosity : 0    #0: minimal output, 1: some output; 2: more output; 3: maximum output
+...
