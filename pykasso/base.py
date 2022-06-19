@@ -2700,12 +2700,12 @@ class SKS():
         #Add legend & title:
         if legend:
             if plot_nodes:
-                if plot_polygon:
+                if polygon:
                     ax.legend([i,o,n,e,p],['inlets','outlets','nodes','edges','polygon'])
                 else:
                     ax.legend([i,o,n,e],['inlets','outlets','nodes','edges'])
             else:
-                if plot_polygon:
+                if polygon:
                     ax.legend([i,o,e,p],['inlets','outlets','edges','polygon'])
                 else:
                     ax.legend([i,o,e],['inlets','outlets','edges','polygon'])

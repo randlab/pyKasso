@@ -14,10 +14,22 @@ It contains examples for a simple valley, Gottesacker, and Tsanfleuron.
     - Go to this branch's GitHub page [here](https://github.com/randlab/pyKasso/tree/replace-fast-marching-with-HFM)
     - Click the green "Code" button on the top right
     - Clone using your method of choice (GitHub Desktop for example)
-2. Create a new environment from the environment.yaml file provided:
-    - `conda env create --file your/path/to/environment.yaml`
+2. Clone the karsnet repository and keep track of which directory it is in:
+    - Karsnet GitHub page is [here](https://github.com/karstnet/karstnet)
+3. Create and activate a new environment called pykasso2D from the environment.yml file provided:
+    - `conda env create --file your/path/to/environment.yml`
+    - `conda activate pykasso2D`    
+4. Manually install karstnet from the folder you cloned:
+    - `pip install -e your/path/to/karstnet`
+3. Test by opening a Jupyter notebook, and running a simple example:
+	- `jupyter lab`
+	- In Jupyter Lab, navigate in the directory in the right sidebar to your GitHub folder and to the pyKasso repository. 
+	- Find the folder called "notebooks"
+	- Open the notebook "simple_fastmarching_example.ipynb"
+	- Change the paths in the notebook to your local paths
+	- Try to run the notebook
     
-OR:
+OR, older simpler version:
 
 Install from source (from project main directory):
 ```

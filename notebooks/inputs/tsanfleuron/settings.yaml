@@ -44,7 +44,7 @@ outlets_importance : [1]                          #how to iterate over outlets
 # 'import'    - import points from text file
 # 'composite' - add n random points to imported points
 inlets_mode    : 'import'                        #how to generate inlets
-inlets_data    : 'inputs/tsanfleuron/inlets2D.txt'   #path to inlet file if mode is import or composite. If model has a polygon, inlets must be inside polygon.
+inlets_data    : 'inputs/tsanfleuron/inlets2D_all.txt'   #path to inlet file if mode is import or composite. If model has a polygon, inlets must be inside polygon.
 inlets_number  : 10                               #if random or composite, how many inlets to generate
 inlets_shuffle : False                           #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
 inlets_per_outlet : [1]   #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets. Order is based on input files.
