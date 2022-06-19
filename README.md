@@ -14,8 +14,13 @@ It contains examples for a simple valley, Gottesacker, and Tsanfleuron.
     - Go to this branch's GitHub page [here](https://github.com/randlab/pyKasso/tree/replace-fast-marching-with-HFM)
     - Click the green "Code" button on the top right
     - Clone using your method of choice (GitHub Desktop for example)
-2. Create a new environment from the environment.yaml file provided:
-    - `conda env create --file your/path/to/environment.yaml`
+2. Create a new environment from the environment.yml file provided:
+    - `conda env create --file your/path/to/environment.yml`
+	The new environment will be called pykasso2D
+3. Test by activating the new environment, opening a Jupyter notebook, and running a simple example:
+	- `conda activate pykasso2D`
+	....in progress
+	
     
 OR:
 
