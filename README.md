@@ -19,10 +19,14 @@ It contains examples for a simple valley, Gottesacker, and Tsanfleuron.
 	The new environment will be called pykasso2D
 3. Test by activating the new environment, opening a Jupyter notebook, and running a simple example:
 	- `conda activate pykasso2D`
-	....in progress
-	
+	- `jupyter lab`
+	- In Jupyter Lab, navigate in the directory in the right sidebar to your GitHub folder and to the pyKasso repository. 
+	- Find the folder called "notebooks"
+	- Open the notebook "simple_fastmarching_example.ipynb"
+	- Change the paths in the notebook to your local paths
+	- Try to run the notebook
     
-OR:
+OR, older simpler version:
 
 Install from source (from project main directory):
 ```
