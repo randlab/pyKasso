@@ -1,0 +1,80 @@
+[TITLE]
+;;Project title/notes
+Template input file for Tsanfleuron karst system.
+Anthony Salamin, Chloe Fandel June 2022
+Enabled sections:
+--junctions --outfalls --conduits --coordinates  --xsections --inflows --timeseries --report
+
+[OPTIONS]
+FLOW_UNITS           LPS
+INFILTRATION         HORTON
+FLOW_ROUTING         KYNWAVE
+START_DATE           08/26/2021
+START_TIME           00:00:00
+REPORT_START_DATE    08/26/2021
+REPORT_START_TIME    00:00:00
+END_DATE             10/12/2021
+END_TIME             00:00:00
+SWEEP_START          01/01
+SWEEP_END            12/31
+DRY_DAYS             0
+REPORT_STEP          01:00:00
+WET_STEP             00:30:00
+DRY_STEP             01:00:00
+ROUTING_STEP         0:00:30
+ALLOW_PONDING        NO
+INERTIAL_DAMPING     PARTIAL
+VARIABLE_STEP        1.00
+LENGTHENING_STEP     0
+MIN_SURFAREA         0
+NORMAL_FLOW_LIMITED  BOTH
+SKIP_STEADY_STATE    NO
+FORCE_MAIN_EQUATION  D-W
+LINK_OFFSETS         ELEVATION
+MIN_SLOPE            0
+
+[JUNCTIONS]
+;;Name           InvertElev MaxDepth   InitDepth  SurDepth   Aponded
+;;-------------- ---------- ---------- ---------- ---------- ----------
+junctions
+
+[INFLOWS]
+;;Node           Constituent      Time Series      Type     Mfactor  Sfactor  Baseline Pattern
+;;-------------- ---------------- ---------------- -------- -------- -------- -------- --------
+inflows
+
+[OUTFALLS]
+;;Name           InvertElev OutType    Stage            TideGate
+;;-------------- ---------- ---------- ---------------- ----
+outfalls
+
+[CONDUITS]
+;;Name           InNode           OutNode          Length     ManningN   InOffset   OutOffset  InitFlow   MaxFlow
+;;-------------- ---------------- ---------------- ---------- ---------- ---------- ---------- ---------- ----------
+conduits
+
+[XSECTIONS]
+;;Link           Shape        Geom1            Geom2      Geom3      Geom4      Barrels    Culvert
+;;-------------- ------------ ---------------- ---------- ---------- ---------- ---------- ----------
+xsections
+
+[TIMESERIES]
+;;Name           Date       Time       Value
+;;-------------- ---------- ---------- ----------
+timeseries
+
+[REPORT]
+;;Type              Option
+;;----------------- -----------------------------------------------------------------------
+report
+
+[TAGS]
+
+[MAP]
+DIMENSIONS 582801 126106 590691 132086
+Units      Meters
+
+[COORDINATES]
+;;Node           X-Coord            Y-Coord
+;;-------------- ------------------ ------------------
+coordinates

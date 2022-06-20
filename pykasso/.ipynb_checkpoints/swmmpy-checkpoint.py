@@ -710,7 +710,7 @@ def set_junctions(nodes, maxdepth=0, initdepth=0, surdepth=200, aponded=0):
     nodes:      pandas df with all nodes, and columns: X, Y, Z, type, Name. Type is either 'junction', or 'outfall'
     *SWMMargs:  can be either a single value or a list of same length as number of junctions. See SWMM doc for details.'''
     
-    junctions  = nodes[nodes.type=='junction']                              #split nodes into only junction-type nodes(not outfalls)
+    junctions  = nodes[nodes.type=='junction'].copy()                              #split nodes into only junction-type nodes(not outfalls)
     junctions.drop(labels=['X','Y','type'], axis='columns', inplace=True)   #drop unneeded columns
     junctions.rename({'Z':'InvertElev'},    axis='columns', inplace=True)   #rename to SWMM's column names
     junctions['MaxDepth']  = maxdepth                                              #add required columns
@@ -732,7 +732,7 @@ def set_outfalls(nodes, outtype='FREE', stage='', tidegate='NO'):
     nodes:      pandas df with all nodes, and columns: X, Y, Z, type, Name. Type is either 'junction', or 'outfall'
     *SWMMargs:  can be either a single value or a list of same length as number of junctions. See SWMM doc for details.'''
     
-    outfalls = nodes[nodes.type=='outfall']                                #split nodes into only outfall-type nodes(not junctions)
+    outfalls = nodes[nodes.type=='outfall'].copy()                          #split nodes into only outfall-type nodes(not junctions)
     outfalls.drop(labels=['X','Y','type'], axis='columns', inplace=True)   #drop unneeded columns
     outfalls.rename({'Z':'InvertElev'},    axis='columns', inplace=True)   #rename to SWMM's column names
     outfalls['OutType']  = 'FREE'                                          #add required columns
@@ -821,12 +821,13 @@ def set_xsections(links, shape='FORCE_MAIN', g1=3.0, g2=1000.0, g3=0, g4=0, barr
 
 #########################################################################################
 
-def set_inflows(nodes, catch, par='FLOW', partype='FLOW', unitfactor=1.0, scalefactor=1.0, baseval='', basepattern=''):
+def set_inflows(nodes, tseriesname='Baseflow', catch=None, par='FLOW', partype='FLOW', unitfactor=1.0, scalefactor=1.0, baseval='', basepattern=''):
     
     '''Create inflows dataframe from node data.
     Inputs:
     nodes:  pandas df with all nodes, and columns: X, Y, Z, type, Name. Type is either 'junction', or 'outfall'
-    catch:  array or raster with an integer in each cell indicating the ID of the subcatchment that cell belongs to 
+    tseriesname: string identifying the name prefix of the timeseries to use. A node number will be appended.
+    catch:  optional array or raster with an integer in each cell indicating the ID of the subcatchment that cell belongs to 
     (subcatchment ID number must be same as node number that subcatch drains to, and as inflow timeseries number) 
     (catch is returnable by import_subcatchments())
     *SWMMargs:  can be either a single value or a list of same length as number of junctions. See SWMM doc for details.
@@ -834,13 +835,13 @@ def set_inflows(nodes, catch, par='FLOW', partype='FLOW', unitfactor=1.0, scalef
     '''
     #catchIDs, counts  = np.unique(catch[~np.isnan(catch)], return_counts=True)  #get list of unique non-NaN values in array, & # of times each value occurs
     #catchIDs = np.array(catchIDs, dtype=int)                                    #convert to int
-    inflows = pd.DataFrame()                                                    #create empty dataframe to store info
+    inflows = pd.DataFrame()                                                     #create empty dataframe to store info
     #inflows['Node'] = [str(s) for s in catchIDs]                                #assign node name to be same as subcatch name
-    inflows['Node'] = [str(s) for s in nodes.index.values]                      #assign node name to be same as subcatch name
-    inflows['Parameter']   = par                                                #add needed columns
-    #inflows['TimeSeries']  = ['Baseflow'+str(s+1) for s in catchIDs]            #assign timeseries name from catchs (1-based indexing)
-    #inflows['TimeSeries']  = ['Baseflow'+str(s) for s in catchIDs]            #assign timeseries name from subcatch (0-based indexing)
-    inflows['TimeSeries']  = ['Baseflow'+str(s) for s in nodes.index.values]    #assign timeseries name from subcatch (0-based indexing)
+    inflows['Node'] = [str(s) for s in nodes.index.values]                       #assign node name to be same as subcatch name
+    inflows['Parameter']   = par                                                 #add needed columns
+    if catch:
+        inflows['TimeSeries']  = [tseriesname+str(s) for s in catchIDs]          #assign timeseries name from subcatch (0-based indexing)
+    inflows['TimeSeries']  = [tseriesname+str(s) for s in nodes.index.values]    #assign timeseries name from node index
     inflows['ParType']     = partype              
     inflows['UnitFactor']  = unitfactor              
     inflows['ScaleFactor'] = scalefactor            
@@ -1008,46 +1009,44 @@ def set_infiltration(nodes, maxrate=3, minrate=0.5, decay=4, drytime=7, maxinfil
 
 #########################################################################################
 
-def set_timeseries(datalist, datatypes, nodes, timestrings):
+def set_timeseries(datatype='.txt', datalist, tseriesnames, nodes, timestrings):
     '''Format timeseries data so that it can be used in the SWMM input file. 
-      Each timeseries must correspond to a subcatchment.
+      Each timeseries must correspond to a node.
+       datatype:    string indicating what type of data will be used. Options: '.txt.', 'df'
        datalist:    list of dataframes with timeseries to be included. One df for each type (e.g. Rainfall, Baseflow).
                     Each df has datetime indices, and columns indicating the subcatchment number. Cell values are the flow values.
-       datatypes:   list of strings indicating names to use for each data df (e.g. ['Rainfall', 'Baseflow'])
+       tseriesnames:   list of strings indicating names to use for each data df (e.g. ['Rainfall', 'Baseflow'])
        catchs:       array or raster with an integer in each cell indicating the 0-based ID of the subcatchment that cell belongs to (subcatchment ID number is the same as the ID number of the node that subcatchment drains to) (returnable by import_subcatchments())
        timestrings: list of strings indicating the datetime stamp of each value - all timeseries should have same datetime indices'''
     
-    #catchIDs  = np.unique(catchs[~np.isnan(catchs)])          #get list of unique non-NaN values in array, and number of times each value occurs
-    #catchIDs = np.array(catchIDs+1, dtype=int)              #convert to int ns 1-based indexing
-    #catchIDs = np.array(catchIDs, dtype=int)              #convert to int ns 1-based indexing
-    timeseries = pd.DataFrame(columns=['Name', 'Date', 'Time', 'Value', 'datetime', 'type', 'catch'], dtype='object')   #empy df to store all new tseries data
-    toadd = pd.DataFrame(columns=timeseries.columns)        #create temp df to store each catchment's data
-    
-    for ind, data in enumerate(datalist):          #loop over types of data
-        name = datatypes[ind]
-        #for catch in catchIDs:                        #loop over subcatchment indices
-        for node in nodes.index.values:               #loop over node indices to identify catch
-            catch = int(node)
-            toadd.Value = data[catch].values          #store calculated data in new dataframe
-            toadd.Name = name + str(int(catch))       #assign name etc. 
-            toadd.datetime = timestrings
-            toadd.type = name
-            toadd.catch = catch                       #assign subcatch index 
-            timeseries = timeseries.append(toadd, ignore_index=True)    #append the new df to the old df
+    if datatype=='.txt':
+        timeseries = pd.DataFrame(
+    if datatype=='df':
+        timeseries = pd.DataFrame(columns=['Name', 'Date', 'Time', 'Value', 'datetime', 'type', 'catch'], dtype='object')   #empy df to store all new tseries data
+        toadd = pd.DataFrame(columns=timeseries.columns)        #create temp df to store each catchment's data
 
-    #Reformat:
-    timeseries['Date'], timeseries['Time']= timeseries['datetime'].str.split(' ', 0).str    #split into several columns using spaces as delimiters
-    timeseries.drop(labels=['catch','type','datetime'], axis='columns', inplace=True)       #drop unneeded columns
-    timeseries.rename({'name':'Name', 'flow':'Value'}, axis='columns', inplace=True)        #rename to SWMM's column names
-    colnames = ['Name','Date','Time','Value']                                               #list of column names in the correct order
-    timeseries = timeseries.reindex(columns=colnames)                                       #reorder the column names
-    
-    #Optional clean up:
-    #timeseries = timeseries[timeseries.Value != 0]           #remove lines where value is zero (SWMM only needs non-zero tsteps)
-    #timeseries = timeseries[~np.isnan(timeseries.Value)]     #remove any line with nan values (will not be used)
-    timeseries.Value[np.isnan(timeseries.Value)] = 0          #replace nans with zeros (otherwise SWMM can't calculate stats)
-    
-    timeseries.reset_index(drop=True, inplace=True)                                         #resart indexing from 0
+        for ind, data in enumerate(datalist):          #loop over types of data
+            name = tseriesnames[ind]
+            for node in nodes.index.values:               #loop over node indices to identify catch
+                catch = int(node)
+                toadd.Value = data[catch].values          #store calculated data in new dataframe
+                toadd.Name = name + str(int(catch))       #assign name etc. 
+                toadd.datetime = timestrings
+                toadd.type = name
+                toadd.catch = catch                       #assign subcatch index 
+                timeseries = timeseries.append(toadd, ignore_index=True)    #append the new df to the old df
+
+        #Reformat:
+        timeseries['Date'], timeseries['Time']= timeseries['datetime'].str.split(' ', 0).str    #split into several columns using spaces as delimiters
+        timeseries.drop(labels=['catch','type','datetime'], axis='columns', inplace=True)       #drop unneeded columns
+        timeseries.rename({'name':'Name', 'flow':'Value'}, axis='columns', inplace=True)        #rename to SWMM's column names
+        colnames = ['Name','Date','Time','Value']                                               #list of column names in the correct order
+        timeseries = timeseries.reindex(columns=colnames)                                       #reorder the column names
+
+        #Optional clean up:
+        timeseries.Value[np.isnan(timeseries.Value)] = 0          #replace nans with zeros (otherwise SWMM can't calculate stats)
+
+        timeseries.reset_index(drop=True, inplace=True)                                         #resart indexing from 0
     return timeseries
 
 
