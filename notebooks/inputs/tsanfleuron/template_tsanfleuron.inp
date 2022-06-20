@@ -8,7 +8,7 @@ Enabled sections:
 [OPTIONS]
 FLOW_UNITS           LPS
 INFILTRATION         HORTON
-FLOW_ROUTING         KYNWAVE
+FLOW_ROUTING         KINWAVE
 START_DATE           08/26/2021
 START_TIME           00:00:00
 REPORT_START_DATE    08/26/2021
@@ -78,3 +78,7 @@ Units      Meters
 ;;Node           X-Coord            Y-Coord
 ;;-------------- ------------------ ------------------
 coordinates
+
+[BACKDROP]
+FILE       "Zanfleuron_BaseMap.png"
+DIMENSIONS 581481.040 126381.298 590324.551 132634.286

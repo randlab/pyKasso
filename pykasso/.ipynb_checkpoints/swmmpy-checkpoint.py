@@ -710,7 +710,7 @@ def set_junctions(nodes, maxdepth=0, initdepth=0, surdepth=200, aponded=0):
     nodes:      pandas df with all nodes, and columns: X, Y, Z, type, Name. Type is either 'junction', or 'outfall'
     *SWMMargs:  can be either a single value or a list of same length as number of junctions. See SWMM doc for details.'''
     
-    junctions  = nodes[nodes.type=='junction'].copy()                              #split nodes into only junction-type nodes(not outfalls)
+    junctions  = nodes[nodes.type!='outfall'].copy()                              #split nodes into only junction-type nodes(not outfalls)
     junctions.drop(labels=['X','Y','type'], axis='columns', inplace=True)   #drop unneeded columns
     junctions.rename({'Z':'InvertElev'},    axis='columns', inplace=True)   #rename to SWMM's column names
     junctions['MaxDepth']  = maxdepth                                              #add required columns
@@ -1009,7 +1009,7 @@ def set_infiltration(nodes, maxrate=3, minrate=0.5, decay=4, drytime=7, maxinfil
 
 #########################################################################################
 
-def set_timeseries(nodes, filenames):
+def set_timeseries(nodes, filenames, seriesnames):
     '''
     Import and format timeseries data so that it can be used in the SWMM input file.
     Concatenates several timeseries into one large dataframe.
@@ -1017,14 +1017,16 @@ def set_timeseries(nodes, filenames):
     nodes:      nodes dataframe
     filenames:  list of strings indicating the paths to the data files with inflow data. 
                 data files must have three columns with the date, time, and inflow value in volume/time
-                filenames must all have the format "prefix"+"node number"+"file extension"
-                ex: inflow5.txt
+                filenames must all have the format "path"+"node number"+"file extension"
+                ex: inputs/inflow5.txt
+    seriesnames: list of strings indicating just the name of each timeseries to match those used in inflows section
+                 must be in same order as filenames
       '''
     
     timeseries = pd.DataFrame(columns=['Name','Date','Time','Value'])
-    for name in filenames:
-        data = pd.read_csv(name, delim_whitespace=True, header=None, names=['Date','Time','Value'])
-        data.insert(0, 'Name', name)
+    for i,file in enumerate(filenames):
+        data = pd.read_csv(file, delim_whitespace=True, header=None, names=['Date','Time','Value'])
+        data.insert(0, 'Name', seriesnames[i])
         timeseries = pd.concat([timeseries,data], ignore_index=True)
         
     return timeseries
