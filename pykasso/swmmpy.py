@@ -1009,44 +1009,24 @@ def set_infiltration(nodes, maxrate=3, minrate=0.5, decay=4, drytime=7, maxinfil
 
 #########################################################################################
 
-def set_timeseries(datatype='.txt', datalist, tseriesnames, nodes, timestrings):
-    '''Format timeseries data so that it can be used in the SWMM input file. 
-      Each timeseries must correspond to a node.
-       datatype:    string indicating what type of data will be used. Options: '.txt.', 'df'
-       datalist:    list of dataframes with timeseries to be included. One df for each type (e.g. Rainfall, Baseflow).
-                    Each df has datetime indices, and columns indicating the subcatchment number. Cell values are the flow values.
-       tseriesnames:   list of strings indicating names to use for each data df (e.g. ['Rainfall', 'Baseflow'])
-       catchs:       array or raster with an integer in each cell indicating the 0-based ID of the subcatchment that cell belongs to (subcatchment ID number is the same as the ID number of the node that subcatchment drains to) (returnable by import_subcatchments())
-       timestrings: list of strings indicating the datetime stamp of each value - all timeseries should have same datetime indices'''
+def set_timeseries(nodes, filenames):
+    '''
+    Import and format timeseries data so that it can be used in the SWMM input file.
+    Concatenates several timeseries into one large dataframe.
+    Each timeseries must correspond to the inflows to a specific inlet node.
+    nodes:      nodes dataframe
+    filenames:  list of strings indicating the paths to the data files with inflow data. 
+                data files must have three columns with the date, time, and inflow value in volume/time
+                filenames must all have the format "prefix"+"node number"+"file extension"
+                ex: inflow5.txt
+      '''
     
-    if datatype=='.txt':
-        timeseries = pd.DataFrame(
-    if datatype=='df':
-        timeseries = pd.DataFrame(columns=['Name', 'Date', 'Time', 'Value', 'datetime', 'type', 'catch'], dtype='object')   #empy df to store all new tseries data
-        toadd = pd.DataFrame(columns=timeseries.columns)        #create temp df to store each catchment's data
-
-        for ind, data in enumerate(datalist):          #loop over types of data
-            name = tseriesnames[ind]
-            for node in nodes.index.values:               #loop over node indices to identify catch
-                catch = int(node)
-                toadd.Value = data[catch].values          #store calculated data in new dataframe
-                toadd.Name = name + str(int(catch))       #assign name etc. 
-                toadd.datetime = timestrings
-                toadd.type = name
-                toadd.catch = catch                       #assign subcatch index 
-                timeseries = timeseries.append(toadd, ignore_index=True)    #append the new df to the old df
-
-        #Reformat:
-        timeseries['Date'], timeseries['Time']= timeseries['datetime'].str.split(' ', 0).str    #split into several columns using spaces as delimiters
-        timeseries.drop(labels=['catch','type','datetime'], axis='columns', inplace=True)       #drop unneeded columns
-        timeseries.rename({'name':'Name', 'flow':'Value'}, axis='columns', inplace=True)        #rename to SWMM's column names
-        colnames = ['Name','Date','Time','Value']                                               #list of column names in the correct order
-        timeseries = timeseries.reindex(columns=colnames)                                       #reorder the column names
-
-        #Optional clean up:
-        timeseries.Value[np.isnan(timeseries.Value)] = 0          #replace nans with zeros (otherwise SWMM can't calculate stats)
-
-        timeseries.reset_index(drop=True, inplace=True)                                         #resart indexing from 0
+    timeseries = pd.DataFrame(columns=['Name','Date','Time','Value'])
+    for name in filenames:
+        data = pd.read_csv(name, delim_whitespace=True, header=None, names=['Date','Time','Value'])
+        data.insert(0, 'Name', name)
+        timeseries = pd.concat([timeseries,data], ignore_index=True)
+        
     return timeseries
 
 
@@ -1119,7 +1099,7 @@ def insert_data(template, placeholder, data, show=False):
         for ind in data.index:                              #loop over lines of data
             dl = data.loc[ind].tolist()                     #get line of data to be formatted
             if type(dl[0])!=type('str'):                    #if name isn't a string
-                dl[0] = int(dl[0])                          #make sure name column is an integer not a float (WHY is this not automatic?)
+                dl[0] = int(dl[0])                          #make sure name column is an integer not a float 
             line = form.format(d=dl)                        #insert each item in list into format string
             data_strings.loc[ind] = line                    #insert line string into new dataframe
 
@@ -1129,8 +1109,8 @@ def insert_data(template, placeholder, data, show=False):
     dfB = template[template.index > loc]                            #create df for everything below placeholder
 
     #Append the three dfs to each other (part above, part to insert, part below):
-    new = dfA.append(data_strings, ignore_index=True)               #append additional part to top part
-    new = new.append(dfB,          ignore_index=True)               #append bottom part to new df
+    new = pd.concat([dfA, data_strings], ignore_index=True)               #append additional part to top part
+    new = pd.concat([new, dfB],          ignore_index=True)               #append bottom part to new df
     
     #show=True
     if show==True:
