@@ -2,16 +2,12 @@
 
 pyKasso is a python3 project to stochastically simulate karst networks.
 
-Version 0.1.0 - April 2020
-
-This is Chloé's stable 2D version as of June 2022.
-It contains examples for a simple valley, Gottesacker, and Tsanfleuron.
-
+This is the stable 2D version as of June 2022.
 
 ## Installation
 Note: This may not work on non-Windows machines
 
-1. Clone this repository and make sure you are in the correct branch.
+1. Clone this repository (make sure you are in the correct branch).
     - Go to this branch's GitHub page [here](https://github.com/randlab/pyKasso/tree/replace-fast-marching-with-HFM)
     - Click the green "Code" button on the top right
     - Clone using your method of choice (GitHub Desktop for example)
@@ -22,7 +18,9 @@ Note: This may not work on non-Windows machines
     - `conda activate pykasso2D`    
 4. Manually install karstnet from the folder you cloned:
     - `pip install -e your/path/to/karstnet`
-3. Test by opening a Jupyter notebook, and running a simple example:
+5. Manually install the xlrd package:
+    - `conda install xlrd`
+6. Test by opening a Jupyter notebook, and running a simple example:
 	- `jupyter lab`
 	- In Jupyter Lab, navigate in the directory in the right sidebar to your GitHub folder and to the pyKasso repository. 
 	- Find the folder called "notebooks"
@@ -34,7 +32,7 @@ Note: You may need to install some of the packages listed in the dependencies be
 
 OR, try the older simpler install version:
 
-Install from source (from project main directory):
+Install from source (you must first change directories to the project main directory):
 ```
 pip install .
 ```
@@ -64,16 +62,19 @@ pyKasso requires the following python packages to function properly:
 	- scipy
 	- mplstereonet (Note: cannot install with conda - use pip)
 
-To be able to use pykasso with swmmpy (optional!), the following packages are also needed:
-- rasterio (Note: this will also install gdal? But may need to do a separate `conda install gdal` first)
-- shapely
-- pyproj
-- pysheds
-- swmmtoolbox (Note: cannot install with conda - use pip)
-
-
-
-
 ## Examples
 
-Please have a look on the notebooks examples in ``notebooks/``.
+The folder `notebooks/` has several examples:
+- simple_fastmarching_example: shows the difference between isotropic and anisotropic fast marching on a square 9x9 grid
+- simple_geology_generator: shows examples of different ways to load or randomly generate geologic settings for the karst network model (interacting with DEMs, GSLIB, VTK, etc.)
+- Fandel_et_al_2022: shows the code used to generate figures for the paper Fandel et al. 2022, which demonstrates the capabilities of pyKasso in a simple valley, and then the application of pyKasso to a complex alpine karst catchment (Gottesacker)
+
+
+## File structure
+
+Examples of Jupyter Notebooks using pyKasso are in the notebooks folder. 
+Within this folder, the inputs folder has a subfolder for each study site:
+- Betteraz (Switzerland)
+- Gottesacker (Germany/Austria)
+- Tsanfleuron (Switzerland)
+- Valley1 (simple synthetic example)
