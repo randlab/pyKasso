@@ -8,7 +8,7 @@ Enabled sections:
 [OPTIONS]
 FLOW_UNITS           LPS
 INFILTRATION         HORTON
-FLOW_ROUTING         DYNWAVE
+FLOW_ROUTING         KINWAVE
 START_DATE           08/26/2021
 START_TIME           00:00:00
 REPORT_START_DATE    08/26/2021
@@ -59,9 +59,9 @@ MIN_SLOPE            0
 ;;-------------- ---------------- ---------------- ---------- ---------- ---------- ---------- ---------- ----------
 0                0                55               502.42635  0.01       *          *          0          0          
 1                55               182              1081.71436 0.01       *          *          0          0          
-2                55               428              4458.00691 0.01       *          *          0          0          
+2                428              55               4458.00691 0.01       *          *          0          0          
 3                182              291              1223.52147 0.01       *          *          0          0          
-4                182              292              1106.69203 0.01       *          *          0          0          
+4                292              182              1106.69203 0.01       *          *          0          0          
  
 [XSECTIONS]
 ;;Link           Shape        Geom1            Geom2      Geom3      Geom4      Barrels    Culvert
