@@ -1,0 +1,69 @@
+---
+######################
+### GeologyManager ###
+######################
+
+###Geology
+# 'null'  - No geology
+# 'gslib' - Import geology via GSLIB
+# 'csv'   - Import geology via csv
+# 'image' - Import geology via image
+geology_mode     : 'null'
+geology_datafile : ''
+
+###Topography
+# 'null' - No topography
+# 'csv'  - Import topography via csv
+topography_mode     : 'null'
+topography_datafile : ''
+
+###Orientation
+# 'null'    - No orientation
+# 'topo'    - Calculate orientation from a topography array
+# 'surface' - Calculate from array of elevation of lower boundary of karst unit (as csv)
+orientation_mode     : 'null'
+orientation_datafile : ''
+
+
+###############################
+### Fast-Marching Algorithm ###
+###############################
+
+#Choose which algorithm to use:
+#'Isotropic2': agd-hfm: 2D, equivalent of skfmm
+#'Isotropic3': adg-hfm: 3D, equivalent of skfmm
+#'Riemann2'  : agd-hfm: 2D, anisotropic, requires an anisotropy vector field (topography or geologic orientation), performs well in high-relief catchments
+#'Riemann3'  : agd-hfm: 3D version of anisotropic algorithm
+#Note: There are MANY more options for fast marching algorithms built into the agd-hfm library.
+##See the agd-hfm library documentation for how to use these and integrate them into pyKasso:
+  #https://github.com/Mirebeau/AdaptiveGridDiscretizations/blob/master/Notebooks_FMM/Summary.ipynb
+
+algorithm : 'Isotropic2'
+
+#Travel cost parallel to gradient (higher=slower/harder)
+#Must be between 0 and 1
+cost_out       : 0.999  #default: 0.999
+cost_aquifer   : 0.4    #default: 0.4
+cost_aquiclude : 0.8    #default: 0.8
+cost_faults    : 0.2    #default: 0.2
+cost_fractures : 0.2    #default: 0.2
+cost_conduits  : 0.1    #default: 0.1
+cost_ratio     : 0.5   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (default 0.25)
+#if ratio = 1: same travel cost parallel and perpendicular to gradient
+#if ratio < 1: travel cost is lower parallel to gradient (paths will follow steepest gradient), decrease value to increase contrast
+#if ratio > 1: travel cost is lower perpendicular to gradient (paths will follow contours), increase value to increase contrast
+
+### Formation to consider and FMM code associated
+geology_id   : [0,1,2,3] # Only for 'gslib' mode
+geology_cost : [cost_out, cost_aquifer, cost_aquiclude, cost_aquiclude]
+
+#############
+### Other ###
+#############
+
+# if 0 = random, if 1 = same results each run
+rand_seed : 1
+
+#Verbosity: how much output to display during run
+verbosity : 0    #0: minimal output, 1: some output; 2: more output; 3: maximum output
+...

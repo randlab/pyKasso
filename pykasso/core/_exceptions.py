@@ -1,0 +1,5 @@
+"""
+Custom pyKasso exceptions
+"""
+
+# ImportError

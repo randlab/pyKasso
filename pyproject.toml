@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "pykasso"
+version = "0.1.0"
+description = "Python project intended to simulate stochastic karst network"
+license = "MIT"
+authors = [
+    "François Miville <francois@miville.org>",
+    "Chloé Fandel",
+    "Philippe Renard"
+]
+maintainers = [
+    "François Miville <francois@miville.org>"
+]
+readme = "README.md"
+homepage = ""
+repository = "https://github.com/randlab/pyKasso"
+documentation = ""
+keywords = []
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+packages = [{ include = "misc" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^1.23.4"
+pandas = "^1.5.1"
+pyyaml = "^6.0"
+mpmath = "^1.2.1"
+numba = "^0.56.4"
+
+[tool.poetry.group.visualization.dependencies]
+matplotlib = "^3.6.2"
+pyvista = "^0.37.0"
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.17.1"
+jupyter = "^1.0.0"
+jupyterlab = "^3.5.0"
+ipyvtklink = "^0.2.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

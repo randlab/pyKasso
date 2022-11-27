@@ -1,0 +1,69 @@
+ ##################
+### SKS SETTINGS ###
+ ##################
+
+---
+###############
+### General ###
+###############
+
+sks:
+  nsim : 10
+
+############
+### Grid ###
+############
+
+grid:
+  x0 : 572510
+  y0 : 250010
+  z0 : 430
+  nx : 300
+  ny : 300
+  nz : 10
+  dx : 20
+  dy : 20
+  dz : 20
+  # x0 : 0
+  # y0 : 0
+  # z0 : 0
+  # nx : 300
+  # ny : 300
+  # nz : 100
+  # dx : 10
+  # dy : 10
+  # dz : 10
+
+############
+### Mask ###
+############
+
+mask:
+  name : 'Mask'
+  data : 'notebooks/test4/inputs/betteraz_polygon.txt'
+
+###############
+### Geology ###
+###############
+
+geology:
+  name : 'Geology'
+  data : 'notebooks/test4/inputs/betteraz_2D_z430.gslib'
+
+# topography
+
+karst:
+  name : 'Karst' 
+  data : ''
+
+field:
+  name : 'Field'
+  data : ''
+
+#############
+### DEBUG ###
+#############
+
+debug:
+  warnings: True
+...

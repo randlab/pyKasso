@@ -1,0 +1,54 @@
+ ##################
+### SIM SETTINGS ###
+ ##################
+
+---
+##############
+### Points ###
+##############
+
+### Outlets
+outlets:
+  number     : 2
+  data       : [[501, 500], [502, 500], [503, 500], [504, 500]]
+  shuffle    : False
+  importance : [1]
+
+### Inlets
+inlets:
+  number     : 50
+  data       : ''
+  shuffle    : False
+  per_outlet : [1]
+  importance : [1]
+
+### Tracers
+tracers:
+  number : 1
+  data   : ''
+
+####################
+### Fracturation ###
+####################
+
+faults:
+  name : 'Faults'
+  data : ''
+
+fractures:
+  name : 'Fractures'
+  data : 'random'
+  # validation des mots clés : settings/location
+  settings :
+    hypothesis      : ''
+    # densities       : [0.00005,0.0001]
+    densities       : [0.00001,0.0001]
+    orientation_min : [    340,    70]
+    orientation_max : [     20,   110]
+    dip_min         : [     80,    40]
+    dip_max         : [     90,    50]
+    alpha           : [2, 2]
+    length_min      : [ 100,  100]
+    length_max      : [1000, 1000]
+
+...
