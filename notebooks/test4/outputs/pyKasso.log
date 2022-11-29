@@ -1,9 +1,0 @@
-INFO:sks:pyKasso project initialized
-INFO:sks:pyKasso project initialized
-INFO:validations - core:The core settings file has been validated.
-WARNING:validations - sks:The 'geology' datafile dimensions match with grid surface dimensions. Data will be replicated on z-axis.
-INFO:validations - sks:The sks settings file has been validated.
-INFO:validations - simulations:The sks simulations file has been validated.
-INFO:sks:_construct_feature_grid
-INFO:sks:_construct_feature_mask
-INFO:sks:_construct_feature_geology

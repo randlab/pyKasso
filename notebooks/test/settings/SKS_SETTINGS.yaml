@@ -18,21 +18,12 @@ grid:
   x0 : 572510
   y0 : 250010
   z0 : 430
-  nx : 300
+  nx : 310
   ny : 300
-  nz : 10
+  nz : 100
   dx : 20
   dy : 20
   dz : 20
-  # x0 : 0
-  # y0 : 0
-  # z0 : 0
-  # nx : 300
-  # ny : 300
-  # nz : 100
-  # dx : 10
-  # dy : 10
-  # dz : 10
 
 ############
 ### Mask ###
@@ -40,7 +31,7 @@ grid:
 
 mask:
   name : 'Mask'
-  data : 'notebooks/test4/inputs/betteraz_polygon.txt'
+  data : 'notebooks/test/inputs/betteraz_polygon.txt'
 
 ###############
 ### Geology ###
@@ -48,17 +39,19 @@ mask:
 
 geology:
   name : 'Geology'
-  data : 'notebooks/test4/inputs/betteraz_2D_z430.gslib'
+#   # data : 'notebooks/test/inputs/betteraz_2D_z430.gslib'
+  data : 'notebooks/test/inputs/side2.png'
+  axis : 'x'
 
 # topography
 
-karst:
-  name : 'Karst' 
-  data : ''
+# karst:
+#   name : 'Karst' 
+#   data : ''
 
-field:
-  name : 'Field'
-  data : ''
+# field:
+#   name : 'Field'
+#   data : ''
 
 #############
 ### DEBUG ###

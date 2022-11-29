@@ -1,0 +1,21 @@
+INFO:sks:pyKasso project initialized
+INFO:validations - core:The core settings file has been validated.
+WARNING:validations - sks:The 'mask' attribute was missing.
+WARNING:validations - sks:The 'geology' attribute was missing.
+WARNING:validations - sks:The 'karst' attribute was missing.
+WARNING:validations - sks:The 'field' attribute was missing.
+INFO:validations - sks:The sks settings file has been validated.
+INFO:validations - simulations:The sks simulations file has been validated.
+INFO:sks:_construct_feature_grid
+INFO:sks:_construct_feature_mask
+INFO:sks:_construct_feature_geology
+INFO:sks:pyKasso project initialized
+INFO:validations - core:The core settings file has been validated.
+WARNING:validations - sks:The 'geology' attribute was missing.
+WARNING:validations - sks:The 'karst' attribute was missing.
+WARNING:validations - sks:The 'field' attribute was missing.
+INFO:validations - sks:The sks settings file has been validated.
+INFO:validations - simulations:The sks simulations file has been validated.
+INFO:sks:_construct_feature_grid
+INFO:sks:_construct_feature_mask
+INFO:sks:_construct_feature_geology

@@ -10,7 +10,7 @@ class GeologicFeature():
     """
     Class modeling a single geologic data of the studied domain.
     """
-    def __init__(self, label, name, data, grid):
+    def __init__(self, label, name, data, grid, **kwargs):
         """
         Creates a geologic feature.
         This class is designed to describe a particular geologic feature.
@@ -26,6 +26,9 @@ class GeologicFeature():
         self.label = label
         self.name = name
 
+        if 'axis' in kwargs:
+            axis = kwargs['axis']
+
         if isinstance(data, np.ndarray):
             self.data = data
         else:
@@ -37,7 +40,7 @@ class GeologicFeature():
             elif extension == 'npy':
                 self.data = self._set_data_from_pickle(data)
             elif extension in ['png', 'jpg']:
-                self.data = self._set_data_from_image(grid, data)
+                self.data = self._set_data_from_image(grid, data, axis)
             else:
                 self.data = self._set_data_ones(grid)
 
@@ -75,21 +78,36 @@ class GeologicFeature():
         return np.load(data)
 
 
-    def _set_data_from_image(self, grid, data):
+    def _set_data_from_image(self, grid, data, axis):
         """
         Sets data from an image.
         The size of the image should be the same that the size of the grid, but this is optional.
         If nz > 1, the layer is horizontally repeated.
         This method usage is not recommended, it should be used only for quick testing.
         """
+        
         # Read image
-        pil_image = PIL.Image.open(data)
-        # Resize the image according to grid parameters
-        pil_image = pil_image.resize((grid.ny, grid.nx))
-        npy_image = np.asarray(pil_image)
-        # Read colors
-        npy_image = (npy_image[:,:,0] == 0)*1
-        npy_image = np.repeat(npy_image[:, :, np.newaxis], grid.nz, axis=2)
+        pil_image = PIL.Image.open(data).convert('L')
+
+        if (axis.lower() == 'x'):
+            pil_image = pil_image.resize((grid.ny, grid.nz))
+        elif (axis.lower() == 'y'):
+            pil_image = pil_image.resize((grid.nx, grid.nz))
+        elif (axis.lower() == 'z'):
+            pil_image = pil_image.resize((grid.nx, grid.ny))
+        
+        # npy_image = (npy_image[:,:] == 0)*1
+        npy_image = np.asarray(pil_image).T + 1000
+        n_colors = np.unique(npy_image)
+        for i, color in enumerate(np.flip(n_colors)):
+            npy_image = np.where(npy_image == color, i, npy_image)
+            
+        if (axis.lower() == 'x'):
+            npy_image = np.repeat(npy_image[np.newaxis, :, :], grid.nx, axis=0)
+        elif (axis.lower() == 'y'):
+            npy_image = np.repeat(npy_image[:, np.newaxis, :], grid.ny, axis=1)
+        elif (axis.lower() == 'z'):
+            npy_image = np.repeat(npy_image[:, :, np.newaxis], grid.nz, axis=2)
 
         # TODO - sens des images, à checker
         # image = np.transpose(image, (1,0)) #imread return image with mxn format so we also need to transpose it
@@ -131,13 +149,24 @@ class Geology(GeologicFeature):
     TODO
     """
 
-    def __init__(self, name, data, grid):
+    def __init__(self, name, data, grid, **kwargs):
         """
         TODO
         """
         label = 'Geology'
-        super().__init__(label, name, data, grid)
-        # self.surface = self._compute_surface(self.topography, new_geologic_feature.data)
+        super().__init__(label, name, data, grid, **kwargs)
+
+
+class Topography(GeologicFeature):
+    """
+    TODO
+    """
+    def __init__(self, name, data, grid, **kwargs):
+        """
+        TODO
+        """
+        label = 'Topography'
+        super().__init__(label, name, data, grid, **kwargs)
 
 
 class Karst(GeologicFeature):

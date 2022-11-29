@@ -26,7 +26,7 @@ import logging
 from ._validations import validate_core_settings, validate_sks_settings, validate_sim_settings
 from .grid import Grid
 from .mask import Mask
-from .geologic_feature import Geology, Karst, Field, Faults, Fractures
+from .geologic_feature import Geology, Topography, Karst, Field, Faults, Fractures
 from .points import generate_random_points, inspect_points_validity
 
 ### External dependencies
@@ -96,6 +96,11 @@ class SKS():
         ### Creates a log file
         log_filename = 'pyKasso.log'
         filename = self.CORE_SETTINGS['outputs_directory'] + log_filename
+        if os.path.exists(filename):
+            try:
+                os.remove(filename)
+            except:
+                pass
         logging.basicConfig(filename=filename, encoding='utf-8', level=logging.INFO, filemode="w")
         logger = logging.getLogger("sks")
         logger.info('pyKasso project initialized')
@@ -110,8 +115,8 @@ class SKS():
         TODO
         """
         self.CORE_SETTINGS = self._load_settings_file('core_settings_filename', validate_core_settings)
-        self.SKS_SETTINGS  = self._load_settings_file('sks_settings_filename',  validate_sks_settings)
-        self.SIM_SETTINGS  = self._load_settings_file('sim_settings_filename',  validate_sim_settings)
+        self.SKS_SETTINGS  = self._load_settings_file('sks_settings_filename' , validate_sks_settings)
+        self.SIM_SETTINGS  = self._load_settings_file('sim_settings_filename' , validate_sim_settings)
         return None
 
     def _load_settings_file(self, file, validation_function):
@@ -185,13 +190,13 @@ class SKS():
         TODO
         """
         # n - Constructs the points
-        self._construct_feature_points()
+        # self._construct_feature_points()
 
         # n - Constructs the faults
-        self._construct_feature_faults()
+        # self._construct_feature_faults()
 
         # n - Constructs the fractures
-        self._construct_feature_fractures()
+        # self._construct_feature_fractures()
         return None
 
     @_decorator_logging('grid')
@@ -219,9 +224,10 @@ class SKS():
         """
         Constructs the geology.
         """
-        self.GEOLOGY = Geology(**self.SKS_SETTINGS['geology'], grid=self.GRID)
-        self.TOPOGRAPHY = np.where(self.GEOLOGY.data > 0, 1, 0)
-        self.GEOLOGY._compute_surface(self.TOPOGRAPHY)
+        self.GEOLOGY    = Geology(**self.SKS_SETTINGS['geology'], grid=self.GRID)
+        topography      = np.where(self.GEOLOGY.data > 0, 1, 0)
+        self.TOPOGRAPHY = Topography(name='Topography', data=topography, grid=self.GRID)
+        self.GEOLOGY._compute_surface(self.TOPOGRAPHY.data)
         return None
 
     @_decorator_logging('karst')

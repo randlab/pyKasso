@@ -7,12 +7,10 @@ import logging
 import numpy as np
 
 # import _exceptions
-
-# print(exc.x)
-
 # import core_settings
 
-ERRORS = []
+ERRORS   = []
+WARNINGS = []
 
 def validate_core_settings(core_settings:dict):
     """
@@ -73,13 +71,13 @@ def validate_sks_settings(sks_settings:dict):
         #     pass
         #     TODO
     
-        # Checks if some subattributes are of type int or float
+        # Checks if subattributes are of type int or float
         subattributes = ['x0', 'y0', 'z0', 'dx', 'dy', 'dz']
         for subattribute in subattributes:
             if not isinstance(sks_settings[attribute][subattribute], (int, float)):
                 msg = "The '{}' subattribute from the '{}' attribute must be of type int or float.".format(subattribute, attribute)
                 logger.error(msg)
-                raise TypeError(msg)
+                ERRORS.append(TypeError(msg))
 
         # Checks if some subattributes are type int
         subattributes = ['nx', 'ny', 'nz']
@@ -87,7 +85,7 @@ def validate_sks_settings(sks_settings:dict):
             if not isinstance(sks_settings[attribute][subattribute], int):
                 msg = "The '{}' subattribute from the '{}' attribute must be of type int.".format(subattribute, attribute)
                 logger.error(msg)
-                raise TypeError(msg)
+                ERRORS.append(TypeError(msg))
 
         # Checks if the values of some attributes are well upper 1
         subattributes = ['nx', 'ny', 'nz']
@@ -102,6 +100,7 @@ def validate_sks_settings(sks_settings:dict):
     ### MASK ###
     ############
     attribute = 'mask'
+    data = ''
 
     # Checks presence of the 'mask' attribute
     if attribute not in sks_settings:
@@ -124,7 +123,6 @@ def validate_sks_settings(sks_settings:dict):
                 sks_settings[attribute][subattribute] = ''
 
     # If 'data' is not empty
-    data = ''
     if sks_settings[attribute]['data'] != '':
 
         # If data type is valid:
