@@ -5,59 +5,68 @@ TODO
 import math
 import mpmath
 import numpy as np
-from numba import njit # demander à val
+import pandas as pd
 
-# Condition
-import pyvista as pv
 
-def generate_fractures(grid, densities, alpha, min_orientation, max_orientation, min_dip, max_dip, min_length, max_length):
+def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orientation_distribution='vonmises', dip_distribution='vonmises', length_distribution='power'):
     """
     TODO
     Generates fractures as Fracture instances according to the parameters.
-
-    Parameters
-    ----------
-    densities : array
-        Fracture densities for each fracture family.
-    alpha : array
-        Degree of power law for each fracture family.
-    min_orientation : array
-        Fractures minimum orientation for each fracture family.
-    max_orientation : array
-        Fractures maximum orientation for each fracture family.
-    min_dip : array
-        Fractures minimum dip for each fracture family.
-    max_dip : array
-        Fractures maximum dip for each fracture family.
-    min_length : array
-        The minimum length of the fractures for each fracture family.
-    max_length : array
-        The maximum length of the fractures for each fracture family.
-
-    Examples
-    --------
-    >>> geol._generate_fractures(densities = [0.00005,0.0001],
-                                alpha = [2, 2],
-                                min_orientation = [340, 70],
-                                max_orientation = [20, 110],
-                                min_dip = [80, 40],
-                                max_dip = [90, 50],
-                                min_length : [ 100, 100],
-                                max_length : [4000, 4000])
-    >>> print(geol.fractures)
     """
+    # Parameters
+    # ----------
+    # densities : array
+    #     Fracture densities for each fracture family.
+    # alpha : array
+    #     Degree of power law for each fracture family.
+    # min_orientation : array
+    #     Fractures minimum orientation for each fracture family.
+    # max_orientation : array
+    #     Fractures maximum orientation for each fracture family.
+    # min_dip : array
+    #     Fractures minimum dip for each fracture family.
+    # max_dip : array
+    #     Fractures maximum dip for each fracture family.
+    # min_length : array
+    #     The minimum length of the fractures for each fracture family.
+    # max_length : array
+    #     The maximum length of the fractures for each fracture family.
 
-    fractures = []
-    fracture_id = 0
+    # Examples
+    # --------
+    # >>> geol._generate_fractures(d)
+    # >>> print(geol.fractures)
 
-    ## Redefine fracturation domain
-    lenmax = max(max_length)
+    ## TODO
+    # distribution vonmises arguments : mean, std / loc, scale (https://numpy.org/doc/stable/reference/random/generated/numpy.random.normal.html)
+    
+    ######################
+    ### INITIALIZATION ###
+    ######################
+
+    if len(orientation) == 2:
+        orientation_min, orientation_max = orientation
+    else:
+        orientation_max = orientation
+
+    if len(dip) == 2:
+        dip_min, dip_max = dip
+    else:
+        dip_max = dip
+
+    if len(length) == 2:
+        length_min, length_max = min(length), max(length)
+    else:
+        length_max = length
+    
+
+    ### Redefine fracturation domain
     xd0, xd1, yd0, yd1, zd0, zd1 = grid.xmin, grid.xmax, grid.ymin, grid.ymax, grid.zmin, grid.zmax
     Lx, Ly, Lz = xd1-xd0, yd1-yd0, zd1-zd0
 
-    shiftx = min(Lx/2,lenmax/2)
-    shifty = min(Ly/2,lenmax/2)
-    shiftz = min(Lz/2,lenmax/2)
+    shiftx = min(Lx/2, length_max/2)
+    shifty = min(Ly/2, length_max/2)
+    shiftz = min(Lz/2, length_max/2)
 
     Lex = 2 * shiftx + Lx
     Ley = 2 * shifty + Ly
@@ -68,204 +77,143 @@ def generate_fractures(grid, densities, alpha, min_orientation, max_orientation,
     ymin = grid.ylimits[0] - shifty
     zmin = grid.zlimits[0] - shiftz
 
-    ## Total numbers of fractures for each family
-    fractures_numbers = np.array(densities) * area
+    ### Total numbers of fractures
+    fractures_numbers = np.array(density) * area
 
-    ## Calculate fractures in each family
-    for frac_family in range(len(densities)):
+    # Generate poisson number for each fracture family
+    real_frac_number = rng.poisson(fractures_numbers)
 
-        # Define all the constants required to randomly draw the length in distribution
-        palpha = (1-alpha[frac_family])
-        invpalpha = 1/palpha
-        fmina = min_length[frac_family]**palpha
-        frangea = max_length[frac_family]**palpha - fmina
 
-        # Define all the constants required for the orientation distribution
-        orientation_min = min_orientation[frac_family]
-        orientation_max = max_orientation[frac_family]
+    ###########################
+    ### Calculate fractures ###
+    ###########################
+
+    ##### FRACTURE CENTER LOCATION 
+
+    # from triple uniform distribution
+    xm = xmin + rng.random(size=real_frac_number) * Lex
+    ym = ymin + rng.random(size=real_frac_number) * Ley
+    zm = zmin + rng.random(size=real_frac_number) * Lez
+
+
+    ##### FRACTURE ORIENTATION 
+
+    # No distribution case
+    if orientation_distribution == 'unique':
+        orientation_fractures = [orientation_max] * real_frac_number
+    
+    else:
         if orientation_min > orientation_max:
             orientation_min = orientation_min - 360
 
-        orientation_mean_angle = (orientation_max + orientation_min)  / 2
-        orientation_std_angle  = (orientation_max - orientation_mean_angle) / 3
-        orientation_mean_angle = math.radians(orientation_mean_angle)
-        orientation_std_angle  = math.radians(orientation_std_angle)
+        # Uniform distribution case
+        if orientation_distribution == 'uniform':
+            orientation_fractures = rng.uniform(orientation_min, orientation_max, size=real_frac_number)
+            
+        # Von Mises distribution case
+        elif orientation_distribution == 'vonmises':
+            orientation_mean_angle = (orientation_max + orientation_min) / 2
+            orientation_std_angle  = (orientation_max - orientation_mean_angle) / 3
+            orientation_mean_angle = math.radians(orientation_mean_angle)
+            orientation_std_angle  = math.radians(orientation_std_angle)
 
-        # Define all the constants required for the dip distribution
-        if (grid.nz > 1):
-            dip_min = min_dip[frac_family]
-            dip_max = max_dip[frac_family]
-            if dip_min > dip_max:
-                dip_min = dip_min - 360
+            # Computes the kappa value for the Von Mises orientation distribution
+            orientation_func  = lambda k : orientation_std_angle**2 - 1 + mpmath.besseli(1,k) / mpmath.besseli(0,k)
+            orientation_kappa = mpmath.findroot(orientation_func, 1)
 
+            orientation_fractures = rng.vonmises(orientation_mean_angle, orientation_kappa, size=real_frac_number)
+        
+    
+     ##### FRACTURE DIP 
+
+     # No distribution case
+    if dip_distribution == 'unique':
+        dip_fractures = [dip_max] * real_frac_number
+    
+    else:
+        if dip_min > dip_max:
+            dip_min = dip_min - 360
+
+        # Uniform distribution case
+        if dip_distribution == 'uniform':
+            dip_fractures = rng.uniform(dip_min, dip_max, size=real_frac_number)
+            
+        # Von Mises distribution case
+        elif dip_distribution == 'vonmises':
             dip_mean_angle = (dip_max + dip_min)  / 2
             dip_std_angle  = (dip_max - dip_mean_angle) / 3
             dip_mean_angle = math.radians(dip_mean_angle)
             dip_std_angle  = math.radians(dip_std_angle)
 
-        # Computes the kappa value for the Von Mises orientation distribution
-        orientation_func  = lambda k : orientation_std_angle**2 - 1 + mpmath.besseli(1,k) / mpmath.besseli(0,k)
-        orientation_kappa = mpmath.findroot(orientation_func,1)
-
-        if (grid.nz > 1):
+            # Computes the kappa value for the Von Mises orientation distribution
             dip_func  = lambda k : dip_std_angle**2 - 1 + mpmath.besseli(1,k) / mpmath.besseli(0,k)
-            dip_kappa = mpmath.findroot(dip_func,1)
+            dip_kappa = mpmath.findroot(dip_func, 1)
 
-        # Generate poisson number for each fracture family
-        real_frac_number = np.random.poisson(fractures_numbers[frac_family])
+            dip_fractures = rng.vonmises(dip_mean_angle, dip_kappa, size=real_frac_number)
 
-        # Loop over the individual fractures
-        for i in range(1, real_frac_number+1):
 
-            # FRACTURE CENTER LOCATION from triple uniform distribution
-            xm = xmin + np.random.random() * Lex
-            ym = ymin + np.random.random() * Ley
-            zm = zmin + np.random.random() * Lez
+    ##### FRACTURE LENGHT
 
-            # FRACTURE LENGHT from truncated power law distribution
-            u = np.random.rand()
-            frac_length = ( fmina + u * frangea )**invpalpha
-            radius = frac_length/2
+    # No distribution case
+    if length_distribution == 'unique':
+        radius = [length_max / 2] * real_frac_number
 
-            # FRACTURE ORIENTATION/DIP from von Mises distribution
-            frac_orientation = np.random.vonmises(orientation_mean_angle, orientation_kappa)
-            if (grid.nz > 1):
-                frac_dip = np.random.vonmises(dip_mean_angle, dip_kappa)
-            else:
-                frac_dip = math.radians(0)
+    # Uniform distribution case
+    elif length_distribution == 'uniform':
+        radius = rng.uniform(length_min, length_max, size=real_frac_number)
 
-            # Calculate normal Vector
-            x = np.sin(frac_orientation + np.radians(90)) * np.cos(frac_dip)
-            y = np.cos(frac_orientation + np.radians(90)) * np.cos(frac_dip)
-            z = np.sin(frac_dip)
-            a = y
-            b = -x
-            c = -z
+    # Trucated power law distribution case
+    elif length_distribution == 'power':
+        palpha    = (1 - alpha)
+        invpalpha = 1 / palpha
+        fmina     = length_min**palpha
+        frangea   = length_min**palpha - fmina
+        u = rng.random(size=real_frac_number)
+        frac_length = ( fmina + u * frangea )**invpalpha
+        radius = frac_length/2
 
-            # Store calculated fracture
-            fractures.append(Fracture(fracture_id, frac_family, [xm,ym,zm], radius, frac_orientation, frac_dip, [a,b,c]))
-            fracture_id += 1
+    ##### FRACTURE NORMAL VECTOR
+    x = np.sin(orientation_fractures + np.radians(90)) * np.cos(dip_fractures)
+    y = np.cos(orientation_fractures + np.radians(90)) * np.cos(dip_fractures)
+    z = np.sin(dip_fractures)
+    a = y
+    b = -x
+    c = -z
+    normal = list(zip(a,b,c))
+
+    # Store calculated fracture
+    data = {
+        'x' : xm,
+        'y' : ym,
+        'z' : zm,
+        'radius' : radius,
+        'orientation' : orientation_fractures,
+        'dip' : dip_fractures,
+        'normal' : normal
+    }
+    fractures = pd.DataFrame(data=data)
+
     return fractures
+
+
+
 
 ####################
 ### VOXELIZATION ###
 ####################
 
-def voxelize_fractures(grid, fractures, method):
+def voxelize_fractures(grid, fractures, method='python'):
     """
     TODO
     """
     if method == 'python':
         fracs_array = _voxelize_fractures_python(grid, fractures)
-    elif method == 'pyvista':
-        fracs_array = _voxelize_fractures_pyvista(grid, fractures)
-    elif method == 'c':
-        pass
     else:
         print('TODO')
 
     return fracs_array
 
-#############################################################################################################################
-### pyvista ###
-###############
 
-def _voxelize_fractures_pyvista(grid, fractures):
-    """
-    TODO
-    """
-
-    ##############################
-    ### 1 - Construct the rays ###
-    ##############################
-    slice_x = slice(0, grid.nx)
-    slice_y = slice(0, grid.ny) 
-    slice_z = slice(0, grid.nz)
-    val_s, val_f = 0, -1
-    SLICES = [ # xz, zy, yx
-        [[slice_x, val_s  , slice_z], [slice_x, val_f  , slice_z]],
-        [[val_s  , slice_y, slice_z], [val_f  , slice_y, slice_z]],
-        [[slice_x, slice_y,   val_s], [slice_x, slice_y,   val_f]]
-    ]
-    DIMS = ['X', 'Y', 'Z']
-    POINTS_START = []
-    POINTS_FINAL = []
-    # RAYS = []
-
-    for (slice_start, slice_final) in SLICES:
-
-        points_start = []
-        points_final = []
-
-        for dim in DIMS:
-            i_s, j_s, k_s = slice_start
-            coordinates = grid._get_property(dim)[i_s, j_s, k_s]
-            coordinates = coordinates.flatten(order='F')
-            points_start.append(coordinates)
-
-            i_f, j_f, k_f = slice_final
-            coordinates = grid._get_property(dim)[i_f, j_f, k_f]
-            coordinates = coordinates.flatten(order='F')
-            points_final.append(coordinates)
-
-        points_start = [list(tpl) for tpl in zip(*points_start)]
-        points_final = [list(tpl) for tpl in zip(*points_final)]
-
-        POINTS_START.append(points_start)
-        POINTS_FINAL.append(points_final)
-
-        # for (start, final) in zip(points_start, points_final):
-        #     RAYS.append(pv.Line(start, final))
-
-    # flat the lists
-    POINTS_START = [item for sublist in POINTS_START for item in sublist]
-    POINTS_FINAL = [item for sublist in POINTS_FINAL for item in sublist]
-    # convert in numpy arrays
-    POINTS_START = np.array(POINTS_START)
-    POINTS_FINAL = np.array(POINTS_FINAL)
-
-    #####################################################
-    ### 2 - Transform fractures into pyvista polygons ###
-    #####################################################
-    POLYGONS = []
-    polygon_definition = 8 # TODO - Memory settings
-    for fracture in fractures:
-        x, y, z = fracture.get_position()
-        a, b, c = fracture.get_normal()
-        rad     = fracture.radius
-        POLYGONS.append(pv.Polygon(center=(x, y, z), radius=rad, normal=(a, b, c), n_sides=polygon_definition))
-
-    ###############################
-    ### 3 - Intersection points ###
-    ###############################
-    POINTS = []
-    for polygon in POLYGONS:
-        for (start, final) in zip(POINTS_START, POINTS_FINAL):
-            points, ind = polygon.ray_trace(start, final)
-            if points.size != 0:
-                POINTS.append(points)
-
-    ############################
-    ### 4 - Retrieve indices ###
-    ############################
-    INDICES = []
-    for p in POINTS:
-        x, y, z = p[0]
-        i, j, k = grid.get_i(x), grid.get_j(y), grid.get_k(z)
-        INDICES.append([i, j, k])
-
-    # Remove duplicates
-    INDICES = np.array(INDICES)
-    INDICES = np.unique(INDICES, axis=0)
-    i, j, k = zip(*INDICES)
-
-    ############################
-    ### 5 - Fracturation map ###
-    ############################
-    fracs_array = np.zeros((grid.nx, grid.ny, grid.nz))
-    fracs_array[i, j, k] = 1
-
-    return fracs_array
 
 #############################################################################################################################
 ### python ###
@@ -586,18 +534,21 @@ def _voxelize_fractures_python(grid, fractures):
 
     # Loop over the fractures
     # for f in tqdm(fractures, desc="Rasterizing"):
-    for f in fractures:
+    for (i, f) in fractures.iterrows():
 
         # Get fracture geometry
-        xc, yc, zc    = f.get_position()
-        nfx, nfy, nfz = f.get_normal()
+        xc, yc, zc    = f['x'], f['y'], f['z']
+        nfx, nfy, nfz = f['normal']
+        nfx, nfy, nfz = float(nfx), float(nfy), float(nfz)
         n = [nfx, nfy, nfz]
-        R = f.get_radius()
+        R = f['radius']
 
         # Test orientation of the fractures
         if nfz**2 <= (nfx**2 + nfy**2) : # subvertical case
             # Vertical index of the center of the fracture
-            kc = ( (zc - z0) / dz  ).astype(int)
+            # kc = ( (zc - z0) / dz  ).astype(int)
+            kc = ( (zc - z0) / dz  )
+            kc = int(kc)
 
             # Projected vertical extension
             vz = R * np.sqrt( 1 - n[2]**2 )
@@ -628,7 +579,9 @@ def _voxelize_fractures_python(grid, fractures):
 
         elif nfx**2 < (nfz**2 + nfy**2) : # subhorizontal case 1
             # Horizontal x index of the center of the fracture
-            ic = ( (xc - x0) / dx  ).astype(int)
+            # ic = ( (xc - x0) / dx  ).astype(int)
+            ic = ( (xc - x0) / dx  )
+            ic = int(ic)
 
             # Projected x extension
             vx = R * np.sqrt( 1 - n[0]**2 )
@@ -658,7 +611,10 @@ def _voxelize_fractures_python(grid, fractures):
 
         else : # This may not be necessary
             # Horizontal y index of the center of the fracture
-            yc = ( (yc - y0) / dx  ).astype(int)
+            # yc = ( (yc - y0) / dx  ).astype(int)
+            yc = ( (yc - y0) / dx  )
+            yc = int(yc)
+
             # Projected y extension
             vy = R * np.sqrt( 1 - n[1]**2 )
             # x extension in number of cells
@@ -688,118 +644,3 @@ def _voxelize_fractures_python(grid, fractures):
 
         #raster_frac = np.swapaxes(raster_fractures,0,2)
     return raster_fractures
-
-###############
-### CLASSES ###
-###############
-
-class Fracture():
-    """
-    Class modeling fractures as objects.
-    """
-
-    def __init__(self, ID, family, position, radius, orientation, dip, normal):
-        """
-        Creates a fracture according to the parameters.
-
-        Parameters
-        ----------
-        ID : int
-            Fracture id.
-        family : int
-            Fracture family id.
-        position : array
-            Position of the center of the fracture [x, y, z].
-        radius : float
-            Radius of the fracture.
-        orientation : float
-            Orientation of the fracture.
-        dip : float
-            Dip of the fracture.
-        normal : array
-            Normal vector of the fracture [a, b, c].
-
-        Examples
-        --------
-        >>> frac = pk.Fracture(0, 0, [10,10,10], 5, 180, 90, [1,0,0])
-        """
-        self.ID          = ID
-        self.family      = family
-        self.position    = position
-        self.radius      = radius
-        self.orientation = orientation
-        self.dip         = dip
-        self.normal      = normal
-
-    def __repr__(self):
-        return '[id:{}, fam.:{}, x:{}, y:{}, z:{}, rad:{}, or.:{}, dip.:{}, n:({},{},{})] \n'.format(self.ID,self.family, round(self.position[0],2), round(self.position[1],2), round(self.position[2],2), round(self.radius,2), round(self.orientation,2), round(self.dip,2), round(self.normal[0],2), round(self.normal[1],2), round(self.normal[2],2))
-
-    def get_ID(self):
-        """
-        Returns the ID of the fracture.
-
-        Examples
-        --------
-        >>> i = frac.get_ID()
-        """
-        return self.ID
-
-    def get_family(self):
-        """
-        Returns the family ID of the fracture.
-
-        Examples
-        --------
-        >>> family = frac.get_family()
-        """
-        return self.family
-
-    def get_position(self):
-        """
-        Returns an array with the (x, y, z) coordinates of the center of the fracture.
-
-        Examples
-        --------
-        >>> x, y, z = frac.get_position()
-        """
-        return self.position
-
-    def get_radius(self):
-        """
-        Returns the radius of the fracture.
-
-        Examples
-        --------
-        >>> rad = frac.get_radius()
-        """
-        return self.radius
-
-    def get_orientation(self):
-        """
-        Returns the orientation of the fracture.
-
-        Examples
-        --------
-        >>> orien = frac.get_orientation()
-        """
-        return self.orientation
-
-    def get_dip(self):
-        """
-        Returns the dip of the fracture.
-
-        Examples
-        --------
-        >>> dip = frac.get_dip()
-        """
-        return self.dip
-
-    def get_normal(self):
-        """
-        Returns an array with the (a, b, c) vector component of the normal of the fracture.
-
-        Examples
-        --------
-        >>> a, b, c = frac.get_normal()
-        """
-        return self.normal

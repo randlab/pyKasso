@@ -1,10 +1,11 @@
 # pyKasso CORE SETTINGS 
 ---
 core_settings_filename: CORE_SETTINGS.yaml
-inputs_directory: notebooks/test/inputs/
-outputs_directory: notebooks/test/outputs/
-project_directory: notebooks/test
-settings_directory: notebooks/test/settings/
+inputs_directory: test/inputs/
+log_filename: pyKasso.log
+outputs_directory: test/outputs/
+project_directory: test
+settings_directory: test/settings/
 sim_settings_filename: SIM_SETTINGS.yaml
 sks_settings_filename: SKS_SETTINGS.yaml
 ...

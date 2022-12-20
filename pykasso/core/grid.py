@@ -43,6 +43,7 @@ class Grid():
         --------
         >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 1, 1, 1)
         """
+        # TODO
         # Memory usage settings
         precision = np.float32
 
@@ -80,6 +81,8 @@ class Grid():
         # Misc
         self.__area   = (nx * dx) * (ny * dy)
         self.__volume = self.__area * (nz * dz)
+        self.__nodes = nx * ny * nz
+        self.__node_volume = dx * dy * dz
         x_path = [self.__xlimits[0], self.__xlimits[0], self.__xlimits[1], self.__xlimits[1], self.__xlimits[0]]
         y_path = [self.__ylimits[0], self.__ylimits[1], self.__ylimits[1], self.__ylimits[0], self.__ylimits[0]]
         self.__path = Path(list(zip(x_path, y_path)))
@@ -203,6 +206,14 @@ class Grid():
         return self.__volume
 
     @property
+    def nodes(self):
+        return self.__nodes
+
+    @property
+    def node_volume(self):
+        return self.__node_volume
+
+    @property
     def path(self):
         return self.__path
 
@@ -228,7 +239,10 @@ class Grid():
         --------
         >>> i = grid.get_i(3.141)
         """
-        return int(math.ceil((x - self.x0 - self.dx/2) / self.dx))
+        x = np.array(x)
+        out = np.ceil((x - self.x0 - self.dx/2) / self.dx)
+        out = out.astype('int32')
+        return out
 
     def get_j(self, y: float) -> int:
         """
@@ -248,7 +262,10 @@ class Grid():
         --------
         >>> j = grid.get_j(3.141)
         """
-        return int(math.ceil((y - self.y0 - self.dy/2) / self.dy))
+        y = np.array(y)
+        out = np.ceil((y - self.y0 - self.dy/2) / self.dy)
+        out = out.astype('int32')
+        return out
 
     def get_k(self, z: float) -> int:
         """
@@ -268,7 +285,10 @@ class Grid():
         --------
         >>> k = grid.get_k(3.141)
         """
-        return int(math.ceil((z - self.z0 - self.dz/2) / self.dz))
+        z = np.array(z)
+        out = np.ceil((z - self.z0 - self.dz/2) / self.dz)
+        out = out.astype('int32')
+        return out
 
     def get_x(self, i: int) -> float:
         """
@@ -289,10 +309,10 @@ class Grid():
         --------
         >>> x = grid.get_x(42)
         """
-        if (i < 0) or (i > (self.nx-1)):
-            return None
-        else:
-            return self.x[i]
+        i = np.array(i)
+        i = i.astype('int32')
+        out = np.where((i < 0) | (i > (self.nx-1)), None, self.x[i])
+        return out
 
     def get_y(self, j: int) -> float:
         """
@@ -313,10 +333,10 @@ class Grid():
         --------
         >>> y = grid.get_y(42)
         """
-        if (j < 0) or (j > (self.ny-1)):
-            return None
-        else:
-            return self.y[j]
+        j = np.array(j)
+        j = j.astype('int32')
+        out = np.where((j < 0) | (j > (self.ny-1)), None, self.y[j])
+        return out
 
     def get_z(self, k: int) -> float:
         """
@@ -337,10 +357,10 @@ class Grid():
         --------
         >>> z = grid.get_z(42)
         """
-        if (k < 0) or (k > (self.nz-1)):
-            return None
-        else:
-            return self.z[k]
+        k = np.array(k)
+        k = k.astype('int32')
+        out = np.where((k < 0) | (k > (self.nz-1)), None, self.z[k])
+        return out
 
     def is_inbox(self, x: float, y: float, z: float) -> bool:
         """

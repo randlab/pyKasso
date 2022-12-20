@@ -3,13 +3,6 @@
  ##################
 
 ---
-###############
-### General ###
-###############
-
-sks:
-  nsim : 10
-
 ############
 ### Grid ###
 ############
@@ -18,7 +11,7 @@ grid:
   x0 : 572510
   y0 : 250010
   z0 : 430
-  nx : 310
+  nx : 300
   ny : 300
   nz : 100
   dx : 20
@@ -30,33 +23,43 @@ grid:
 ############
 
 mask:
-  name : 'Mask'
-  data : 'notebooks/test/inputs/betteraz_polygon.txt'
+  data : 'test/inputs/betteraz_polygon.txt'
 
 ###############
 ### Geology ###
 ###############
 
-geology:
-  name : 'Geology'
-#   # data : 'notebooks/test/inputs/betteraz_2D_z430.gslib'
-  data : 'notebooks/test/inputs/side2.png'
-  axis : 'x'
+topography:
+  data : 'test/inputs/topography.gslib'
 
-# topography
+geology:
+  data : 'test/inputs/betteraz_2D_z430.gslib'
+  cost : 
+    1 : 0.5
+
+faults:
+  data : 'test/inputs/faults.png'
+  axis : 'z'
 
 # karst:
-#   name : 'Karst' 
 #   data : ''
 
 # field:
-#   name : 'Field'
 #   data : ''
+
+###########
+### FMM ###
+###########
+
+fmm: 
+  algorithm : 'Isotropic3'
 
 #############
 ### DEBUG ###
 #############
 
 debug:
-  warnings: True
+  verbosity: 0
+  fmm: False
+  
 ...

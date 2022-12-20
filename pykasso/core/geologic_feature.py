@@ -4,13 +4,21 @@ TODO
 
 import PIL
 import numpy as np
+import pandas as pd
+
 from .fracturation import generate_fractures, voxelize_fractures
+
+# TODO
+# - Documentation
+# - Gestion du format .grd (http://peterbird.name/guide/grd_format.htm)
+# - Stats with mask
+# - Retrieve fmm-costs dict
 
 class GeologicFeature():
     """
     Class modeling a single geologic data of the studied domain.
     """
-    def __init__(self, label, name, data, grid, **kwargs):
+    def __init__(self, label, data, grid, **kwargs):
         """
         Creates a geologic feature.
         This class is designed to describe a particular geologic feature.
@@ -24,16 +32,15 @@ class GeologicFeature():
         >>>
         """
         self.label = label
-        self.name = name
 
         if 'axis' in kwargs:
             axis = kwargs['axis']
 
+        # Selects the right methods to load the data
+            # TODO
         if isinstance(data, np.ndarray):
             self.data = data
         else:
-            # Selects the right methods to load the data
-            # TODO
             extension = data.split('.')[-1]
             if extension == 'gslib':
                 self.data = self._set_data_from_gslib(grid, data)
@@ -43,6 +50,7 @@ class GeologicFeature():
                 self.data = self._set_data_from_image(grid, data, axis)
             else:
                 self.data = self._set_data_ones(grid)
+
 
 
     def _set_data_ones(self, grid):
@@ -62,13 +70,24 @@ class GeologicFeature():
         2) y-dimension - South to North
         3) z-dimension - Bottom to Top
         """
-        data = np.genfromtxt(data, skip_header=3, dtype=np.int8)
+        data = np.genfromtxt(data, skip_header=3)
         if len(data) == grid.nx * grid.ny * grid.nz:
             data = np.reshape(data, (grid.nx, grid.ny, grid.nz), order='F') #reshape to xy grid using Fortran ordering
         else:
             data = np.reshape(data, (grid.nx, grid.ny), order='F')
-            data = np.repeat(data[:, :, np.newaxis], grid.nz, axis=2)
+            
+            if self.label == 'Topography':
+                pass
+            else:
+                data = np.repeat(data[:, :, np.newaxis], grid.nz, axis=2)
         return data
+
+
+    def _set_data_from_grd(self):
+        """
+        TODO
+        """
+        pass
 
 
     def _set_data_from_pickle(self, data):
@@ -121,52 +140,87 @@ class GeologicFeature():
         """
         TODO
         """
-        index    = np.sum(topography, axis=2) - 1
-        row, col = np.indices((self.data.shape[0], self.data.shape[1]))
-        self.surface = self.data[row, col, index]
+        index = np.sum(topography, axis=2) - 1
+        index = index.astype(np.int)
+        i, j = np.indices((self.data.shape[0], self.data.shape[1]))
+        self.surface = self.data[i, j, index]
         return None
 
 
-    # def _compute_statistics(self, data):
-    #     """
-    #     TODO
-    #     """
-    #     unique, counts = np.unique(data, return_counts=True)
-    #     occurrence, frequency, volume = [], [], []
-    #     for nbr in counts:
-    #         occurrence.append(nbr)
-    #         frequency.append(100*nbr/(self.grid.nx*self.grid.ny*self.grid.nz))
-    #         volume.append(nbr*self.grid.dx*self.grid.dy*self.grid.dz)
-    #     return {'ID':unique, 'occurrence':occurrence, 'frequency':frequency, 'volume':volume}
+    def _compute_statistics(self, grid):
+        """
+        TODO
+        """
+        values, counts = np.unique(self.data, return_counts=True)
+        stats = {
+            # 'id'     : values,
+            'counts' : counts,
+            'freq'   : counts / grid.nodes,
+            'volume' : counts * grid.node_volume,
+        }
+        self.stats = pd.DataFrame(data=stats, index=values)
+        # TODO - stats with mask
+        return None
 
 
 ###########################################################################################################
 ### SUB CLASSES ###
 ###################
 
+class Topography(GeologicFeature):
+    """
+    TODO
+    """
+    def __init__(self, data, grid, **kwargs):
+        """
+        TODO
+        """
+        label = 'Topography'
+
+        super().__init__(label, data, grid, **kwargs)
+        
+        if not np.all((self.data == 0) | (self.data == 1)):
+            self.surface_to_volume(grid)
+
+    
+    def surface_to_volume(self, grid):
+        """
+        TODO
+        """
+        k = grid.get_k(self.data)
+
+        topography = np.zeros((grid.nx, grid.ny, grid.nz))
+        for z in range(grid.nz):
+            topography[:, :, z] = z
+            topography[:, :, z] = np.where(topography[:, :, z] >= k, 1, 0)
+
+        self.data = topography
+
+        return None
+
+
+    def _compute_topographic_surface(self):
+        """
+        TODO
+        """
+        self.surface_indices = np.sum(self.data, axis=2) - 1
+        return None
+        
+
+
+
 class Geology(GeologicFeature):
     """
     TODO
     """
 
-    def __init__(self, name, data, grid, **kwargs):
+    def __init__(self, data, grid, **kwargs):
         """
         TODO
         """
         label = 'Geology'
-        super().__init__(label, name, data, grid, **kwargs)
+        super().__init__(label, data, grid, **kwargs)
 
-
-class Topography(GeologicFeature):
-    """
-    TODO
-    """
-    def __init__(self, name, data, grid, **kwargs):
-        """
-        TODO
-        """
-        label = 'Topography'
-        super().__init__(label, name, data, grid, **kwargs)
 
 
 class Karst(GeologicFeature):
@@ -174,12 +228,12 @@ class Karst(GeologicFeature):
     TODO
     """
     
-    def __init__(self, name, data, grid):
+    def __init__(self, data, grid, **kwargs):
         """
         TODO
         """
         label = 'Karst'
-        super().__init__(label, name, data, grid)
+        super().__init__(label, data, grid, **kwargs)
 
         # TODO
         # Validation de l'array
@@ -190,12 +244,12 @@ class Field(GeologicFeature):
     TODO
     """
     
-    def __init__(self, name, data, grid):
+    def __init__(self, data, grid, **kwargs):
         """
         TODO
         """
         label = 'Field'
-        super().__init__(label, name, data, grid)
+        super().__init__(label, data, grid, **kwargs)
 
 
 class Faults(GeologicFeature):
@@ -203,12 +257,12 @@ class Faults(GeologicFeature):
     TODO
     """
     
-    def __init__(self, name, data, grid):
+    def __init__(self, data, grid, **kwargs):
         """
         TODO
         """
         label = 'Faults'
-        super().__init__(label, name, data, grid)
+        super().__init__(label, data, grid, **kwargs)
 
         # TODO
         # Validation de l'array
@@ -219,18 +273,33 @@ class Fractures(GeologicFeature):
     TODO
     """
     
-    def __init__(self, name, data, grid, settings={}):
+    def __init__(self, data, grid, **kwargs):
         """
         TODO
         """
         label = 'Fractures'
 
-        if data == 'random':
-            hypothesis, densities, orientation_min, orientation_max, dip_min, dip_max, alpha, length_min, length_max = settings.values()
-            fractures = generate_fractures(grid, densities, alpha, orientation_min, orientation_max, dip_min, dip_max, length_min, length_max)
-            # fracs_array = voxelize_fractures(grid, fractures, 'pyvista')
-            fracs_array = voxelize_fractures(grid, fractures, 'python')
-            data = fracs_array
-            self.fractures = fractures
+        if 'settings' in kwargs:
+            fractures_families_settings = kwargs['settings'].values()
 
-        super().__init__(label, name, data, grid)
+            fractures_df = pd.DataFrame()
+            fractures_npy = {}
+
+            # Generates one array for each fractures family
+            for (i, fractures_family_settings) in enumerate(fractures_families_settings):
+                fractures_df_ = generate_fractures(grid=grid, rng=kwargs['rng'], **fractures_family_settings)
+                fractures_df_.insert(0, 'family_id', i+1)
+                fractures_df = pd.concat([fractures_df, fractures_df_])
+
+                fractures_npy[i+1] = voxelize_fractures(grid, fractures_df_)
+                
+            # Sums fractures families
+            total = sum([d for d in fractures_npy.values()])
+            fractures_npy['t'] = total
+
+            self.fractures = fractures_df
+            self.FRACTURES = fractures_npy
+
+            data = total
+
+        super().__init__(label, data, grid, **kwargs)

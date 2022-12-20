@@ -3,24 +3,26 @@
  ##################
 
 ---
+seed : 0
+
 ##############
 ### Points ###
 ##############
 
 ### Outlets
 outlets:
-  number     : 2
+  number     : 3
   data       : [[501, 500], [502, 500], [503, 500], [504, 500]]
-  shuffle    : False
+  shuffle    : True
   importance : [1]
 
 ### Inlets
 inlets:
-  number     : 50
-  data       : ''
-  shuffle    : False
-  per_outlet : [1]
-  importance : [1]
+  number     : 3
+  data       : [[501, 500], [502, 500], [503, 500], [504, 500]]
+  shuffle    : True
+  per_outlet : [1,1,1]
+  importance : [1,1,1]
 
 ### Tracers
 tracers:
@@ -31,24 +33,21 @@ tracers:
 ### Fracturation ###
 ####################
 
-faults:
-  name : 'Faults'
-  data : ''
-
 fractures:
-  name : 'Fractures'
   data : 'random'
-  # validation des mots clés : settings/location
+  seed : 12
   settings :
-    hypothesis      : ''
-    # densities       : [0.00005,0.0001]
-    densities       : [0.000001,0.00001]
-    orientation_min : [    340,    70]
-    orientation_max : [     20,   110]
-    dip_min         : [     80,    40]
-    dip_max         : [     90,    50]
-    alpha           : [2, 2]
-    length_min      : [ 100,  100]
-    length_max      : [1000, 1000]
+    family_01:
+      alpha        : 2
+      density      : 0.00001
+      orientation  : [340, 20]
+      dip          : [80, 90]
+      length       : [1000, 2000]
+    family_02:
+      alpha        : 2
+      density      : 0.00001
+      orientation  : [340, 20]
+      dip          : [0, 10]
+      length       : [1000, 2000]
 
 ...

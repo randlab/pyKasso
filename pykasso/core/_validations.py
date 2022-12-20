@@ -107,19 +107,16 @@ def validate_sks_settings(sks_settings:dict):
         msg = "The '{}' attribute was missing.".format(attribute)
         logger.warning(msg)
         sks_settings[attribute] = {
-            'name' : 'Mask',
             'data' : ''
         }
 
     # Checks presence of the subattributes of the 'mask' attribute
-    subattributes = ['name', 'data']
+    subattributes = ['data']
     for subattribute in subattributes:
         if subattribute not in sks_settings[attribute]:
             msg = "The '{}' subattribute from the '{}' attribute was missing.".format(subattribute, attribute)
             logger.warning(msg)
-            if subattribute == 'name':
-                sks_settings[attribute][subattribute] = 'Mask'
-            elif subattribute == 'data':
+            if subattribute == 'data':
                 sks_settings[attribute][subattribute] = ''
 
     # If 'data' is not empty
@@ -182,12 +179,62 @@ def validate_sks_settings(sks_settings:dict):
                     sks_settings[attribute]['data'] = ''
                     break
 
+    ##################
+    ### TOPOGRAPHY ###
+    ##################
+    attribute = 'topography'
+    subattributes = ['data']
+
+    # Checks presence of the 'topography' attribute
+    if attribute not in sks_settings:
+        msg = "The '{}' attribute was missing. Topography will be set from geological data.".format(attribute)
+        logger.warning(msg)
+        sks_settings[attribute] = {
+            'data' : ''
+        }
+
+    # Checks presence of the subattributes of the 'topography' attribute
+    for subattribute in subattributes:
+        if subattribute not in sks_settings[attribute]:
+            msg = "The '{}' subattribute from the '{}' attribute was missing.".format(subattribute, attribute)
+            logger.warning(msg)
+            if subattribute == 'data':
+                sks_settings[attribute][subattribute] = ''
+
+    # If 'data' is not empty
+    if sks_settings[attribute]['data'] != '':
+
+        # If data type is valid:
+        if isinstance(sks_settings[attribute]['data'], str):
+            location = sks_settings[attribute]['data']
+                
+            # Checks if the data datafile exist
+            if not os.path.exists(location):
+                msg = "The 'data' subattribute from the '{}' attribute is not valid. '{}' does not exist. The subattribute has been cleaned.".format(attribute, location)
+                logger.warning(msg)
+                sks_settings[attribute]['data'] = ''
+            else:
+                try:
+                    data = np.genfromtxt(location, skip_header=3)
+                except Exception as err:
+                    msg = "Impossible to read the file located by the 'data' subattribute from the '{}' attribute.".format(attribute)
+                    logger.error(msg)
+                    ERRORS.append(err)
+
+            
+
+        # Data type is not recognized
+        else:
+            msg = "The 'data' subattribute type from the '{}' attribute is not valid. Type must be str. The subattribute has been cleaned.".format(attribute)
+            logger.warning(msg)
+            sks_settings[attribute]['data'] = ''
+
 
     #########################
     ### GEOLOGIC FEATURES ###
     #########################
     attributes = ['geology', 'karst', 'field']
-    subattributes = ['name', 'data']
+    subattributes = ['data']
     valid_extensions = ['gslib', 'npy', 'png', 'jpg']
     nx, ny, nz = sks_settings['grid']['nx'], sks_settings['grid']['ny'], sks_settings['grid']['nz']
 
@@ -197,7 +244,6 @@ def validate_sks_settings(sks_settings:dict):
             msg = "The '{}' attribute was missing.".format(attribute)
             logger.warning(msg)
             sks_settings[attribute] = {
-                'name' : attribute,
                 'data' : ''
             }
 
@@ -207,9 +253,7 @@ def validate_sks_settings(sks_settings:dict):
             if subattribute not in sks_settings[attribute]:
                 msg = "The '{}' subattribute from the '{}' attribute was missing.".format(subattribute, attribute)
                 logger.warning(msg)
-                if subattribute == 'name':
-                    sks_settings[attribute][subattribute] = 'Mask'
-                elif subattribute == 'data':
+                if subattribute == 'data':
                     sks_settings[attribute][subattribute] = ''
 
 
@@ -312,10 +356,7 @@ def validate_sim_settings(sim_settings:dict):
     global ERRORS
     logger = logging.getLogger("validations - simulations")
 
-    # TODO
-    # - Test 'shuffle'
-    # - Test 'importance'
-
+    
     ########################
     ### OUTLETS - INLETS ###
     ########################
@@ -399,6 +440,19 @@ def validate_sim_settings(sim_settings:dict):
                                 logger.error(msg)
                                 ERRORS.append(ValueError(msg))
                                 break
+
+    # TODO ###################################################
+    attributes = ['outlets', 'inlets']
+    if len(sim_settings['outlets']['importance']) == 0:
+        pass
+    
+        # Proceed to assert on some variables
+                # features = [self.settings['outlets_importance'], self.settings['inlets_importance'], self.settings['inlets_per_outlet']]
+                # for feature in features:
+                #     assert isinstance(feature, list)
+                # assert len(self.settings['outlets_importance']) == len(self.outlets)
+    ###################################################
+
 
     ###############
     ### TRACERS ###

@@ -14,7 +14,7 @@ class Mask():
     Class modeling the catchment delimitation of the studied domain.
     """
 
-    def __init__(self, data: List[Tuple[float, float]]|str, name: Optional[str]='Mask') -> None:
+    def __init__(self, data: List[Tuple[float, float]]|str) -> None:
         """
         Creates a mask.
         This class is designed to describe a particular catchment delimitation.
@@ -26,7 +26,6 @@ class Mask():
         name : str, optional
             Name of the mask.
         """
-        self.name = name
         self.validated_vertices = None
         self.polygon = None
         self.mask = None

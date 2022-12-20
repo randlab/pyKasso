@@ -27,9 +27,12 @@ packages = [{ include = "misc" }]
 python = "^3.10"
 numpy = "^1.23.4"
 pandas = "^1.5.1"
-pyyaml = "^6.0"
+openpyxl = "^3.0.10"
 mpmath = "^1.2.1"
-numba = "^0.56.4"
+pyyaml = "^6.0"
+agd = "^0.1.31"
+scipy = "^1.9.3"
+karstnet = { git = "https://github.com/karstnet/karstnet.git", branch = "master" }
 
 [tool.poetry.group.visualization.dependencies]
 matplotlib = "^3.6.2"
