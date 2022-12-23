@@ -12,14 +12,14 @@ seed : 0
 ### Outlets
 outlets:
   number     : 3
-  data       : [[501, 500], [502, 500], [503, 500], [504, 500]]
+  data       : ''
   shuffle    : True
-  importance : [1]
+  importance : [1,1,1]
 
 ### Inlets
 inlets:
-  number     : 3
-  data       : [[501, 500], [502, 500], [503, 500], [504, 500]]
+  number     : 9
+  data       : ''
   shuffle    : True
   per_outlet : [1,1,1]
   importance : [1,1,1]

@@ -50,6 +50,17 @@ this.ACTIVE_PROJECT = None
 # TODO (1) - maj des stats - https://github.com/karstnet/karstnet/blob/master/docs/NewStatistics_result.xlsx
 this.STATISTICS = pd.read_excel(os.path.dirname(os.path.abspath(__file__)) + '/../../misc/' + 'statistics.xlsx', usecols = "B:I,K").describe()
 
+# TODO - default fmm cost
+this.cost = {
+    'out'       : 0.999,
+    'aquifer'   : 0.4,
+    'aquiclude' : 0.8,
+    'faults'    : 0.2,
+    'fractures' : 0.2,
+    'conduits'  : 0.1,
+    'ratio'     : 0.5,
+}
+
 def create_project(project_directory:str):
     """
     TODO
@@ -503,7 +514,8 @@ class SKS():
         data = {
             'x'     : x,
             'y'     : y,
-            'z'     : z_surf,
+            'z'     : z,
+            'z_surf': z_surf,
         }
         return pd.DataFrame(data=data)
 
@@ -572,10 +584,15 @@ class SKS():
         inlets_per_outlet       = self.SIM_SETTINGS['inlets']['per_outlet']
 
         # Calculating inlets and outlets repartitions
-        self.nbr_iteration  = len(self.outlets_importance) * len(self.inlets_importance)         # total number of iterations that will occur
-        outlets_repartition = self._repartition_points(outlets_nbr, self.outlets_importance)     # correct for outlets_importance not summing to correct number of actual outlets
-        inlets_repartition  = self._repartition_points(inlets_nbr , inlets_per_outlet)      # correct for inlets_per_outlet not summing to correct number of actual inlets
+        self.nbr_iteration  = len(self.outlets_importance) * len(self.inlets_importance)        # total number of iterations that will occur
+        outlets_repartition = self._repartition_points(outlets_nbr, self.outlets_importance)    # correct for outlets_importance not summing to correct number of actual outlets
+        inlets_repartition  = self._repartition_points(inlets_nbr , inlets_per_outlet)          # correct for inlets_per_outlet not summing to correct number of actual inlets
 
+        # print('outlets_repartition')
+        # print(outlets_repartition)
+        # print('inlets_repartition')
+        # print(inlets_repartition)
+        
         # Distributing inlets and outlets iterations
         outlets_distribution = pd.Series([k for (k, n) in enumerate(outlets_repartition) for j in range(n)], name='outlet_iteration')
         inlets_distribution  = pd.Series([k for (k, n) in enumerate(inlets_repartition)  for j in range(n)], name='outlet_key')
@@ -590,6 +607,11 @@ class SKS():
             repartition  = self._repartition_points(inlets_nbr, self.inlets_importance)
             distribution = pd.Series([k for (k, n) in enumerate(repartition) for j in range(n)], name='inlet_iteration', index=inlets_current.index)
             self._inlets.loc[inlets_test, 'inlet_iteration'] = distribution
+
+        # print('outlets')
+        # print(self._outlets)
+        # print('inlets')
+        # print(self._inlets)
 
         ### Raster maps
         self.maps = {
@@ -627,10 +649,10 @@ class SKS():
             'exportGeodesicFlow': 1               # export the walker paths (i.e. the conduits)
         })
         self.fastMarching.SetRect(                              # give the fast-marching algorithm the model grid
-            sides=[[self.GRID.zmin, self.GRID.zmax],
+            sides=[[self.GRID.xmin, self.GRID.xmax],            # bottom edge,   top edge (NOT centerpoint)
                    [self.GRID.ymin, self.GRID.ymax],            # leftmost edge, rightmost edge (NOT centerpoint)
-                   [self.GRID.xmin, self.GRID.xmax]],           # bottom edge,   top edge (NOT centerpoint)
-            dims=[self.GRID.nz, self.GRID.ny, self.GRID.nx])    # number of cells, number of cells, number of cells
+                   [self.GRID.zmin, self.GRID.zmax]],           
+            dims=[self.GRID.nx, self.GRID.ny, self.GRID.nz])    # number of cells, number of cells, number of cells
 
         return None
 
@@ -753,9 +775,12 @@ class SKS():
 
                 #Compute travel time maps and conduit network
                 if self.SKS_SETTINGS['fmm']['algorithm'] == 'Isotropic3':
+                    # 2.1.1
                     self._compute_cost_map(iteration)
-                    # self._compute_time_map_isotropic(iteration)
-                    # self._compute_karst_map(iteration)
+                    # 2.1.2
+                    self._compute_time_map_isotropic(iteration)
+                    # 2.1.3
+                    self._compute_karst_map(iteration)
                 # elif self.SKS_SETTINGS['algorithm'] == 'Riemann3':
                 #     self._compute_cost_map(iteration)
                 #     self._compute_alpha_map(iteration)
@@ -814,81 +839,81 @@ class SKS():
 #         return None
 
 
-    # ii. Iso- and anisotropic case
+    ### 2.1.1 Iso- and anisotropic case
     def _compute_cost_map(self, iteration):
         """
         Compute the cost map (how difficult it is to traverse each cell).
 
-        TODO : à terminer
+        TODO
         """
         # If it's the first iteration, iniatialize the cost map according to the geological settings.
         if iteration == 0:
             
-            # Geology
-            geology = self.DATA['geology']['geology']
-            if geology.mode == 'null':
-                self.maps['cost'][0] = np.full((self.GRID.nx, self.GRID.ny, self.GRID.nz), self.SETTINGS['cost_aquifer']) #every cell has the same travel cost and is part of the aquifer
-            elif geology.mode == 'image':
-                self.maps['cost'][0] = np.where(self.DATA['geology']['geology'].data == 1, self.SETTINGS['cost_aquiclude'], self.SETTINGS['cost_aquifer'])
-            elif geology.mode == 'gslib':
-                for key, cost_name in geology.cost.items():
-                    try:
-                        self.maps['cost'][0] = np.where(self.DATA['geology']['geology'].data == key, self.SETTINGS[cost_name], self.maps['cost'][0])
-                    except:
-                        # TODO
-                        print('oups')
+            ### Geology
+            for key, cost in self.GEOLOGY.cost.items():
+                self.maps['cost'][0] = np.where(self.GEOLOGY.data == key, cost, self.maps['cost'][0])
 
-            # Faults
-            if self.SETTINGS['geologic_features']['faults']['is_active']:
-                self.maps['cost'][0] = np.where(self.DATA['geology']['faults'].data > 0, self.SETTINGS['cost_faults'], self.maps['cost'][0])
+            ### Faults
+            for key, cost in self.FAULTS.cost.items():
+                self.maps['cost'][0] = np.where(self.FAULTS.data == key, cost, self.maps['cost'][0])
 
-            # Fractures
-            if self.SETTINGS['geologic_features']['fractures']['is_active']:
-                self.maps['cost'][0] = np.where(self.DATA['geology']['fractures'].data > 0, self.SETTINGS['cost_fractures'], self.maps['cost'][0])
+            # TODO
+            ### Karst
+            # for key, cost in self.KARST.cost.items():
+            #     self.maps['cost'][0] = np.where(self.KARST.data == key, cost, self.maps['cost'][0])
 
-            # If out of mask
-            if self.SETTINGS['mask']['is_active']:
-                if self.DATA['mask'] is not None:
-                    self.maps['cost'][0] = np.where(self.DATA['mask'] == 1, self.SETTINGS['cost_out'], self.maps['cost'][0])
+            # TODO
+            ### Fractures
+            # for key, cost in self.FRACTURES.cost.items():
+                # self.maps['cost'][0] = np.where(self.FRACTURES.data == key, cost, self.maps['cost'][0])
 
-        else: # If it's not the first iteration
+            ### If out of mask
+            if self.MASK is not None:
+                self.maps['cost'][0] = np.where(self.MASK.mask == 1, this.cost['out'], self.maps['cost'][0])
+
+        # If it's not the first iteration
+        else: 
             self.maps['cost'][iteration] = self.maps['cost'][iteration-1] # set cost map to be same as previous iteration
-            self.maps['cost'][iteration] = np.where(self.maps['karst'][iteration-1] > 0, self.SETTINGS['cost_conduits'], self.maps['cost'][iteration]) # where karst conduits are present from previous iteration, set cost to conduit cost, elsewhere, leave unchanged
+            self.maps['cost'][iteration] = np.where(self.maps['karst'][iteration-1] > 0, this.cost['conduits'], self.maps['cost'][iteration]) # where karst conduits are present from previous iteration, set cost to conduit cost, elsewhere, leave unchanged
+        
         return None
 
-# #     # ii. Isotropic case
-# #     def _compute_time_map_isotropic(self, iteration):
-# #         """
-# #         Compute the travel time map (how long it takes to get to the outlet from each cell),
-# #         using the isotropic agd-hfm fast-marching algorithm, and store travel time map.
-# #         Note: the AGD-HFM library uses different indexing, so x and y indices are reversed for inlets and outlets.
-# #         """
-# #         # Set the outlets for this iteration
-# #         seeds_z = self._outlets[self._outlets['iteration']==iteration].z
-# #         seeds_y = self._outlets[self._outlets['iteration']==iteration].y
-# #         seeds_x = self._outlets[self._outlets['iteration']==iteration].x
-# #         seeds   = list(zip(seeds_z, seeds_y, seeds_x))
-# #         self.fastMarching['seeds'] = seeds
+    ### 2.1.2 Isotropic case
+    def _compute_time_map_isotropic(self, iteration):
+        """
+        Compute the travel time map (how long it takes to get to the outlet from each cell),
+        using the isotropic agd-hfm fast-marching algorithm, and store travel time map.
+        Note: the AGD-HFM library uses different indexing, so x and y indices are reversed for inlets and outlets.
+        """
+        # Set the outlets for this iteration
+        seeds_x = self._outlets[self._outlets['iteration']==iteration].x
+        seeds_y = self._outlets[self._outlets['iteration']==iteration].y
+        seeds_z = self._outlets[self._outlets['iteration']==iteration].z
+        seeds   = list(zip(seeds_x, seeds_y, seeds_z))
+        self.fastMarching['seeds'] = seeds
 
-# #         # Select inlets for current iteration
-# #         tips_z = self._inlets[self._inlets['iteration']==iteration].z
-# #         tips_y = self._inlets[self._inlets['iteration']==iteration].y
-# #         tips_x = self._inlets[self._inlets['iteration']==iteration].x
-# #         tips   = list(zip(tips_z, tips_y, tips_x))
-# #         self.fastMarching['tips'] = tips
+        # Select inlets for current iteration
+        tips_x = self._inlets[self._inlets['iteration']==iteration].x
+        tips_y = self._inlets[self._inlets['iteration']==iteration].y
+        tips_z = self._inlets[self._inlets['iteration']==iteration].z
+        tips   = list(zip(tips_x, tips_y, tips_z))
+        # print('tips')
+        # print(tips)
+        self.fastMarching['tips'] = tips
 
-# #         # Set the isotropic travel cost through each cell
-# #         self.fastMarching['cost'] = np.transpose(self.maps['cost'][iteration], (2,1,0))
+        # Set the isotropic travel cost through each cell
+        self.fastMarching['cost'] = self.maps['cost'][iteration]
 
-# #         # Set verbosity of hfm run
-# #         self.fastMarching['verbosity'] = self.SETTINGS['verbosity']
+        # Set verbosity of hfm run
+        self.fastMarching['verbosity'] = self.SKS_SETTINGS['verbosity']['agd']
 
-# #         # Run the fast marching algorithm and store the outputs
-# #         self.fastMarchingOutput = self.fastMarching.Run()
+        # Run the fast marching algorithm and store the outputs
+        self.fastMarchingOutput = self.fastMarching.Run()
 
-# #         # Store travel time maps
-# #         self.maps['time'][iteration] = np.transpose(self.fastMarchingOutput['values'], (2,1,0))
-# #         return None
+        # Store travel time maps
+        # self.maps['time'][iteration] = np.transpose(self.fastMarchingOutput['values'], (2,1,0))
+        self.maps['time'][iteration] = self.fastMarchingOutput['values']
+        return None
 
 
 #     # ii. Anisotropic case
@@ -984,104 +1009,105 @@ class SKS():
 # #         return None
 
 
-# #     # ii.
-# #     def _compute_karst_map(self, iteration):
-# #         """
-# #         Compute the karst map based on the paths from agd-hfm.
-# #         Array of all zeros, with ones in cells containing a karst conduit.
-# #         """
-# #         # Get karst map from previous iteration (except for the very first iteration)
-# #         if iteration > 0:
-# #             self.maps['karst'][iteration] = self.maps['karst'][iteration-1]
+    ### 2.1.3 | 
+    def _compute_karst_map(self, iteration):
+        """
+        Compute the karst map based on the paths from agd-hfm.
+        Array of all zeros, with ones in cells containing a karst conduit.
+        """
+        # Get karst map from previous iteration (except for the very first iteration)
+        if iteration > 0:
+            self.maps['karst'][iteration] = self.maps['karst'][iteration-1]
 
-# #         # Debugging plot:
-# #         # Chloe: this should stay in since it is very useful if there are problems
-# #         # f1, ax1 = plt.subplots(1, 1, figsize=(10, 10))
+        # Debugging plot:
+        # Chloe: this should stay in since it is very useful if there are problems
+        # f1, ax1 = plt.subplots(1, 1, figsize=(10, 10))
 
-# #         ### Loop over conduit paths generated by fast marching:
-# #         for path in self.fastMarchingOutput['geodesics']:   #loop over conduit paths in this iteration (there is one path from each inlet)
-# #             merge = False                                   #reset indicator for whether this conduit has merged with an existing conduit
-# #             for p in range(path.shape[1]):                  #loop over points making up this conduit path
-# #                 point = path[:,p]                           #get coordinates of current point
-# #                 # print('p', point)
-# #                 [[iz, iy, ix], error] = self.fastMarching.IndexFromPoint(point) #convert to coordinates to indices, /!\ returning iy first then ix
-# #                 # ax1.scatter(point[1], point[0], c='g',s=5)  #debugging
+        ### Loop over conduit paths generated by fast marching:
+        for path in self.fastMarchingOutput['geodesics']:   #loop over conduit paths in this iteration (there is one path from each inlet)
+            merge = False                                   #reset indicator for whether this conduit has merged with an existing conduit
+            for p in range(path.shape[1]):                  #loop over points making up this conduit path
+                point = path[:,p]                           #get coordinates of current point
+                # print('p', point)
+                [[ix, iy, iz], error] = self.fastMarching.IndexFromPoint(point) #convert to coordinates to indices, /!\ returning iy first then ix
+                # print(ix, iy, iz)
+                # ax1.scatter(point[1], point[0], c='g',s=5)  #debugging
 
-# #                 ############## WHAT IS HAPPENING HERE?
-# #                 if ix < 0 or iy < 0 or iz < 0:
-# #                     print(ix,iy,iz)
-# #                     continue
+                ############## WHAT IS HAPPENING HERE?
+                if ix < 0 or iy < 0 or iz < 0:
+                    print(ix,iy,iz)
+                    continue
 
-# #                 #Place nodes and links:
-# #                 if np.isnan(self.maps['nodes'][ix, iy, iz]):                                    #if there is no existing conduit node here
-# #                     if ~np.isnan(self.maps['outlets'][ix, iy, iz]):                              #if there is an outlet here (cell value is not nan)
-# #                         outlet = self._outlets.iloc[int(self.maps['outlets'][ix, iy, iz])]         #get the outlet coordinates using the ID in the outlets map
-# #                         self.nodes[self.n]             = [outlet.x, outlet.y, outlet.z, 'outfall']           #add a node at the outlet coordinates (with the node type for SWMM)
-# #                         self.maps['nodes'][ix, iy, iz] = self.n                                   #update node map with node index
-# #                         # ax1.scatter(outlet.x, outlet.y, marker='o', c='b')                   #debugging
-# #                         if p > 0:                                                           #if this is not the first point (i.e. the inlet) in the current path
-# #                             if merge == False:                                               #if this conduit has not merged with an existing conduit
-# #                                 self.edges[self.e] = [self.n-1, self.n]                       #add an edge connecting the previous node to the current node
-# #                                 self.e = self.e + 1                                             #increment edge counter up by one
-# #                                 # ax1.plot((self.nodes[self.n][0], self.nodes[self.n-1][0]), (self.nodes[self.n][1], self.nodes[self.n-1][1]))
-# #                             else:                                                          #if this conduit HAS merged with an existing conduit
-# #                                 [[fromiz, fromiy, fromix], error] = self.fastMarching.IndexFromPoint(path[:, p-1]) #get xyz indices of previous point in current conduit path
-# #                                 n_from = self.maps['nodes'][fromix, fromiy, fromiz]           #get node index of the node already in the cell where the previous point was
-# #                                 self.edges[self.e] = [n_from, self.n]                         #add an edge connecting existing conduit node to current node
-# #                                 self.e = self.e + 1                                             #increment edge counter up by one
-# #                                 # ax1.plot((self.nodes[self.n].x, self.nodes[n_from].x), (self.nodes[self.n].y, self.nodes[n_from].y))
-# #                         self.n = self.n + 1                                                   #increment node counter up by one
-# #                     else:                                                                  #if there is NOT an outlet here
-# #                         if p > 0:                                                           #if this is not the first point in the current path
-# #                             #possible improvement: if the next point on the path is on an existing point, skip the current point.
-# #                             self.nodes[self.n] = [point[2], point[1], point[0], 'junction']            #add a junction node here (with the node type for SWMM)
-# #                             self.maps['nodes'][ix, iy, iz] = self.n                               #update node map with node index
-# #                             #ax1.scatter(point[1],point[0], marker='o', edgecolor='g', facecolor='none')   #debugging
-# #                             if merge == False:                                              #if this conduit has not merged with an existing conduit
-# #                                 self.edges[self.e] = [self.n-1, self.n]                      #add and edge connecting the previous node to the current node
-# #                                 self.e = self.e + 1                                            #increment edge counter up by one
-# #                                 #ax1.plot((self.nodes[self.n][1], self.nodes[self.n-1][1]),(self.nodes[self.n][0], self.nodes[self.n-1][0]), c='gold', marker=None)
-# #                             else:                                                           #if this conduit HAS merged with an existing conduit
-# #                                 [[fromiz, fromiy, fromix], error] = self.fastMarching.IndexFromPoint(path[:, p-1]) #get xy indices of previous point in current conduit path
-# #                                 n_from = self.maps['nodes'][fromix, fromiy, fromiz]                   #get node index of the node already in the cell where the previous point was
-# #                                 self.edges[self.e] = [n_from, self.n]                        #add an edge connecting existing conduit node to current node
-# #                                 self.e = self.e + 1                                            #increment edge counter up by one
-# #                                 merge = False                                                #reset merge indicator to show that current conduit has left                                                              #if this is the first point in current path
-# #                         else:                                                                #if this is the first point in the current path (counter <= 0, therefore it is an inlet)
-# #                             self.nodes[self.n] = [point[2], point[1], point[0], 'inlet']               #add an inlet node here (with the node type for SWMM)
-# #                             self.maps['nodes'][ix, iy, iz] = self.n                               #update node map with node index
-# #                             #ax1.scatter(point[1],point[0], marker='o', edgecolor='sienna', facecolor='none')
-# #                         self.n = self.n + 1                                                   #increment node counter up by one
-# #                 elif ~np.isnan(self.maps['nodes'][ix, iy, iz]):                                 #if there is already a node in this cell (either because there is a conduit here, or because there are two nodes in the same cell)
-# #                     n_existing = self.maps['nodes'][ix, iy, iz]                                  #get index of node already present in current cell
-# #                     if merge == True:                                                       #if this conduit has already merged into an existing conduit
-# #                         pass                                                                 #skip this node (there is already a node here)
-# #                     elif n_existing == self.n-1:                                            #if existing index is only one less than next node to be added index, this is a duplicate node and can be skipped
-# #                         pass                                                                 #skip this node (duplicate)
-# #                     else:                                                                   #if existing node index is >1 less than next node to be added index
-# #                         if p > 0:                                                           #if this is not the first point in the current path
-# #                             self.edges[self.e] = [self.n-1, n_existing]                      #add an edge connecting most recently added node and existing node in cell
-# #                             self.e = self.e + 1                                                #increment edge counter up by one
-# #                             merge = True                                                     #add a flag indicating that this conduit has merged into an existing one
-# #                             #ax1.plot((self.nodes[self.n-1][1], self.nodes[n_existing][1]),(self.nodes[self.n-1][0], self.nodes[n_existing][0]), c='r', marker=None)
-# #                         else:                                                                #if this is the first point in the current path (i.e. the inlet is on an exising conduit)
-# #                             self.nodes[self.n] = [point[2], point[1], point[0], 'inlet']                #add a node here (with the node type for SWMM)- this will cause there to be two nodes in the same cell
-# #                             self.maps['nodes'][ix, iy, iz] = self.n                                #update node map with node index
-# #                             self.n = self.n + 1                                                 #increment node counter by 1
-# #                             #ax1.scatter(point[1],point[0], marker='o', edgecolor='g', facecolor='none')  #debugging
-# #                 self.maps['karst'][iteration][ix, iy, iz] = 1                               #update karst map to put a conduit in current cell
+                #Place nodes and links:
+                if np.isnan(self.maps['nodes'][ix, iy, iz]):                                    #if there is no existing conduit node here
+                    if ~np.isnan(self.maps['outlets'][ix, iy, iz]):                              #if there is an outlet here (cell value is not nan)
+                        outlet = self._outlets.iloc[int(self.maps['outlets'][ix, iy, iz])]         #get the outlet coordinates using the ID in the outlets map
+                        self.nodes[self.n]             = [outlet.x, outlet.y, outlet.z, 'outfall']           #add a node at the outlet coordinates (with the node type for SWMM)
+                        self.maps['nodes'][ix, iy, iz] = self.n                                   #update node map with node index
+                        # ax1.scatter(outlet.x, outlet.y, marker='o', c='b')                   #debugging
+                        if p > 0:                                                           #if this is not the first point (i.e. the inlet) in the current path
+                            if merge == False:                                               #if this conduit has not merged with an existing conduit
+                                self.edges[self.e] = [self.n-1, self.n]                       #add an edge connecting the previous node to the current node
+                                self.e = self.e + 1                                             #increment edge counter up by one
+                                # ax1.plot((self.nodes[self.n][0], self.nodes[self.n-1][0]), (self.nodes[self.n][1], self.nodes[self.n-1][1]))
+                            else:                                                          #if this conduit HAS merged with an existing conduit
+                                [[fromix, fromiy, fromiz], error] = self.fastMarching.IndexFromPoint(path[:, p-1]) #get xyz indices of previous point in current conduit path
+                                n_from = self.maps['nodes'][fromix, fromiy, fromiz]           #get node index of the node already in the cell where the previous point was
+                                self.edges[self.e] = [n_from, self.n]                         #add an edge connecting existing conduit node to current node
+                                self.e = self.e + 1                                             #increment edge counter up by one
+                                # ax1.plot((self.nodes[self.n].x, self.nodes[n_from].x), (self.nodes[self.n].y, self.nodes[n_from].y))
+                        self.n = self.n + 1                                                   #increment node counter up by one
+                    else:                                                                  #if there is NOT an outlet here
+                        if p > 0:                                                           #if this is not the first point in the current path
+                            #possible improvement: if the next point on the path is on an existing point, skip the current point.
+                            self.nodes[self.n] = [point[0], point[1], point[2], 'junction']            #add a junction node here (with the node type for SWMM)
+                            self.maps['nodes'][ix, iy, iz] = self.n                               #update node map with node index
+                            #ax1.scatter(point[1],point[0], marker='o', edgecolor='g', facecolor='none')   #debugging
+                            if merge == False:                                              #if this conduit has not merged with an existing conduit
+                                self.edges[self.e] = [self.n-1, self.n]                      #add and edge connecting the previous node to the current node
+                                self.e = self.e + 1                                            #increment edge counter up by one
+                                #ax1.plot((self.nodes[self.n][1], self.nodes[self.n-1][1]),(self.nodes[self.n][0], self.nodes[self.n-1][0]), c='gold', marker=None)
+                            else:                                                           #if this conduit HAS merged with an existing conduit
+                                [[fromix, fromiy, fromiz], error] = self.fastMarching.IndexFromPoint(path[:, p-1]) #get xy indices of previous point in current conduit path
+                                n_from = self.maps['nodes'][fromix, fromiy, fromiz]                   #get node index of the node already in the cell where the previous point was
+                                self.edges[self.e] = [n_from, self.n]                        #add an edge connecting existing conduit node to current node
+                                self.e = self.e + 1                                            #increment edge counter up by one
+                                merge = False                                                #reset merge indicator to show that current conduit has left                                                              #if this is the first point in current path
+                        else:                                                                #if this is the first point in the current path (counter <= 0, therefore it is an inlet)
+                            self.nodes[self.n] = [point[0], point[1], point[2], 'inlet']               #add an inlet node here (with the node type for SWMM)
+                            self.maps['nodes'][ix, iy, iz] = self.n                               #update node map with node index
+                            #ax1.scatter(point[1],point[0], marker='o', edgecolor='sienna', facecolor='none')
+                        self.n = self.n + 1                                                   #increment node counter up by one
+                elif ~np.isnan(self.maps['nodes'][ix, iy, iz]):                                 #if there is already a node in this cell (either because there is a conduit here, or because there are two nodes in the same cell)
+                    n_existing = self.maps['nodes'][ix, iy, iz]                                  #get index of node already present in current cell
+                    if merge == True:                                                       #if this conduit has already merged into an existing conduit
+                        pass                                                                 #skip this node (there is already a node here)
+                    elif n_existing == self.n-1:                                            #if existing index is only one less than next node to be added index, this is a duplicate node and can be skipped
+                        pass                                                                 #skip this node (duplicate)
+                    else:                                                                   #if existing node index is >1 less than next node to be added index
+                        if p > 0:                                                           #if this is not the first point in the current path
+                            self.edges[self.e] = [self.n-1, n_existing]                      #add an edge connecting most recently added node and existing node in cell
+                            self.e = self.e + 1                                                #increment edge counter up by one
+                            merge = True                                                     #add a flag indicating that this conduit has merged into an existing one
+                            #ax1.plot((self.nodes[self.n-1][1], self.nodes[n_existing][1]),(self.nodes[self.n-1][0], self.nodes[n_existing][0]), c='r', marker=None)
+                        else:                                                                #if this is the first point in the current path (i.e. the inlet is on an exising conduit)
+                            self.nodes[self.n] = [point[0], point[1], point[2], 'inlet']                #add a node here (with the node type for SWMM)- this will cause there to be two nodes in the same cell
+                            self.maps['nodes'][ix, iy, iz] = self.n                                #update node map with node index
+                            self.n = self.n + 1                                                 #increment node counter by 1
+                            #ax1.scatter(point[1],point[0], marker='o', edgecolor='g', facecolor='none')  #debugging
+                self.maps['karst'][iteration][ix, iy, iz] = 1                               #update karst map to put a conduit in current cell
 
 
-# #         ### Debugging plot
-# #         # # Display inlets and outlets
-# #         # ax1.scatter(self._outlets.x, self._outlets.y, c='cyan',   s=100)
-# #         # ax1.scatter(self._inlets.x,  self._inlets.y,  c='orange', s=100)
-# #         # ax1.scatter(self._outlets[self._outlets.iteration==iteration].x, self._outlets[self._outlets.iteration==iteration].y, c='cyan',   s=100)
-# #         # ax1.scatter(self._inlets[self._inlets.iteration==iteration].x,   self._inlets[self._inlets.iteration==iteration].y,   c='orange', s=100)
-# #         # # Display karst network
-# #         # ax1.imshow(np.transpose(self.maps['karst'][iteration], (1,0,2)), origin='lower', extent=self.GRID.extent, cmap='gray_r')
-# #         # ax1.imshow(np.transpose(self.maps['nodes'], (1,0,2)), origin='lower', extent=self.GRID.extent, cmap='gray_r')
-# #         return None
+        ### Debugging plot
+        # # Display inlets and outlets
+        # ax1.scatter(self._outlets.x, self._outlets.y, c='cyan',   s=100)
+        # ax1.scatter(self._inlets.x,  self._inlets.y,  c='orange', s=100)
+        # ax1.scatter(self._outlets[self._outlets.iteration==iteration].x, self._outlets[self._outlets.iteration==iteration].y, c='cyan',   s=100)
+        # ax1.scatter(self._inlets[self._inlets.iteration==iteration].x,   self._inlets[self._inlets.iteration==iteration].y,   c='orange', s=100)
+        # # Display karst network
+        # ax1.imshow(np.transpose(self.maps['karst'][iteration], (1,0,2)), origin='lower', extent=self.GRID.extent, cmap='gray_r')
+        # ax1.imshow(np.transpose(self.maps['nodes'], (1,0,2)), origin='lower', extent=self.GRID.extent, cmap='gray_r')
+        return None
 
 # #     ######################
 # #     ### Karst Analysis ###

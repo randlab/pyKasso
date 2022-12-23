@@ -2,8 +2,6 @@
 Module to model the mask.
 """
 
-from typing import List, Tuple, Optional, NoReturn
-
 import sys
 import copy
 import numpy as np
@@ -14,7 +12,7 @@ class Mask():
     Class modeling the catchment delimitation of the studied domain.
     """
 
-    def __init__(self, data: List[Tuple[float, float]]|str) -> None:
+    def __init__(self, data):
         """
         Creates a mask.
         This class is designed to describe a particular catchment delimitation.
@@ -40,7 +38,7 @@ class Mask():
             raise
          
 
-    def validate_vertices(self, grid) -> None|NoReturn:
+    def validate_vertices(self, grid):
         """
         TODO
         """

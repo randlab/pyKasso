@@ -12,7 +12,7 @@ from .fracturation import generate_fractures, voxelize_fractures
 # - Documentation
 # - Gestion du format .grd (http://peterbird.name/guide/grd_format.htm)
 # - Stats with mask
-# - Retrieve fmm-costs dict
+# - Retrieve fmm-costs dict - Test cost dict validity
 
 class GeologicFeature():
     """
@@ -50,6 +50,10 @@ class GeologicFeature():
                 self.data = self._set_data_from_image(grid, data, axis)
             else:
                 self.data = self._set_data_ones(grid)
+
+        # Gets the fmm costs
+        if 'cost' in kwargs:
+            self.cost = kwargs['cost']
 
 
 
@@ -141,7 +145,7 @@ class GeologicFeature():
         TODO
         """
         index = np.sum(topography, axis=2) - 1
-        index = index.astype(np.int)
+        index = index.astype(np.int_)
         i, j = np.indices((self.data.shape[0], self.data.shape[1]))
         self.surface = self.data[i, j, index]
         return None

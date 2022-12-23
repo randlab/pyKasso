@@ -13,7 +13,7 @@ grid:
   z0 : 430
   nx : 300
   ny : 300
-  nz : 100
+  nz : 10
   dx : 20
   dy : 20
   dz : 20
@@ -29,17 +29,22 @@ mask:
 ### Geology ###
 ###############
 
-topography:
-  data : 'test/inputs/topography.gslib'
+# topography:
+#   data : 'test/inputs/topography.gslib'
 
 geology:
   data : 'test/inputs/betteraz_2D_z430.gslib'
   cost : 
     1 : 0.5
+    2 : 0.7
 
 faults:
   data : 'test/inputs/faults.png'
   axis : 'z'
+  cost : 
+    1 : 0.3
+    2 : 0.4
+
 
 # karst:
 #   data : ''
@@ -53,10 +58,14 @@ faults:
 
 fmm: 
   algorithm : 'Isotropic3'
+  cost : ''
 
 #############
 ### DEBUG ###
 #############
+
+verbosity:
+  agd : 1
 
 debug:
   verbosity: 0

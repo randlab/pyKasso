@@ -1,7 +1,6 @@
 INFO:sks:*****************************
 INFO:sks:*** pyKasso simulation 1 ***
 INFO:sks:*****************************
-WARNING:validations - sks:The 'topography' attribute was missing. Topography will be set from geological data.
 WARNING:validations - sks:The 'karst' attribute was missing.
 WARNING:validations - sks:The 'field' attribute was missing.
 WARNING:validations - sks:The 'geology' datafile dimensions match with grid surface dimensions. Data will be replicated on z-axis.
@@ -10,10 +9,4 @@ INFO:validations - simulations:The sks simulations file has been validated.
 INFO:sks:_construct_feature_grid
 INFO:sks:_construct_feature_mask
 INFO:sks:_construct_feature_topography
-INFO:sks:_construct_feature_geology
-INFO:sks:_construct_feature_faults
-INFO:sks:_set_rng
-INFO:sks:_construct_feature_points
-INFO:sks:_construct_feature_points
-INFO:sks:_construct_feature_tracers
-INFO:sks:_construct_feature_fractures
+ERROR:sks:_construct_feature_geology

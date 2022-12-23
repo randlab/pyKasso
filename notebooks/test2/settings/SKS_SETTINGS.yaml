@@ -13,7 +13,7 @@ grid:
   z0 : 430
   nx : 300
   ny : 300
-  nz : 10
+  nz : 100
   dx : 20
   dy : 20
   dz : 20
@@ -29,8 +29,8 @@ mask:
 ### Geology ###
 ###############
 
-# topography:
-#   data : 'test/inputs/topography.gslib'
+topography:
+  data : 'test/inputs/topography.gslib'
 
 geology:
   data : 'test/inputs/betteraz_2D_z430.gslib'
@@ -65,7 +65,7 @@ fmm:
 #############
 
 verbosity:
-  agd : 1
+  agd : 0
 
 debug:
   verbosity: 0
