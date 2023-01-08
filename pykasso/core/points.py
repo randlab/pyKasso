@@ -80,19 +80,30 @@ def generate_random_points(number, rng, grid, mask, geology, constraints=None):
     return list(zip(rand_x, rand_y))
 
 
-def inspect_points_validity(points, grid, mask):
+def is_point_valid(point, grid, mask):
     """
     TODO
     Checks if the points are well located inside the grid, or well inside the mask if one is provided.
     Prints out only when an issue is encountered.
     """
+    if len(point) == 2:
 
-    if mask is None:
-        tests = grid.path.contains_points(points)
-    
-    else:
-        tests = grid.path.contains_points(points) & mask.polygon.contains_points(points)
+        x, y = point
 
-    validated_points = [point for (point, test) in zip(points, tests) if test == True]
+        if mask is None:
+            test = grid.path.contains_point(x, y)
+        
+        else:
+            test = grid.path.contains_point(x, y) & mask.polygon.contains_point(x, y)
 
-    return validated_points
+    if len(point) == 3:
+
+        x, y, z = point
+
+        if mask is None:
+            test = grid.is_inbox(x, y, z)
+
+        else:
+            test = grid.is_inbox(*point) & mask.polygon.contains_point(x, y)
+
+    return test

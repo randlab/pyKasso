@@ -1,19 +1,27 @@
-INFO:sks:*****************************
-INFO:sks:*** pyKasso simulation 1 ***
-INFO:sks:*****************************
-WARNING:validations - sks:The 'topography' attribute was missing. Topography will be set from geological data.
-WARNING:validations - sks:The 'karst' attribute was missing.
-WARNING:validations - sks:The 'field' attribute was missing.
-WARNING:validations - sks:The 'geology' datafile dimensions match with grid surface dimensions. Data will be replicated on z-axis.
-INFO:validations - sks:The sks settings file has been validated.
-INFO:validations - simulations:The sks simulations file has been validated.
-INFO:sks:_construct_feature_grid
-INFO:sks:_construct_feature_mask
-INFO:sks:_construct_feature_topography
-INFO:sks:_construct_feature_geology
-INFO:sks:_construct_feature_faults
-INFO:sks:_set_rng
-INFO:sks:_construct_feature_points
-INFO:sks:_construct_feature_points
-INFO:sks:_construct_feature_tracers
-INFO:sks:_construct_feature_fractures
+ sks                   | INFO     | ****************************
+ sks                   | INFO     | *** pyKasso simulation 1 ***
+ sks                   | INFO     | ****************************
+ sks                   | INFO     | 2023-01-08 12:12:53.305516
+ sks                   | INFO     | ---
+ validation.settings   | WARNING  | The 'topography' attribute is missing (optional).
+ validation.settings   | WARNING  | The 'geology' attribute is missing (optional).
+ validation.settings   | WARNING  | The 'faults' attribute is missing (optional).
+ validation.settings   | WARNING  | The 'tracers' attribute is missing (optional).
+ validation.settings   | WARNING  | The 'fractures' attribute is missing (optional).
+ validation.grid       | INFO     | The grid settings has been validated
+ sks                   | INFO     | _construct_feature_grid
+ validation.mask       | WARNING  | The 'data' attribute is missing (optional).
+ validation.mask       | INFO     | The mask settings has been validated
+ sks                   | INFO     | _construct_feature_mask
+ validation.topography | INFO     | The topography settings has been validated
+ sks                   | INFO     | _construct_feature_topography
+ validation.geology    | INFO     | The geology settings has been validated
+ sks                   | INFO     | _construct_feature_geology
+ validation.faults     | INFO     | The faults settings has been validated
+ sks                   | INFO     | _construct_feature_faults
+ sks                   | INFO     | _set_rng
+ validation.outlets    | INFO     | The outlets settings has been validated
+ sks                   | WARNING  | 1/5 outlets have been discarded because out of domain.
+ sks                   | INFO     | _construct_feature_points
+ validation.inlets     | INFO     | The inlets settings has been validated
+ sks                   | INFO     | _construct_feature_points

@@ -11,16 +11,16 @@ seed : 0
 
 ### Outlets
 outlets:
-  number     : 3
-  data       : ''
-  shuffle    : True
+  number     : 15
+  data       : 'test/inputs/betteraz_polygon.txt'
+  shuffle    : False
   importance : [1,1,1]
 
 ### Inlets
 inlets:
-  number     : 9
-  data       : ''
-  shuffle    : True
+  number     : 15
+  data       : 'test/inputs/betteraz_polygon.txt'
+  shuffle    : False
   per_outlet : [1,1,1]
   importance : [1,1,1]
 

@@ -13,12 +13,13 @@ from .fracturation import generate_fractures, voxelize_fractures
 # - Gestion du format .grd (http://peterbird.name/guide/grd_format.htm)
 # - Stats with mask
 # - Retrieve fmm-costs dict - Test cost dict validity
+# - validations - vérifier la dimension des données en entrées
 
 class GeologicFeature():
     """
-    Class modeling a single geologic data of the studied domain.
+    Class modeling a three dimensional geologic feature of the studied domain.
     """
-    def __init__(self, label, data, grid, **kwargs):
+    def __init__(self, label, dim, data, grid, **kwargs):
         """
         Creates a geologic feature.
         This class is designed to describe a particular geologic feature.
@@ -32,6 +33,7 @@ class GeologicFeature():
         >>>
         """
         self.label = label
+        self.dim   = dim
 
         if 'axis' in kwargs:
             axis = kwargs['axis']
@@ -56,14 +58,16 @@ class GeologicFeature():
             self.cost = kwargs['cost']
 
 
-
     def _set_data_ones(self, grid):
         """
         Sets data to a matrice full of ones.
         i.e. : np.ones((nx,ny,nz))
         """
-        return np.ones((grid.nx, grid.ny, grid.nz), dtype=np.int8)
-
+        if self.dim == 2:
+            return np.ones((grid.nx, grid.ny), dtype=np.int8)
+        elif self.dim == 3:
+            return np.ones((grid.nx, grid.ny, grid.nz), dtype=np.int8)
+        
 
     def _set_data_from_gslib(self, grid, data):
         """
@@ -80,10 +84,9 @@ class GeologicFeature():
         else:
             data = np.reshape(data, (grid.nx, grid.ny), order='F')
             
-            if self.label == 'Topography':
-                pass
-            else:
+            if self.dim == 3:
                 data = np.repeat(data[:, :, np.newaxis], grid.nz, axis=2)
+
         return data
 
 
@@ -112,12 +115,14 @@ class GeologicFeature():
         # Read image
         pil_image = PIL.Image.open(data).convert('L')
 
-        if (axis.lower() == 'x'):
-            pil_image = pil_image.resize((grid.ny, grid.nz))
-        elif (axis.lower() == 'y'):
-            pil_image = pil_image.resize((grid.nx, grid.nz))
-        elif (axis.lower() == 'z'):
-            pil_image = pil_image.resize((grid.nx, grid.ny))
+        if self.dim == 3:
+
+            if (axis.lower() == 'x'):
+                pil_image = pil_image.resize((grid.ny, grid.nz))
+            elif (axis.lower() == 'y'):
+                pil_image = pil_image.resize((grid.nx, grid.nz))
+            elif (axis.lower() == 'z'):
+                pil_image = pil_image.resize((grid.nx, grid.ny))
         
         # npy_image = (npy_image[:,:] == 0)*1
         npy_image = np.asarray(pil_image).T + 1000
@@ -125,12 +130,14 @@ class GeologicFeature():
         for i, color in enumerate(np.flip(n_colors)):
             npy_image = np.where(npy_image == color, i, npy_image)
             
-        if (axis.lower() == 'x'):
-            npy_image = np.repeat(npy_image[np.newaxis, :, :], grid.nx, axis=0)
-        elif (axis.lower() == 'y'):
-            npy_image = np.repeat(npy_image[:, np.newaxis, :], grid.ny, axis=1)
-        elif (axis.lower() == 'z'):
-            npy_image = np.repeat(npy_image[:, :, np.newaxis], grid.nz, axis=2)
+        if self.dim == 3:
+
+            if (axis.lower() == 'x'):
+                npy_image = np.repeat(npy_image[np.newaxis, :, :], grid.nx, axis=0)
+            elif (axis.lower() == 'y'):
+                npy_image = np.repeat(npy_image[:, np.newaxis, :], grid.ny, axis=1)
+            elif (axis.lower() == 'z'):
+                npy_image = np.repeat(npy_image[:, :, np.newaxis], grid.nz, axis=2)
 
         # TODO - sens des images, à checker
         # image = np.transpose(image, (1,0)) #imread return image with mxn format so we also need to transpose it
@@ -156,61 +163,29 @@ class GeologicFeature():
         TODO
         """
         values, counts = np.unique(self.data, return_counts=True)
-        stats = {
-            # 'id'     : values,
-            'counts' : counts,
-            'freq'   : counts / grid.nodes,
-            'volume' : counts * grid.node_volume,
-        }
+        if self.dim == 2:
+            stats = {
+                # 'id'     : values,
+                'counts'  : counts,
+                'freq'    : counts / (grid.nx * grid.ny),
+                'surface' : counts * (grid.dx * grid.dy),
+            }
+        elif self.dim == 3:
+            stats = {
+                # 'id'     : values,
+                'counts' : counts,
+                'freq'   : counts / grid.nodes,
+                'volume' : counts * grid.node_volume,
+            }
         self.stats = pd.DataFrame(data=stats, index=values)
         # TODO - stats with mask
         return None
 
 
+
 ###########################################################################################################
-### SUB CLASSES ###
-###################
-
-class Topography(GeologicFeature):
-    """
-    TODO
-    """
-    def __init__(self, data, grid, **kwargs):
-        """
-        TODO
-        """
-        label = 'Topography'
-
-        super().__init__(label, data, grid, **kwargs)
-        
-        if not np.all((self.data == 0) | (self.data == 1)):
-            self.surface_to_volume(grid)
-
-    
-    def surface_to_volume(self, grid):
-        """
-        TODO
-        """
-        k = grid.get_k(self.data)
-
-        topography = np.zeros((grid.nx, grid.ny, grid.nz))
-        for z in range(grid.nz):
-            topography[:, :, z] = z
-            topography[:, :, z] = np.where(topography[:, :, z] >= k, 1, 0)
-
-        self.data = topography
-
-        return None
-
-
-    def _compute_topographic_surface(self):
-        """
-        TODO
-        """
-        self.surface_indices = np.sum(self.data, axis=2) - 1
-        return None
-        
-
+### GeologicFeature3D sub classes ###
+#####################################
 
 
 class Geology(GeologicFeature):
@@ -223,7 +198,8 @@ class Geology(GeologicFeature):
         TODO
         """
         label = 'Geology'
-        super().__init__(label, data, grid, **kwargs)
+        dim = 3
+        super().__init__(label, dim, data, grid, **kwargs)
 
 
 
@@ -237,7 +213,8 @@ class Karst(GeologicFeature):
         TODO
         """
         label = 'Karst'
-        super().__init__(label, data, grid, **kwargs)
+        dim = 3
+        super().__init__(label, dim, data, grid, **kwargs)
 
         # TODO
         # Validation de l'array
@@ -253,7 +230,8 @@ class Field(GeologicFeature):
         TODO
         """
         label = 'Field'
-        super().__init__(label, data, grid, **kwargs)
+        dim = 3
+        super().__init__(label, dim, data, grid, **kwargs)
 
 
 class Faults(GeologicFeature):
@@ -266,7 +244,8 @@ class Faults(GeologicFeature):
         TODO
         """
         label = 'Faults'
-        super().__init__(label, data, grid, **kwargs)
+        dim = 3
+        super().__init__(label, dim, data, grid, **kwargs)
 
         # TODO
         # Validation de l'array
@@ -282,6 +261,7 @@ class Fractures(GeologicFeature):
         TODO
         """
         label = 'Fractures'
+        dim = 3
 
         if 'settings' in kwargs:
             fractures_families_settings = kwargs['settings'].values()
@@ -306,4 +286,42 @@ class Fractures(GeologicFeature):
 
             data = total
 
-        super().__init__(label, data, grid, **kwargs)
+        super().__init__(label, dim, data, grid, **kwargs)
+
+
+class Topography(GeologicFeature):
+    """
+    TODO
+    """
+    def __init__(self, data, grid, **kwargs):
+        """
+        TODO
+        """
+        label = 'Topography'
+        dim = 2
+        super().__init__(label, dim, data, grid, **kwargs)
+        
+        if not np.all((self.data == 0) | (self.data == 1)):
+            self.surface_to_volume(grid)
+
+    # TODO
+    def surface_to_volume(self, grid):
+        """
+        TODO
+        """
+        k = grid.get_k(self.data)
+
+        topography = np.zeros((grid.nx, grid.ny, grid.nz))
+        for z in range(grid.nz):
+            topography[:, :, z] = z
+            topography[:, :, z] = np.where(topography[:, :, z] >= k, 1, 0)
+
+        self.data = topography
+        return None
+
+    def _compute_topographic_surface(self):
+        """
+        TODO
+        """
+        self.surface_indices = np.sum(self.data, axis=2) - 1
+        return None

@@ -40,6 +40,8 @@ def show(environment, feature='grid', engine='matplotlib', settings={}):
         _show_feature(environment, feature, _show_data, settings)
     elif feature == 'array':
         pass
+    elif feature == 'simulation':
+        pass
     else:
         print('ERROR : selected feature has been not recognized. Authorized features : {}'.format(authorized_features))
 

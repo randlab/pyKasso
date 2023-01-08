@@ -3,474 +3,528 @@ Input validations functions
 """
 
 import os
+import sys
 import logging
 import numpy as np
 
 # import _exceptions
 # import core_settings
 
-ERRORS   = []
-WARNINGS = []
+############
+### TODO ###
+############
+# VERBOSITY MGMT
+# Count the warnings ?
+# message different quand la feature est vide
+# validation en fonction de 'axis'
+# msg = "The '{}' attribute was missing. Topography will be set from geological data.".format(attribute)
+# geologic_feature : Karst
+# geologic_feature : Field
+# validate_tracers_settings()
+# validate_fractures_settings()
+# validate_seed ?
 
-def validate_core_settings(core_settings:dict):
+
+this = sys.modules[__name__]
+this.logger = logging.getLogger("validation.settings")
+
+this.ERRORS   = []
+this.WARNINGS = 0 
+
+this.MANDATORY_ATTRIBUTES_SKS = {
+    'grid' : ['x0', 'y0', 'z0', 'nx', 'ny', 'nz', 'dx', 'dy', 'dz'],
+    'fmm'  : [],
+}
+this.OPTIONAL_ATTRIBUTES_SKS  = {
+    'mask' : {
+        'data' : ''
+    },
+    'topography' : {
+        'data' : ''
+    },
+    'geology' : {
+        'data' : '',
+        'axis' : 'z',
+        'cost' : '',
+    },
+    'faults' : {
+        'data' : '',
+        'axis' : 'z',
+        'cost' : '',
+    },
+}
+this.MANDATORY_ATTRIBUTES_SIM = {
+    'seed'    : [],
+    'outlets' : {
+        'number'     : 1,
+        'data'       : '',
+        'shuffle'    : False,
+        'importance' : '',
+    },
+    'inlets'  : {
+        'number'     : 1,
+        'data'       : '',
+        'shuffle'    : False,
+        'importance' : '',
+        'per_outlet' : '',
+    },
+}
+this.OPTIONAL_ATTRIBUTES_SIM  = {
+    'tracers'   : {},
+    'fractures' : {},
+}
+
+def validate_settings_structure(settings, kind):
     """
-    DOCSTRING
-
-    Inputs
-    ------
-
-    Returns
-    -------
+    TODO
     """
-    global ERRORS
-
-    logger = logging.getLogger("validations - core")
-    msg = "The core settings file has been validated."
-    logger.info(msg)
-    return core_settings
-
-
-def validate_sks_settings(sks_settings:dict):
-    """
-    DOCSTRING
-
-    Inputs
-    ------
-
-    Returns
-    -------
-    """
-    global ERRORS
-    logger = logging.getLogger("validations - sks")
-
-    ############
-    ### GRID ###
-    ############
-    attribute = 'grid'
-
-    # Checks presence of the 'grid' attribute
-    if attribute not in sks_settings:
-        msg = "The '{}' attribute is missing.".format(attribute)
-        logger.error(msg)
-        ERRORS.append(KeyError(msg))
-    else:
-        # Checks presence of the subattributes of the 'grid' attribute
-        subattributes = ['x0', 'y0', 'z0', 'nx', 'ny', 'nz', 'dx', 'dy', 'dz']
-        for subattribute in subattributes:
-            if subattribute not in sks_settings[attribute]:
-                msg = "The '{}' subattribute from the '{}' attribute is missing.".format(subattribute, attribute)
-                logger.error(msg)
-                ERRORS.append(KeyError(msg))
-
-    if len(ERRORS) == 0:
-
-        # Checks global size of the model
-        grid_surface = sks_settings[attribute]['nx'] * sks_settings[attribute]['ny']
-        grid_volume  = grid_surface * sks_settings[attribute]['nz']
-        # if grid_volume > core_settings.grid_size_limit:
-        #     pass
-        #     TODO
+    if kind == 'SKS':
+        this.mandatory_attributes = this.MANDATORY_ATTRIBUTES_SKS
+        this.optional_attributes  = this.OPTIONAL_ATTRIBUTES_SKS
+    if kind == 'SIM':
+        this.mandatory_attributes = this.MANDATORY_ATTRIBUTES_SIM
+        this.optional_attributes  = this.OPTIONAL_ATTRIBUTES_SIM
     
-        # Checks if subattributes are of type int or float
-        subattributes = ['x0', 'y0', 'z0', 'dx', 'dy', 'dz']
-        for subattribute in subattributes:
-            if not isinstance(sks_settings[attribute][subattribute], (int, float)):
-                msg = "The '{}' subattribute from the '{}' attribute must be of type int or float.".format(subattribute, attribute)
-                logger.error(msg)
-                ERRORS.append(TypeError(msg))
+    for attribute in this.mandatory_attributes:
+        settings = validate_attribute_presence(settings, attribute)
 
-        # Checks if some subattributes are type int
-        subattributes = ['nx', 'ny', 'nz']
-        for subattribute in subattributes:
-            if not isinstance(sks_settings[attribute][subattribute], int):
-                msg = "The '{}' subattribute from the '{}' attribute must be of type int.".format(subattribute, attribute)
-                logger.error(msg)
-                ERRORS.append(TypeError(msg))
+    for attribute in this.optional_attributes:
+        settings = validate_attribute_presence(settings, attribute, 'optional')
 
-        # Checks if the values of some attributes are well upper 1
-        subattributes = ['nx', 'ny', 'nz']
-        for subattribute in subattributes:
-            if sks_settings[attribute][subattribute] < 1:
-                msg = "The '{}' subattribute from the '{}' attribute cannot be lower as 1.".format(subattribute, attribute)
-                logger.error(msg)
-                ERRORS.append(ValueError(msg))
+    return settings
+
+#################
+### FUNCTIONS ###
+#################
+
+def validate_attribute_presence(settings, attribute, kind='mandatory'):
+    """
+    TODO
+    """
+    if attribute not in settings:
+        msg = "The '{}' attribute is missing ({}).".format(attribute, kind)
+        if kind == 'mandatory':
+            this.logger.critical(msg)
+            this.ERRORS.append(KeyError(msg))
+        if kind == 'optional':
+            this.logger.warning(msg)
+            settings[attribute] = this.optional_attributes[attribute]
+    
+    if (attribute in settings) and (settings[attribute] is None):
+        msg = "The value of the '{}' attribute is not defined.".format(attribute, kind)
+        if kind == 'mandatory':
+            this.logger.critical(msg)
+            this.ERRORS.append(KeyError(msg))
+        if kind == 'optional':
+            this.logger.warning(msg)
+            settings[attribute] = this.optional_attributes[attribute]
+
+    return settings
 
 
-    ############
-    ### MASK ###
-    ############
-    attribute = 'mask'
+def is_attribute_type_valid(attribute, value, types):
+    """
+    TODO
+    """
+    if not isinstance(value, types):
+        msg = "The value of the '{}' attribute must be of type : {}".format(attribute, types)
+        this.logger.critical(msg)
+        this.ERRORS.append(TypeError(msg))
+        return False
+    else:
+        return True
+
+
+def is_path_valid(path, attribute):
+    """
+    TODO
+    """
+    if not os.path.exists(path):
+        msg = "The path from '{}' attribute is not valid. '{}' does not exist.".format(attribute, path)
+        this.logger.error(msg)
+        this.ERRORS.append(FileNotFoundError(msg))
+        return False
+    else:
+        return True
+
+def is_extension_valid(path, valid_extensions):
+    """
+    TODO
+    """
+    extension = path.split('.')[-1]
+    if extension not in valid_extensions:
+        msg = "The extension '.{}' from '{}' location is not valid. Valid extensions : {}.".format(extension, path, valid_extensions)
+        this.logger.error(msg)
+        this.ERRORS.append(ValueError(msg))
+        return False
+    else:
+        return True
+
+
+def read_file(path, attribute):
+    """
+    TODO
+    """
+    extension = path.split('.')[-1]
+    try:
+        ### GSLIB
+        if extension == 'gslib':
+            data = np.genfromtxt(path, skip_header=3, dtype=np.int8)
+
+        ### Numpy_pickle
+        elif extension == 'npy':
+            data = np.load(path)
+
+        # Images
+        elif extension in ['jpg', 'png']:
+            return None
+
+        ### Others
+        else:
+            data = np.genfromtxt(path)
+
+    except Exception as err:
+        msg = "Impossible to read the file designated by the '{}' attribute. Location : {}".format(attribute, path)
+        this.logger.error(msg)
+        this.ERRORS.append(err)
+        return None
+
+    else:
+        return data
+
+
+def is_attribute_value_valid(attribute, value, logical_test, compared_to):
+    """
+    TODO
+    """
+    logical_test_text = {
+        '>'  : 'greater than',
+        '>=' : 'greater than or equal to',
+        '<'  : 'less than',
+        '<=' : 'less than or equal to',
+        '==' : 'equal to',
+        '!=' : 'not equal to'
+    }
+    test = str(value) + logical_test + str(compared_to)
+    if not eval(test):
+        msg = "The value of the '{}' attribute must be {} {}.".format(attribute, logical_test_text[logical_test], compared_to)
+        this.logger.critical(msg)
+        this.ERRORS.append(ValueError(msg))
+        return False
+    else:
+        return True
+
+
+def is_state_valid(feature, log=False):
+    """
+    TODO
+    """
+    if len(this.ERRORS) == 0:
+        if log:
+            this.logger.info('The {} settings has been validated'.format(feature))
+        return True
+    else:
+        this.logger.error("{} error(s) detected. The {} settings has not been validated".format(len(this.ERRORS), feature))
+        raise this.ERRORS[0]
+
+
+################################################################################################
+### CORE ###
+############
+
+###############################################################################################
+### SKS ###
+###########
+
+############
+### GRID ###
+############
+def validate_grid_settings(settings):
+    """
+    TODO
+    """
+    this.logger = logging.getLogger("validation.grid")
+
+    # Checks attributes presence
+    attributes = this.MANDATORY_ATTRIBUTES_SKS['grid']
+    for attribute in attributes:
+        settings = validate_attribute_presence(settings, attribute)
+
+    # Checks validity of attributes
+    if is_state_valid('grid'):
+
+        # TODO
+        # Checks global size of the model
+        # grid_surface = sks_settings[attribute]['nx'] * sks_settings[attribute]['ny']
+        # grid_volume  = grid_surface * sks_settings[attribute]['nz']
+        # if grid_volume > core_settings.grid_size_limit:
+
+        # Checks if the values of attributes are of type int or float
+        attributes = ['x0', 'y0', 'z0', 'dx', 'dy', 'dz']
+        for attribute in attributes:
+            is_attribute_type_valid(attribute, settings[attribute], (int, float))
+
+        # Checks if the values of attributes are of type int
+        attributes = ['nx', 'ny', 'nz']
+        for attribute in attributes:
+            is_attribute_type_valid(attribute, settings[attribute], (int))
+
+        # Checks if the values of attributes are well upper 1
+        attributes = ['nx', 'ny', 'nz']
+        for attribute in attributes:
+            is_attribute_value_valid(attribute, settings[attribute], '>', 0)
+
+    # Prints state of the validation process
+    is_state_valid('grid', True)
+
+    return settings
+
+
+############
+### MASK ###
+############
+def validate_mask_settings(settings):
+    """
+    TODO
+    """
+    this.logger = logging.getLogger("validation.mask")
     data = ''
 
-    # Checks presence of the 'mask' attribute
-    if attribute not in sks_settings:
-        msg = "The '{}' attribute was missing.".format(attribute)
-        logger.warning(msg)
-        sks_settings[attribute] = {
-            'data' : ''
-        }
+    # Checks attributes presence
+    this.optional_attributes = this.OPTIONAL_ATTRIBUTES_SKS['mask']
+    for attribute in this.optional_attributes:
+        settings = validate_attribute_presence(settings, attribute, 'optional')
 
-    # Checks presence of the subattributes of the 'mask' attribute
-    subattributes = ['data']
-    for subattribute in subattributes:
-        if subattribute not in sks_settings[attribute]:
-            msg = "The '{}' subattribute from the '{}' attribute was missing.".format(subattribute, attribute)
-            logger.warning(msg)
-            if subattribute == 'data':
-                sks_settings[attribute][subattribute] = ''
+    # Checks validity of attributes
+    if is_state_valid('mask'):
 
-    # If 'data' is not empty
-    if sks_settings[attribute]['data'] != '':
+        # If 'data' is not empty
+        if settings['data'] != '':
 
-        # If data type is valid:
-        if isinstance(sks_settings[attribute]['data'], (str, list)):
+            # Checks if type is str or list
+            if is_attribute_type_valid('data', settings['data'], (str, list)):
+
+                # Type is str
+                if isinstance(settings['data'], (str)):
+                    path = settings['data']
+
+                    # Checks if the datafile exist
+                    if is_path_valid(path, 'data'):
+
+                        # Tries to open file
+                        data = read_file(path, 'data')
             
-            # If data are of type str:
-            if isinstance(sks_settings[attribute]['data'], str):
-                location = sks_settings[attribute]['data']
-                
-                # Checks if the data datafile exist
-                if not os.path.exists(location):
-                    msg = "The 'data' subattribute from the '{}' attribute is not valid. '{}' does not exist. The subattribute has been cleaned.".format(attribute, location)
-                    logger.warning(msg)
-                    sks_settings[attribute]['data'] = ''
-                else:
-                    try:
-                        data = np.genfromtxt(location)
-                    except Exception as err:
-                        msg = "Impossible to read the file located by the 'data' subattribute from the '{}' attribute.".format(attribute)
-                        logger.error(msg)
-                        ERRORS.append(err)
+                # Type is list
+                if isinstance(settings['data'], (list)):
+                    data = settings['data']
 
-            # If data are of type list:
-            if isinstance(sks_settings[attribute]['data'], list):
-                data = sks_settings[attribute]['data']
+    # Checks validity of data
+    if is_state_valid('mask') and (not isinstance(data, (str))):
 
-        # Data type is not recognized
-        else:
-            msg = "The 'data' subattribute type from the '{}' attribute is not valid. Type must be str or list. The subattribute has been cleaned.".format(attribute)
-            logger.warning(msg)
-            sks_settings[attribute]['data'] = ''
-    
-
-    # Checks if data is valid
-    if data != '':
-
-        # Checks if there is at least 3 data declared
+        # Checks if there is at least 3 points declared
         if len(data) < 3:
-            msg = "Not enough vertices to create a mask delimitation (3 minimum). The 'data' subattribute has been cleaned."
-            logger.warning(msg)
-            sks_settings[attribute]['data'] = ''
+            msg = "Not enough vertices to create a mask delimitation (3 minimum)."
+            this.logger.error(msg)
+            this.ERRORS.append(ValueError(msg))
 
         # Checks if each vertex contains 2 coordinates
         for vertex in data:
             if len(vertex) != 2:
-                msg = "The 'data' subattribute from the '{}' attribute contains at least one invalid vertex. Format must be like : [[x0, y0], ..., [xn, yn]]. The subattribute has been cleaned.".format(attribute)
-                logger.warning(msg)
-                sks_settings[attribute]['data'] = ''
+                msg = "The values of the 'data' attribute contains at least one invalid vertex. Format must be like : [[x0, y0], ..., [xn, yn]]."
+                this.logger.error(msg)
+                this.ERRORS.append(ValueError(msg))
                 break
             
         # Checks type of coordinates
         for vertex in data:
             for coordinate in vertex:
                 if np.isnan(coordinate) or (not isinstance(coordinate, (int, float))):
-                    msg = "The 'data' subattribute from the '{}' attribute contains at least one invalid vertex. Coordinates must be of type int or float. The subattribute has been cleaned.".format(attribute)
-                    logger.warning(msg)
-                    sks_settings[attribute]['data'] = ''
+                    msg = "The values of the 'data' attribute contains at least one invalid vertex. Coordinates must be of type int or float."
+                    this.logger.error(msg)
+                    this.ERRORS.append(TypeError(msg))
                     break
 
-    ##################
-    ### TOPOGRAPHY ###
-    ##################
-    attribute = 'topography'
-    subattributes = ['data']
+    # Controls validity of attributes
+    is_state_valid('mask', True)
 
-    # Checks presence of the 'topography' attribute
-    if attribute not in sks_settings:
-        msg = "The '{}' attribute was missing. Topography will be set from geological data.".format(attribute)
-        logger.warning(msg)
-        sks_settings[attribute] = {
-            'data' : ''
-        }
+    return settings
 
-    # Checks presence of the subattributes of the 'topography' attribute
-    for subattribute in subattributes:
-        if subattribute not in sks_settings[attribute]:
-            msg = "The '{}' subattribute from the '{}' attribute was missing.".format(subattribute, attribute)
-            logger.warning(msg)
-            if subattribute == 'data':
-                sks_settings[attribute][subattribute] = ''
+
+#########################
+### GEOLOGIC FEATURES ###
+#########################
+# TOPOGRAPHY
+# GEOLOGY
+# FAULTS
+# TODO - FRACTURES ?
+# TODO - KARST
+# TODO - FIELD
+
+def validate_geologic_feature_settings(geologic_feature, settings, grid):
+    """
+    TODO
+    """
+    this.logger = logging.getLogger("validation.{}".format(geologic_feature))
+
+    # Checks attributes presence
+    this.optional_attributes = this.OPTIONAL_ATTRIBUTES_SKS[geologic_feature]
+    for attribute in this.optional_attributes:
+        settings = validate_attribute_presence(settings, attribute, 'optional')
 
     # If 'data' is not empty
-    if sks_settings[attribute]['data'] != '':
+    if settings['data'] != '':
 
-        # If data type is valid:
-        if isinstance(sks_settings[attribute]['data'], str):
-            location = sks_settings[attribute]['data']
-                
-            # Checks if the data datafile exist
-            if not os.path.exists(location):
-                msg = "The 'data' subattribute from the '{}' attribute is not valid. '{}' does not exist. The subattribute has been cleaned.".format(attribute, location)
-                logger.warning(msg)
-                sks_settings[attribute]['data'] = ''
-            else:
-                try:
-                    data = np.genfromtxt(location, skip_header=3)
-                except Exception as err:
-                    msg = "Impossible to read the file located by the 'data' subattribute from the '{}' attribute.".format(attribute)
-                    logger.error(msg)
-                    ERRORS.append(err)
+        # Checks if type is str or numpy.ndarray
+        if is_attribute_type_valid('data', settings['data'], (str, np.ndarray)):
 
-            
+            # Type is str
+            if isinstance(settings['data'], (str)):
+                path = settings['data']
 
-        # Data type is not recognized
-        else:
-            msg = "The 'data' subattribute type from the '{}' attribute is not valid. Type must be str. The subattribute has been cleaned.".format(attribute)
-            logger.warning(msg)
-            sks_settings[attribute]['data'] = ''
-
-
-    #########################
-    ### GEOLOGIC FEATURES ###
-    #########################
-    attributes = ['geology', 'karst', 'field']
-    subattributes = ['data']
-    valid_extensions = ['gslib', 'npy', 'png', 'jpg']
-    nx, ny, nz = sks_settings['grid']['nx'], sks_settings['grid']['ny'], sks_settings['grid']['nz']
-
-    # Checks presence of the geologic feature attributes
-    for attribute in attributes:
-        if attribute not in sks_settings:
-            msg = "The '{}' attribute was missing.".format(attribute)
-            logger.warning(msg)
-            sks_settings[attribute] = {
-                'data' : ''
-            }
-
-    # Checks presence of the subattributes
-    for attribute in attributes:
-        for subattribute in subattributes:
-            if subattribute not in sks_settings[attribute]:
-                msg = "The '{}' subattribute from the '{}' attribute was missing.".format(subattribute, attribute)
-                logger.warning(msg)
-                if subattribute == 'data':
-                    sks_settings[attribute][subattribute] = ''
-
-
-    # Checks if datafiles are valid
-    for attribute in attributes:
-        location = sks_settings[attribute]['data']
-        if location != '':
-
-            # Checks if datafile location type is valid:
-            if not isinstance(location, str):
-                msg = "The '{}' datafile location type is not valid. Type must be str. The attribute has been cleaned.".format(attribute) # TODO
-                logger.warning(msg)
-                sks_settings[attribute]['location'] = ''
-            else:
-
-                # Checks if location is valid
-                if not os.path.exists(location):
-                    msg = "The '{}' datafile location is not valid. '{}' does not exist. The attribute has been cleaned.".format(attribute, location)
-                    logger.warning(msg)
-                    sks_settings[attribute]['location'] = ''
-                else:
+                # Checks if the datafile exist
+                if is_path_valid(path, 'data'):
 
                     # Checks if extension is valid
-                    extension = location.split('.')[-1]
-                    if extension not in valid_extensions:
-                        msg = "The extension of the '{}' datafile location is not valid. '.{}' extension is not recognized. Valid extensions : {}. The attribute has been cleaned.".format(attribute, extension, valid_extensions)
-                        logger.warning(msg)
-                        sks_settings[attribute]['location'] = ''
+                    valid_extensions = ['gslib', 'npy', 'png', 'jpg']
+                    if is_extension_valid(path, valid_extensions):
+                        
+                        # Tries to open file
+                        data = read_file(path, 'data')
+
+            # Type is np.ndarray
+            if isinstance(settings['data'], (np.ndarray)):
+                data = settings['data']
+
+            # Checks validity of data
+            if is_state_valid(geologic_feature):
+
+                ### Checks if data dimensions are valid
+                nx, ny, nz = grid.nx, grid.ny, grid.nz
+
+                # Numpy array case
+                if isinstance(data, (np.ndarray)):
+                    # GSLIB case
+                    if len(data.shape) == 1:
+                        data_size = len(data)
+                        if data_size != nx * ny * nz:
+                            if data_size != nx * ny:
+                                msg = "The '{}' data dimensions do not match neither with the volume nor the surface of the grid (data : {}, grid : {})".format(attribute, data_size, nx * ny * nz)
+                                this.logger.error(msg)
+                                this.ERRORS.append(ValueError(msg))
+                            else:
+                                msg = "The '{}' data dimensions do not match with the volume but with the surface of the grid. Data will be replicated on z-axis.".format(geologic_feature)
+                                this.logger.warning(msg)
+
                     else:
-
-                        # Checks if datafile is readable and if size is valid
-                        ### GSLIB
-                        if extension == 'gslib':
-                            try:
-                                data = np.genfromtxt(location, skip_header=3, dtype=np.int8)
-                            except Exception as err:
-                                msg = "The '{}' datafile is not valid. The attribute has been cleaned.".format(attribute)
-                                logger.error(msg)
-                                ERRORS.append(err)
-                                sks_settings[attribute]['location'] = ''
+                        if data.shape != (nx, ny, nz):
+                            if data.shape[0:2] != (nx, ny):
+                                msg = "The '{}' data dimensions do not match neither with the volume nor the surface of the grid (data : {}, grid : {}).".format(geologic_feature, data.shape, (nx, ny, nz))
+                                this.logger.error(msg)
+                                this.ERRORS.append(ValueError(msg))
                             else:
-                                # Checks if data dimensions are valid
-                                data_size = len(data)
-                                if data_size == grid_volume:
-                                    pass
-                                elif (data_size == grid_surface) and (grid_surface != grid_volume):
-                                    msg = "The '{}' datafile dimensions match with grid surface dimensions. Data will be replicated on z-axis.".format(attribute)
-                                    logger.warning(msg)
-                                else:
-                                    msg = "The '{}' datafile dimensions do not match with grid volume dimensions (data : {}, grid : {}). The attribute has been cleaned.".format(attribute, data_size, grid_volume)
-                                    logger.warning(msg)
-                                    sks_settings[attribute]['location'] = ''
+                                msg = "The '{}' data dimensions do not match with the volume but with the surface of the grid. Data will be replicated on z-axis.".format(geologic_feature)
+                                this.logger.warning(msg)
 
-                        ### Numpy_pickle
-                        elif extension == 'npy':
-                            try:
-                                data = np.load(location)
-                            except Exception as err:
-                                msg = "The '{}' datafile is not valid. The attribute has been cleaned.".format(attribute)
-                                logger.error(msg)
-                                ERRORS.append(err)
-                                sks_settings[attribute]['location'] = ''
-                            else:
-                                if data.shape != (nx, ny, nz):
-                                    msg = "The '{}' datafile dimensions do not match with the grid dimensions (data : {}, grid : {}). The attribute has been cleaned.".format(attribute, data.shape, (nx, ny, nz))
-                                    logger.warning(msg)
-                                    sks_settings[attribute]['location'] = ''
+    # Controls validity of attributes
+    is_state_valid(geologic_feature, True)
 
-    ###########
-    ### END ###
-    ###########
-
-    print(sks_settings)
-
-    # TODO
-    # Count the warnings ?
-    # Create subfunctions for each test
-
-    if len(ERRORS) > 0:
-        msg = "{} error(s) detected in the sks settings file".format(len(ERRORS))
-        logger.error(msg)
-        raise ERRORS[0]
-    else:
-        msg = "The sks settings file has been validated."
-        logger.info(msg)
-
-    return sks_settings
+    return settings
 
 
-def validate_sim_settings(sim_settings:dict):
+###############################################################################################
+### SIM ###
+###########
+
+########################
+### OUTLETS - INLETS ###
+########################
+def validate_points_feature_settings(points_feature, settings):
     """
-    DOCSTRING
-
-    Inputs
-    ------
-
-    Returns
-    -------
+    TODO
     """
-    global ERRORS
-    logger = logging.getLogger("validations - simulations")
+    this.logger = logging.getLogger("validation.{}".format(points_feature))
+    points = ''
 
-    
-    ########################
-    ### OUTLETS - INLETS ###
-    ########################
-    attributes = ['outlets', 'inlets']
-    subattributes_o = ['data', 'number', 'shuffle', 'importance']
-    subattributes_i = ['data', 'number', 'shuffle', 'per_outlet', 'importance']
-    subattributes_  = [subattributes_o, subattributes_i]
+    # Checks attributes presence
+    this.optional_attributes = this.MANDATORY_ATTRIBUTES_SIM[points_feature]
+    for attribute in this.optional_attributes:
+        settings = validate_attribute_presence(settings, attribute)
 
-    for attribute, subattributes in zip(attributes, subattributes_):
+    # Checks validity of attributes
+    if is_state_valid(points_feature):
+        
+        # Checks if 'number' is of type int
+        is_attribute_type_valid('number', settings['number'], (int))
 
-        # Checks presence of the attributes in the file
-        if attribute not in sim_settings:
-            msg = "The '{}' attribute is missing.".format(attribute)
-            logger.error(msg)
-            ERRORS.append(KeyError(msg))
-        else:
-            # Checks presence of the subattributes in the file
-            for subattribute in subattributes:
-                if subattribute not in sim_settings[attribute]:
-                    msg = "The '{}' subattribute from the '{}' attribute is missing.".format(subattribute, attribute)
-                    logger.error(msg)
-                    ERRORS.append(KeyError(msg))
+        # Checks if 'number' attribute value is valid
+        is_attribute_value_valid('number', settings['number'], '>', 0)
 
-        if len(ERRORS) == 0:
+        # TODO 
+        # 'shuffle'
+        # 'importance'
+        # 'per_outlet'
 
-            # Checks if 'number' is of type int
-            if not isinstance(sim_settings[attribute]['number'], int):
-                msg = "The 'number' subattribute from the '{}' attribute is not of type int.".format(attribute)
-                logger.error(msg)
-                ERRORS.append(TypeError(msg))
+        # Handles '' in 'data' attributes
+        if settings['data'] == '':
+            settings['data'] == []
 
-            # Checks if 'number' value is valid
-            if sim_settings[attribute]['number'] < 1:
-                msg = "The 'number' subattribute from the '{}' attribute cannot be lower than 1. At least one point must be declared.".format(attribute)
-                logger.error(msg)
-                ERRORS.append(ValueError(msg))
+        # Checks data when provided
+        if settings['data'] != []:
 
-            # Checks data when provided
-            if not (sim_settings[attribute]['data'] == '') or (sim_settings[attribute]['data'] == []):
+            # Checks if data type is valid:
+            if is_attribute_type_valid('data', settings['data'], (str, list)):
 
-                # Checks if data type is valid:
-                if not isinstance(sim_settings[attribute]['data'], (str, list)):
-                    msg = "The 'data' subbatribute type from the '{}' attribute is not valid. Type must be str or list.".format(attribute)
-                    logger.error(msg)
-                    ERRORS.append(KeyError(msg))
-                else:
+                # Type is str:
+                if isinstance(settings['data'], str):
+                    path = settings['data']
 
-                    # If data is of type str:
-                    if isinstance(sim_settings[attribute]['data'], str):
-                        # Checks if data exist
-                        location = sim_settings[attribute]['data']
-                        if not os.path.exists(location):
-                            msg = "The 'data' location from the '{}' attribute is not valid. '{}' does not exist.".format(attribute, location)
-                            logger.error(msg)
-                            ERRORS.append(KeyError(msg))
-                        else:
-                            try:
-                                points = np.genfromtxt(location)
-                            except Exception as err:
-                                msg = "The 'data' datafile from the '{}' attribute is not valid.".format(attribute)
-                                logger.error(msg)
-                                ERRORS.append(err)
+                    # Checks if the datafile exist
+                    if is_path_valid(path, 'data'):
 
-                    # If data is of type list:
-                    if isinstance(sim_settings[attribute]['data'], list):
-                        points = sim_settings[attribute]['data']
+                        # Tries to open file
+                        points = read_file(path, 'data')
 
-                    # Checks if each points contains 2 coordinates
+                # Type is list:
+                if isinstance(settings['data'], list):
+                    points = settings['data']
+
+                # Checks validity of data
+                if is_state_valid(points_feature):
+
+                    # Checks if each points contains 2 or 3 coordinates
                     for point in points:
-                        if len(point) != 2:
-                            msg = "The 'data' subattribute from the '{}' attribute contains at least one invalid point. Format must be like : [[x0, y0], ..., [xn, yn]].".format(attribute)
-                            logger.error(msg)
-                            ERRORS.append(ValueError(msg))
+                        if len(point) not in [2, 3]:
+                            msg = "The values of the 'data' attribute contains at least one invalid point. Format must be like : [[x0, y0], ..., [xn, yn]] or [[x0, y0, z0], ..., [xn, yn, zn]]."
+                            this.logger.error(msg)
+                            this.ERRORS.append(ValueError(msg))
                             break
-                    
+
                     # Checks type of coordinates
                     for point in points:
                         for coordinate in point:
                             if np.isnan(coordinate) or (not isinstance(coordinate, (int, float))):
-                                msg = "The 'data' subattribute from the '{}' attribute contains at least one invalid point. Coordinates must be of type int or float.".format(attribute)
-                                logger.error(msg)
-                                ERRORS.append(ValueError(msg))
+                                msg = "The values of the 'data' attribute contains at least one invalid point. Coordinates must be of type int or float."
+                                this.logger.error(msg)
+                                this.ERRORS.append(TypeError(msg))
                                 break
 
-    # TODO ###################################################
-    attributes = ['outlets', 'inlets']
-    if len(sim_settings['outlets']['importance']) == 0:
-        pass
-    
-        # Proceed to assert on some variables
-                # features = [self.settings['outlets_importance'], self.settings['inlets_importance'], self.settings['inlets_per_outlet']]
-                # for feature in features:
-                #     assert isinstance(feature, list)
-                # assert len(self.settings['outlets_importance']) == len(self.outlets)
-    ###################################################
+    # Prints state of the validation process
+    is_state_valid(points_feature, True)
+
+    return settings
 
 
-    ###############
-    ### TRACERS ###
-    ###############
+# TODO 
+def validate_tracers_settings(settings):
+    """
+    TODO
+    """
+    return settings
 
-    pass
 
-    ###########
-    ### END ###
-    ###########
-
-    print(sim_settings)
-
-    if len(ERRORS) > 0:
-        msg = "{} error(s) detected in the simulations settings file".format(len(ERRORS))
-        logger.error(msg)
-        raise ERRORS[0]
-    else:
-        msg = "The sks simulations file has been validated."
-        logger.info(msg)
-    return sim_settings
+# TODO
+def validate_fractures_settings(settings):
+    """
+    TODO
+    """
+    return settings
