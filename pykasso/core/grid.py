@@ -45,7 +45,7 @@ class Grid():
         """
         # TODO
         # Memory usage settings
-        precision = np.float32
+        precision = np.float64
 
         # Initialization
         self.__x0 = x0
@@ -385,7 +385,7 @@ class Grid():
         >>> test = grid.is_inbox(0.53, 11.4, 6.0)
         """
         i, j, k = self.get_i(x), self.get_j(y), self.get_k(z)
-        return bool( (k-self.nz)*k <= 0 ) and ( (j-self.ny)*j <= 0 ) and ( (i-self.nx)*i <= 0 )
+        return bool( (k-self.nz+1)*k <= 0 ) and ( (j-self.ny+1)*j <= 0 ) and ( (i-self.nx+1)*i <= 0 )
 
     def _get_property(self, property: str):
         """

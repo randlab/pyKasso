@@ -2,10 +2,10 @@
 Module to model the mask.
 """
 
-import sys
 import copy
 import numpy as np
 from matplotlib.path import Path
+
 
 class Mask():
     """
@@ -28,14 +28,10 @@ class Mask():
         self.polygon = None
         self.mask = None
 
-        # If needed, loads the data
         if isinstance(data, str):
             self.vertices = np.genfromtxt(data)
         elif isinstance(data, list):
             self.vertices = np.array(data)
-        else:
-            # TODO
-            raise
          
 
     def validate_vertices(self, grid):
@@ -45,16 +41,6 @@ class Mask():
         # controls if the vertices are well defined inside the grid limits
         vertices = self.vertices
         validated_vertices = [k for k,(x,y) in enumerate(vertices) if (grid.path.contains_point((x,y)) == True)]
-
-        if len(validated_vertices) == 0:
-            ## TODO
-            print("MASK - ERROR : No vertices validated inside the grid limits.")
-            sys.exit()
-
-        if len(validated_vertices) < len(vertices):
-            # TODO if debug:
-            print('MASK - WARNING : {}/{} vertices validated inside the grid limits.'.format(len(validated_vertices), len(vertices)))
-
         self.validated_vertices = vertices[validated_vertices]
 
         # sets the polygon with a matplotlib Path

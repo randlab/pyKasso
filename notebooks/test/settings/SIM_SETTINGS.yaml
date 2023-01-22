@@ -3,7 +3,7 @@
  ##################
 
 ---
-seed : 0
+seed : 1
 
 ##############
 ### Points ###
@@ -15,6 +15,7 @@ outlets:
   data       : 'test/inputs/betteraz_polygon.txt'
   shuffle    : False
   importance : [1,1,1]
+  # z : 'lambda x : x * x'
 
 ### Inlets
 inlets:
@@ -23,6 +24,7 @@ inlets:
   shuffle    : False
   per_outlet : [1,1,1]
   importance : [1,1,1]
+  # z : 'lambda x : x * x'
 
 ### Tracers
 tracers:

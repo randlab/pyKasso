@@ -15,17 +15,15 @@ Released under the MIT license:
 
 Available subpackages
 ---------------------
-a
-b
-c
+- core
+- visualization
+- tools
 
 Utilities
 ---------
-a
-b
-c
+- 
+- 
+- 
 """
 
-from . import core
 from .core import *
-from .visualization import *

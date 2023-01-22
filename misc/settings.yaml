@@ -26,11 +26,4 @@ cost_ratio     : 0.5   #ratio of travel cost parallel to gradient / travel cost 
 #if ratio = 1: same travel cost parallel and perpendicular to gradient
 #if ratio < 1: travel cost is lower parallel to gradient (paths will follow steepest gradient), decrease value to increase contrast
 #if ratio > 1: travel cost is lower perpendicular to gradient (paths will follow contours), increase value to increase contrast
-
-#############
-### Other ###
-#############
-
-#Verbosity: how much output to display during run
-verbosity : 0    #0: minimal output, 1: some output; 2: more output; 3: maximum output
 ...

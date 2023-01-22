@@ -2,81 +2,99 @@
 TODO
 """
 
-def show(environment, feature='grid', engine='matplotlib', settings={}):
+AUTHORIZED_FEATURES = [
+    'grid',
+    'topography',
+    'geology',
+    'faults',
+    'fractures',
+    'cost',
+    'alpha',
+    'beta',
+    'time',
+    'karst'
+]
+
+def show(environment, feature='GRID', engine='matplotlib', settings={}):
     """
     TODO
     """
-    ### According to engine, selects appropriates functions
-
-    # Matplotlib
+    ### Selects appropriates functions according to selected engine
     if engine == 'matplotlib':
         from pykasso.visualization import _matplotlib
         _show_data = _matplotlib._show_data
-
-    # Pyvista
     elif engine == 'pyvista':
         from pykasso.visualization import _pyvista
         _show_data = _pyvista._show_data
-
-    # ?
     else:
-        pass
+        raise ValueError("ERROR : selected engine not recognised")
 
-    ### Settings
-    if 'mask' in settings:
-        if getattr(environment, 'MASK') is None:
-            print('Warning : No mask available.')
-            del settings['mask']
+    ### Controls validity of settings
+    attributes = ['mask', 'inlets', 'outlets', 'tracers']
+    for attribute in attributes:
+        if attribute in settings:
+            if not hasattr(environment, attribute):
+                print('WARNING : No {} available'.format(attribute))
+                del settings[attribute]
+            else:
+                if getattr(environment, attribute) is None:
+                    print('WARNING : No mask available'.format(attribute))
+                    del settings[attribute]
 
-
-    authorized_features = [
-        'grid',
-        'topography',
-        'geology',
-        'faults',
-        'fractures',
-    ]
-    if feature in authorized_features:
-        _show_feature(environment, feature, _show_data, settings)
-    elif feature == 'array':
-        pass
-    elif feature == 'simulation':
-        pass
-    else:
-        print('ERROR : selected feature has been not recognized. Authorized features : {}'.format(authorized_features))
-
+    ### Plot feature
+    if _is_feature_valid(environment, feature):
+        _show_data(environment, feature, settings)
 
     return None
 
-
-
-def _show_feature(environment, feature, func, settings):
+def _is_feature_valid(environment, feature):
     """
     TODO
     """
-    feature = feature.upper()
-    if not hasattr(environment, feature):
-        raise KeyError("ERROR : environment has no '{}' attribute.".format(feature))
-    else:
+    if feature not in AUTHORIZED_FEATURES:
+        raise ValueError("ERROR : selected feature has been not recognized (authorized features : {})".format(AUTHORIZED_FEATURES))
+
+    if feature in ['grid','topography','geology','faults','fractures']:
+
+        if not hasattr(environment, feature):
+            raise ValueError("ERROR : environment has no '{}' attribute.".format(feature))
+    
         if getattr(environment, feature) is None:
-            raise KeyError("ERROR : '{}' attribute is type of None.".format(feature))
-        else:
-            func(environment, feature, settings)
-    return None
+            raise ValueError("ERROR : '{}' attribute is type of None.".format(feature))
+    
+    elif feature in ['cost','alpha','beta','time','karst']:
 
+        if not hasattr(environment, 'maps'):
+            raise ValueError("ERROR : environment has no 'maps' attribute.".format(feature))
 
+    return True
 
 
 ###################
 ### DEBUG PLOTS ###
 ###################
 
-def debug_plot_initialize(environment):
+def debug(environment, step, engine='matplotlib', settings={}):
     """
     TODO
     """
-    # _pyvista.debug_plot_initialize(environment)
+    if engine == 'pyvista':
+        from pykasso.visualization import _pyvista
+
+        if step == 'model':
+            _pyvista._debug_plot_model(environment, settings)
+        elif step == 'fmm':
+            _pyvista._debug_plot_fmm(environment, settings)
+
     return None
+
+
+# def debug_plot_initialize(environment):
+#     """
+#     TODO
+#     """
+#     # _pyvista.debug_plot_initialize(environment)
+#     return None
 
 #     def debug_plot(self, feature):
 #         """

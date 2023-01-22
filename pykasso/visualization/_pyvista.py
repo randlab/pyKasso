@@ -11,7 +11,7 @@ pv.global_theme.notebook = False
 # - 'show_edges' : True
 # - 'cmap' : "viridis",
 
-def _show_data(environment, feature, settings):
+def _show_data(environment, feature, settings, show=True):
     """
     TODO
     """
@@ -32,6 +32,9 @@ def _show_data(environment, feature, settings):
         'tracers',
     ]
 
+    if 'iteration' not in settings:
+        settings['iteration'] = 0
+
     for attribute in attributes:
         if attribute not in settings:
             settings[attribute] = False
@@ -42,17 +45,21 @@ def _show_data(environment, feature, settings):
     #########################
 
     # Get the grid
-    grid_i = _get_grid(environment.GRID)
+    grid_i = _get_grid(environment.grid)
     grid = grid_i
 
     # Get the data
-    if feature.lower() != 'grid':
-        grid = _get_data(grid, getattr(environment, feature), 'data', 'data')
+    if feature != 'grid':
+        if feature in ['cost', 'alpha', 'beta', 'time', 'karst']:
+            grid = _get_data_from_dict(grid, getattr(environment, 'maps'), feature, 'data', iteration=settings['iteration'])
+        else:
+            grid = _get_data_from_attribute(grid, getattr(environment, feature), 'data', 'data')
         kwargs['scalars'] = 'data'
 
     # Get the mask
-    if getattr(environment, 'MASK') is not None:
-        grid = _get_data(grid, getattr(environment, 'MASK'), 'mask', 'mask')
+    if hasattr(environment, 'mask'):
+        if getattr(environment, 'mask') is not None:
+            grid = _get_data_from_attribute(grid, getattr(environment, 'mask'), 'mask', 'mask')
 
     # Ghost the data
     if 'ghost' in settings:
@@ -74,10 +81,10 @@ def _show_data(environment, feature, settings):
     ##############
 
     if settings['inlets']:
-        inlets = _get_points(environment.POINTS, 'inlets')
+        inlets = _get_points(environment.inlets)
 
     if settings['outlets']:
-        outlets = _get_points(environment.POINTS, 'outlets')
+        outlets = _get_points(environment.outlets)
 
     # TODO
     if settings['tracers']:
@@ -97,7 +104,7 @@ def _show_data(environment, feature, settings):
          _ = plotter.add_mesh(grid, **kwargs)
 
     # Grid
-    _ = plotter.add_mesh(grid_i.outline(), color="k")
+    plotter.add_mesh(grid_i.outline(), color="k")
 
     if settings['show_grid']:
         plotter.show_grid()
@@ -108,7 +115,80 @@ def _show_data(environment, feature, settings):
     if settings['outlets']:
         plotter.add_points(outlets, render_points_as_spheres=True, point_size=20, color='b')
 
-    plotter.show(cpos='xy')
+    if show:
+        plotter.show(cpos='xy')
+
+    return _
+
+
+##########################################################
+### DEBUG ###
+#############
+
+def _debug_plot_model(environment, settings):
+    """
+    TODO
+    """
+    ### Call the plotter
+    plotter = pv.Plotter(shape=(2, 4), border=True)
+
+    features = ['geology', 'faults', 'fractures', 'field']
+
+    for (i, feature) in enumerate(features):
+        plotter.subplot(0, i)
+        plotter.add_text(feature, font_size=24)
+
+        if hasattr(environment, feature): 
+            actor = _show_data(environment, feature, {}, show=False)
+            plotter.add_actor(actor, reset_camera=True)
+
+            plotter.subplot(1, i)
+            actor, misc = _show_data(environment, feature, {'slice':True}, show=False)
+            plotter.add_actor(actor, reset_camera=True)
+
+    plotter.link_views()
+    plotter.show()
+    return None
+
+
+def _debug_plot_fmm(environment, settings):
+    """
+    TODO
+    """
+    ### Initializes ...
+    if 'iterations' not in settings:
+        settings['iterations'] = [0]
+
+    if environment.fmm['algorithm'] == 'Isotropic3':
+        features = ['cost', 'time', 'karst']
+    elif environment.fmm['algorithm'] == 'Riemann3':
+        features = ['cost', 'alpha', 'beta', 'time', 'karst']
+
+    ### Call the plotter
+    row = len(settings['iterations'])
+    col = len(features)
+    plotter = pv.Plotter(shape=(row, col), border=True)
+
+    if hasattr(environment, 'maps'):
+        for (i, feature) in enumerate(features):
+
+            for j, iteration in enumerate(settings['iterations']):
+            
+                plotter.subplot(j, i)
+                
+                text = feature + ' - iteration : {}'.format(iteration)
+                plotter.add_text(text, font_size=10)
+
+                if feature == 'karst':
+                    settings_ = {'iteration' : iteration, 'ghost' : [0]}
+                else:
+                    settings_ = {'iteration' : iteration}
+
+                actor = _show_data(environment, feature, settings_, show=False)
+                plotter.add_actor(actor, reset_camera=True)
+
+    plotter.link_views()
+    plotter.show()
 
     return None
 
@@ -126,7 +206,7 @@ def _get_grid(grid):
     mesh            = mesh.cast_to_unstructured_grid()
     return mesh
 
-def _get_data(mesh, geologic_feature, attribute, label):
+def _get_data_from_attribute(mesh, geologic_feature, attribute, label):
     """
     TODO
     """
@@ -134,11 +214,19 @@ def _get_data(mesh, geologic_feature, attribute, label):
     mesh.cell_data[label] = data.flatten(order="F")
     return mesh
 
-def _get_points(points, kind):
+def _get_data_from_dict(mesh, dict, attribute, label, iteration):
     """
     TODO
     """
-    points = points[points['label'] == kind][['x', 'y', 'z']].values
+    data = dict[attribute][iteration]
+    mesh.cell_data[label] = data.flatten(order="F")
+    return mesh
+
+def _get_points(points):
+    """
+    TODO
+    """
+    points = points[['x', 'y', 'z']].values
     points = points.astype('float32')
     cloud  = pv.wrap(points)
     return cloud
@@ -183,54 +271,4 @@ def _get_points(points, kind):
 #     _ = plotter.add_mesh(poly, color="tan", line_width=10, show_edges=True)
 #     plotter.show()
 
-#     return None
-
-
-##################################################3
-### DEBUG ###
-#############
-
-# def debug_plot_initialize(environment):
-#     """
-#     TODO
-#     """
-
-#     ### Call the plotter
-#     p = pv.Plotter(shape=(2, 4), border=True, notebook=False)
-
-#     ### Construct the grid
-#     vtk = pv.UniformGrid()
-#     vtk.dimensions = np.array((environment.GRID.nx, environment.GRID.ny, environment.GRID.nz)) + 1
-#     vtk.origin     = (environment.GRID.x0 - environment.GRID.dx/2, environment.GRID.y0 - environment.GRID.dy/2, environment.GRID.z0 - environment.GRID.dz/2)
-#     vtk.spacing    = (environment.GRID.dx, environment.GRID.dy, environment.GRID.dz)
-
-#     features = ['geology', 'faults', 'fractures', 'field']
-
-#     for (i, feature) in enumerate(features):
-#         vtk = vtk.copy()
-#         p.subplot(0, i)
-#         p.add_text(feature, font_size=24)
-#         try:
-#             vtk['values'] = self.geology.geologic_features[feature].data.flatten(order="F")
-#         except:
-#             vtk['values'] = np.full((self.GRID.nx, self.GRID.ny, self.GRID.nz), 0).flatten(order="F")
-#         p.add_mesh(vtk, show_edges=False)
-#         bounds = p.show_bounds(mesh=vtk)
-#         p.add_actor(bounds)
-
-#     for (i, feature) in enumerate(features):
-#         vtk = vtk.copy()
-#         p.subplot(1, i)
-#         p.add_text(feature, font_size=24)
-#         try:
-#             vtk['values'] = self.geology.geologic_features[feature].data.flatten(order="F")
-#         except:
-#             vtk['values'] = np.full((self.GRID.nx, self.GRID.ny, self.GRID.nz), 0).flatten(order="F")
-#         slices = vtk.slice_orthogonal()
-#         p.add_mesh(slices, show_edges=False)
-#         bounds = p.show_bounds(mesh=vtk)
-#         p.add_actor(bounds)
-
-#     p.link_views()
-#     p.show(cpos='xy')
 #     return None

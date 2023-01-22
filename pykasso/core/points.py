@@ -2,14 +2,16 @@
 TODO
 """
 
+import logging
 import numpy as np
 
 # TODO
 # - Documentation
+# - Validation des variables
 # - Gestion des cartes de densité de probabilités pour le tirage des points
-# - Fonction z
 
-def generate_random_points(number, rng, grid, mask, geology, constraints=None):
+
+def generate_coordinate(lambda_functions, rng, grid, mask, geology, xi=None, yi=None, zi=None, geologic_ids=None):
     """
     TODO
 
@@ -22,79 +24,107 @@ def generate_random_points(number, rng, grid, mask, geology, constraints=None):
     4 - Geology, mask
     """
 
-    ### Lambda functions
-    random_x = lambda : grid.x0 - grid.dx/2 + grid.nx * rng.random() * grid.dx
-    random_y = lambda : grid.y0 - grid.dy/2 + grid.ny * rng.random() * grid.dy
-    rand_x, rand_y = [], []
-    validated_points = 0
-    validated_geology = []
-    surface = geology.surface
+    # Evaluates the function
+    env = {
+        'rng'  : rng,
+        'grid' : grid,
+        # TODO - define mask limits
+        # 'mask' : mask,
+        # 'geology' : geology
+    }
+    x_func = eval(lambda_functions['x'], env)
+    y_func = eval(lambda_functions['y'], env)
+    z_func = eval(lambda_functions['z'], env)
 
-    # TODO - changer de position + logging ?
-    ### Inspects validity of geological constraints
-    # if constraints is not None:
-        # for geological_id in constraints['geology']:
-            # pass
-            # if geological_id in 
+    # Controls validity of 'geologic_ids'
+    if geologic_ids is not None:
+        values = geology.stats.index.to_list()
+        validated_geology_ids = []
+        for geologic_id in geologic_ids:
+            if geologic_id in values:
+                validated_geology_ids.append(geologic_id)
+            else:
+                pass
+                # TODO - log
+
+        if len(validated_geology_ids) == 0:
+            pass
+            # TODO - log - erreur
 
 
+    # Tries to generate a valid coordinate
+    coordinate_is_valid = False
+    iteration = 0
+    iteration_limit = 10000
+    while not coordinate_is_valid:
+        
+        # TODO
+        # security
+        if iteration > iteration_limit:
+            # LOG
+            raise ValueError
 
-    # TODO (1))
-    # dictionnaire des geology présentes à la surface
-    # for gid in self.geology_ID:
-    #     assert gid in surf, "/!\\ - create_point_feature() - ERROR : geologic id n°{} is not on the surface geologic model.".format(gid)
+        # Generates a coordinate
+        if xi == None:
+            x = x_func()
+        else:
+            x = xi
 
-    # 1 - No geology, no mask
-    if (constraints is None) and (mask is None):
-        rand_x = [random_x() for x in range(number)]
-        rand_y = [random_y() for y in range(number)]
+        if yi == None:
+            y = y_func()
+        else:
+            y = yi
 
-    # 2 - No geology, mask
-    elif (constraints is None):
-        while validated_points < number:
-            x, y = random_x(), random_y()
-            if int(mask.polygon.contains_point((x,y))):
-                rand_x.append(x)
-                rand_y.append(y)
-                validated_points += 1
+        if zi == None:
+            z = z_func()
+        else:
+            z = zi
 
-    # 3 - Geology, no mask
-    elif (mask is None):
-        while validated_points < number:
-            x, y = random_x(), random_y()
-            if surface[grid.get_i(x)][grid.get_j(y)] in constraints:
-                rand_x.append(x)
-                rand_y.append(y)
-                # rand_z.append(z)
-                validated_points += 1
 
-    # 4 - Geology, mask
-    else:
-        while validated_points < number:
-            x, y = random_x(), random_y()
-            if (surface[grid.get_i(x)][grid.get_j(y)] in constraints) and (int(mask.polygon.contains_point((x,y)))):
-                rand_x.append(x)
-                rand_y.append(y)
-                validated_points += 1
+        # 1 - No geology, no mask
+        if geologic_ids is None: 
+            if mask is None:
+                coordinate_is_valid = is_point_valid((x,y,z), grid, mask)
+        
+        # 2 - No geology, mask
+            else:
+                if int(mask.polygon.contains_point((x,y))) and is_point_valid((x,y,z), grid, mask):
+                    coordinate_is_valid = True
 
-    return list(zip(rand_x, rand_y))
+        
+        else:
+            if is_point_valid((x,y,z), grid, mask):
+                i, j, k = grid.get_i(x), grid.get_j(y), grid.get_k(z)
+
+        # 3 - Geology, no mask
+                if (mask is None):
+                    if geology.data[i][j][k] in validated_geology_ids:
+                        coordinate_is_valid = True
+
+        # 4 - Geology, mask
+                else:
+                    if (geology.data[i][j][k] in validated_geology_ids) and (int(mask.polygon.contains_point((x,y)))):
+                        coordinate_is_valid = True
+
+        iteration += 1
+
+    return [x,y,z]
 
 
 def is_point_valid(point, grid, mask):
     """
     TODO
     Checks if the points are well located inside the grid, or well inside the mask if one is provided.
-    Prints out only when an issue is encountered.
     """
     if len(point) == 2:
 
         x, y = point
 
         if mask is None:
-            test = grid.path.contains_point(x, y)
+            test = grid.path.contains_point((x, y))
         
         else:
-            test = grid.path.contains_point(x, y) & mask.polygon.contains_point(x, y)
+            test = grid.path.contains_point((x, y)) & mask.polygon.contains_point((x, y))
 
     if len(point) == 3:
 
@@ -104,6 +134,26 @@ def is_point_valid(point, grid, mask):
             test = grid.is_inbox(x, y, z)
 
         else:
-            test = grid.is_inbox(*point) & mask.polygon.contains_point(x, y)
+            test = grid.is_inbox(x, y, z) & mask.polygon.contains_point((x, y))
 
     return test
+
+
+# def get_lambda_function(dim, keyword):
+#     """
+#     TODO
+#     """
+#     lambda_functions = {
+#         'x' : {
+#             'surface' : ,
+#             'bottom'  : ,
+#         },
+#         'y' : {
+
+#         },
+#         'z' : {
+
+#         }
+#     }
+
+#     return lambda_function

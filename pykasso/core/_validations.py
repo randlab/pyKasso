@@ -7,118 +7,123 @@ import sys
 import logging
 import numpy as np
 
-# import _exceptions
-# import core_settings
+import pykasso.core._wrappers as wp
 
 ############
 ### TODO ###
 ############
 # VERBOSITY MGMT
-# Count the warnings ?
-# message different quand la feature est vide
+# message different quand la feature est vide ?? 
 # validation en fonction de 'axis'
 # msg = "The '{}' attribute was missing. Topography will be set from geological data.".format(attribute)
 # geologic_feature : Karst
 # geologic_feature : Field
 # validate_tracers_settings()
 # validate_fractures_settings()
-# validate_seed ?
 
 
 this = sys.modules[__name__]
-this.logger = logging.getLogger("validation.settings")
 
-this.ERRORS   = []
-this.WARNINGS = 0 
-
-this.MANDATORY_ATTRIBUTES_SKS = {
-    'grid' : ['x0', 'y0', 'z0', 'nx', 'ny', 'nz', 'dx', 'dy', 'dz'],
-    'fmm'  : [],
-}
-this.OPTIONAL_ATTRIBUTES_SKS  = {
+this.ATTRIBUTES = {
+    'sks' : {
+        'seed' : ['optional', 0],
+    },
+    'grid' : {
+        'x0' : ['required', ''],
+        'y0' : ['required', ''],
+        'z0' : ['required', ''],
+        'nx' : ['required', ''],
+        'ny' : ['required', ''],
+        'nz' : ['required', ''],
+        'dx' : ['required', ''],
+        'dy' : ['required', ''],
+        'dz' : ['required', ''],
+    },
     'mask' : {
-        'data' : ''
+        'data' : ['optional', ''],
     },
     'topography' : {
-        'data' : ''
+        'data' : ['optional', ''],
     },
     'geology' : {
-        'data' : '',
-        'axis' : 'z',
-        'cost' : '',
+        'data' : ['optional', ''],
+        'axis' : ['optional', 'z'],
+        'cost' : ['optional', {1 : 0.4}],
     },
     'faults' : {
-        'data' : '',
-        'axis' : 'z',
-        'cost' : '',
+        'data' : ['optional', ''],
+        'axis' : ['optional', 'z'],
+        'cost' : ['optional', {1 : 0.2}],
     },
-}
-this.MANDATORY_ATTRIBUTES_SIM = {
-    'seed'    : [],
     'outlets' : {
-        'number'     : 1,
-        'data'       : '',
-        'shuffle'    : False,
-        'importance' : '',
+        'number'     : ['required', ''],
+        'data'       : ['optional', ''],
+        'shuffle'    : ['optional', False],
+        'importance' : ['required', []],
+        'x'          : ['optional', 'lambda : grid.xmin + grid.nx * rng.random() * grid.dx'],
+        'y'          : ['optional', 'lambda : grid.ymin + grid.ny * rng.random() * grid.dy'],
+        'z'          : ['optional', 'lambda : grid.zmin + grid.dz/1000'],
+        'geology'    : ['optional', None],
+        'seed'       : ['optional', 0],
     },
     'inlets'  : {
-        'number'     : 1,
-        'data'       : '',
-        'shuffle'    : False,
-        'importance' : '',
-        'per_outlet' : '',
+        'number'     : ['required', ''],
+        'data'       : ['optional', ''],
+        'shuffle'    : ['optional', False],
+        'importance' : ['required', []],
+        'per_outlet' : ['required', []],
+        'x'          : ['optional', 'lambda : grid.xmin + grid.nx * rng.random() * grid.dx'],
+        'y'          : ['optional', 'lambda : grid.ymin + grid.ny * rng.random() * grid.dy'],
+        'z'          : ['optional', 'lambda : grid.zmax - grid.dz/1000'],
+        'geology'    : ['optional', None],
+        'seed'       : ['optional', 0],
+    },
+    'tracers'   : {},
+    'fractures' : {
+        'data'     : ['optional', ''],
+        'seed'     : ['optional', 0],
+        'cost'     : ['optional', {1 : 0.2}],
+        'settings' : ['optional', ''],
+        
+    },
+    'fmm' : {
+        'algorithm' : ['optional', 'Isotropic3'],
+        'cost'      : ['optional', {'ratio' : 0.5}]
     },
 }
-this.OPTIONAL_ATTRIBUTES_SIM  = {
-    'tracers'   : {},
-    'fractures' : {},
-}
-
-def validate_settings_structure(settings, kind):
-    """
-    TODO
-    """
-    if kind == 'SKS':
-        this.mandatory_attributes = this.MANDATORY_ATTRIBUTES_SKS
-        this.optional_attributes  = this.OPTIONAL_ATTRIBUTES_SKS
-    if kind == 'SIM':
-        this.mandatory_attributes = this.MANDATORY_ATTRIBUTES_SIM
-        this.optional_attributes  = this.OPTIONAL_ATTRIBUTES_SIM
-    
-    for attribute in this.mandatory_attributes:
-        settings = validate_attribute_presence(settings, attribute)
-
-    for attribute in this.optional_attributes:
-        settings = validate_attribute_presence(settings, attribute, 'optional')
-
-    return settings
 
 #################
 ### FUNCTIONS ###
 #################
 
-def validate_attribute_presence(settings, attribute, kind='mandatory'):
+def validate_attribute_presence(settings, attribute, kind, default_value={}, is_subattribute=False):
     """
     TODO
     """
+    if not is_subattribute:
+        this.logger = logging.getLogger("{}.validation".format(attribute))
+
     if attribute not in settings:
         msg = "The '{}' attribute is missing ({}).".format(attribute, kind)
-        if kind == 'mandatory':
+        if kind == 'required':
             this.logger.critical(msg)
-            this.ERRORS.append(KeyError(msg))
-        if kind == 'optional':
+            raise KeyError(msg)
+        elif kind == 'optional':
             this.logger.warning(msg)
-            settings[attribute] = this.optional_attributes[attribute]
-    
-    if (attribute in settings) and (settings[attribute] is None):
-        msg = "The value of the '{}' attribute is not defined.".format(attribute, kind)
-        if kind == 'mandatory':
-            this.logger.critical(msg)
-            this.ERRORS.append(KeyError(msg))
-        if kind == 'optional':
-            this.logger.warning(msg)
-            settings[attribute] = this.optional_attributes[attribute]
-
+            settings[attribute] = default_value
+    else:
+        if settings[attribute] is None:
+            msg = "The '{}' attribute is not defined ({}).".format(attribute, kind)
+            if kind == 'required':
+                this.logger.critical(msg)
+                raise ValueError(msg)
+            elif kind == 'optional':
+                this.logger.warning(msg)
+                settings[attribute] = default_value
+        else:
+            # TODO
+            # Should we log ?
+            pass
     return settings
 
 
@@ -129,8 +134,7 @@ def is_attribute_type_valid(attribute, value, types):
     if not isinstance(value, types):
         msg = "The value of the '{}' attribute must be of type : {}".format(attribute, types)
         this.logger.critical(msg)
-        this.ERRORS.append(TypeError(msg))
-        return False
+        raise TypeError(msg)
     else:
         return True
 
@@ -142,8 +146,7 @@ def is_path_valid(path, attribute):
     if not os.path.exists(path):
         msg = "The path from '{}' attribute is not valid. '{}' does not exist.".format(attribute, path)
         this.logger.error(msg)
-        this.ERRORS.append(FileNotFoundError(msg))
-        return False
+        raise FileNotFoundError(msg)
     else:
         return True
 
@@ -155,8 +158,7 @@ def is_extension_valid(path, valid_extensions):
     if extension not in valid_extensions:
         msg = "The extension '.{}' from '{}' location is not valid. Valid extensions : {}.".format(extension, path, valid_extensions)
         this.logger.error(msg)
-        this.ERRORS.append(ValueError(msg))
-        return False
+        raise ValueError(msg)
     else:
         return True
 
@@ -186,9 +188,7 @@ def read_file(path, attribute):
     except Exception as err:
         msg = "Impossible to read the file designated by the '{}' attribute. Location : {}".format(attribute, path)
         this.logger.error(msg)
-        this.ERRORS.append(err)
-        return None
-
+        raise err
     else:
         return data
 
@@ -209,23 +209,9 @@ def is_attribute_value_valid(attribute, value, logical_test, compared_to):
     if not eval(test):
         msg = "The value of the '{}' attribute must be {} {}.".format(attribute, logical_test_text[logical_test], compared_to)
         this.logger.critical(msg)
-        this.ERRORS.append(ValueError(msg))
-        return False
+        raise ValueError(msg)
     else:
         return True
-
-
-def is_state_valid(feature, log=False):
-    """
-    TODO
-    """
-    if len(this.ERRORS) == 0:
-        if log:
-            this.logger.info('The {} settings has been validated'.format(feature))
-        return True
-    else:
-        this.logger.error("{} error(s) detected. The {} settings has not been validated".format(len(this.ERRORS), feature))
-        raise this.ERRORS[0]
 
 
 ################################################################################################
@@ -239,43 +225,35 @@ def is_state_valid(feature, log=False):
 ############
 ### GRID ###
 ############
+@wp._decorator_logging('validation', 'grid')
 def validate_grid_settings(settings):
     """
     TODO
     """
-    this.logger = logging.getLogger("validation.grid")
-
     # Checks attributes presence
-    attributes = this.MANDATORY_ATTRIBUTES_SKS['grid']
+    for attribute in this.ATTRIBUTES['grid']:
+        settings = validate_attribute_presence(settings, attribute, this.ATTRIBUTES['grid'][attribute][0], is_subattribute=True)
+
+    # TODO
+    # Checks global size of the model
+    # grid_surface = sks_settings[attribute]['nx'] * sks_settings[attribute]['ny']
+    # grid_volume  = grid_surface * sks_settings[attribute]['nz']
+    # if grid_volume > core_settings.grid_size_limit:
+
+    # Checks if the values of attributes are of type int or float
+    attributes = ['x0', 'y0', 'z0', 'dx', 'dy', 'dz']
     for attribute in attributes:
-        settings = validate_attribute_presence(settings, attribute)
+        is_attribute_type_valid(attribute, settings[attribute], (int, float))
 
-    # Checks validity of attributes
-    if is_state_valid('grid'):
+    # Checks if the values of attributes are of type int
+    attributes = ['nx', 'ny', 'nz']
+    for attribute in attributes:
+        is_attribute_type_valid(attribute, settings[attribute], (int))
 
-        # TODO
-        # Checks global size of the model
-        # grid_surface = sks_settings[attribute]['nx'] * sks_settings[attribute]['ny']
-        # grid_volume  = grid_surface * sks_settings[attribute]['nz']
-        # if grid_volume > core_settings.grid_size_limit:
-
-        # Checks if the values of attributes are of type int or float
-        attributes = ['x0', 'y0', 'z0', 'dx', 'dy', 'dz']
-        for attribute in attributes:
-            is_attribute_type_valid(attribute, settings[attribute], (int, float))
-
-        # Checks if the values of attributes are of type int
-        attributes = ['nx', 'ny', 'nz']
-        for attribute in attributes:
-            is_attribute_type_valid(attribute, settings[attribute], (int))
-
-        # Checks if the values of attributes are well upper 1
-        attributes = ['nx', 'ny', 'nz']
-        for attribute in attributes:
-            is_attribute_value_valid(attribute, settings[attribute], '>', 0)
-
-    # Prints state of the validation process
-    is_state_valid('grid', True)
+    # Checks if the values of attributes are well upper 1
+    attributes = ['nx', 'ny', 'nz']
+    for attribute in attributes:
+        is_attribute_value_valid(attribute, settings[attribute], '>', 0)
 
     return settings
 
@@ -283,69 +261,69 @@ def validate_grid_settings(settings):
 ############
 ### MASK ###
 ############
-def validate_mask_settings(settings):
+@wp._decorator_logging('validation', 'mask')
+def validate_mask_settings(settings, grid):
     """
     TODO
     """
-    this.logger = logging.getLogger("validation.mask")
-    data = ''
-
     # Checks attributes presence
-    this.optional_attributes = this.OPTIONAL_ATTRIBUTES_SKS['mask']
-    for attribute in this.optional_attributes:
-        settings = validate_attribute_presence(settings, attribute, 'optional')
+    for attribute in this.ATTRIBUTES['mask']:
+        kind, default_value = this.ATTRIBUTES['mask'][attribute]
+        settings = validate_attribute_presence(settings, attribute, kind, default_value, is_subattribute=True)
 
-    # Checks validity of attributes
-    if is_state_valid('mask'):
+    # If 'data' is not empty
+    if settings['data'] != '':
 
-        # If 'data' is not empty
-        if settings['data'] != '':
+        # Checks if type is str or list
+        if is_attribute_type_valid('data', settings['data'], (str, list)):
 
-            # Checks if type is str or list
-            if is_attribute_type_valid('data', settings['data'], (str, list)):
+            # Type is str
+            if isinstance(settings['data'], (str)):
+                path = settings['data']
 
-                # Type is str
-                if isinstance(settings['data'], (str)):
-                    path = settings['data']
+                # Checks if the datafile exist
+                if is_path_valid(path, 'data'):
 
-                    # Checks if the datafile exist
-                    if is_path_valid(path, 'data'):
-
-                        # Tries to open file
-                        data = read_file(path, 'data')
+                    # Tries to open file
+                    data = read_file(path, 'data')
             
-                # Type is list
-                if isinstance(settings['data'], (list)):
-                    data = settings['data']
+            # Type is list
+            if isinstance(settings['data'], (list)):
+                data = settings['data']
 
-    # Checks validity of data
-    if is_state_valid('mask') and (not isinstance(data, (str))):
-
+        ### Checks validity of data
         # Checks if there is at least 3 points declared
         if len(data) < 3:
             msg = "Not enough vertices to create a mask delimitation (3 minimum)."
-            this.logger.error(msg)
-            this.ERRORS.append(ValueError(msg))
+            this.logger.critical(msg)
+            raise ValueError(msg)
 
         # Checks if each vertex contains 2 coordinates
         for vertex in data:
             if len(vertex) != 2:
                 msg = "The values of the 'data' attribute contains at least one invalid vertex. Format must be like : [[x0, y0], ..., [xn, yn]]."
-                this.logger.error(msg)
-                this.ERRORS.append(ValueError(msg))
-                break
+                this.logger.critical(msg)
+                raise ValueError(msg)
             
         # Checks type of coordinates
         for vertex in data:
             for coordinate in vertex:
-                if np.isnan(coordinate) or (not isinstance(coordinate, (int, float))):
+                if not isinstance(coordinate, (int, float)):
                     msg = "The values of the 'data' attribute contains at least one invalid vertex. Coordinates must be of type int or float."
-                    this.logger.error(msg)
-                    this.ERRORS.append(TypeError(msg))
-                    break
+                    this.logger.critical(msg)
+                    raise TypeError(msg)
 
-    # Controls validity of attributes
-    is_state_valid('mask', True)
+        # Checks if vertex are well in grid limits
+        validated_vertices = [k for k,(x,y) in enumerate(data) if (grid.path.contains_point((x,y)) == True)]
+
+        if len(validated_vertices) < 3:
+            msg = "Not enough vertices inside the grid limits to create a mask delimitation (3 minimum)."
+            this.logger.critical(msg)
+            raise ValueError(msg)
+
+        if len(validated_vertices) < len(data):
+            msg = '{}/{} vertices validated inside the grid limits.'.format(len(validated_vertices), len(data))
+            this.logger.warning(msg)
 
     return settings
 
@@ -360,16 +338,15 @@ def validate_mask_settings(settings):
 # TODO - KARST
 # TODO - FIELD
 
+@wp._decorator_logging('validation', 'geology')
 def validate_geologic_feature_settings(geologic_feature, settings, grid):
     """
     TODO
     """
-    this.logger = logging.getLogger("validation.{}".format(geologic_feature))
-
     # Checks attributes presence
-    this.optional_attributes = this.OPTIONAL_ATTRIBUTES_SKS[geologic_feature]
-    for attribute in this.optional_attributes:
-        settings = validate_attribute_presence(settings, attribute, 'optional')
+    for attribute in this.ATTRIBUTES[geologic_feature]:
+        kind, default_value = this.ATTRIBUTES[geologic_feature][attribute]
+        settings = validate_attribute_presence(settings, attribute, kind, default_value, is_subattribute=True)
 
     # If 'data' is not empty
     if settings['data'] != '':
@@ -395,136 +372,166 @@ def validate_geologic_feature_settings(geologic_feature, settings, grid):
             if isinstance(settings['data'], (np.ndarray)):
                 data = settings['data']
 
-            # Checks validity of data
-            if is_state_valid(geologic_feature):
+        ### Checks if data dimensions are valid
+        nx, ny, nz = grid.nx, grid.ny, grid.nz
 
-                ### Checks if data dimensions are valid
-                nx, ny, nz = grid.nx, grid.ny, grid.nz
-
-                # Numpy array case
-                if isinstance(data, (np.ndarray)):
-                    # GSLIB case
-                    if len(data.shape) == 1:
-                        data_size = len(data)
-                        if data_size != nx * ny * nz:
-                            if data_size != nx * ny:
-                                msg = "The '{}' data dimensions do not match neither with the volume nor the surface of the grid (data : {}, grid : {})".format(attribute, data_size, nx * ny * nz)
-                                this.logger.error(msg)
-                                this.ERRORS.append(ValueError(msg))
-                            else:
-                                msg = "The '{}' data dimensions do not match with the volume but with the surface of the grid. Data will be replicated on z-axis.".format(geologic_feature)
-                                this.logger.warning(msg)
-
+        # Numpy array case
+        if isinstance(data, (np.ndarray)):
+            # GSLIB case
+            if len(data.shape) == 1:
+                data_size = len(data)
+                if data_size != nx * ny * nz:
+                    if data_size != nx * ny:
+                        msg = "The '{}' data dimensions do not match neither with the volume nor the surface of the grid (data : {}, grid : {})".format(attribute, data_size, nx * ny * nz)
+                        this.logger.critical(msg)
+                        raise ValueError(msg)
                     else:
-                        if data.shape != (nx, ny, nz):
-                            if data.shape[0:2] != (nx, ny):
-                                msg = "The '{}' data dimensions do not match neither with the volume nor the surface of the grid (data : {}, grid : {}).".format(geologic_feature, data.shape, (nx, ny, nz))
-                                this.logger.error(msg)
-                                this.ERRORS.append(ValueError(msg))
-                            else:
-                                msg = "The '{}' data dimensions do not match with the volume but with the surface of the grid. Data will be replicated on z-axis.".format(geologic_feature)
-                                this.logger.warning(msg)
+                        msg = "The '{}' data dimensions do not match with the volume but with the surface of the grid. Data will be replicated on z-axis.".format(geologic_feature)
+                        this.logger.warning(msg)
 
-    # Controls validity of attributes
-    is_state_valid(geologic_feature, True)
+            else:
+                if data.shape != (nx, ny, nz):
+                    if data.shape[0:2] != (nx, ny):
+                        msg = "The '{}' data dimensions do not match neither with the volume nor the surface of the grid (data : {}, grid : {}).".format(geologic_feature, data.shape, (nx, ny, nz))
+                        this.logger.critical(msg)
+                        raise ValueError(msg)
+                    else:
+                        msg = "The '{}' data dimensions do not match with the volume but with the surface of the grid. Data will be replicated on z-axis.".format(geologic_feature)
+                        this.logger.warning(msg)
 
     return settings
-
-
-###############################################################################################
-### SIM ###
-###########
 
 ########################
 ### OUTLETS - INLETS ###
 ########################
+@wp._decorator_logging('validation', 'points')
 def validate_points_feature_settings(points_feature, settings):
     """
     TODO
     """
-    this.logger = logging.getLogger("validation.{}".format(points_feature))
     points = ''
 
     # Checks attributes presence
-    this.optional_attributes = this.MANDATORY_ATTRIBUTES_SIM[points_feature]
-    for attribute in this.optional_attributes:
-        settings = validate_attribute_presence(settings, attribute)
-
-    # Checks validity of attributes
-    if is_state_valid(points_feature):
+    for attribute in this.ATTRIBUTES[points_feature]:
+        kind, default_value = this.ATTRIBUTES[points_feature][attribute]
+        settings = validate_attribute_presence(settings, attribute, kind, default_value, is_subattribute=True)
         
-        # Checks if 'number' is of type int
-        is_attribute_type_valid('number', settings['number'], (int))
+    # Checks if 'number' is of type int
+    is_attribute_type_valid('number', settings['number'], (int))
 
-        # Checks if 'number' attribute value is valid
-        is_attribute_value_valid('number', settings['number'], '>', 0)
+    # Checks if 'number' attribute value is valid
+    is_attribute_value_valid('number', settings['number'], '>', 0)
 
-        # TODO 
-        # 'shuffle'
-        # 'importance'
-        # 'per_outlet'
+    # Checks data when provided
+    if not ((settings['data'] == []) or (settings['data'] == '')):
 
-        # Handles '' in 'data' attributes
-        if settings['data'] == '':
-            settings['data'] == []
+        # Checks if data type is valid:
+        if is_attribute_type_valid('data', settings['data'], (str, list)):
 
-        # Checks data when provided
-        if settings['data'] != []:
+            # Type is str:
+            if isinstance(settings['data'], (str)):
+                path = settings['data']
 
-            # Checks if data type is valid:
-            if is_attribute_type_valid('data', settings['data'], (str, list)):
+                # Checks if the datafile exist
+                if is_path_valid(path, 'data'):
 
-                # Type is str:
-                if isinstance(settings['data'], str):
-                    path = settings['data']
+                    # Tries to open file
+                    points = read_file(path, 'data')
 
-                    # Checks if the datafile exist
-                    if is_path_valid(path, 'data'):
+            # Type is list:
+            if isinstance(settings['data'], (list)):
+                points = settings['data']
 
-                        # Tries to open file
-                        points = read_file(path, 'data')
+            ### Checks validity of data
 
-                # Type is list:
-                if isinstance(settings['data'], list):
-                    points = settings['data']
+            # Checks if each points contains 2 or 3 coordinates
+            for point in points:
+                if len(point) not in [2, 3]:
+                    msg = "The values of the 'data' attribute contains at least one invalid point. Format must be like : [[x0, y0], ..., [xn, yn]] or [[x0, y0, z0], ..., [xn, yn, zn]]."
+                    this.logger.critical(msg)
+                    raise ValueError(msg)
 
-                # Checks validity of data
-                if is_state_valid(points_feature):
+            # Checks type of coordinates
+            for point in points:
+                for coordinate in point:
+                    if np.isnan(coordinate) or (not isinstance(coordinate, (int, float))):
+                        msg = "The values of the 'data' attribute contains at least one invalid point. Coordinates must be of type int or float."
+                        this.logger.critical(msg)
+                        raise TypeError(msg)
 
-                    # Checks if each points contains 2 or 3 coordinates
-                    for point in points:
-                        if len(point) not in [2, 3]:
-                            msg = "The values of the 'data' attribute contains at least one invalid point. Format must be like : [[x0, y0], ..., [xn, yn]] or [[x0, y0, z0], ..., [xn, yn, zn]]."
-                            this.logger.error(msg)
-                            this.ERRORS.append(ValueError(msg))
-                            break
+    
+    # Checks if 'shuffle' is of type bool
+    is_attribute_type_valid('shuffle', settings['shuffle'], (bool))
 
-                    # Checks type of coordinates
-                    for point in points:
-                        for coordinate in point:
-                            if np.isnan(coordinate) or (not isinstance(coordinate, (int, float))):
-                                msg = "The values of the 'data' attribute contains at least one invalid point. Coordinates must be of type int or float."
-                                this.logger.error(msg)
-                                this.ERRORS.append(TypeError(msg))
-                                break
+    # Checks if 'importance' is of type list
+    is_attribute_type_valid('importance', settings['importance'], (list))
 
-    # Prints state of the validation process
-    is_state_valid(points_feature, True)
+    # Checks if there is enough points to associate
+    if settings['number'] < len(settings['importance']):
+        # TODO
+        msg = "TODO - importance !"
+        this.logger.critical(msg)
+        raise ValueError(msg)
+    
+    if points_feature == 'inlets':
+        # Checks if 'per_outlet' is of type list
+        is_attribute_type_valid('per_outlet', settings['per_outlet'], (list))
+
+        # Checks if there is enough points to associate
+        if settings['number'] < len(settings['importance'])*len(settings['per_outlet']):
+            # TODO - warning ou véritable erreur ???
+            msg = "TODO - importance - per outlet !"
+            this.logger.critical(msg)
+            raise ValueError(msg)
 
     return settings
 
 
-# TODO 
-def validate_tracers_settings(settings):
-    """
-    TODO
-    """
-    return settings
+# # TODO 
+# def validate_tracers_settings(settings):
+#     """
+#     TODO
+#     """
+#     return settings
 
+#################
+### FRACTURES ###
+#################
 
 # TODO
+@wp._decorator_logging('validation', 'fractures')
 def validate_fractures_settings(settings):
     """
     TODO
     """
+
+    # Checks attributes presence
+    for attribute in this.ATTRIBUTES['fractures']:
+        kind, default_value = this.ATTRIBUTES['fractures'][attribute]
+        settings = validate_attribute_presence(settings, attribute, kind, default_value, is_subattribute=True)
+
+    return settings
+
+
+###########
+### FMM ###
+###########
+
+@wp._decorator_logging('validation', 'fmm')
+def validate_fmm_settings(settings) :
+    """
+    TODO
+    """
+
+    # Checks attributes presence
+    for attribute in this.ATTRIBUTES['fmm']:
+        kind, default_value = this.ATTRIBUTES['fmm'][attribute]
+        settings['fmm'] = validate_attribute_presence(settings['fmm'], attribute, kind, default_value, is_subattribute=True)
+
+    # TODO - develop more test
+    # if len(settings['inlets']['per_outlet']) != settings['outlets']['number']:
+    #     msg = "_validate_fmm_settings... TODO"
+    #     this.logger.critical(msg)
+    #     raise ValueError(msg)
+
     return settings

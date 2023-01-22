@@ -3,6 +3,9 @@
  ##################
 
 ---
+sks:
+  seed : 1
+
 ############
 ### Grid ###
 ############
@@ -30,14 +33,14 @@ mask:
 ### Geology ###
 ###############
 
-topography:
-  data : 'test/inputs/topography.gslib'
+# topography:
+#   data : 'test/inputs/topography.gslib'
 
 geology:
   data : 'test/inputs/betteraz_2D_z430.gslib'
-  # cost : 
-  #   1 : 0.5
-  #   2 : 0.7
+  cost : 
+    1 : 0.5
+    2 : 0.7
 
 faults:
   data : 'test/inputs/faults.png'
@@ -46,12 +49,60 @@ faults:
     1 : 0.3
     2 : 0.4
 
-
 # karst:
 #   data : ''
 
 # field:
 #   data : ''
+
+##############
+### Points ###
+##############
+
+### Outlets
+outlets:
+  number     : 6
+  data       : 'test/inputs/betteraz_polygon.txt'
+  shuffle    : False
+  importance : [1,1,1]
+  seed : 1
+  # z : 'lambda x : x * x'
+
+### Inlets
+inlets:
+  number     : 30
+  data       : 'test/inputs/betteraz_polygon.txt'
+  shuffle    : False
+  per_outlet : [1,1,1]
+  importance : [1,1,1]
+  seed : 1
+  # z : 'lambda x : x * x'
+
+### Tracers
+tracers:
+  number : 1
+  data   : ''
+
+####################
+### Fracturation ###
+####################
+
+fractures:
+  data : 'random'
+  seed : 12
+  settings :
+    family_01:
+      alpha        : 2
+      density      : 0.00001
+      orientation  : [340, 20]
+      dip          : [80, 90]
+      length       : [1000, 2000]
+    family_02:
+      alpha        : 2
+      density      : 0.00001
+      orientation  : [340, 20]
+      dip          : [0, 10]
+      length       : [1000, 2000]
 
 ###########
 ### FMM ###
@@ -59,8 +110,8 @@ faults:
 
 fmm: 
   algorithm : 'Riemann3'
-  cost :
-    ratio : 0.5
+  # cost :
+    # ratio : 0.5
 
 ##############
 ### OTHERS ###

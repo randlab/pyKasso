@@ -1,27 +1,57 @@
- sks                   | INFO     | ****************************
- sks                   | INFO     | *** pyKasso simulation 1 ***
- sks                   | INFO     | ****************************
- sks                   | INFO     | 2023-01-08 12:12:53.305516
- sks                   | INFO     | ---
- validation.settings   | WARNING  | The 'topography' attribute is missing (optional).
- validation.settings   | WARNING  | The 'geology' attribute is missing (optional).
- validation.settings   | WARNING  | The 'faults' attribute is missing (optional).
- validation.settings   | WARNING  | The 'tracers' attribute is missing (optional).
- validation.settings   | WARNING  | The 'fractures' attribute is missing (optional).
- validation.grid       | INFO     | The grid settings has been validated
- sks                   | INFO     | _construct_feature_grid
- validation.mask       | WARNING  | The 'data' attribute is missing (optional).
- validation.mask       | INFO     | The mask settings has been validated
- sks                   | INFO     | _construct_feature_mask
- validation.topography | INFO     | The topography settings has been validated
- sks                   | INFO     | _construct_feature_topography
- validation.geology    | INFO     | The geology settings has been validated
- sks                   | INFO     | _construct_feature_geology
- validation.faults     | INFO     | The faults settings has been validated
- sks                   | INFO     | _construct_feature_faults
- sks                   | INFO     | _set_rng
- validation.outlets    | INFO     | The outlets settings has been validated
- sks                   | WARNING  | 1/5 outlets have been discarded because out of domain.
- sks                   | INFO     | _construct_feature_points
- validation.inlets     | INFO     | The inlets settings has been validated
- sks                   | INFO     | _construct_feature_points
+ .                       | INFO     | ****************************
+ .                       | INFO     | *** pyKasso simulation 1 ***
+ .                       | INFO     | ****************************
+ .                       | INFO     | 2023-01-22 23:32:42.509806
+ .                       | INFO     | ---
+ grid.validation         | DEBUG    | Validating the 'grid' settings
+ grid.validation         | DEBUG    | 'grid' settings have been validated
+ grid.construction       | DEBUG    | Constructing 'grid'
+ grid.construction       | DEBUG    | 'grid' has been constructed
+ mask.validation         | DEBUG    | Validating the 'mask' settings
+ mask.validation         | DEBUG    | 'mask' settings have been validated
+ mask.construction       | DEBUG    | Constructing 'mask'
+ mask.construction       | DEBUG    | 'mask' has been constructed
+ topography.validation   | WARNING  | The 'topography' attribute is missing (optional).
+ topography.validation   | DEBUG    | Validating the 'topography' settings
+ topography.validation   | WARNING  | The 'data' attribute is missing (optional).
+ topography.validation   | DEBUG    | 'topography' settings have been validated
+ topography.construction | DEBUG    | Constructing 'topography'
+ topography.construction | DEBUG    | 'topography' has been constructed
+ geology.validation      | DEBUG    | Validating the 'geology' settings
+ geology.validation      | WARNING  | The 'axis' attribute is missing (optional).
+ geology.validation      | WARNING  | The 'geology' data dimensions do not match with the volume but with the surface of the grid. Data will be replicated on z-axis.
+ geology.validation      | DEBUG    | 'geology' settings have been validated
+ geology.construction    | DEBUG    | Constructing 'geology'
+ geology.construction    | DEBUG    | 'geology' has been constructed
+ faults.validation       | DEBUG    | Validating the 'faults' settings
+ faults.validation       | DEBUG    | 'faults' settings have been validated
+ faults.construction     | DEBUG    | Constructing 'faults'
+ faults.construction     | DEBUG    | 'faults' has been constructed
+ outlets.validation      | DEBUG    | Validating the 'outlets' settings
+ outlets.validation      | WARNING  | The 'x' attribute is missing (optional).
+ outlets.validation      | WARNING  | The 'y' attribute is missing (optional).
+ outlets.validation      | WARNING  | The 'z' attribute is missing (optional).
+ outlets.validation      | WARNING  | The 'geology' attribute is missing (optional).
+ outlets.validation      | DEBUG    | 'outlets' settings have been validated
+ outlets.construction    | DEBUG    | Constructing 'outlets'
+ .                       | WARNING  | 39/43 outlets have been discarded because out of domain.
+ outlets.construction    | DEBUG    | 'outlets' has been constructed
+ inlets.validation       | DEBUG    | Validating the 'inlets' settings
+ inlets.validation       | WARNING  | The 'x' attribute is missing (optional).
+ inlets.validation       | WARNING  | The 'y' attribute is missing (optional).
+ inlets.validation       | WARNING  | The 'z' attribute is missing (optional).
+ inlets.validation       | WARNING  | The 'geology' attribute is missing (optional).
+ inlets.validation       | DEBUG    | 'inlets' settings have been validated
+ inlets.construction     | DEBUG    | Constructing 'inlets'
+ .                       | WARNING  | 39/43 inlets have been discarded because out of domain.
+ inlets.construction     | DEBUG    | 'inlets' has been constructed
+ fractures.validation    | DEBUG    | Validating the 'fractures' settings
+ fractures.validation    | WARNING  | The 'cost' attribute is missing (optional).
+ fractures.validation    | DEBUG    | 'fractures' settings have been validated
+ fractures.construction  | DEBUG    | Constructing 'fractures'
+ fractures.construction  | DEBUG    | 'fractures' has been constructed
+ fmm.validation          | DEBUG    | Validating the 'fmm' settings
+ fmm.validation          | WARNING  | The 'cost' attribute is missing (optional).
+ fmm.validation          | DEBUG    | 'fmm' settings have been validated
+ fmm.construction        | DEBUG    | Constructing 'fmm'
+ fmm.construction        | DEBUG    | 'fmm' has been constructed
