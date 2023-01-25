@@ -7,8 +7,6 @@ import sys
 import logging
 import numpy as np
 
-import pykasso.core._wrappers as wp
-
 ############
 ### TODO ###
 ############
@@ -222,10 +220,32 @@ def is_attribute_value_valid(attribute, value, logical_test, compared_to):
 ### SKS ###
 ###########
 
+def validate_settings(feature, feature_settings, grid=None):
+    """ 
+    TODO
+    """
+    if feature == 'grid':
+        settings = validate_grid_settings(feature_settings)
+    elif feature == 'mask':
+        settings = validate_mask_settings(feature_settings, grid)
+    elif feature in ['topography', 'geology', 'faults']:
+        settings = validate_geologic_feature_settings(feature, feature_settings, grid)
+    elif feature == 'sks':
+        settings = validate_seed_settings(feature_settings)
+    elif feature in ['inlets', 'outlets']:
+        settings = validate_points_feature_settings(feature, feature_settings)
+    # elif feature == 'tracers':
+    #     settings = validate_tracers_settings()
+    elif feature == 'fractures':
+        settings = validate_fractures_settings(feature_settings)
+    elif feature == 'fmm':
+        settings = validate_fmm_settings(feature_settings)
+        
+    return settings
+
 ############
 ### GRID ###
 ############
-@wp._decorator_logging('validation', 'grid')
 def validate_grid_settings(settings):
     """
     TODO
@@ -261,7 +281,6 @@ def validate_grid_settings(settings):
 ############
 ### MASK ###
 ############
-@wp._decorator_logging('validation', 'mask')
 def validate_mask_settings(settings, grid):
     """
     TODO
@@ -331,14 +350,9 @@ def validate_mask_settings(settings, grid):
 #########################
 ### GEOLOGIC FEATURES ###
 #########################
-# TOPOGRAPHY
-# GEOLOGY
-# FAULTS
-# TODO - FRACTURES ?
 # TODO - KARST
 # TODO - FIELD
 
-@wp._decorator_logging('validation', 'geology')
 def validate_geologic_feature_settings(geologic_feature, settings, grid):
     """
     TODO
@@ -401,10 +415,20 @@ def validate_geologic_feature_settings(geologic_feature, settings, grid):
 
     return settings
 
+#############
+### SEEDS ###
+#############
+# todo - rename ?
+def validate_seed_settings(settings):
+    """ 
+    TODO
+    """
+    settings = validate_attribute_presence(settings, 'seed', 'optional', default_value=0, is_subattribute=True)
+    return settings
+
 ########################
 ### OUTLETS - INLETS ###
 ########################
-@wp._decorator_logging('validation', 'points')
 def validate_points_feature_settings(points_feature, settings):
     """
     TODO
@@ -487,19 +511,18 @@ def validate_points_feature_settings(points_feature, settings):
     return settings
 
 
-# # TODO 
-# def validate_tracers_settings(settings):
-#     """
-#     TODO
-#     """
-#     return settings
+# TODO 
+def validate_tracers_settings(settings):
+    """
+    TODO
+    """
+    return settings
 
 #################
 ### FRACTURES ###
 #################
 
 # TODO
-@wp._decorator_logging('validation', 'fractures')
 def validate_fractures_settings(settings):
     """
     TODO
@@ -517,7 +540,6 @@ def validate_fractures_settings(settings):
 ### FMM ###
 ###########
 
-@wp._decorator_logging('validation', 'fmm')
 def validate_fmm_settings(settings) :
     """
     TODO

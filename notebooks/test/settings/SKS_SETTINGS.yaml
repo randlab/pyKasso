@@ -61,8 +61,8 @@ faults:
 
 ### Outlets
 outlets:
-  number     : 6
-  data       : 'test/inputs/betteraz_polygon.txt'
+  number     : 3
+  # data       : 'test/inputs/betteraz_polygon.txt'
   shuffle    : False
   importance : [1,1,1]
   seed : 1
@@ -71,11 +71,11 @@ outlets:
 ### Inlets
 inlets:
   number     : 30
-  data       : 'test/inputs/betteraz_polygon.txt'
+  # data       : 'test/inputs/betteraz_polygon.txt'
   shuffle    : False
   per_outlet : [1,1,1]
   importance : [1,1,1]
-  seed : 1
+  seed : 2
   # z : 'lambda x : x * x'
 
 ### Tracers
@@ -119,7 +119,7 @@ fmm:
 
 verbosity:
   logging : 0
-  agd : 1
+  agd : 0
 
 debug:
   verbosity: 0

@@ -40,14 +40,12 @@ mplstereonet = "^0.6.2"
 matplotlib = "^3.6.2"
 pyvista = "^0.37.0"
 
-
-
-
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.19.4"
 jupyter = "^1.0.0"
 jupyterlab = "^3.5.2"
 ipyvtklink = "^0.2.3"
+snakeviz = "^2.1.1"
 
 [build-system]
 requires = ["poetry-core"]

@@ -65,7 +65,11 @@ def _is_feature_valid(environment, feature):
     elif feature in ['cost','alpha','beta','time','karst']:
 
         if not hasattr(environment, 'maps'):
-            raise ValueError("ERROR : environment has no 'maps' attribute.".format(feature))
+            raise ValueError("ERROR : environment has no 'maps' attribute.")
+        
+        if feature in ['alpha','beta']:
+            if environment.fmm['algorithm'] != 'Riemann3':
+                raise ValueError("ERROR : environment has no '{}' data.".format(feature))
 
     return True
 

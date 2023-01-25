@@ -6,7 +6,6 @@
 # 007 (---) add initial karstic system feature
 # 008 (---) add initial field feature
 # 009 (---) define the tracers
-# 014 - # TODO - verification functions : algorithm
 # 015 - 
 # 016 - 
 # 017 - 
@@ -16,9 +15,6 @@
 
 ### Others
 # Methods / Fonctions / Classes documentation
-# better 'debug'/'verbosity' management
-
-
 
 ####################
 ### Dependencies ###
@@ -31,7 +27,6 @@ import datetime
 
 ### Local dependencies
 import pykasso.core._wrappers as wp
-import pykasso.core._validations as val
 from .grid import Grid
 from .mask import Mask
 from .geologic_feature import Geology, Topography, Karst, Field, Faults, Fractures
@@ -48,7 +43,7 @@ import agd
 from agd import Eikonal
 from agd.Metrics import Riemann
 
-########################
+################################################################################################################################################
 ### Module variables ###
 ########################
 
@@ -73,7 +68,11 @@ this.cost = {
     'ratio'     : 0.5,
 }
 
-def create_project(project_directory:str):
+################################################################################################################################################
+### Module functions ###
+########################
+
+def create_project(project_directory):
     """
     TODO
     """
@@ -129,8 +128,7 @@ def create_project(project_directory:str):
 
     return None
 
-# TODO 003 (---)
-# define a load_project function
+# TODO 003 (---) - define a load_project function
 def load_project():
     """
     TODO
@@ -151,19 +149,9 @@ class SKS():
         """
         TODO
         """
-        # TODO - 
+        # TODO
         # test validity of arguments inputs
-
-        ### Sets debug level
-        # TODO test value
-        # TODO log it 
-        if debug_level is None:
-            this.debug_level = {
-                'model'      : 15,
-                'simulation' : 10,
-            }
-        else:
-            this.debug_level = debug_level
+        # -> 'verbosity'
 
         ### Loads core and sks settings
         settings_list  = [core_settings, sks_settings]
@@ -189,19 +177,35 @@ class SKS():
             root = logging.getLogger()
             list(map(root.removeHandler, root.handlers))
             list(map(root.removeFilter,  root.filters))
+            
+            # Remove PIL package log entries
+            logging.getLogger("PIL.PngImagePlugin").setLevel(logging.CRITICAL + 1)
 
-            # Sets new log file
+            # Sets logging level
+            levels = {
+                0 : logging.DEBUG,
+                1 : logging.INFO,
+                2 : logging.WARNING,
+                3 : logging.ERROR,
+                4 : logging.CRITICAL,
+            }
+            level = levels[self.SKS_SETTINGS['verbosity']['logging']]
+
+            # Sets new logging file
             log_file = self.CORE_SETTINGS['outputs_directory'] + self.CORE_SETTINGS['log_filename']
             logging.basicConfig(
                 filename=log_file, 
                 encoding='utf-8', 
-                level=logging.DEBUG, 
+                level=level,
                 filemode="w",
                 format=' %(name)-23s | %(levelname)-8s | %(message)s'
             )
-
-            # Remove PIL package log entries
-            logging.getLogger("PIL.PngImagePlugin").setLevel(logging.CRITICAL + 1)
+            
+            # Prints basic information in the log
+            # - pyKasso + version
+            # - dossier du projet
+            # - logging level
+            
             
         # Prints current simulation number
         this.logger = logging.getLogger(".")
@@ -209,8 +213,32 @@ class SKS():
         this.logger.info('***********************{}****'.format('*' * l))
         this.logger.info('*** pyKasso simulation {} ***'.format(this.ACTIVE_PROJECT['n_simulation']))
         this.logger.info('***********************{}****'.format('*' * l))
-        this.logger.info(datetime.datetime.now())
+        this.logger.info('Date : ' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         this.logger.info('---')
+
+        # Sets debug level
+        if debug_level is None:
+            self.debug_mode  = False
+            self.debug_level = {
+                'model'      : 15,
+                'simulation' : 10,
+                'iteration'  : 1000 # TODO
+            }
+        else:
+            self.debug_mode  = True
+            self.debug_level = debug_level
+            if 'model' not in self.debug_level:
+                self.debug_level['model'] = 15
+            if 'simulation' not in self.debug_level:
+                self.debug_level['simulation'] = 10
+            if 'iteration' not in self.debug_level:
+                self.debug_level['iteration'] = 1000
+            this.logger.info('Debug mode : {}'.format(self.debug_mode))
+            this.logger.info('Debug level :')
+            this.logger.info('-> model          : {}'.format(self.debug_level['model']))
+            this.logger.info('-> simulation     : {}'.format(self.debug_level['simulation']))
+            this.logger.info('-> max. iteration : {}'.format(self.debug_level['iteration']))
+            this.logger.info('---')
         
 
 ##########################################################################################################################################################################
@@ -221,264 +249,49 @@ class SKS():
         """
         TODO
         """
-        ##################################
-        ### Constructs static features ###
-        ##################################
-
-        # 01 - Constructs the grid
-        if this.debug_level['model'] >= 1:
-
-            # TODO - Grille inchangeable ???
-            self.SKS_SETTINGS = val.validate_attribute_presence(self.SKS_SETTINGS, 'grid', 'required')
-            if self.SKS_SETTINGS['grid'] != this.ACTIVE_PROJECT['settings']['grid']:
-                self.SKS_SETTINGS['grid'] = val.validate_grid_settings(self.SKS_SETTINGS['grid'])
-                self._construct_feature_grid()
-                this.ACTIVE_PROJECT['settings']['grid'] = self.SKS_SETTINGS['grid']
-                this.ACTIVE_PROJECT['model']['grid']    = self.grid
-            else:
-                self.grid = this.ACTIVE_PROJECT['model']['grid']
-
-        else:
-
-            return None
-
-        
-        # 02 - Constructs the mask
-        if this.debug_level['model'] >= 2:
-
-            # TODO - Si la grille change, alors le mask doit être recontrôlé, etc pour les autres features
-            self.SKS_SETTINGS = val.validate_attribute_presence(self.SKS_SETTINGS, 'mask', 'optional')
-            if self.SKS_SETTINGS['mask'] != this.ACTIVE_PROJECT['settings']['mask']:
-                self.SKS_SETTINGS['mask'] = val.validate_mask_settings(self.SKS_SETTINGS['mask'], self.grid)
-                self._construct_feature_mask()
-                this.ACTIVE_PROJECT['settings']['mask'] = self.SKS_SETTINGS['mask']
-                this.ACTIVE_PROJECT['model']['mask']    = self.mask
-            else:
-                self.mask = this.ACTIVE_PROJECT['model']['mask']
-
-        else:
-
-            return None
-
-
-        # 03 - Constructs the topography
-        if this.debug_level['model'] >= 3:
-
-            this.feature_kind = 'topography'
-            self.SKS_SETTINGS = val.validate_attribute_presence(self.SKS_SETTINGS, 'topography', 'optional')
-            if self.SKS_SETTINGS['topography'] != this.ACTIVE_PROJECT['settings']['topography']:
-                self.SKS_SETTINGS['topography'] = val.validate_geologic_feature_settings('topography', self.SKS_SETTINGS['topography'], self.grid)
-                self._construct_feature_topography()
-                this.ACTIVE_PROJECT['settings']['topography'] = self.SKS_SETTINGS['topography']
-                this.ACTIVE_PROJECT['model']['topography']    = self.topography
-            else:
-                self.topography = this.ACTIVE_PROJECT['model']['topography']
-        
-        else:
-
-            return None
-
-
-        # 04 - Constructs the geology
-        if this.debug_level['model'] >= 4:
-
-            this.feature_kind = 'geology'
-            self.SKS_SETTINGS = val.validate_attribute_presence(self.SKS_SETTINGS, 'geology', 'optional')
-            if self.SKS_SETTINGS['geology'] != this.ACTIVE_PROJECT['settings']['geology']:
-                self.SKS_SETTINGS['geology'] = val.validate_geologic_feature_settings('geology', self.SKS_SETTINGS['geology'], self.grid)
-                self._construct_feature_geology()
-                this.ACTIVE_PROJECT['settings']['geology'] = self.SKS_SETTINGS['geology']
-                this.ACTIVE_PROJECT['model']['geology']    = self.geology
-            else:
-                self.geology = this.ACTIVE_PROJECT['model']['geology']
-
-        else:
-
-            return None
-
-        
-        # 05 - Constructs the faults
-        if this.debug_level['model'] >= 5:
-
-            this.feature_kind = 'faults'
-            self.SKS_SETTINGS = val.validate_attribute_presence(self.SKS_SETTINGS, 'faults', 'optional')
-            if self.SKS_SETTINGS['faults'] != this.ACTIVE_PROJECT['settings']['faults']:
-                self.SKS_SETTINGS['faults'] = val.validate_geologic_feature_settings('faults', self.SKS_SETTINGS['faults'], self.grid)
-                self._construct_feature_faults()
-                this.ACTIVE_PROJECT['settings']['faults'] = self.SKS_SETTINGS['faults']
-                this.ACTIVE_PROJECT['model']['faults']    = self.faults
-            else:
-                self.faults = this.ACTIVE_PROJECT['model']['faults']
-
-        else:
-
-            return None
- 
-
-        # TODO 007 - add initial karstic system feature
-        # 06 - Constructs the initial karst network
-        if this.debug_level['model'] >= 6:
-
-            pass
-            # self._construct_feature_karst()
-
-        else:
-
-            return None
-
-
-        # TODO 008 - add initial field feature
-        # 07 - Constructs the field
-        if this.debug_level['model'] >= 7:
-
-            pass
-            # self._construct_feature_field()
-
-        else:
-
-            return None
-
-
-        ###################################
-        ### Constructs dynamic features ###
-        ###################################
-
-
-        # 08 - Set the main seed
-        if this.debug_level['model'] >= 8:
-
-            self.SKS_SETTINGS        = val.validate_attribute_presence(self.SKS_SETTINGS, 'sks', 'required')
-            self.SKS_SETTINGS['sks'] = val.validate_attribute_presence(self.SKS_SETTINGS['sks'], 'seed', 'optional', default_value=0, is_subattribute=True)
-
-            if self.SKS_SETTINGS['sks']['seed'] == 0:
-                self.SKS_SETTINGS['sks']['seed'] = np.random.default_rng().integers(low=0, high=10**6)
-            
-            self.RNG = {
-                'master' : np.random.default_rng(self.SKS_SETTINGS['sks']['seed']),
-            }
-
-        else:
-
-            return None
-
-
-        # 09 - Constructs the outlets and shuffles
-        if this.debug_level['model'] >= 9:
-
-            this.feature_kind = 'outlets'
-            self.SKS_SETTINGS = val.validate_attribute_presence(self.SKS_SETTINGS, 'outlets', 'required')
-            if self.SKS_SETTINGS['outlets'] != this.ACTIVE_PROJECT['settings']['outlets']:
-                self.SKS_SETTINGS['outlets'] = val.validate_points_feature_settings('outlets', self.SKS_SETTINGS['outlets'])
-                self._set_rng('outlets')
-                self.outlets = self._construct_feature_points('outlets')
-                if self.SKS_SETTINGS['outlets']['shuffle']:
-                    self.outlets = self.outlets.sample(frac=1, random_state=self.RNG['master']).reset_index(drop=True)
-                this.ACTIVE_PROJECT['settings']['outlets'] = self.SKS_SETTINGS['outlets']
-                this.ACTIVE_PROJECT['model']['outlets']    = self.outlets
-            else:
-                self.outlets = this.ACTIVE_PROJECT['model']['outlets']
-
-        else:
-
-            return None
-
-        
-        # 10 - Constructs the inlets and shuffles
-        if this.debug_level['model'] >= 10:
-
-            this.feature_kind = 'inlets'
-            self.SKS_SETTINGS = val.validate_attribute_presence(self.SKS_SETTINGS, 'inlets', 'required')
-            if self.SKS_SETTINGS['inlets'] != this.ACTIVE_PROJECT['settings']['inlets']:
-                self.SKS_SETTINGS['inlets'] = val.validate_points_feature_settings('inlets', self.SKS_SETTINGS['inlets'])
-                self._set_rng('inlets')
-                self.inlets = self._construct_feature_points('inlets')
-                if self.SKS_SETTINGS['inlets']['shuffle']:
-                    self.inlets = self.inlets.sample(frac=1, random_state=self.RNG['master']).reset_index(drop=True)
-                this.ACTIVE_PROJECT['settings']['inlets'] = self.SKS_SETTINGS['inlets']
-                this.ACTIVE_PROJECT['model']['inlets']    = self.inlets
-            else:
-                self.inlets = this.ACTIVE_PROJECT['model']['inlets']
-
-        else:
-
-            return None
-
-
-        # TODO 009 - define the tracers
-        # 11 - Constructs the tracers
-        if this.debug_level['model'] >= 11:
-
-            pass
-            # self._construct_feature_tracers()
-
-        else:
-
-            return None
-
-
-        # 12 - Constructs the fractures
-        if this.debug_level['model'] >= 12:
-
-            # TODO ????? d'ou vient la clé 'axis' ??
-            self.SKS_SETTINGS = val.validate_attribute_presence(self.SKS_SETTINGS, 'fractures', 'optional')
-            if self.SKS_SETTINGS['fractures'] != this.ACTIVE_PROJECT['settings']['fractures']:
-                self.SKS_SETTINGS['fractures'] = val.validate_fractures_settings(self.SKS_SETTINGS['fractures'])
-                self._set_rng('fractures')
-                self._construct_feature_fractures()
-                this.ACTIVE_PROJECT['settings']['fractures'] = self.SKS_SETTINGS['fractures']
-                this.ACTIVE_PROJECT['model']['fractures']    = self.fractures
-            else:
-                self.fractures = this.ACTIVE_PROJECT['model']['fractures']
-
-        else:
-
-            return None
-
-
-        ###############################
-        ### Constructs fmm features ###
-        ###############################
-
-
-        # 13 - Validates fmm settings  
-        if this.debug_level['model'] >= 13:
-
-            self.SKS_SETTINGS = val.validate_attribute_presence(self.SKS_SETTINGS, 'fmm', 'required')
-            self.SKS_SETTINGS = val.validate_fmm_settings(self.SKS_SETTINGS)
-
-        else:
-
-            return None
-
-        # 14 - Constructs fmm variables
-        if this.debug_level['model'] >= 14:
-
-            self._construct_fmm_variables()
-
-        else:
-
-            return None
-
+        ### Constructs geologic static features
+        self._build_model_grid()        # 01 - Builds the grid
+        self._build_model_mask()        # 02 - Builds the mask
+        self._build_model_topography()  # 03 - Builds the topography
+        self._build_model_geology()     # 04 - Builds the geology
+        self._build_model_faults()      # 05 - Builds the faults
+        self._build_model_karst()       # 06 - Builds the initial karst network
+        self._build_model_field()       # 07 - Builds the field
+
+        ### Constructs geologic dynamic features 
+        self._build_model_seed()        # 08 - Sets the main seed
+        self._build_model_outlets()     # 09 - Builds the outlets and shuffles them
+        self._build_model_inlets()      # 10 - Builds the inlets and shuffles them
+        self._build_model_tracers()     # 11 - Builds the tracers
+        self._build_model_fractures()   # 12 - Builds the fractures
+
+        ### Constructs fmm features 
+        self._construct_fmm_variables() # 13 - Constructs fmm variables
         return None
+    
 
-##########################################################################################################################################################################
-### STATIC FEATURES ###
-#######################
-
-
-    @wp._decorator_logging('construction', 'grid')
-    def _construct_feature_grid(self):
+    # TODO - Grille inchangeable ???
+    # TODO - Si la grille change, alors le mask doit être recontrôlé, etc pour les autres features
+    # 1
+    @wp._debug_level(1)
+    @wp._parameters_validation('grid', 'required')
+    @wp._memoize('grid')
+    @wp._logging()
+    def _build_model_grid(self):
         """
-        Constructs the grid.
+        Builds the grid.
         """
         self.grid = Grid(**self.SKS_SETTINGS['grid'])
         return None
-
-
-    @wp._decorator_logging('construction', 'mask')
-    def _construct_feature_mask(self):
+    
+    # 2
+    @wp._debug_level(2)
+    @wp._parameters_validation('mask', 'optional')
+    @wp._memoize('mask')
+    @wp._logging()
+    def _build_model_mask(self):
         """
-        Constructs the mask.
+        Builds the mask.
         """
         if self.SKS_SETTINGS['mask']['data'] != '':
             self.mask = Mask(**self.SKS_SETTINGS['mask'])
@@ -486,12 +299,15 @@ class SKS():
         else:
             self.mask = None
         return None
-
-
-    @wp._decorator_logging('construction', 'topography')
-    def _construct_feature_topography(self):
+    
+    # 3
+    @wp._debug_level(3)
+    @wp._parameters_validation('topography', 'optional')
+    @wp._memoize('topography')
+    @wp._logging()
+    def _build_model_topography(self):
         """
-        Constructs the topography.
+        Builds the topography.
         """
         if self.SKS_SETTINGS['topography']['data'] != '':
             self.topography = Topography(**self.SKS_SETTINGS['topography'], grid=self.grid)
@@ -500,12 +316,15 @@ class SKS():
         else:
             self.topography = None
         return None
-
-
-    @wp._decorator_logging('construction', 'geology')
-    def _construct_feature_geology(self):
+        
+    # 4
+    @wp._debug_level(4)
+    @wp._parameters_validation('geology', 'optional')
+    @wp._memoize('geology')
+    @wp._logging()
+    def _build_model_geology(self):
         """
-        Constructs the geology.
+        Builds the geology.
         """
         self.geology = Geology(**self.SKS_SETTINGS['geology'], grid=self.grid)
 
@@ -520,12 +339,15 @@ class SKS():
         self.geology._compute_surface(self.topography.data)
         self.geology._compute_statistics(self.grid)
         return None
-
-
-    @wp._decorator_logging('construction', 'faults')
-    def _construct_feature_faults(self):
+    
+    # 5
+    @wp._debug_level(5)
+    @wp._parameters_validation('faults', 'optional')
+    @wp._memoize('faults')
+    @wp._logging()
+    def _build_model_faults(self):
         """
-        TODO
+        Builds the faults.
         """
         if self.SKS_SETTINGS['faults']['data'] != '':
             self.faults = Faults(**self.SKS_SETTINGS['faults'], grid=self.grid)
@@ -534,45 +356,139 @@ class SKS():
             self.faults._compute_statistics(self.grid)
         else:
             self.faults = None
-
         return None
-
-
-    # TODO 007
-    # @_decorator_logging('karst')
+    
+    # 6
+    # TODO
     # gestion des réseaux incomplets
     # https://scipy-lectures.org/packages/scikit-image/auto_examples/plot_labels.html
-    # def _construct_feature_karst(self):
-    #     """
-    #     Constructs the initial karst conduits network.
-    #     """
-    #     if self.SKS_SETTINGS['karst']['data'] != '':
-    #         self.karst = Karst(**self.SKS_SETTINGS['karst'], grid=self.grid)
-    #         self.karst.data = np.where(self.topography.data == 1, self.karst.data, 0)
-    #         self.karst._compute_surface(self.topography.data)
-    #         self.karst._compute_statistics(self.grid)
-    #     else:
-    #         self.karst = None
-    #     return None
+    @wp._debug_level(6)
+    # @wp._parameters_validation('karst', 'optional')
+    # @wp._memoize('karst')
+    # @wp._logging()
+    def _build_model_karst(self):
+        """
+        Builds the initial karst conduits network.
+        """
+        # if self.SKS_SETTINGS['karst']['data'] != '':
+        #     self.karst = Karst(**self.SKS_SETTINGS['karst'], grid=self.grid)
+        #     self.karst.data = np.where(self.topography.data == 1, self.karst.data, 0)
+        #     self.karst._compute_surface(self.topography.data)
+        #     self.karst._compute_statistics(self.grid)
+        # else:
+        #     self.karst = None
+        return None
+    
+    # 7
+    # TODO
+    @wp._debug_level(7)
+    # @wp._parameters_validation('field', 'optional')
+    # @wp._memoize('field')
+    # @wp._logging()
+    def _build_model_field(self):
+        """
+        Builds the field.
+        """
+        # if self.SKS_SETTINGS['field']['data'] != '':
+        #     self.field = Field(**self.SKS_SETTINGS['field'], grid=self.grid)
+        # else:
+        #     self.field = None
+        return None
+    
+    # 8
+    @wp._debug_level(8)
+    @wp._parameters_validation('sks', 'required') # todo - rename ?
+    def _build_model_seed(self):
+        """ 
+        TODO
+        """
+        if self.SKS_SETTINGS['sks']['seed'] == 0:
+            self.SKS_SETTINGS['sks']['seed'] = np.random.default_rng().integers(low=0, high=10**6)
+        
+        self.RNG = {
+            'master' : np.random.default_rng(self.SKS_SETTINGS['sks']['seed']),
+        }
+        return None
 
+    # 9
+    @wp._debug_level(9)
+    @wp._parameters_validation('outlets', 'required')
+    @wp._memoize('outlets')
+    @wp._logging()
+    def _build_model_outlets(self):
+        """ 
+        TODO
+        """
+        self._set_rng('outlets')
+        self.outlets = self._construct_feature_points('outlets')
+        if self.SKS_SETTINGS['outlets']['shuffle']:
+            self.outlets = self.outlets.sample(frac=1, random_state=self.RNG['master']).reset_index(drop=True)
+        return None
 
-    # TODO 008
-    # @_decorator_logging('field')
-    # def _construct_feature_field(self):
-    #     """
-    #     Constructs the field.
-    #     """
-    #     if self.SKS_SETTINGS['field']['data'] != '':
-    #         self.field = Field(**self.SKS_SETTINGS['field'], grid=self.grid)
-    #     else:
-    #         self.field = None
-    #     return None
+    # 10
+    @wp._debug_level(10)
+    @wp._parameters_validation('inlets', 'required')
+    @wp._memoize('inlets')
+    @wp._logging()
+    def _build_model_inlets(self):
+        """ 
+        TODO
+        """
+        self._set_rng('inlets')
+        self.inlets = self._construct_feature_points('inlets')
+        if self.SKS_SETTINGS['inlets']['shuffle']:
+            self.inlets = self.inlets.sample(frac=1, random_state=self.RNG['master']).reset_index(drop=True)
+        return None
 
-
-##########################################################################################################################################################################
-### DYNAMIC FEATURES ###
-########################
-
+    # 11
+    @wp._debug_level(11)
+    # @wp._parameters_validation('tracers', 'optional')
+    # @wp._memoize('tracers')
+    # @wp._logging()
+    def _build_model_tracers(self):
+        """
+        Builds the tracers.
+        """
+        # self.tracers = {}
+        return None
+    
+    # 12
+    @wp._debug_level(12)
+    @wp._parameters_validation('fractures', 'optional')
+    @wp._memoize('fractures')
+    @wp._logging()
+    def _build_model_fractures(self):
+        """ 
+        Builds the fractures
+        """
+        # TODO ????? d'ou vient la clé 'axis' ??
+        self._set_rng('fractures')
+        if self.SKS_SETTINGS['fractures']['data'] != '':
+            self.fractures = Fractures(**self.SKS_SETTINGS['fractures'], grid=self.grid, rng=self.RNG['fractures'])
+            self.fractures.data = np.where(self.topography.data == 1, self.fractures.data, 0)
+            self.fractures._compute_surface(self.topography.data)
+            self.fractures._compute_statistics(self.grid)
+        else:
+            self.fractures = None
+        return None
+    
+    # 13
+    @wp._debug_level(13)
+    @wp._parameters_validation('fmm', 'required')
+    @wp._logging('fmm', 'construction')
+    def _construct_fmm_variables(self):
+        """
+        TODO
+        """
+        self._initialize_fmm_iterations()   # Distributes inlets and outlets among karstic generations
+        self._construct_fmm_iterations()    # Distributes inlets and outlets among computing iterations
+        self._initialize_fmm_variables()    # Initializes useful variables for the farst-marching method
+        return None
+    
+    
+    ########################
+    ### BUILDING METHODS ###
+    ########################
 
     def _set_rng(self, attribute):
         """
@@ -584,8 +500,6 @@ class SKS():
         self.RNG[attribute] = np.random.default_rng(self.SKS_SETTINGS[attribute]['seed'])
         return None
 
-
-    @wp._decorator_logging('construction', 'points')
     def _construct_feature_points(self, kind):
         """
         TODO
@@ -666,50 +580,11 @@ class SKS():
         return pd.DataFrame(data=data)
 
 
-    # TODO 009
-    @wp._decorator_logging('construction', 'tracers')
-    def _construct_feature_tracers(self):
-        """
-        Constructs the tracers.
-        """
-        self.tracers = {}
-        return None
+    ####################
+    ### FMM FEATURES ###
+    ####################
 
-
-    @wp._decorator_logging('construction', 'fractures')
-    def _construct_feature_fractures(self):
-        """
-        TODO
-        """
-        if self.SKS_SETTINGS['fractures']['data'] != '':
-            self.fractures = Fractures(**self.SKS_SETTINGS['fractures'], grid=self.grid, rng=self.RNG['fractures'])
-            self.fractures.data = np.where(self.topography.data == 1, self.fractures.data, 0)
-            self.fractures._compute_surface(self.topography.data)
-            self.fractures._compute_statistics(self.grid)
-        else:
-            self.fractures = None
-        return None
-
-
-##########################################################################################################################################################################
-### FMM FEATURES ###
-####################
-
-    @wp._decorator_logging('construction', 'fmm')
-    def _construct_fmm_variables(self):
-        """
-        TODO
-        """
-        # Distributes inlets and outlets among all iterations
-        self._construct_fmm_iterations()
-
-        # Initializes useful variables for the farst-marching method
-        self._initialize_fmm_variables()
-
-        return None
-
-
-    def _construct_fmm_iterations(self):
+    def _initialize_fmm_iterations(self):
         """
         TODO
         """
@@ -741,18 +616,47 @@ class SKS():
             self._inlets.loc[inlets_test, 'inlet_iteration'] = distribution
 
         return None
+    
+    def _construct_fmm_iterations(self):
+        """
+        TODO
+        """
+        # Set up iteration structure:
+        iteration = 0
+        self.iteration_outlets = pd.DataFrame()
+        self.iteration_inlets  = pd.DataFrame()
 
+        # Loops over outlet iterations
+        for outlet_iteration in range(len(self.outlets_importance)):
 
+            # Loops over inlet iterations
+            for inlet_iteration in range(len(self.inlets_importance)):
+                
+                # Gets the outlets assigned to the current outlet iteration
+                outlets_current = self._outlets[self._outlets['outlet_iteration'] == outlet_iteration]
+                outlets_current = outlets_current.assign(iteration=iteration)
+                self.iteration_outlets = pd.concat([self.iteration_outlets, outlets_current[['iteration', 'x', 'y', 'z']]])
+
+                # Gets the inlets assigned to the current inlet iteration
+                inlets_current = self._inlets[self._inlets['outlet_key'] == outlet_iteration]
+                inlets_current_iteration = inlets_current[inlets_current['inlet_iteration'] == inlet_iteration]
+                inlets_current_iteration = inlets_current_iteration.assign(iteration=iteration)
+                self.iteration_inlets = pd.concat([self.iteration_inlets, inlets_current_iteration[['iteration', 'x', 'y', 'z']]])
+
+                # Increments total iteration number by 1
+                iteration = iteration + 1   
+                
+        return None
+    
     def _repartition_points(self, nbr_points, importance):
         """
-        Correct for integers in importance factors list not summing correctly to total number of points.
+        Correct for integers in importance factors list not summing correctly to total number of points. # TODO ?
         """
         total_importance = float(sum(importance))                                               # total number of points as assigned (this may not be the actual total)
         proportion       = [float(i)/total_importance       for i in importance]                # percent of points to use this iteration
         repartition      = [round(proportion[i]*nbr_points) for i in range(len(proportion))]    # number of points to use this iteration (need to round bc percentage will not result in whole number)
         repartition[-1]  = nbr_points-sum(repartition[0:-1])                                    # leftover points are assignd to last iteration
         return repartition
-
 
     def _initialize_fmm_variables(self):
         """
@@ -762,12 +666,19 @@ class SKS():
         self.maps = {
             'outlets' : np.full((self.grid.nx, self.grid.ny, self.grid.nz), np.nan), # map of null values where each cell with an outlet will have the index of that outlet
             'nodes'   : np.full((self.grid.nx, self.grid.ny, self.grid.nz), np.nan), # map of null values where each cell that has a node will be updated with that node index
-            'cost'    : np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny, self.grid.nz)), # cost of travel through each cell
-            'alpha'   : np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny, self.grid.nz)), # cost of travel along gradient through each cell
-            'beta'    : np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny, self.grid.nz)), # cost of travel perpendicular to gradient through each cell
-            'time'    : np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny, self.grid.nz)), # travel time to outlet from each cell
-            'karst'   : np.zeros((self.nbr_iteration, self.grid.nx, self.grid.ny, self.grid.nz)), # presence/absence of karst conduit in each cell
+            'cost'    : [], # cost of travel through each cell
+            'alpha'   : [], # cost of travel along gradient through each cell
+            'beta'    : [], # cost of travel perpendicular to gradient through each cell
+            'time'    : [], # travel time to outlet from each cell
+            'karst'   : [], # presence/absence of karst conduit in each cell
         }
+        
+        ### Defines outlets map according to outlets emplacements
+        for (i, outlet) in self._outlets.iterrows(): #assign outlet indices. Compute the outlets map (array indicating location of outlets as their index and everywhere else as nan).
+            X = self.grid.get_i(outlet.x)
+            Y = self.grid.get_j(outlet.y)
+            Z = self.grid.get_k(outlet.z)
+            self.maps['outlets'][X][Y][Z] = i
 
         ### Vector maps
         self.vectors = {
@@ -779,7 +690,6 @@ class SKS():
         }
 
         ### Set up fast-marching
-        # TODO - FIELD ?
         self.fmm = {
             'algorithm'     : self.SKS_SETTINGS['fmm']['algorithm'],
             'riemannMetric' : [],                                            # this changes at every iteration, but cannot be stored?
@@ -803,12 +713,6 @@ class SKS():
 ### KARST NETWORK SIMULATION ###
 ################################
 
-############
-### TODO ###
-############
-# LOGGING
-# DEBUG PLOTS
-
     # Computes karst network
     def compute_karst_network(self):
         """
@@ -821,7 +725,7 @@ class SKS():
         TODO
         """
         ### Computes conduits for each generation & store nodes and edges for network
-        self._compute_iterations_karst_network()
+        self._compute_karst_network()
 
         ### ii. Calculates the karst network statistics indicators with karstnet and save karst network
         # karstnet_edges = list(self.edges.values()) #convert to format needed by karstnet (list)
@@ -856,97 +760,64 @@ class SKS():
         # self.inlets  = np.asarray(self._inlets)[:,0:2]    #return inlets to array format without info about iteration and inlet/outlet assignment (important for later iterations)
         # self.outlets = np.asarray(self._outlets)[:,0:2]   #return outlets to array format without info about iteration and inlet/outlet assignment (important for later iterations)
         return None
-
-
-    def _compute_iterations_karst_network(self):
+    
+    
+    def _compute_karst_network(self):
         """
-        Compute each generation of karst conduits.
-
-        TODO : à terminer
+        TODO
         """
+        this.logger = logging.getLogger("fmm.modelisation")
+        this.logger.info("Computing karst network")
+        
+        self.iteration = 0
+        
+        for self.iteration in range(self.nbr_iteration):
+        
+            # Compute travel time maps and conduit network
+            if self.fmm['algorithm'] == 'Isotropic3':
+                self._compute_cost_map()    # 2.1.1
+                self._compute_time_map()    # 2.1.2
+                self._compute_karst_map()   # 2.1.3
 
-        # Define outlets map according to outlets emplacements
-        for (i, outlet) in self._outlets.iterrows(): #assign outlet indices. Compute the outlets map (array indicating location of outlets as their index and everywhere else as nan).
-            X = self.grid.get_i(outlet.x)
-            Y = self.grid.get_j(outlet.y)
-            Z = self.grid.get_k(outlet.z)
-            self.maps['outlets'][X][Y][Z] = i
+            elif self.fmm['algorithm'] == 'Riemann3':
+                # TODO - check notebooks mirebeau
+                self._compute_cost_map()        # 2.1.3
+                self._compute_alpha_map()       # 2.1.4
+                self._compute_beta_map()        # 2.1.5
+                self._compute_riemann_metric()  # 2.1.6
+                self._compute_time_map()        # 2.1.7
+                self._compute_karst_map()       # 2.1.3
 
-        # Set up iteration structure:
-        iteration = 0
-        self.iteration_outlets = pd.DataFrame()
-        self.iteration_inlets  = pd.DataFrame()
-
-        # Loops over outlet iterations
-        for outlet_iteration in range(len(self.outlets_importance)):
-
-            # Loops over inlet iterations
-            for inlet_iteration in range(len(self.inlets_importance)):
-                
-                outlets_current = self._outlets[self._outlets['outlet_iteration'] == outlet_iteration]
-                outlets_current = outlets_current.assign(iteration=iteration)
-                self.iteration_outlets = pd.concat([self.iteration_outlets, outlets_current[['iteration', 'x', 'y', 'z']]])
-
-                # TODO - Question : fast-marching sur tous les outlets en meme temps ou pas ?
-                # Gets the inlets assigned to the current inlet iteration
-                # version 1 : 'per_outlets' designs inlets distribution for each group of outlets
-                inlets_current = self._inlets[self._inlets['outlet_key'] == outlet_iteration]
-                # version 2 : 'per_outlets' designs inlets distribution for each outlets 
-                # lst = outlets_current.index.values.tolist()
-                # inlets_current = self._inlets[self._inlets['outlet_key'].isin(lst)]
-
-                inlets_current_iteration = inlets_current[inlets_current['inlet_iteration'] == inlet_iteration] # Gets the inlets assigned to the current inlet iteration
-                inlets_current_iteration = inlets_current_iteration.assign(iteration=iteration)
-                self.iteration_inlets = pd.concat([self.iteration_inlets, inlets_current_iteration[['iteration', 'x', 'y', 'z']]])
-
-                # Compute travel time maps and conduit network
-                if self.fmm['algorithm'] == 'Isotropic3':
-                    # 2.1.1
-                    self._compute_cost_map(iteration)
-                    # 2.1.2
-                    self._compute_time_map(iteration)
-                    # 2.1.3
-                    self._compute_karst_map(iteration)
-
-                elif self.fmm['algorithm'] == 'Riemann3':
-                    # 2.1.1
-                    self._compute_cost_map(iteration)
-                    # 2.1.4
-                    self._compute_alpha_map(iteration)
-                    # 2.1.5
-                    self._compute_beta_map(iteration)
-                    # TODO
-                    # notebooks mirebeau
-                    # 2.1.6
-                    self._compute_riemann_metric(iteration)
-                    # 2.1.7
-                    self._compute_time_map(iteration)
-                    # 2.1.3
-                    self._compute_karst_map(iteration)
-                
-                iteration = iteration + 1   #increment total iteration number by 1
-
+        # self.iteration = self.iteration + 1   #increment total iteration number by 1
+            this.logger.info("iteration : {}/{}".format(self.iteration+1, self.nbr_iteration))
         return None
 
 
     ### 2.1.1 Iso- and anisotropic case
-    def _compute_cost_map(self, iteration):
+    @wp._debug_level(1, True)
+    @wp._logging()
+    def _compute_cost_map(self):
         """
         Compute the cost map (how difficult it is to traverse each cell).
 
         TODO
         """
         # If it's the first iteration, iniatialize the cost map according to the geological settings.
-        if iteration == 0:
+        if self.iteration == 0:
+
+            cost_map_0 = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz))
+            self.maps['cost'].append(cost_map_0)
             
             ### Geology
             for key, cost in self.geology.cost.items():
-                self.maps['cost'][0] = np.where(self.geology.data == key, cost, self.maps['cost'][0])
+                cost_map_0 = np.where(self.geology.data == key, cost, cost_map_0)
+                self.maps['cost'][0] = cost_map_0
 
             ### Faults
             if self.faults is not None:
                 for key, cost in self.faults.cost.items():
-                    self.maps['cost'][0] = np.where(self.faults.data == key, cost, self.maps['cost'][0])
+                    cost_map_0 = np.where(self.faults.data == key, cost, cost_map_0)
+                    self.maps['cost'][0] = cost_map_0
 
             ### TODO
             ### Karst
@@ -962,25 +833,30 @@ class SKS():
 
             ### If out of mask
             if self.mask is not None:
-                self.maps['cost'][0] = np.where(self.mask.mask == 0, this.cost['out'], self.maps['cost'][0])
+                cost_map_0 = np.where(self.mask.mask == 0, this.cost['out'], cost_map_0)
+                self.maps['cost'][0] = cost_map_0
 
         # If it's not the first iteration
         else: 
-            self.maps['cost'][iteration] = self.maps['cost'][iteration-1] # set cost map to be same as previous iteration
-            self.maps['cost'][iteration] = np.where(self.maps['karst'][iteration-1] > 0, this.cost['conduits'], self.maps['cost'][iteration]) # where karst conduits are present from previous iteration, set cost to conduit cost, elsewhere, leave unchanged
-        
+            self.maps['cost'].append(self.maps['cost'][self.iteration-1])
+            self.maps['cost'][self.iteration] = np.where(self.maps['karst'][self.iteration-1] > 0, this.cost['conduits'], self.maps['cost'][self.iteration])
+
         return None
 
 
     ### 2.1.4 Anisotropic case
-    def _compute_alpha_map(self, iteration):
+    # @wp._decorator_logging_fmm()
+    @wp._debug_level(2, True)
+    @wp._logging()
+    def _compute_alpha_map(self):
         """
         Compute the alpha map: travel cost in the same direction as the gradient.
         Cost map * topography map, so that the cost is higher at higher elevations, encouraging conduits to go downgradient.
 
         TODO : à terminer
         """
-        self.maps['alpha'][iteration] = self.maps['cost'][iteration] * self.grid.Z
+        alpha_map = self.maps['cost'][self.iteration] * self.grid.Z
+        self.maps['alpha'].append(alpha_map)
 
         # TODO
         # if self.settings['topography_mode'] != 'null':
@@ -997,20 +873,25 @@ class SKS():
     # TODO - _set_beta_map()
     # anisotropie avec pendage
     # objet Surface
-    def _compute_beta_map(self, iteration):
+    @wp._debug_level(3, True)
+    @wp._logging()
+    def _compute_beta_map(self):
         """
         Compute the beta map: travel cost perpendicular to the gradient.
         If beta is higher than alpha, conduits will follow the steepest gradient.
         If beta is lower than alpha, conduits will follow contours.
         """
-        self.maps['beta'][iteration] = self.maps['alpha'][iteration] / self.SKS_SETTINGS['fmm']['cost']['ratio']
+        beta_map = self.maps['alpha'][self.iteration] / self.SKS_SETTINGS['fmm']['cost']['ratio']
+        self.maps['beta'].append(beta_map)
 
         # TODO - alpha = beta dans zone saturée
         return None
 
 
     ### 2.1.6 Anisotropic case
-    def _compute_riemann_metric(self, iteration):
+    @wp._debug_level(4, True)
+    @wp._logging()
+    def _compute_riemann_metric(self):
         """
         Compute the riemann metric: Define the Riemannian metric needed as input for the anisotropic fast marching.
 
@@ -1032,16 +913,16 @@ class SKS():
 
         # alpha = np.transpose(self.maps['alpha'][iteration], (2,1,0))
         # beta  = np.transpose(self.maps['beta'][iteration],  (2,1,0))
-        alpha = self.maps['alpha'][iteration]
-        beta  = self.maps['beta'][iteration]
-        # self.riemannMetric = agd.Metrics.Riemann.needle([orientationz, orientationy, orientationx], alpha, beta) 
-        self.fmm['riemannMetric'] = agd.Metrics.Riemann.needle([orientationx, orientationy, orientationz], alpha, beta) 
-        # TODO gamma ??? 
+        alpha = self.maps['alpha'][self.iteration]
+        beta  = self.maps['beta'][self.iteration]
+        self.fmm['riemannMetric'] = agd.Metrics.Riemann.needle([orientationx, orientationy, orientationz], alpha, beta)  
         return None
 
 
     ### 2.1.2
-    def _compute_time_map(self, iteration):
+    @wp._debug_level(5, True)
+    @wp._logging()
+    def _compute_time_map(self):
         """
         Compute the travel time map (how long it takes to get to the outlet from each cell),
         using the ani- or isotropic agd-hfm fast-marching algorithm, and store travel time map.
@@ -1049,22 +930,22 @@ class SKS():
         TODO
         """
         # Set the outlets for this iteration
-        seeds_x = self.iteration_outlets[self.iteration_outlets['iteration']==iteration].x
-        seeds_y = self.iteration_outlets[self.iteration_outlets['iteration']==iteration].y
-        seeds_z = self.iteration_outlets[self.iteration_outlets['iteration']==iteration].z
+        seeds_x = self.iteration_outlets[self.iteration_outlets['iteration']==self.iteration].x
+        seeds_y = self.iteration_outlets[self.iteration_outlets['iteration']==self.iteration].y
+        seeds_z = self.iteration_outlets[self.iteration_outlets['iteration']==self.iteration].z
         seeds   = list(zip(seeds_x, seeds_y, seeds_z))
         self.fmm['fastMarching']['seeds'] = seeds
 
         # Select inlets for current iteration
-        tips_x = self.iteration_inlets[self.iteration_inlets['iteration']==iteration].x
-        tips_y = self.iteration_inlets[self.iteration_inlets['iteration']==iteration].y
-        tips_z = self.iteration_inlets[self.iteration_inlets['iteration']==iteration].z
+        tips_x = self.iteration_inlets[self.iteration_inlets['iteration']==self.iteration].x
+        tips_y = self.iteration_inlets[self.iteration_inlets['iteration']==self.iteration].y
+        tips_z = self.iteration_inlets[self.iteration_inlets['iteration']==self.iteration].z
         tips   = list(zip(tips_x, tips_y, tips_z))
         self.fmm['fastMarching']['tips'] = tips
 
         # Set the travel cost through each cell
         if self.fmm['algorithm'] == 'Isotropic3':
-            self.fmm['fastMarching']['cost'] = self.maps['cost'][iteration]
+            self.fmm['fastMarching']['cost'] = self.maps['cost'][self.iteration]
         elif self.fmm['algorithm'] == 'Riemann3':
             self.fmm['fastMarching']['metric'] = self.fmm['riemannMetric']
 
@@ -1075,7 +956,7 @@ class SKS():
         self.fmm['fastMarchingOutput'] = self.fmm['fastMarching'].Run()
 
         # Store travel time maps
-        self.maps['time'][iteration] = self.fmm['fastMarchingOutput']['values']
+        self.maps['time'].append(self.fmm['fastMarchingOutput']['values'])
 
         # Store fastest travel paths
         self.vectors['geodesics'].append(self.fmm['fastMarchingOutput']['geodesics'])
@@ -1083,14 +964,19 @@ class SKS():
 
 
     ### 2.1.3 
-    def _compute_karst_map(self, iteration):
+    @wp._debug_level(6, True)
+    @wp._logging()
+    def _compute_karst_map(self):
         """
         Compute the karst map based on the paths from agd-hfm.
         Array of all zeros, with ones in cells containing a karst conduit.
         """
         # Get karst map from previous iteration (except for the very first iteration)
-        if iteration > 0:
-            self.maps['karst'][iteration] = self.maps['karst'][iteration-1]
+        if self.iteration == 0:
+            karst_map_0 = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz))
+            self.maps['karst'].append(karst_map_0)
+        else:
+            self.maps['karst'].append(self.maps['karst'][self.iteration-1])
 
         # Debugging plot:
         # Chloe: this should stay in since it is very useful if there are problems
@@ -1102,9 +988,7 @@ class SKS():
             for p in range(path.shape[1]):                       #loop over points making up this conduit path
                 point = path[:,p]                                #get coordinates of current point
                 [[ix, iy, iz], error] = self.fmm['fastMarching'].IndexFromPoint(point) #convert to coordinates to indices, /!\ returning iy first then ix TODO ???
-                # print(ix,iy,iz)
                 # ax1.scatter(point[1], point[0], c='g',s=5)  #debugging
-
                 #Place nodes and links:
                 if np.isnan(self.maps['nodes'][ix, iy, iz]):                                    #if there is no existing conduit node here
                     if ~np.isnan(self.maps['outlets'][ix, iy, iz]):                              #if there is an outlet here (cell value is not nan)
@@ -1162,8 +1046,8 @@ class SKS():
                             self.maps['nodes'][ix, iy, iz] = self.vectors['n']                                #update node map with node index
                             self.vectors['n'] = self.vectors['n'] + 1                                                 #increment node counter by 1
                             #ax1.scatter(point[1],point[0], marker='o', edgecolor='g', facecolor='none')  #debugging
-                self.maps['karst'][iteration][ix, iy, iz] = 1                               #update karst map to put a conduit in current cell
-
+                self.maps['karst'][self.iteration][ix, iy, iz] = 1                               #update karst map to put a conduit in current cell
+                
 
         ### Debugging plot
         # # Display inlets and outlets

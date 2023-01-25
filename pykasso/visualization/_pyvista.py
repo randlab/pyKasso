@@ -33,7 +33,7 @@ def _show_data(environment, feature, settings, show=True):
     ]
 
     if 'iteration' not in settings:
-        settings['iteration'] = 0
+        settings['iteration'] = environment.iteration
 
     for attribute in attributes:
         if attribute not in settings:
@@ -202,7 +202,7 @@ def _get_grid(grid):
     mesh.dimensions = np.array((grid.nx, grid.ny, grid.nz)) + 1
     mesh.origin     = (grid.x0 - grid.dx/2, grid.y0 - grid.dy/2, grid.z0 - grid.dz/2)
     mesh.spacing    = (grid.dx, grid.dy, grid.dz)
-    mesh            = mesh.flip_z(inplace=False)
+    # mesh            = mesh.flip_z(inplace=False)
     mesh            = mesh.cast_to_unstructured_grid()
     return mesh
 
