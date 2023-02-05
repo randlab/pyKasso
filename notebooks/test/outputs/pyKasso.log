@@ -1,217 +1,93 @@
- .                       | INFO     | ****************************
- .                       | INFO     | *** pyKasso simulation 1 ***
- .                       | INFO     | ****************************
- .                       | INFO     | Date : 2023-01-25 18:17:34
- .                       | INFO     | ---
- grid.validation         | INFO     | 'grid' settings have been validated
- grid.construction       | DEBUG    | '_build_model_grid' went well
- grid.construction       | INFO     | 'grid' has been constructed
- mask.validation         | INFO     | 'mask' settings have been validated
- mask.construction       | DEBUG    | '_build_model_mask' went well
- mask.construction       | INFO     | 'mask' has been constructed
- topography.validation   | WARNING  | The 'topography' attribute is missing (optional).
- topography.validation   | WARNING  | The 'data' attribute is missing (optional).
- topography.validation   | INFO     | 'topography' settings have been validated
- topography.construction | DEBUG    | '_build_model_topography' went well
- topography.construction | INFO     | 'topography' has been constructed
- geology.validation      | WARNING  | The 'axis' attribute is missing (optional).
- geology.validation      | WARNING  | The 'geology' data dimensions do not match with the volume but with the surface of the grid. Data will be replicated on z-axis.
- geology.validation      | INFO     | 'geology' settings have been validated
- geology.construction    | DEBUG    | '_build_model_geology' went well
- geology.construction    | INFO     | 'geology' has been constructed
- faults.validation       | INFO     | 'faults' settings have been validated
- faults.construction     | DEBUG    | '_build_model_faults' went well
- faults.construction     | INFO     | 'faults' has been constructed
- sks.validation          | INFO     | 'sks' settings have been validated
- outlets.validation      | WARNING  | The 'data' attribute is missing (optional).
- outlets.validation      | WARNING  | The 'x' attribute is missing (optional).
- outlets.validation      | WARNING  | The 'y' attribute is missing (optional).
- outlets.validation      | WARNING  | The 'z' attribute is missing (optional).
- outlets.validation      | WARNING  | The 'geology' attribute is missing (optional).
- outlets.validation      | INFO     | 'outlets' settings have been validated
- outlets.construction    | DEBUG    | '_build_model_outlets' went well
- outlets.construction    | INFO     | 'outlets' has been constructed
- inlets.validation       | WARNING  | The 'data' attribute is missing (optional).
- inlets.validation       | WARNING  | The 'x' attribute is missing (optional).
- inlets.validation       | WARNING  | The 'y' attribute is missing (optional).
- inlets.validation       | WARNING  | The 'z' attribute is missing (optional).
- inlets.validation       | WARNING  | The 'geology' attribute is missing (optional).
- inlets.validation       | INFO     | 'inlets' settings have been validated
- inlets.construction     | DEBUG    | '_build_model_inlets' went well
- inlets.construction     | INFO     | 'inlets' has been constructed
- fractures.validation    | WARNING  | The 'cost' attribute is missing (optional).
- fractures.validation    | INFO     | 'fractures' settings have been validated
- fractures.construction  | DEBUG    | '_build_model_fractures' went well
- fractures.construction  | INFO     | 'fractures' has been constructed
- fmm.validation          | WARNING  | The 'cost' attribute is missing (optional).
- fmm.validation          | INFO     | 'fmm' settings have been validated
- fmm.construction        | DEBUG    | '_construct_fmm_variables' went well
- fmm.modelisation        | INFO     | Computing karst network
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 0/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 1/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 2/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 3/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 4/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 5/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 6/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 7/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 8/9
- .                       | INFO     | ****************************
- .                       | INFO     | *** pyKasso simulation 2 ***
- .                       | INFO     | ****************************
- .                       | INFO     | Date : 2023-01-25 18:18:00
- .                       | INFO     | ---
- grid.validation         | INFO     | 'grid' settings have been validated
- grid.construction       | INFO     | 'grid' has been reused from previous simulation
- mask.validation         | INFO     | 'mask' settings have been validated
- mask.construction       | INFO     | 'mask' has been reused from previous simulation
- topography.validation   | WARNING  | The 'topography' attribute is missing (optional).
- topography.validation   | INFO     | 'topography' settings have been validated
- topography.construction | INFO     | 'topography' has been reused from previous simulation
- geology.validation      | WARNING  | The 'axis' attribute is missing (optional).
- geology.validation      | WARNING  | The 'geology' data dimensions do not match with the volume but with the surface of the grid. Data will be replicated on z-axis.
- geology.validation      | INFO     | 'geology' settings have been validated
- geology.construction    | INFO     | 'geology' has been reused from previous simulation
- faults.validation       | INFO     | 'faults' settings have been validated
- faults.construction     | INFO     | 'faults' has been reused from previous simulation
- sks.validation          | INFO     | 'sks' settings have been validated
- outlets.validation      | WARNING  | The 'data' attribute is missing (optional).
- outlets.validation      | WARNING  | The 'x' attribute is missing (optional).
- outlets.validation      | WARNING  | The 'y' attribute is missing (optional).
- outlets.validation      | WARNING  | The 'z' attribute is missing (optional).
- outlets.validation      | WARNING  | The 'geology' attribute is missing (optional).
- outlets.validation      | INFO     | 'outlets' settings have been validated
- outlets.construction    | DEBUG    | '_build_model_outlets' went well
- outlets.construction    | INFO     | 'outlets' has been constructed
- inlets.validation       | WARNING  | The 'data' attribute is missing (optional).
- inlets.validation       | WARNING  | The 'x' attribute is missing (optional).
- inlets.validation       | WARNING  | The 'y' attribute is missing (optional).
- inlets.validation       | WARNING  | The 'z' attribute is missing (optional).
- inlets.validation       | WARNING  | The 'geology' attribute is missing (optional).
- inlets.validation       | INFO     | 'inlets' settings have been validated
- inlets.construction     | DEBUG    | '_build_model_inlets' went well
- inlets.construction     | INFO     | 'inlets' has been constructed
- fractures.validation    | WARNING  | The 'cost' attribute is missing (optional).
- fractures.validation    | INFO     | 'fractures' settings have been validated
- fractures.construction  | INFO     | 'fractures' has been reused from previous simulation
- fmm.validation          | WARNING  | The 'cost' attribute is missing (optional).
- fmm.validation          | INFO     | 'fmm' settings have been validated
- fmm.construction        | DEBUG    | '_construct_fmm_variables' went well
- fmm.modelisation        | INFO     | Computing karst network
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 0/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 1/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 2/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 3/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 4/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 5/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 6/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 7/9
- fmm.modelisation        | DEBUG    | '_compute_cost_map' went well
- fmm.modelisation        | DEBUG    | '_compute_alpha_map' went well
- fmm.modelisation        | DEBUG    | '_compute_beta_map' went well
- fmm.modelisation        | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation        | DEBUG    | '_compute_time_map' went well
- fmm.modelisation        | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation        | INFO     | iteration : 8/9
+ ☼                              | INFO     | Project location : test
+ ☼                              | INFO     | pyKasso version  : 0.1.0
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | *** pyKasso simulation 1 ***
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | Date : 2023-02-05 21:16:12
+ ►                              | INFO     | ---
+ grid.validation                | INFO     | 'grid' settings have been validated
+ grid.construction              | DEBUG    | '_build_grid' went well
+ grid.construction              | INFO     | 'grid' has been constructed
+ domain.validation              | INFO     | 'domain' settings have been validated
+ domain.construction            | DEBUG    | '_build_domain_delimitation' went well
+ domain.construction            | DEBUG    | '_build_domain_topography' went well
+ domain.construction            | DEBUG    | '_build_domain_bedrock' went well
+ domain.construction            | INFO     | 'domain' has been constructed
+ geology.validation             | WARNING  | The 'axis' attribute is missing (optional).
+ geology.validation             | INFO     | 'geology' settings have been validated
+ geology.construction           | DEBUG    | '_build_model_geology' went well
+ geology.construction           | INFO     | 'geology' has been constructed
+ piezometry.construction        | DEBUG    | '_build_model_piezometry' went well
+ piezometry.construction        | INFO     | 'piezometry' has been constructed
+ beddings.construction          | DEBUG    | '_build_model_beddings' went well
+ beddings.construction          | INFO     | 'beddings' has been constructed
+ faults.validation              | INFO     | 'faults' settings have been validated
+ faults.construction            | DEBUG    | '_build_model_faults' went well
+ faults.construction            | INFO     | 'faults' has been constructed
+ sks.validation                 | INFO     | 'sks' settings have been validated
+ outlets.validation             | WARNING  | The 'x' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'y' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'z' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ outlets.validation             | INFO     | 'outlets' settings have been validated
+ outlets.construction           | DEBUG    | '_build_model_outlets' went well
+ outlets.construction           | INFO     | 'outlets' has been constructed
+ inlets.validation              | WARNING  | The 'data' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'x' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'y' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'z' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'geology' attribute is missing (optional).
+ inlets.validation              | INFO     | 'inlets' settings have been validated
+ inlets.construction            | DEBUG    | '_build_model_inlets' went well
+ inlets.construction            | INFO     | 'inlets' has been constructed
+ fractures.validation           | INFO     | 'fractures' settings have been validated
+ fractures.construction         | DEBUG    | '_build_model_fractures' went well
+ fractures.construction         | INFO     | 'fractures' has been constructed
+ fractures.construction         | DEBUG    | '_build_simple_conceptual_model' went well
+ fractures.construction         | DEBUG    | '_build_conceptual_model' went well
+ fmm.validation                 | WARNING  | The 'cost' attribute is missing (optional).
+ fmm.validation                 | INFO     | 'fmm' settings have been validated
+ fmm.construction               | DEBUG    | '_construct_fmm_variables' went well
+ fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 1/6
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 2/6
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 3/6
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 4/6
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 5/6
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 6/6

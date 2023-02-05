@@ -10,14 +10,11 @@ import numpy as np
 ############
 ### TODO ###
 ############
-# VERBOSITY MGMT
+# validations verbosity
+# revoir la VERBOSITY des messages 
 # message different quand la feature est vide ?? 
 # validation en fonction de 'axis'
 # msg = "The '{}' attribute was missing. Topography will be set from geological data.".format(attribute)
-# geologic_feature : Karst
-# geologic_feature : Field
-# validate_tracers_settings()
-# validate_fractures_settings()
 
 
 this = sys.modules[__name__]
@@ -37,21 +34,25 @@ this.ATTRIBUTES = {
         'dy' : ['required', ''],
         'dz' : ['required', ''],
     },
-    'mask' : {
+    'domain' : {
+        'delimitation' : ['optional', ''],
+        'topography'   : ['optional', ''],
+        'bedrock'      : ['optional', ''],
+    },
+    'piezometry' : {
         'data' : ['optional', ''],
     },
-    'topography' : {
-        'data' : ['optional', ''],
+    'beddings' : {
+        'data'  : ['optional', ''],
+        'costs' : ['optional', {}],
     },
     'geology' : {
         'data' : ['optional', ''],
         'axis' : ['optional', 'z'],
-        'cost' : ['optional', {1 : 0.4}],
     },
     'faults' : {
         'data' : ['optional', ''],
         'axis' : ['optional', 'z'],
-        'cost' : ['optional', {1 : 0.2}],
     },
     'outlets' : {
         'number'     : ['required', ''],
@@ -80,7 +81,6 @@ this.ATTRIBUTES = {
     'fractures' : {
         'data'     : ['optional', ''],
         'seed'     : ['optional', 0],
-        'cost'     : ['optional', {1 : 0.2}],
         'settings' : ['optional', ''],
         
     },
@@ -226,12 +226,12 @@ def validate_settings(feature, feature_settings, grid=None):
     """
     if feature == 'grid':
         settings = validate_grid_settings(feature_settings)
-    elif feature == 'mask':
-        settings = validate_mask_settings(feature_settings, grid)
-    elif feature in ['topography', 'geology', 'faults']:
+    elif feature == 'domain':
+        settings = validate_domain_settings(feature_settings, grid)
+    elif feature in ['topography', 'bedrock', 'piezometry', 'beddings', 'geology', 'faults']:
         settings = validate_geologic_feature_settings(feature, feature_settings, grid)
-    elif feature == 'sks':
-        settings = validate_seed_settings(feature_settings)
+    elif feature == 'sks': 
+        settings = validate_seed_settings(feature_settings) # TODO - rename ?
     elif feature in ['inlets', 'outlets']:
         settings = validate_points_feature_settings(feature, feature_settings)
     # elif feature == 'tracers':
@@ -278,80 +278,85 @@ def validate_grid_settings(settings):
     return settings
 
 
-############
-### MASK ###
-############
-def validate_mask_settings(settings, grid):
+##############
+### DOMAIN ###
+##############
+def validate_domain_settings(settings, grid):
     """
     TODO
     """
     # Checks attributes presence
-    for attribute in this.ATTRIBUTES['mask']:
-        kind, default_value = this.ATTRIBUTES['mask'][attribute]
+    for attribute in this.ATTRIBUTES['domain']:
+        kind, default_value = this.ATTRIBUTES['domain'][attribute]
         settings = validate_attribute_presence(settings, attribute, kind, default_value, is_subattribute=True)
 
-    # If 'data' is not empty
-    if settings['data'] != '':
+    # # If 'data' is not empty
+    # if not isinstance(settings['data'], (str)):
 
-        # Checks if type is str or list
-        if is_attribute_type_valid('data', settings['data'], (str, list)):
+    #     # Checks if type is str or list
+    #     is_attribute_type_valid('data', settings['data'], (str, list))
 
-            # Type is str
-            if isinstance(settings['data'], (str)):
-                path = settings['data']
+    #     # Type is str
+    #     if isinstance(settings['data'], (str)):
+    #         path = settings['data']
 
-                # Checks if the datafile exist
-                if is_path_valid(path, 'data'):
+    #         # Checks if the datafile exist
+    #         is_path_valid(path, 'data')
 
-                    # Tries to open file
-                    data = read_file(path, 'data')
+    #         # Tries to open file
+    #         data = read_file(path, 'data')
+        
+    #     # Type is list
+    #     if isinstance(settings['data'], (list)):
+    #         data = settings['data']
+
+    #     ### Checks validity of data
+    #     # Checks if there is at least 3 points declared
+    #     if len(data) < 3:
+    #         msg = "Not enough vertices to create a mask delimitation (3 minimum)."
+    #         this.logger.critical(msg)
+    #         raise ValueError(msg)
+
+    #     # Checks if each vertex contains 2 coordinates
+    #     for vertex in data:
+    #         if len(vertex) != 2:
+    #             msg = "The values of the 'data' attribute contains at least one invalid vertex. Format must be like : [[x0, y0], ..., [xn, yn]]."
+    #             this.logger.critical(msg)
+    #             raise ValueError(msg)
             
-            # Type is list
-            if isinstance(settings['data'], (list)):
-                data = settings['data']
+    #     # Checks type of coordinates
+    #     for vertex in data:
+    #         for coordinate in vertex:
+    #             if not isinstance(coordinate, (int, float)):
+    #                 msg = "The values of the 'data' attribute contains at least one invalid vertex. Coordinates must be of type int or float."
+    #                 this.logger.critical(msg)
+    #                 raise TypeError(msg)
 
-        ### Checks validity of data
-        # Checks if there is at least 3 points declared
-        if len(data) < 3:
-            msg = "Not enough vertices to create a mask delimitation (3 minimum)."
-            this.logger.critical(msg)
-            raise ValueError(msg)
+    #     # Checks if vertex are well in grid limits
+    #     validated_vertices = [k for k,(x,y) in enumerate(data) if (grid.path.contains_point((x,y)) == True)]
 
-        # Checks if each vertex contains 2 coordinates
-        for vertex in data:
-            if len(vertex) != 2:
-                msg = "The values of the 'data' attribute contains at least one invalid vertex. Format must be like : [[x0, y0], ..., [xn, yn]]."
-                this.logger.critical(msg)
-                raise ValueError(msg)
-            
-        # Checks type of coordinates
-        for vertex in data:
-            for coordinate in vertex:
-                if not isinstance(coordinate, (int, float)):
-                    msg = "The values of the 'data' attribute contains at least one invalid vertex. Coordinates must be of type int or float."
-                    this.logger.critical(msg)
-                    raise TypeError(msg)
+    #     if len(validated_vertices) < 3:
+    #         msg = "Not enough vertices inside the grid limits to create a mask delimitation (3 minimum)."
+    #         this.logger.critical(msg)
+    #         raise ValueError(msg)
 
-        # Checks if vertex are well in grid limits
-        validated_vertices = [k for k,(x,y) in enumerate(data) if (grid.path.contains_point((x,y)) == True)]
-
-        if len(validated_vertices) < 3:
-            msg = "Not enough vertices inside the grid limits to create a mask delimitation (3 minimum)."
-            this.logger.critical(msg)
-            raise ValueError(msg)
-
-        if len(validated_vertices) < len(data):
-            msg = '{}/{} vertices validated inside the grid limits.'.format(len(validated_vertices), len(data))
-            this.logger.warning(msg)
+    #     if len(validated_vertices) < len(data):
+    #         msg = '{}/{} vertices validated inside the grid limits.'.format(len(validated_vertices), len(data))
+    #         this.logger.warning(msg)
 
     return settings
+
+
+####################################
+### GEOLOGIC FEATURES : SURFACES ###
+####################################
+# Topography - Piezometric Level - Bedrock Elevation
+
 
 
 #########################
 ### GEOLOGIC FEATURES ###
 #########################
-# TODO - KARST
-# TODO - FIELD
 
 def validate_geologic_feature_settings(geologic_feature, settings, grid):
     """
@@ -363,28 +368,28 @@ def validate_geologic_feature_settings(geologic_feature, settings, grid):
         settings = validate_attribute_presence(settings, attribute, kind, default_value, is_subattribute=True)
 
     # If 'data' is not empty
-    if settings['data'] != '':
+    if not isinstance(settings['data'], (str)):
 
         # Checks if type is str or numpy.ndarray
-        if is_attribute_type_valid('data', settings['data'], (str, np.ndarray)):
+        is_attribute_type_valid('data', settings['data'], (str, np.ndarray))
 
-            # Type is str
-            if isinstance(settings['data'], (str)):
-                path = settings['data']
+        # Type is str
+        if isinstance(settings['data'], (str)):
+            path = settings['data']
 
-                # Checks if the datafile exist
-                if is_path_valid(path, 'data'):
+            # Checks if the datafile exist
+            is_path_valid(path, 'data')
 
-                    # Checks if extension is valid
-                    valid_extensions = ['gslib', 'npy', 'png', 'jpg']
-                    if is_extension_valid(path, valid_extensions):
-                        
-                        # Tries to open file
-                        data = read_file(path, 'data')
+            # Checks if extension is valid
+            valid_extensions = ['gslib', 'npy', 'png', 'jpg']
+            is_extension_valid(path, valid_extensions)
+                
+            # Tries to open file
+            data = read_file(path, 'data')
 
-            # Type is np.ndarray
-            if isinstance(settings['data'], (np.ndarray)):
-                data = settings['data']
+        # Type is np.ndarray
+        if isinstance(settings['data'], (np.ndarray)):
+            data = settings['data']
 
         ### Checks if data dimensions are valid
         nx, ny, nz = grid.nx, grid.ny, grid.nz
@@ -450,38 +455,38 @@ def validate_points_feature_settings(points_feature, settings):
     if not ((settings['data'] == []) or (settings['data'] == '')):
 
         # Checks if data type is valid:
-        if is_attribute_type_valid('data', settings['data'], (str, list)):
+        is_attribute_type_valid('data', settings['data'], (str, list))
 
-            # Type is str:
-            if isinstance(settings['data'], (str)):
-                path = settings['data']
+        # Type is str:
+        if isinstance(settings['data'], (str)):
+            path = settings['data']
 
-                # Checks if the datafile exist
-                if is_path_valid(path, 'data'):
+            # Checks if the datafile exist
+            is_path_valid(path, 'data')
 
-                    # Tries to open file
-                    points = read_file(path, 'data')
+            # Tries to open file
+            points = read_file(path, 'data')
 
-            # Type is list:
-            if isinstance(settings['data'], (list)):
-                points = settings['data']
+        # Type is list:
+        if isinstance(settings['data'], (list)):
+            points = settings['data']
 
-            ### Checks validity of data
+        ### Checks validity of data
 
-            # Checks if each points contains 2 or 3 coordinates
-            for point in points:
-                if len(point) not in [2, 3]:
-                    msg = "The values of the 'data' attribute contains at least one invalid point. Format must be like : [[x0, y0], ..., [xn, yn]] or [[x0, y0, z0], ..., [xn, yn, zn]]."
+        # Checks if each points contains 2 or 3 coordinates
+        for point in points:
+            if len(point) not in [2, 3]:
+                msg = "The values of the 'data' attribute contains at least one invalid point. Format must be like : [[x0, y0], ..., [xn, yn]] or [[x0, y0, z0], ..., [xn, yn, zn]]."
+                this.logger.critical(msg)
+                raise ValueError(msg)
+
+        # Checks type of coordinates
+        for point in points:
+            for coordinate in point:
+                if np.isnan(coordinate) or (not isinstance(coordinate, (int, float))):
+                    msg = "The values of the 'data' attribute contains at least one invalid point. Coordinates must be of type int or float."
                     this.logger.critical(msg)
-                    raise ValueError(msg)
-
-            # Checks type of coordinates
-            for point in points:
-                for coordinate in point:
-                    if np.isnan(coordinate) or (not isinstance(coordinate, (int, float))):
-                        msg = "The values of the 'data' attribute contains at least one invalid point. Coordinates must be of type int or float."
-                        this.logger.critical(msg)
-                        raise TypeError(msg)
+                    raise TypeError(msg)
 
     
     # Checks if 'shuffle' is of type bool
@@ -544,7 +549,6 @@ def validate_fmm_settings(settings) :
     """
     TODO
     """
-
     # Checks attributes presence
     for attribute in this.ATTRIBUTES['fmm']:
         kind, default_value = this.ATTRIBUTES['fmm'][attribute]

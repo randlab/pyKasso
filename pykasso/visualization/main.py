@@ -4,15 +4,20 @@ TODO
 
 AUTHORIZED_FEATURES = [
     'grid',
+    'domain',
+    'delimitation',
     'topography',
+    'bedrock',
     'geology',
+    'piezometry',
+    # 'beddings' - TODO
     'faults',
     'fractures',
     'cost',
     'alpha',
     'beta',
     'time',
-    'karst'
+    'karst',
 ]
 
 def show(environment, feature='GRID', engine='matplotlib', settings={}):
@@ -30,7 +35,7 @@ def show(environment, feature='GRID', engine='matplotlib', settings={}):
         raise ValueError("ERROR : selected engine not recognised")
 
     ### Controls validity of settings
-    attributes = ['mask', 'inlets', 'outlets', 'tracers']
+    attributes = ['domain', 'inlets', 'outlets', 'tracers']
     for attribute in attributes:
         if attribute in settings:
             if not hasattr(environment, attribute):
@@ -38,7 +43,7 @@ def show(environment, feature='GRID', engine='matplotlib', settings={}):
                 del settings[attribute]
             else:
                 if getattr(environment, attribute) is None:
-                    print('WARNING : No mask available'.format(attribute))
+                    print('WARNING : No {} available'.format(attribute))
                     del settings[attribute]
 
     ### Plot feature
@@ -54,13 +59,27 @@ def _is_feature_valid(environment, feature):
     if feature not in AUTHORIZED_FEATURES:
         raise ValueError("ERROR : selected feature has been not recognized (authorized features : {})".format(AUTHORIZED_FEATURES))
 
-    if feature in ['grid','topography','geology','faults','fractures']:
+    if feature in ['grid','domain','geology','faults','fractures']:
 
         if not hasattr(environment, feature):
             raise ValueError("ERROR : environment has no '{}' attribute.".format(feature))
     
         if getattr(environment, feature) is None:
             raise ValueError("ERROR : '{}' attribute is type of None.".format(feature))
+        
+    elif feature in ['delimitation', 'topography', 'bedrock']:
+        
+        if not hasattr(environment, 'domain'):
+            raise ValueError("ERROR : environment has no '{}' attribute.".format(feature))
+        
+        if getattr(environment, 'domain') is None:
+            raise ValueError("ERROR : '{}' attribute is type of None.".format(feature))
+        
+        if not hasattr(environment.domain, feature):
+            raise ValueError("ERROR : domain's environment has no '{}' attribute.".format(feature))
+        
+        if getattr(environment.domain, feature) is None:
+            raise ValueError("ERROR : '{}' domain's attribute is type of None.".format(feature))
     
     elif feature in ['cost','alpha','beta','time','karst']:
 
@@ -70,10 +89,23 @@ def _is_feature_valid(environment, feature):
         if feature in ['alpha','beta']:
             if environment.fmm['algorithm'] != 'Riemann3':
                 raise ValueError("ERROR : environment has no '{}' data.".format(feature))
-
+            
     return True
 
 
+
+def show_array(array, engine='pyvista'):
+    """
+    TODO
+    ARRAY VISUALIZATION
+    """
+    if engine == 'pyvista':
+        from pykasso.visualization import _pyvista
+        _pyvista._show_array(array)
+    
+    
+    return None
+    
 ###################
 ### DEBUG PLOTS ###
 ###################
@@ -91,215 +123,6 @@ def debug(environment, step, engine='matplotlib', settings={}):
             _pyvista._debug_plot_fmm(environment, settings)
 
     return None
-
-
-# def debug_plot_initialize(environment):
-#     """
-#     TODO
-#     """
-#     # _pyvista.debug_plot_initialize(environment)
-#     return None
-
-#     def debug_plot(self, feature):
-#         """
-#         TODO
-#         """
-#         ### Call the plotter
-#         p = pv.Plotter(notebook=False)
-
-#         ### Construct the grid
-#         vtk = pv.UniformGrid()
-#         vtk.dimensions = np.array((self.GRID.nx, self.GRID.ny, self.GRID.nz)) + 1
-#         vtk.origin     = (self.GRID.x0 - self.GRID.dx/2, self.GRID.y0 - self.GRID.dy/2, self.GRID.z0 - self.GRID.dz/2)
-#         vtk.spacing    = (self.GRID.dx, self.GRID.dy, self.GRID.dz)
-
-#         ### Parameters according to feature
-#         if feature == 'grid':
-#             pass
-#         if feature == 'mask':
-#             vtk['values'] = self.mask.mask.flatten(order="F")
-#         if (feature == 'geology') or (feature == 'faults') or (feature == 'fractures') or (feature == 'field'):
-#             vtk['values'] = self.geology.geologic_features[feature].data.flatten(order="F")
-#         if feature == 'points':
-#             try:
-#                 vtk['values'] = self.mask.mask.flatten(order="F")
-#             except:
-#                 try:
-#                     vtk['values'] = self.geology.geologic_features[feature].data.flatten(order="F")
-#                 except:
-#                     pass
-#             inlets  = self.points.point_features['inlets'] .points[['x', 'y', 'z']].values
-#             outlets = self.points.point_features['outlets'].points[['x', 'y', 'z']].values
-#             cloud_i = pv.wrap(inlets)
-#             cloud_o = pv.wrap(outlets)
-#             p.add_points(cloud_i, render_points_as_spheres=True, point_size=10, color='r')
-#             p.add_points(cloud_o, render_points_as_spheres=True, point_size=10, color='b')
-
-#         p.add_mesh(vtk, show_edges=False)
-
-#         ### Plotting
-#         p.add_title(feature)
-#         p.add_axes()
-#         bounds = p.show_bounds(mesh=vtk)
-#         p.add_actor(bounds)
-#         p.show(cpos='xy')
-
-#         # TODO : Creates a multiplot
-
-#         # p = pv.Plotter(notebook=False)
-#         # p.add_title(feature)
-#         # slices = vtk.slice_orthogonal()
-#         # p.add_mesh(slices, show_edges=False)
-#         # p.show(cpos='xy')
-#         return None
-
-
-
-
-#     def debug_plot_compute(self, iteration=-1):
-#         """
-#         TODO
-#         """
-#         ### Call the plotter
-#         p = pv.Plotter(shape=(1, 3), border=True, notebook=False)
-
-#         ### Construct the grid
-#         vtk = pv.UniformGrid()
-#         vtk.dimensions = np.array((self.GRID.nx, self.GRID.ny, self.GRID.nz)) + 1
-#         vtk.origin     = (self.GRID.x0 - self.GRID.dx/2, self.GRID.y0 - self.GRID.dy/2, self.GRID.z0 - self.GRID.dz/2)
-#         vtk.spacing    = (self.GRID.dx, self.GRID.dy, self.GRID.dz)
-
-#         features = ['cost', 'time', 'karst']
-
-#         for (i, feature) in enumerate(features):
-#             vtk = vtk.copy()
-#             p.subplot(0, i)
-#             p.add_text(feature, font_size=24)
-#             vtk['values'] = self.maps[feature][iteration].flatten(order="F")
-#             try:
-#                 vtk['values'] = self.maps[feature][iteration].flatten(order="F")
-#             except:
-#                 vtk['values'] = np.full((self.GRID.nx, self.GRID.ny, self.GRID.nz), 0).flatten(order="F")
-
-#             bounds = p.show_bounds(mesh=vtk)
-#             p.add_actor(bounds)
-
-#             if (feature == 'cost'):
-#                 mesh = vtk.cast_to_unstructured_grid()
-#                 ghosts = np.argwhere(vtk['values'] > 1.0)
-#                 mesh.remove_cells(ghosts)
-#                 p.add_mesh(mesh, show_edges=False)
-#                 # p.add_mesh(vtk, show_edges=False, clim=[0,1])
-
-#             if (feature == 'time'):
-#                 p.add_mesh(vtk, show_edges=False)
-
-#             if (feature == 'karst'):
-#                 mesh = vtk.cast_to_unstructured_grid()
-#                 ghosts = np.argwhere(vtk['values'] < 1.0)
-#                 mesh.remove_cells(ghosts)
-#                 p.add_mesh(mesh, show_edges=False)
-
-#                 inlets  = self.points.point_features['inlets'] .points[['x', 'y', 'z']].values
-#                 outlets = self.points.point_features['outlets'].points[['x', 'y', 'z']].values
-#                 cloud_i = pv.wrap(inlets)
-#                 cloud_o = pv.wrap(outlets)
-#                 p.add_points(cloud_i, render_points_as_spheres=True, point_size=10, color='r')
-#                 p.add_points(cloud_o, render_points_as_spheres=True, point_size=10, color='b')
-
-#             # p.subplot(1, i)
-#             # p.add_text(feature, font_size=24)
-#             # slices = vtk.slice_orthogonal()
-#             # bounds = p.show_bounds(mesh=vtk)
-#             # p.add_actor(bounds)
-
-#         p.link_views()
-#         p.show(cpos='xy')
-#         return None
-
-#     def debug_plot_fmm_feature(self, feature, iteration=-1):
-#         """
-#         TODO
-#         """
-#         ### Construct the grid
-#         vtk = pv.UniformGrid()
-#         vtk.dimensions = np.array((self.GRID.nx, self.GRID.ny, self.GRID.nz)) + 1
-#         vtk.origin     = (self.GRID.x0 - self.GRID.dx/2, self.GRID.y0 - self.GRID.dy/2, self.GRID.z0 - self.GRID.dz/2)
-#         vtk.spacing    = (self.GRID.dx, self.GRID.dy, self.GRID.dz)
-
-#         ### Parameters according to feature
-#         if (feature == 'costmap') or (feature == 'timemap'):
-#             p = pv.Plotter(shape=(1, 2), border=True, notebook=False)
-#             vtk['values'] = self.maps[feature[:4]][iteration].flatten(order="F")
-
-#         if feature == 'karstmap':
-#             p = pv.Plotter(notebook=False)
-#             vtk['values'] = self.maps['karst'][iteration].flatten(order="F")
-#             mesh = vtk.cast_to_unstructured_grid()
-#             ghosts = np.argwhere(vtk['values'] < 1.0)
-#             mesh.remove_cells(ghosts)
-#             vtk = mesh
-
-#             inlets  = self.points.point_features['inlets'] .points[['x', 'y', 'z']].values
-#             outlets = self.points.point_features['outlets'].points[['x', 'y', 'z']].values
-#             cloud_i = pv.wrap(inlets)
-#             cloud_o = pv.wrap(outlets)
-#             p.add_points(cloud_i, render_points_as_spheres=True, point_size=10, color='r')
-#             p.add_points(cloud_o, render_points_as_spheres=True, point_size=10, color='b')
-
-#         p.add_mesh(vtk, show_edges=False)
-
-#         if feature != 'karstmap':
-#             p.subplot(0, 1)
-#             # slices = vtk.slice_orthogonal()
-#             slices = vtk.slice_along_axis(n=5, axis="y")
-#             p.add_mesh(slices, show_edges=False)
-
-#             p.link_views()
-
-#         ### Plotting
-#         # p.add_title(feature + '/ iteration:' + str(iteration))
-#         # p.add_axes()
-#         # bounds = p.show_bounds(mesh=vtk)
-#         # p.add_actor(bounds)
-
-
-#         p.show(cpos='xy')
-
-#         return None
-
-
-
-
-
-
-
-
-
-# #############################
-# ### Visualization methods ###
-# #############################
-
-#     # def show():
-#     #     fig, ax = plt.subplots(figsize=(10, 10))
-#     #     ax.imshow(np.transpose(, (1,0,2)), origin="lower", extent=self.GRID.extent)
-
-#     # def show(self):
-#     #     """
-#     #     Displays the apparent last computed karst network in 3 directions.
-#     #     """
-#     #
-#     #     karst = self.maps['karst'][-1]
-#     #
-#     #     karst_xy = np.sum(karst, axis=2)
-#     #     karst_zx = np.sum(karst, axis=0)
-#     #     karst_zy = np.sum(karst, axis=1)
-#     #
-#     #     fig, ax = plt.subplots(1, 3, figsize=(20, 10))
-
-
-
-
 
 
 

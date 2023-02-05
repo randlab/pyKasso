@@ -1,3 +1,9 @@
+# TODO - à mettre dans module 'analysis' ??
+# Reference indicators for statistical karstic network analysis
+usecols = None
+# usecols = "B:I,K"
+this.STATISTICS = pd.read_excel(os.path.dirname(os.path.abspath(__file__)) + '/../../misc/' + 'statistics.xlsx', usecols=usecols).describe()
+
 #     ######################
 #     ### Karst Analysis ###
 #     ######################

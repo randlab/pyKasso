@@ -10,150 +10,135 @@ import numpy as np
 # - Validation des variables
 # - Gestion des cartes de densité de probabilités pour le tirage des points
 
-
-def generate_coordinate(lambda_functions, rng, grid, mask, geology, xi=None, yi=None, zi=None, geologic_ids=None):
+class PointManager():
+    """ 
     """
-    TODO
+    def __init__(self, rng, modes, domain, geology, geologic_ids:list) -> None:
+        """"""
+        self.rng          = rng
+        self.modes        = modes
+        self.domain       = domain
+        self.geology      = geology
+        self.functions    = self._evaluates_modes()
+        self.geologic_ids = self._controls_geologic_ids_validity(geologic_ids)
+        
+    def _evaluates_modes(self) -> dict:
+        """"""
+        # Defines environement for 'eval' function
+        env = {
+            'rng'    : self.rng,
+            'grid'   : self.domain.grid,
+            'domain' : self.domain,
+        }
+        
+        # x case
+        if self.modes['x'] == 'uniform':
+            x_lambda_function = 'lambda : grid.xmin + grid.nx * rng.random() * grid.dx'
+            x_function = eval(x_lambda_function, env)
+        else:
+            x_function = eval(x_lambda_function, env)
+        
+        # y case
+        if self.modes['y'] == 'uniform':
+            y_lambda_function = 'lambda : grid.ymin + grid.ny * rng.random() * grid.dy'
+            y_function = eval(y_lambda_function, env)
+        else:
+            y_function = eval(y_lambda_function, env)
+        
+        # z case
+        if self.modes['z'] == 'uniform':
+            z_lambda_function = 'lambda : grid.zmin + grid.nz * rng.random() * grid.dz'
+            z_function = eval(z_lambda_function, env)
+        elif self.modes['z'] == 'surface_up':
+            z_function = self.domain._get_elevation_from_upper_surface
+        elif self.modes['z'] == 'surface_down':
+            z_function = self.domain._get_elevation_from_lower_surface
+        else:
+            z_function = eval(z_lambda_function, env)
+        
+        return {'x' : x_function, 'y' : y_function, 'z' : z_function}
 
-    Generates random points according to the parameters.
 
-    Four cases of points generation:
-    1 - No geology, no mask
-    2 - No geology, mask
-    3 - Geology, no mask
-    4 - Geology, mask
-    """
-
-    # Evaluates the function
-    env = {
-        'rng'  : rng,
-        'grid' : grid,
-        # TODO - define mask limits
-        # 'mask' : mask,
-        # 'geology' : geology
-    }
-    x_func = eval(lambda_functions['x'], env)
-    y_func = eval(lambda_functions['y'], env)
-    z_func = eval(lambda_functions['z'], env)
-
-    # Controls validity of 'geologic_ids'
-    if geologic_ids is not None:
-        values = geology.stats.index.to_list()
-        validated_geology_ids = []
-        for geologic_id in geologic_ids:
-            if geologic_id in values:
-                validated_geology_ids.append(geologic_id)
-            else:
+    def _controls_geologic_ids_validity(self, geologic_ids:list) -> list:
+        """ 
+        Controls validity of 'geologic_ids'.
+        """
+        if geologic_ids is None:
+            return None
+        else:
+            values = self.geology.stats.index.to_list()
+            validated_geology_ids = [geologic_id for geologic_id in geologic_ids if geologic_id in values]
+            # TODO - log
+            if len(validated_geology_ids) == 0:
                 pass
-                # TODO - log
+                # TODO - log - erreur
+                return None
+            return validated_geology_ids
 
-        if len(validated_geology_ids) == 0:
-            pass
-            # TODO - log - erreur
-
-
-    # Tries to generate a valid coordinate
-    coordinate_is_valid = False
-    iteration = 0
-    iteration_limit = 10000
-    while not coordinate_is_valid:
+    def _generate_coordinate(self) -> tuple:
+        """ """
+        # Intializes some variables
+        is_coordinate_valid = False
+        iteration = 0
+        iteration_limit = 10000
         
-        # TODO
-        # security
-        if iteration > iteration_limit:
-            # LOG
-            raise ValueError
+        # Tries to generate a valid coordinate
+        while not is_coordinate_valid:
+            coordinate = self._generate_3D_coordinate()
+            is_coordinate_valid = self._is_coordinate_3D_valid(coordinate)
+            
+            # TODO
+            # security
+            if iteration > iteration_limit:
+                # LOG
+                print(coordinate)
+                raise ValueError('_generate_coordinate - iteration_limit exceeded')
 
-        # Generates a coordinate
-        if xi == None:
-            x = x_func()
+            iteration += 1
+        return coordinate
+
+    def _generate_3D_coordinate(self) -> tuple:
+        """"""
+        # Generates randomly a coordinate
+        x = self.functions['x']()
+        y = self.functions['y']()
+        if self.modes['z'] in ['surface_up', 'surface_down']:
+            z = self.functions['z'](x,y)
         else:
-            x = xi
-
-        if yi == None:
-            y = y_func()
-        else:
-            y = yi
-
-        if zi == None:
-            z = z_func()
-        else:
-            z = zi
-
-
-        # 1 - No geology, no mask
-        if geologic_ids is None: 
-            if mask is None:
-                coordinate_is_valid = is_point_valid((x,y,z), grid, mask)
+            z = self.functions['z']()
+        return (x,y,z)
         
-        # 2 - No geology, mask
-            else:
-                if int(mask.polygon.contains_point((x,y))) and is_point_valid((x,y,z), grid, mask):
-                    coordinate_is_valid = True
-
+    def _generate_3D_coordinate_from_2D_coordinate(self, coordinate:tuple) -> tuple:
+        """"""
+        x, y = coordinate
+        if self.modes['z'] in ['surface_up', 'surface_down']:
+            z = self.functions['z'](x,y)
+        else:
+            z = self.functions['z']()
+        return (x,y,z)
         
+    def _is_coordinate_2D_valid(self, coordinate:tuple) -> bool:
+        """Checks if the 2D point is valid"""
+        x, y = coordinate
+        if self.domain.is_coordinate_2D_valid(x,y):
+            return True  
         else:
-            if is_point_valid((x,y,z), grid, mask):
-                i, j, k = grid.get_i(x), grid.get_j(y), grid.get_k(z)
-
-        # 3 - Geology, no mask
-                if (mask is None):
-                    if geology.data[i][j][k] in validated_geology_ids:
-                        coordinate_is_valid = True
-
-        # 4 - Geology, mask
-                else:
-                    if (geology.data[i][j][k] in validated_geology_ids) and (int(mask.polygon.contains_point((x,y)))):
-                        coordinate_is_valid = True
-
-        iteration += 1
-
-    return [x,y,z]
-
-
-def is_point_valid(point, grid, mask):
-    """
-    TODO
-    Checks if the points are well located inside the grid, or well inside the mask if one is provided.
-    """
-    if len(point) == 2:
-
-        x, y = point
-
-        if mask is None:
-            test = grid.path.contains_point((x, y))
+            return False
         
+    def _is_coordinate_3D_valid(self, coordinate:tuple) -> bool:
+        """ 
+        Checks if the points are well located ... 
+        Two cases of coordinate validation:
+        1 - No geology
+        2 - With geology
+        """
+        x, y, z = coordinate
+            
+        # Case 1 - No geology
+        if self.geologic_ids is None:
+            return self.domain.is_coordinate_in_domain(x,y,z)
+        
+        # Case 2 - With geology
         else:
-            test = grid.path.contains_point((x, y)) & mask.polygon.contains_point((x, y))
-
-    if len(point) == 3:
-
-        x, y, z = point
-
-        if mask is None:
-            test = grid.is_inbox(x, y, z)
-
-        else:
-            test = grid.is_inbox(x, y, z) & mask.polygon.contains_point((x, y))
-
-    return test
-
-
-# def get_lambda_function(dim, keyword):
-#     """
-#     TODO
-#     """
-#     lambda_functions = {
-#         'x' : {
-#             'surface' : ,
-#             'bottom'  : ,
-#         },
-#         'y' : {
-
-#         },
-#         'z' : {
-
-#         }
-#     }
-
-#     return lambda_function
+            i, j, k = self.domain.grid.get_indices(x,y,z)
+            return self.domain.is_coordinate_in_domain(x,y,z) and (self.geology.data_volume[i,j,k] in self.geologic_ids)  

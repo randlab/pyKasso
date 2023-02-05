@@ -2,7 +2,9 @@
 Module to model the grid.
 """
 
-import math
+### TODO
+# DOCUMENTATION [000%]
+
 import numpy as np
 from matplotlib.path import Path
 
@@ -43,7 +45,6 @@ class Grid():
         --------
         >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 1, 1, 1)
         """
-        # TODO
         # Memory usage settings
         precision = np.float64
 
@@ -58,19 +59,19 @@ class Grid():
         self.__dy = dy
         self.__dz = dz
 
-        # Calculating the meshgrid
+        # Calculates the meshgrid
         self.__x = np.arange(self.__x0, self.__x0+(self.__nx)*self.__dx, self.__dx, dtype=precision) # 1D array of centerpoints of each cell along x axis
         self.__y = np.arange(self.__y0, self.__y0+(self.__ny)*self.__dy, self.__dy, dtype=precision) # 1D array of centerpoints of each cell along y axis
         self.__z = np.arange(self.__z0, self.__z0+(self.__nz)*self.__dz, self.__dz, dtype=precision) # 1D array of centerpoints of each cell along z axis
         self.__X, self.__Y, self.__Z = np.meshgrid(self.__x, self.__y, self.__z, indexing="ij")      # 3D array of dim (nx, ny, nz) with xyz coord of each cell's centerpoint
 
-        # Calculating the limits of the grid
+        # Calculates the limits of the grid
         self.__xlimits = [self.__x0-self.__dx/2, self.__x[-1]+self.__dx/2]
         self.__ylimits = [self.__y0-self.__dy/2, self.__y[-1]+self.__dy/2]
         self.__zlimits = [self.__z0-self.__dz/2, self.__z[-1]+self.__dz/2]
         self.__extent  = [self.__xlimits[0], self.__xlimits[1], self.__ylimits[0], self.__ylimits[1]] # coordinates of extent for plt.imshow()
 
-        # Declaring some useful variables
+        # Declares some useful variables
         self.__xmin = self.__xlimits[0] # coordinates of leftmost edge of leftmost cells
         self.__xmax = self.__xlimits[1] # coordinates of rightmost edge of rightmost cells
         self.__ymin = self.__ylimits[0] # coordinates of bottom edge of bottom cells
@@ -86,11 +87,10 @@ class Grid():
         x_path = [self.__xlimits[0], self.__xlimits[0], self.__xlimits[1], self.__xlimits[1], self.__xlimits[0]]
         y_path = [self.__ylimits[0], self.__ylimits[1], self.__ylimits[1], self.__ylimits[0], self.__ylimits[0]]
         self.__path = Path(list(zip(x_path, y_path)))
+        self.__surface_coordinates = list(zip(x_path[:-1],y_path[:-1]))
+        self.__data_volume = np.ones((nx, ny, nz)) 
 
-    def __repr__(self):
-        return "Grid({}, {}, {}, {}, {}, {}, {}, {}, {})".format(self.x0, self.y0, self.z0, self.nx, self.ny, self.nz, self.dx, self.dy, self.dz)
-
-    def __str__(self):
+    def __str__(self) -> str:
         return "Grid\n[x0, y0, z0] : ({}, {}, {})\n[nx, ny, nz] : ({}, {}, {})\n[dx, dy, dz] : ({}, {}, {})".format(self.x0, self.y0, self.z0, self.nx, self.ny, self.nz, self.dx, self.dy, self.dz)
 
     ###############
@@ -216,12 +216,20 @@ class Grid():
     @property
     def path(self):
         return self.__path
+    
+    @property
+    def surface_coordinates(self):
+        return self.__surface_coordinates
+    
+    @property
+    def data_volume(self):
+        return self.__data_volume
 
     ###############
     ### METHODS ###
     ###############
 
-    def get_i(self, x: float) -> int:
+    def get_i(self, x:float) -> int:
         """
         Retrieves i-index with x-coordinate.
 
@@ -244,7 +252,7 @@ class Grid():
         out = out.astype('int32')
         return out
 
-    def get_j(self, y: float) -> int:
+    def get_j(self, y:float) -> int:
         """
         Retrieves j-index with y-coordinate.
 
@@ -267,7 +275,7 @@ class Grid():
         out = out.astype('int32')
         return out
 
-    def get_k(self, z: float) -> int:
+    def get_k(self, z:float) -> int:
         """
         Retrieves k-index with z-coordinate.
 
@@ -289,8 +297,30 @@ class Grid():
         out = np.ceil((z - self.z0 - self.dz/2) / self.dz)
         out = out.astype('int32')
         return out
+    
+    def get_indices(self, x:float, y:float, z:float=None) -> tuple:
+        """_summary_
 
-    def get_x(self, i: int) -> float:
+        Parameters
+        ----------
+        x : float
+            _description_
+        y : float
+            _description_
+        z : float
+            _description_
+
+        Returns
+        -------
+        tuple
+            _description_
+        """
+        if z is None:
+            return (self.get_i(x), self.get_j(y))
+        else:
+            return (self.get_i(x), self.get_j(y), self.get_k(z))
+
+    def get_x(self, i:int) -> float:
         """
         Retrieves x-coordinate with i-index.
         Returns none type if i-index is outside the grid.
@@ -314,7 +344,7 @@ class Grid():
         out = np.where((i < 0) | (i > (self.nx-1)), None, self.x[i])
         return out
 
-    def get_y(self, j: int) -> float:
+    def get_y(self, j:int) -> float:
         """
         Retrieves y-coordinate with j-index.
         Returns none type if j-index is outside the grid.
@@ -338,7 +368,7 @@ class Grid():
         out = np.where((j < 0) | (j > (self.ny-1)), None, self.y[j])
         return out
 
-    def get_z(self, k: int) -> float:
+    def get_z(self, k:int) -> float:
         """
         Retrieves z-coordinate with k-index.
         Returns none type if k-index is outside the grid.
@@ -361,8 +391,30 @@ class Grid():
         k = k.astype('int32')
         out = np.where((k < 0) | (k > (self.nz-1)), None, self.z[k])
         return out
+    
+    def get_coordinate(self, i:int, j:int, k:int=None) -> tuple:
+        """_summary_
 
-    def is_inbox(self, x: float, y: float, z: float) -> bool:
+        Parameters
+        ----------
+        i : int
+            _description_
+        j : int
+            _description_
+        k : int
+            _description_
+
+        Returns
+        -------
+        tuple
+            _description_
+        """
+        if k is None:
+            return (self.get_x(i), self.get_y(j))
+        else:
+            return (self.get_x(i), self.get_y(j), self.get_z(k))
+
+    def is_inbox(self, x:float, y:float, z:float) -> bool:
         """
         Tests if a (x, y, z) point is inside the grid.
 
@@ -386,17 +438,3 @@ class Grid():
         """
         i, j, k = self.get_i(x), self.get_j(y), self.get_k(z)
         return bool( (k-self.nz+1)*k <= 0 ) and ( (j-self.ny+1)*j <= 0 ) and ( (i-self.nx+1)*i <= 0 )
-
-    def _get_property(self, property: str):
-        """
-        TODO
-        """
-        if property == 'X':
-            return self.X
-        elif property == 'Y':
-            return self.Y
-        elif property == 'Z':
-            return self.Z
-        else:
-            print('property has not been recognized')
-            return None
