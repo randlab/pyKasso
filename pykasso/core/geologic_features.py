@@ -10,11 +10,7 @@ import pandas as pd
 from .fracturation import generate_fractures, voxelize_fractures
 
 # TODO
-# - Documentation
 # - Gestion du format .grd (http://peterbird.name/guide/grd_format.htm)
-# - Stats with mask
-# - Retrieve fmm-costs dict - Test cost dict validity
-# - ajouter les objets surfacess
 
 this = sys.modules['pykasso.core.sks']
 
@@ -191,8 +187,7 @@ class Surface(GeologicFeature):
                 data_volume[:, :, z] = np.where(data_volume[:, :, z] == k, 1, 0) 
             elif condition == '<=':
                 data_volume[:, :, z] = np.where(data_volume[:, :, z] <= k, 1, 0)
-        self.data_volume = data_volume
-        return None
+        return data_volume
 
    
 class Volume(GeologicFeature):
@@ -277,15 +272,6 @@ class Bedding(Surface):
         super().__init__(label, data, grid, **kwargs)
         
         self._surface_to_volume('=', grid)
-
-class Piezometry(Surface):
-    """
-    TODO
-    """
-    def __init__(self, data, grid, **kwargs):
-        label = 'piezometric_level'
-        super().__init__(label, data, grid, **kwargs)
-        self._surface_to_volume('<=', grid)
 
 #############################################################################
 ### 3D Objects ###
@@ -382,9 +368,9 @@ class ConceptualModel():
     """
     def __init__(self, simple_conceptual_model, simple_conceptual_model_table, conceptual_model, conceptual_model_table):
         """ 
-        TODO
+        TODO - réfléchir aux noms.
         """
-        self.simple_conceptual_model       = simple_conceptual_model
-        self.simple_conceptual_model_table = simple_conceptual_model_table
-        self.conceptual_model              = conceptual_model
-        self.conceptual_model_table        = conceptual_model_table
+        self.data_volume = conceptual_model
+        self.table       = conceptual_model_table
+        # self.conceptual_model_overview       = simple_conceptual_model
+        # self.conceptual_model_overview_table = simple_conceptual_model_table

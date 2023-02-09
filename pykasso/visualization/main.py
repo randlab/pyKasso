@@ -8,8 +8,8 @@ AUTHORIZED_FEATURES = [
     'delimitation',
     'topography',
     'bedrock',
+    'water_level',
     'geology',
-    'piezometry',
     # 'beddings' - TODO
     'faults',
     'fractures',
@@ -67,7 +67,7 @@ def _is_feature_valid(environment, feature):
         if getattr(environment, feature) is None:
             raise ValueError("ERROR : '{}' attribute is type of None.".format(feature))
         
-    elif feature in ['delimitation', 'topography', 'bedrock']:
+    elif feature in ['delimitation', 'topography', 'bedrock', 'water_level']:
         
         if not hasattr(environment, 'domain'):
             raise ValueError("ERROR : environment has no '{}' attribute.".format(feature))

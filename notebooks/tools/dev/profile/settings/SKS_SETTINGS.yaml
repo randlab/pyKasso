@@ -4,6 +4,7 @@
 
 ---
 sks:
+  domain_from_geology: False
   seed : 1
 
 ############
@@ -21,39 +22,42 @@ grid:
   dy : 20
   dz : 20
 
-############
-### Mask ###
-############
+##############
+### Domain ###
+##############
 
-mask:
-  data : 'test/inputs/betteraz_polygon.txt'
-  # data : [[3,4,5], [5,6]]
+domain:
+  # delimitation : ''
+  delimitation : 'test/inputs/betteraz_polygon.txt'
+  topography   : ''
+  # topography   : 'test/inputs/topography.csv'
+  bedrock      : ''
 
 ###############
 ### Geology ###
 ###############
 
-# topography:
-#   data : 'test/inputs/topography.gslib'
+piezometry: 
+  data: ''
 
 geology:
-  data : 'test/inputs/betteraz_2D_z430.gslib'
-  cost : 
+  data  : 'test/inputs/betteraz_2D_z430.gslib'
+  costs : 
     1 : 0.5
     2 : 0.7
 
 faults:
   data : 'test/inputs/faults.png'
   axis : 'z'
-  cost : 
-    1 : 0.3
-    2 : 0.4
+
+beddings:
+#   data  : 'test/inputs/betteraz_2D_z430.gslib'
+  data : ''
+#   costs : {1:0.5}
 
 # karst:
 #   data : ''
 
-# field:
-#   data : ''
 
 ##############
 ### Points ###
@@ -61,11 +65,16 @@ faults:
 
 ### Outlets
 outlets:
-  number     : 3
+  number     : 6
   # data       : 'test/inputs/betteraz_polygon.txt'
+  data       : ''
   shuffle    : False
-  importance : [1,1,1]
-  seed : 1
+  importance : [1,1]
+  seed  : 1
+  modes :
+    x : 'uniform'
+    y : 'uniform'
+    z : 'surface_down'
   # z : 'lambda x : x * x'
 
 ### Inlets
@@ -76,6 +85,10 @@ inlets:
   per_outlet : [1,1,1]
   importance : [1,1,1]
   seed : 2
+  modes :
+    x : 'uniform'
+    y : 'uniform'
+    z : 'surface_up'
   # z : 'lambda x : x * x'
 
 ### Tracers
@@ -110,7 +123,7 @@ fractures:
 
 fmm: 
   algorithm : 'Riemann3'
-  # cost :
+  # costs :
     # ratio : 0.5
 
 ##############
@@ -120,6 +133,7 @@ fmm:
 verbosity:
   logging : 0
   agd : 0
+  karstnet : 0
 
 debug:
   verbosity: 0

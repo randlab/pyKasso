@@ -32,13 +32,11 @@ domain:
   topography   : ''
   # topography   : 'test/inputs/topography.csv'
   bedrock      : ''
+  water_level  : ''
 
 ###############
 ### Geology ###
 ###############
-
-piezometry: 
-  data: ''
 
 geology:
   data  : 'test/inputs/betteraz_2D_z430.gslib'
@@ -57,7 +55,6 @@ beddings:
 
 # karst:
 #   data : ''
-
 
 ##############
 ### Points ###

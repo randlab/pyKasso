@@ -31,6 +31,8 @@ def _show_data(environment, feature, settings, show=True):
         'outlets',
         'tracers',
     ]
+    
+    domain_features = ['delimitation', 'topography', 'bedrock', 'water_level']
 
     if 'iteration' not in settings:
         if hasattr(environment, 'iteration'):
@@ -52,7 +54,7 @@ def _show_data(environment, feature, settings, show=True):
     # if feature != 'grid':
     if feature in ['cost', 'alpha', 'beta', 'time', 'karst']:
         grid = _get_data_from_dict(grid, getattr(environment, 'maps'), feature, 'data', iteration=settings['iteration'])
-    elif feature in ['delimitation', 'topography', 'bedrock']:
+    elif feature in domain_features:
         domain = environment.domain
         grid = _get_data_from_attribute(grid, getattr(domain, feature), 'data_volume', 'data')
     else:
@@ -266,9 +268,15 @@ def _show_array(array):
     mesh = pv.UniformGrid()
     mesh.dimensions = np.array((nx, ny, nz)) + 1
     mesh.cell_data['data'] = array.flatten(order="F")
-
+    mesh = mesh.cast_to_unstructured_grid()
+    
+    ghosts = np.argwhere(np.isin(mesh["data"], [0]))
+    if ghosts is not None:
+        mesh = mesh.remove_cells(ghosts)
+        
     plotter = pv.Plotter()
     _ = plotter.add_mesh(mesh)
+    # plotter.add_mesh(mesh.outline(), color="k")
     plotter.show(cpos='xy')
     
     return None

@@ -1,12 +1,12 @@
 """
 Module to model the grid.
 """
-
-### TODO
-# DOCUMENTATION [000%]
-
+### External dependencies
 import numpy as np
 from matplotlib.path import Path
+
+### Typing
+from typing import Union
 
 class Grid():
     """
@@ -89,6 +89,7 @@ class Grid():
         self.__path = Path(list(zip(x_path, y_path)))
         self.__surface_coordinates = list(zip(x_path[:-1],y_path[:-1]))
         self.__data_volume = np.ones((nx, ny, nz)) 
+        self.__shape = (nx, ny, nz)
 
     def __str__(self) -> str:
         return "Grid\n[x0, y0, z0] : ({}, {}, {})\n[nx, ny, nz] : ({}, {}, {})\n[dx, dy, dz] : ({}, {}, {})".format(self.x0, self.y0, self.z0, self.nx, self.ny, self.nz, self.dx, self.dy, self.dz)
@@ -224,6 +225,10 @@ class Grid():
     @property
     def data_volume(self):
         return self.__data_volume
+    
+    @property
+    def shape(self):
+        return self.__shape
 
     ###############
     ### METHODS ###
@@ -298,7 +303,7 @@ class Grid():
         out = out.astype('int32')
         return out
     
-    def get_indices(self, x:float, y:float, z:float=None) -> tuple:
+    def get_indices(self, x:float, y:float, z:float=None) -> Union[tuple[float,float],tuple[float,float,float]]:
         """_summary_
 
         Parameters
@@ -392,7 +397,7 @@ class Grid():
         out = np.where((k < 0) | (k > (self.nz-1)), None, self.z[k])
         return out
     
-    def get_coordinate(self, i:int, j:int, k:int=None) -> tuple:
+    def get_coordinate(self, i:int, j:int, k:int=None) -> Union[tuple[float,float],tuple[float,float,float]]:
         """_summary_
 
         Parameters
