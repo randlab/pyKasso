@@ -270,9 +270,9 @@ def _show_array(array):
     mesh.cell_data['data'] = array.flatten(order="F")
     mesh = mesh.cast_to_unstructured_grid()
     
-    ghosts = np.argwhere(np.isin(mesh["data"], [0]))
-    if ghosts is not None:
-        mesh = mesh.remove_cells(ghosts)
+    # ghosts = np.argwhere(np.isin(mesh["data"], [0]))
+    # if ghosts is not None:
+    #     mesh = mesh.remove_cells(ghosts)
         
     plotter = pv.Plotter()
     _ = plotter.add_mesh(mesh)

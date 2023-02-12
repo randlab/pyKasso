@@ -538,19 +538,19 @@ class SKS():
         # if self.bedding is not None:
         #     bedding_items += [(200 + i, 'Bedding', id, cost) for (i, (id, cost)) in enumerate(self.bedding.costs.items())]
         
-        # 300 - Fractures
-        if self.fractures is not None:
-            fractures_items = [(300 + i, 'Fractures', id, cost) for (i, (id, cost)) in enumerate(self.fractures.costs.items())]
-            for (id, feature, id_, cost) in fractures_items:
-                conceptual_model = np.where(self.fractures.data_volume == id_, id, conceptual_model)
-            conceptual_model_table += fractures_items
+        # # 300 - Fractures
+        # if self.fractures is not None:
+        #     fractures_items = [(300 + i, 'Fractures', id, cost) for (i, (id, cost)) in enumerate(self.fractures.costs.items())]
+        #     for (id, feature, id_, cost) in fractures_items:
+        #         conceptual_model = np.where(self.fractures.data_volume == id_, id, conceptual_model)
+        #     conceptual_model_table += fractures_items
             
-        # 400 - Faults
-        if self.faults is not None:
-            faults_items = [(400 + i, 'Faults', id, cost) for (i, (id, cost)) in enumerate(self.faults.costs.items())]
-            for (id, feature, id_, cost) in faults_items:
-                conceptual_model = np.where(self.faults.data_volume == id_, id, conceptual_model)
-            conceptual_model_table += faults_items
+        # # 400 - Faults
+        # if self.faults is not None:
+        #     faults_items = [(400 + i, 'Faults', id, cost) for (i, (id, cost)) in enumerate(self.faults.costs.items())]
+        #     for (id, feature, id_, cost) in faults_items:
+        #         conceptual_model = np.where(self.faults.data_volume == id_, id, conceptual_model)
+        #     conceptual_model_table += faults_items
             
         # 500 - Faults - TODO
         # if self.karsts is not None:
@@ -645,14 +645,12 @@ class SKS():
         ### Get new points according to the right case
         # Case 1 - No points declared
         if (self.SKS_SETTINGS[kind]['data'] == '') or (self.SKS_SETTINGS[kind]['data'] == []):
-            # points = [point_manager._generate_coordinate() for _ in range(self.SKS_SETTINGS[kind]['number'])]
             points = point_manager._generate_coordinates(size=self.SKS_SETTINGS[kind]['number'])
-            print(points)
 
         # Case 2 - More points required than provided
         elif (self.SKS_SETTINGS[kind]['number'] > len(self.SKS_SETTINGS[kind]['data'])):
             n_points = self.SKS_SETTINGS[kind]['number'] - len(self.SKS_SETTINGS[kind]['data'])
-            points = self.SKS_SETTINGS[kind]['data'] + [point_manager._generate_coordinate() for _ in range(n_points)]
+            points = self.SKS_SETTINGS[kind]['data'] + point_manager._generate_coordinates(n_points)
 
         # Case 3 - Less points required than provided
         elif (self.SKS_SETTINGS[kind]['number'] < len(self.SKS_SETTINGS[kind]['data'])):
@@ -828,7 +826,7 @@ class SKS():
         """
         self._compute_karst_network()       # Computes conduits for each generation & store nodes and edges for network
         self._compute_karst_indicators()    # Calculates the karst network statistics indicators with karstnet and save karst network
-        self._export_results()              # Stores all the relevant data for this network in dictionaries
+        # self._export_results()              # Stores all the relevant data for this network in dictionaries
         return None
 
     
@@ -847,12 +845,12 @@ class SKS():
         return None
     
     
-    def _export_results(self):
-        """
-        TODO
-        """
-        # TODO ??
-        return None
+    # def _export_results(self):
+    #     """
+    #     TODO
+    #     """
+    #     # TODO ??
+    #     return None
 
     
     def _compute_karst_network(self):
@@ -908,36 +906,32 @@ class SKS():
             # TODO - valeur paramètrable : this.default_fmm_costs['conduits']
         return None
     
-    def _set_cost(self, feature):
-        """ 
-        TODO
-        """
-        geologic_feature = getattr(self, feature)
-        if geologic_feature is not None:
-            for key, cost in geologic_feature.costs.items():
-                cost_map_0 = np.where(geologic_feature.data_volume == key, cost, self.maps['cost'][0])
-                self.maps['cost'][0] = cost_map_0
-        return None
-
 
     ### 2.1.4 Anisotropic case
     @wp._debug_level(2, True)
     @wp._logging()
     def _compute_alpha_map(self):
         """
-        Compute the alpha map: travel cost in the same direction as the gradient.
+        Computes the alpha map: travel cost in the same direction as the gradient.
         Cost map * topography map, so that the cost is higher at higher elevations, encouraging conduits to go downgradient.
 
         TODO : à terminer
         """
-        alpha_map = self.maps['cost'][self.iteration] * self.grid.Z
+        alpha_map = self._set_alpha_from_elevation_gradient()
         
-        alpha = 0.5
-        if self.piezometry is not None:
-            alpha_map = np.where(self.piezometry.data_volume == 1, alpha, alpha_map)
+        if self.domain.water_level is not None:
+            alpha_map = self._set_alpha_in_phreatic_zone(self.maps['cost'][self.iteration], alpha_map)
         
         self.maps['alpha'].append(alpha_map)
         return None
+    
+    def _set_alpha_from_elevation_gradient(self):
+        """"""
+        return self.maps['cost'][self.iteration] * self.grid.Z
+    
+    def _set_alpha_in_phreatic_zone(self, alpha, alpha_map):
+        """"""
+        return np.where(self.domain.phreatic['phreatic_zone'] == 1, alpha, alpha_map)
 
 
     ### 2.1.5 Anisotropic case
@@ -945,17 +939,21 @@ class SKS():
     @wp._logging()
     def _compute_beta_map(self):
         """
-        Compute the beta map: travel cost perpendicular to the gradient.
+        Computes the beta map: travel cost perpendicular to the gradient.
         If beta is higher than alpha, conduits will follow the steepest gradient.
         If beta is lower than alpha, conduits will follow contours.
         """
-        beta_map = self.maps['alpha'][self.iteration] / self.SKS_SETTINGS['fmm']['cost']['ratio']
+        beta_map = self.maps['alpha'][self.iteration] / self.SKS_SETTINGS['fmm']['costs']['ratio']
         
-        if self.piezometry is not None:
-            beta_map = np.where(self.piezometry.data_volume == 1, self.maps['alpha'][self.iteration], beta_map)
+        if self.domain.water_level is not None:
+            beta_map = self._set_beta_in_phreatic_zone(self.maps['alpha'][self.iteration], beta_map)
             
         self.maps['beta'].append(beta_map)
         return None
+    
+    def _set_beta_in_phreatic_zone(self, beta, beta_map):
+        """"""
+        return np.where(self.domain.phreatic['phreatic_zone'] == 1, beta, beta_map)
 
 
     ### 2.1.6 Anisotropic case
@@ -967,25 +965,42 @@ class SKS():
 
         TODO : à terminer
         """
-        orientationx = np.zeros_like(self.grid.data_volume) 
-        orientationy = np.zeros_like(self.grid.data_volume) 
-        orientationz = np.ones_like(self.grid.data_volume) 
+        orientation_x, orientation_y, orientation_z = self._set_metrics_from_elevation_gradient()
         
-        if self.piezometry is not None:
-            orientationx = np.where(self.piezometry.data_volume == 1, 1, orientationx)
-            orientationy = np.where(self.piezometry.data_volume == 1, 1, orientationy)
-            orientationz = np.where(self.piezometry.data_volume == 1, 1, orientationz)
+        if self.domain.water_level is not None:
+            orientation_x, orientation_y, orientation_z = self._set_metrics_in_phreatic_zone(orientation_x, orientation_y, orientation_z)
             
-        # if self.domain.bedrock is not None:
-            # pass
+        if self.domain.bedrock is not None:
+            pass
         
         # if self.beddings is not None:
             # pass
     
         alpha = self.maps['alpha'][self.iteration]
-        beta  = self.maps['beta'][self.iteration]
-        self.fmm['riemannMetric'] = agd.Metrics.Riemann.needle([orientationx, orientationy, orientationz], alpha, beta)  
+        beta  = self.maps['beta'] [self.iteration]
+        self.fmm['riemannMetric'] = agd.Metrics.Riemann.needle([orientation_x, orientation_y, orientation_z], alpha, beta)  
         return None
+    
+    def _set_metrics_from_elevation_gradient(self):
+        """"""
+        orientation_x = np.zeros_like(self.grid.data_volume) 
+        orientation_y = np.zeros_like(self.grid.data_volume) 
+        orientation_z = np.ones_like (self.grid.data_volume)
+        return (orientation_x, orientation_y, orientation_z)
+    
+    def _set_metrics_in_phreatic_zone(self, orientation_x, orientation_y, orientation_z):
+        """"""
+        orientation_x = np.where(self.domain.phreatic['phreatic_zone'] == 1, 1, orientation_x)
+        orientation_y = np.where(self.domain.phreatic['phreatic_zone'] == 1, 1, orientation_y)
+        orientation_z = np.where(self.domain.phreatic['phreatic_zone'] == 1, 1, orientation_z)
+        return (orientation_x, orientation_y, orientation_z)
+    
+    def _set_metrics_on_bedrock_surface(self):
+        """"""
+        orientation_x = np.where(self.domain.phreatic['phreatic_zone'] == 1, 1, orientation_x)
+        orientation_y = np.where(self.domain.phreatic['phreatic_zone'] == 1, 1, orientation_y)
+        orientation_z = np.where(self.domain.phreatic['phreatic_zone'] == 1, 1, orientation_z)
+        return (orientation_x, orientation_y, orientation_z)
 
 
     ### 2.1.2
@@ -1049,7 +1064,7 @@ class SKS():
             karst_map_0 = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz))
             self.maps['karst'].append(karst_map_0)
         else:
-            self.maps['karst'].append(self.maps['karst'][self.iteration-1])
+            self.maps['karst'].append(self.maps['karst'][self.iteration-1].copy())
 
         # Debugging plot:
         # Chloe: this should stay in since it is very useful if there are problems

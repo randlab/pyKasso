@@ -84,7 +84,7 @@ this.ATTRIBUTES = {
     },
     'fmm' : {
         'algorithm' : ['optional', 'Isotropic3'],
-        'cost'      : ['optional', {'ratio' : 0.5}]
+        'costs'     : ['optional', {'ratio' : 0.5}]
     },
 }
 

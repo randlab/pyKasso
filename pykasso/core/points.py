@@ -57,11 +57,12 @@ class PointManager():
     def _generate_coordinates(self, size:int=1) -> tuple:
         """"""
         indices = self.rng.choice(self.probability_map, size=size)
-        print(indices)
+        i, j, k = zip(*indices)
+        i, j, k = np.array(i), np.array(j), np.array(k)
         x = self.domain.grid.xmin + (i + self.rng.random()) * self.domain.grid.dx
         y = self.domain.grid.ymin + (j + self.rng.random()) * self.domain.grid.dy
         z = self.domain.grid.zmin + (k + self.rng.random()) * self.domain.grid.dz
-        return (x,y,z)
+        return np.dstack((x,y,z))[0]
         
     # TODO ?
     #  def _generate_3D_coordinate_from_2D_coordinate(self, coordinate:tuple) -> tuple:
