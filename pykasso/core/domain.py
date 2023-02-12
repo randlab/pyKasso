@@ -25,10 +25,10 @@ class Domain():
         self.grid        = grid
         self.data_volume = np.zeros_like(grid.data_volume)
         
-        if delimitation is not None: self.delimitation = delimitation
-        if topography   is not None: self.topography   = topography
-        if bedrock      is not None: self.bedrock      = bedrock
-        if water_level  is not None: self.water_level  = water_level
+        self.delimitation = delimitation
+        self.topography   = topography
+        self.bedrock      = bedrock
+        self.water_level  = water_level
         
         ### Computes domain extension
         # Volumetric domain extension
@@ -48,18 +48,18 @@ class Domain():
             'z' : self.data_volume.max(axis=2),
         } 
         
-        ### Computes borders from domain
-        self.data_borders = {}
-        # Full borders
-        k = np.zeros((3,3,3), dtype=int); k[:,1,1], k[1,:,1], k[1,1,:] = 1,1,1
-        self.data_borders['xyz'] = binary_dilation(self.data_volume==0, k, border_value=1) & self.data_volume
-        # x and y directions borders
-        k = np.zeros((3,3), dtype=int); k[:,1], k[1,:] = 1,1
-        self.data_borders['xy'] = np.zeros_like(self.data_volume)
-        for z in range(self.grid.nz):            
-            self.data_borders['xy'][:,:,z] = binary_dilation(self.data_volume[:,:,z]==0, k, border_value=1) & self.data_volume[:,:,z]
+        ### Computes domains with the surfaces of the domain
+        self._set_faces()
         
-        ### Computes specific surfaces from domain
+        ### Computes domains with the border of the domain
+        self._set_border_domains()
+        
+        ### Computes domains with water level elevations
+        if self.water_level is not None:
+            self._set_phreatic_domains()
+    
+    def _set_faces(self):
+        """"""
         self.faces = {}
         I, J, K = np.indices(self.data_volume.shape)
         domain = self.data_volume.astype('bool')
@@ -81,47 +81,52 @@ class Domain():
         volume_down = np.zeros_like(self.data_volume) 
         volume_down[i,j,k] = 1
         self.faces['down'] = volume_down
+        return None
+     
+    def _set_border_domains(self):
+        """"""
+        self.borders = {}
         
-        if self.water_level is not None:
-            self._set_water_table()
+        # Full borders
+        k = np.zeros((3,3,3), dtype=int); k[:,1,1], k[1,:,1], k[1,1,:] = 1,1,1
+        self.borders['domain'] = binary_dilation(self.data_volume==0, k, border_value=1) & self.data_volume
+        
+        # x and y directions borders
+        k = np.zeros((3,3), dtype=int); k[:,1], k[1,:] = 1,1
+        self.borders['domain_sides'] = np.zeros_like(self.data_volume)
+        for z in range(self.grid.nz):            
+            self.borders['domain_sides'][:,:,z] = binary_dilation(self.data_volume[:,:,z]==0, k, border_value=1) & self.data_volume[:,:,z]
+            
+        # Bedrock elevation border
+        self.borders['bedrock_elevation_sides'] = np.logical_and(self.borders['domain_sides'] , self.faces['down'])
+        return None
+        
         
     # TODO - names ?
-    def _set_water_table(self):
-        
+    def _set_phreatic_domains(self):
+        """"""
         water_volume  = self.water_level.data_volume
         water_surface = self.water_level.data_surface
         
         self.phreatic = {
             'vadose_zone'         : np.logical_and(self.data_volume, np.logical_not(water_volume)),
             'phreatic_zone'       : np.logical_and(self.data_volume, water_volume),
-            'water_level'         : np.logical_and(self.data_volume, water_surface),
-            'water_level_borders' : np.logical_and(self.data_borders['xy'], water_volume),
-        }
+            'water_level_surface' : np.logical_and(self.data_volume, water_surface),
+            'water_level_borders' : np.logical_and(self.borders['domain_sides'], water_volume),
+        }    
         
-        # I, J, K = np.indices(self.data_volume.shape)
-        # domain = self.phreatic['vadose_zone'].astype('bool')
-        # face = K.max(axis=2, initial=-1, where=domain)
-        # i_, j_ = np.indices(self.data_surfaces['z'].shape)
-        # i_, j_ = i_.flatten(), j_.flatten()
-        # k_ = face.flatten()
-        # nodes = list(zip(i_,j_,k_))
-        # valid_nodes = [(i,j,k) for (i,j,k) in nodes if k in list(range(self.grid.nz))]
+        # Water level surface border
+        self.borders['water_level_surface_sides'] = np.logical_and(self.borders['domain_sides'] , self.phreatic['water_level_surface'])
         
-        # i,j,k = zip(*valid_nodes)
-        # volume = np.zeros_like(self.data_volume) 
-        # volume[i,j,k] = 1
-        # self.phreatic['water_level'] = volume
         
         return None
         
-        
-        
-    # def is_coordinate_in_domain(self, x:float, y:float, z:float) -> bool:
-    #     if self.grid.is_inbox(x,y,z):
-    #         i, j, k = self.grid.get_indices(x,y,z)
-    #         return bool(self.data_volume[i,j,k])
-    #     else:
-    #         return False
+    def is_coordinate_in_domain(self, x:float, y:float, z:float) -> bool:
+        if self.grid.is_inbox(x,y,z):
+            i, j, k = self.grid.get_indices(x,y,z)
+            return bool(self.data_volume[i,j,k])
+        else:
+            return False
         
     # def is_coordinate_on_border(self, x:float, y:float, z:float) -> bool:
     #     if self.grid.is_inbox(x,y,z):
@@ -130,11 +135,11 @@ class Domain():
     #     else: 
     #         return False
         
-    # def is_coordinate_2D_valid(self, x:float, y:float) -> bool:
-    #     if self.grid.path.contains_point((x,y)):
-    #         return bool(self.data_surface[x,y])
-    #     else:
-    #         return False
+    def is_coordinate_2D_valid(self, x:float, y:float) -> bool:
+        if self.grid.path.contains_point((x,y)):
+            return bool(self.data_surfaces['z'][x,y])
+        else:
+            return False
         
     # def get_elevation_from_xy_coordinate(self, x:float, y:float, surface:str='up') -> float:
     #     if surface == 'up':

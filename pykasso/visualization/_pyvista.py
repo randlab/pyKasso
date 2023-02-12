@@ -106,7 +106,7 @@ def _show_data(environment, feature, settings, show=True):
         slices = grid.slice_orthogonal()
         _ = plotter.add_mesh(slices, **kwargs)
     else:
-         _ = plotter.add_mesh(grid, **kwargs)
+        _ = plotter.add_mesh(grid, **kwargs)
 
     # Grid
     plotter.add_mesh(grid_i.outline(), color="k")
@@ -116,9 +116,9 @@ def _show_data(environment, feature, settings, show=True):
 
     # Points
     if settings['inlets']:
-        plotter.add_points(inlets, render_points_as_spheres=True, point_size=20, color='r')
+        plotter.add_points(inlets, render_points_as_spheres=False, point_size=20, color='r')
     if settings['outlets']:
-        plotter.add_points(outlets, render_points_as_spheres=True, point_size=20, color='b')
+        plotter.add_points(outlets, render_points_as_spheres=False, point_size=20, color='b')
 
     if show:
         plotter.show(cpos='xy')

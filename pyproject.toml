@@ -46,6 +46,7 @@ jupyter = "^1.0.0"
 jupyterlab = "^3.5.2"
 ipyvtklink = "^0.2.3"
 snakeviz = "^2.1.1"
+sphinx = "^6.1.3"
 
 [build-system]
 requires = ["poetry-core"]

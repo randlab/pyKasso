@@ -3,17 +3,19 @@
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 1 ***
  ►                              | INFO     | ****************************
- ►                              | INFO     | Date : 2023-02-09 23:49:38
+ ►                              | INFO     | Date : 2023-02-10 20:37:53
  ►                              | INFO     | ---
  ►                              | INFO     | Debug mode : True
  ►                              | INFO     | Debug level :
- ►                              | INFO     | -> model          : 2.4
+ ►                              | INFO     | -> model          : 4
  ►                              | INFO     | -> simulation     : 1
  ►                              | INFO     | -> max. iteration : 1
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well
  grid.construction              | INFO     | 'grid' has been constructed
+ domain.validation              | WARNING  | The 'topography' attribute is missing (optional).
+ domain.validation              | WARNING  | The 'bedrock' attribute is missing (optional).
  domain.validation              | INFO     | 'domain' settings have been validated
  domain.construction            | DEBUG    | '_build_domain_delimitation' went well
  domain.construction            | DEBUG    | '_build_domain_topography' went well
@@ -21,4 +23,20 @@
  domain.construction            | DEBUG    | '_build_domain_water_level' went well
  domain.construction            | DEBUG    | '_build_domain' went well
  domain.construction            | INFO     | 'domain' has been constructed
- domain.construction            | CRITICAL | DEBUG MODE
+ sks.validation                 | INFO     | 'sks' settings have been validated
+ geology.validation             | WARNING  | The 'axis' attribute is missing (optional).
+ geology.validation             | INFO     | 'geology' settings have been validated
+ geology.construction           | DEBUG    | '_build_model_geology' went well
+ geology.construction           | INFO     | 'geology' has been constructed
+ faults.validation              | WARNING  | The 'faults' attribute is missing (optional).
+ faults.validation              | WARNING  | The 'data' attribute is missing (optional).
+ faults.validation              | WARNING  | The 'axis' attribute is missing (optional).
+ faults.validation              | INFO     | 'faults' settings have been validated
+ faults.construction            | DEBUG    | '_build_model_faults' went well
+ faults.construction            | INFO     | 'faults' has been constructed
+ outlets.validation             | WARNING  | The 'shuffle' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ outlets.validation             | INFO     | 'outlets' settings have been validated
+ outlets.construction           | WARNING  | 4/4 outlets have been discarded because out of domain.
+ outlets.construction           | CRITICAL | Critical error during '_build_model_outlets'
+ outlets.construction           | CRITICAL | Critical error during '_build_model'

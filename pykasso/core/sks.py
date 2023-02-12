@@ -350,7 +350,7 @@ class SKS():
         self._build_conceptual_model()
         return None
     
-    @wp._debug_level(3)
+    @wp._debug_level(3.1)
     @wp._parameters_validation('sks', 'required')
     def _build_model_parameters(self):
         """Builds essential model parameters."""
@@ -362,7 +362,7 @@ class SKS():
         }
         return None
         
-    @wp._debug_level(3.1)
+    @wp._debug_level(3.2)
     @wp._parameters_validation('geology', 'optional')
     @wp._memoize('geology')
     @wp._logging()
@@ -609,7 +609,7 @@ class SKS():
         # Creates a point generator instance
         point_manager = PointManager(
             rng = self.rng[kind],
-            modes = self.SKS_SETTINGS[kind]['modes'],
+            mode = self.SKS_SETTINGS[kind]['mode'],
             domain = self.domain, 
             geology = self.geology,
             geologic_ids = self.SKS_SETTINGS[kind]['geology']
@@ -624,14 +624,15 @@ class SKS():
         ### Inspects validity of points
         points = self.SKS_SETTINGS[kind]['data']
         
+        # TODO - prise en charge ou pas ? 
         # 2D points # TODO - logging ?
         points_2D = [point for point in points if len(point) == 2]
         validated_points_2D = [point for point in points_2D if point_manager._is_coordinate_2D_valid(point)]
-        validated_points_3D = [point_manager._generate_3D_coordinate_from_2D_coordinate(point) for point in validated_points_2D]
+        # validated_points_3D = [point_manager._generate_3D_coordinate_from_2D_coordinate(point) for point in validated_points_2D]
         
         # 3D points # TODO - logging ?
         points_3D = [point for point in points if len(point) == 3]
-        validated_points_3D += [point for point in points_3D if point_manager._is_coordinate_3D_valid(point)]
+        validated_points_3D = [point for point in points_3D if point_manager._is_coordinate_3D_valid(point)]
 
         diff = len(points) - len(validated_points_3D)
         if diff > 0:
@@ -644,7 +645,9 @@ class SKS():
         ### Get new points according to the right case
         # Case 1 - No points declared
         if (self.SKS_SETTINGS[kind]['data'] == '') or (self.SKS_SETTINGS[kind]['data'] == []):
-            points = [point_manager._generate_coordinate() for _ in range(self.SKS_SETTINGS[kind]['number'])]
+            # points = [point_manager._generate_coordinate() for _ in range(self.SKS_SETTINGS[kind]['number'])]
+            points = point_manager._generate_coordinates(size=self.SKS_SETTINGS[kind]['number'])
+            print(points)
 
         # Case 2 - More points required than provided
         elif (self.SKS_SETTINGS[kind]['number'] > len(self.SKS_SETTINGS[kind]['data'])):
