@@ -1,4 +1,4 @@
-![pyKasso's logo](/docs/pykasso_logo.png)
+![pyKasso's logo](/docs/source/_static/pykasso_logo.png)
 
 ## pyKasso: a stochastic karst network simulation tool
 
