@@ -94,14 +94,14 @@ def _is_feature_valid(environment, feature):
 
 
 
-def show_array(array, engine='pyvista'):
+def show_array(array, engine='pyvista', ghost=False):
     """
     TODO
     ARRAY VISUALIZATION
     """
     if engine == 'pyvista':
         from pykasso.visualization import _pyvista
-        _pyvista._show_array(array)
+        _pyvista._show_array(array, ghost)
     
     
     return None

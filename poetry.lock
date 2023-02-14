@@ -488,7 +488,7 @@ test = ["pytest"]
 name = "contourpy"
 version = "1.0.7"
 description = "Python library for calculating contours of 2D quadrilateral grids"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
@@ -563,7 +563,7 @@ test-no-images = ["pytest"]
 name = "cycler"
 version = "0.11.0"
 description = "Composable style cycles"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -681,7 +681,7 @@ devel = ["colorama", "json-spec", "jsonschema", "pylint", "pytest", "pytest-benc
 name = "fonttools"
 version = "4.38.0"
 description = "Tools to manipulate font files"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -729,14 +729,14 @@ files = [
 
 [[package]]
 name = "imageio"
-version = "2.25.0"
+version = "2.25.1"
 description = "Library for reading and writing a wide range of image, video, scientific, and volumetric data formats."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "imageio-2.25.0-py3-none-any.whl", hash = "sha256:9ef2fdef1235eef849b1aea399f08508493624a2a2c8cc3bba957dabb7d0b79f"},
-    {file = "imageio-2.25.0.tar.gz", hash = "sha256:b80796a1f8c38c697a940a2ad7397ee28900d5c4e51061b9a67d16aca867f33e"},
+    {file = "imageio-2.25.1-py3-none-any.whl", hash = "sha256:5bce7f88eef7ee4e9aac798d3b218fea2e98cbbaa59a3e37b730a7aa5784eeac"},
+    {file = "imageio-2.25.1.tar.gz", hash = "sha256:6021d42debd2187e9c781e494a49a30eba002fbac1eef43f491bbc731e7a6d2b"},
 ]
 
 [package.dependencies]
@@ -793,6 +793,25 @@ perf = ["ipython"]
 testing = ["flake8 (<5)", "flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)", "pytest-perf (>=0.9.2)"]
 
 [[package]]
+name = "importlib-resources"
+version = "5.10.2"
+description = "Read resources from Python packages"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "importlib_resources-5.10.2-py3-none-any.whl", hash = "sha256:7d543798b0beca10b6a01ac7cafda9f822c54db9e8376a6bf57e0cbd74d486b6"},
+    {file = "importlib_resources-5.10.2.tar.gz", hash = "sha256:e4a96c8cc0339647ff9a5e0550d9f276fc5a01ffa276012b58ec108cfd7b8484"},
+]
+
+[package.dependencies]
+zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
+
+[package.extras]
+docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
+testing = ["flake8 (<5)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)"]
+
+[[package]]
 name = "ipycanvas"
 version = "0.13.1"
 description = "Interactive widgets library exposing the browser's Canvas API"
@@ -830,14 +849,14 @@ test = ["nbval", "pytest", "pytest-cov"]
 
 [[package]]
 name = "ipykernel"
-version = "6.21.1"
+version = "6.21.2"
 description = "IPython Kernel for Jupyter"
 category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "ipykernel-6.21.1-py3-none-any.whl", hash = "sha256:1a04bb359212e23e46adc0116ec82ea128c1e5bd532fde4fbe679787ff36f0cf"},
-    {file = "ipykernel-6.21.1.tar.gz", hash = "sha256:a0f8eece39cab1ee352c9b59ec67bbe44d8299f8238e4c16ff7f4cf0052d3378"},
+    {file = "ipykernel-6.21.2-py3-none-any.whl", hash = "sha256:430d00549b6aaf49bd0f5393150691edb1815afa62d457ee6b1a66b25cb17874"},
+    {file = "ipykernel-6.21.2.tar.gz", hash = "sha256:6e9213484e4ce1fb14267ee435e18f23cc3a0634e635b9fb4ed4677b84e0fdf8"},
 ]
 
 [package.dependencies]
@@ -851,7 +870,7 @@ matplotlib-inline = ">=0.1"
 nest-asyncio = "*"
 packaging = "*"
 psutil = "*"
-pyzmq = ">=17"
+pyzmq = ">=20"
 tornado = ">=6.1"
 traitlets = ">=5.4.0"
 
@@ -1108,14 +1127,14 @@ test = ["codecov", "coverage", "ipykernel (>=6.14)", "mypy", "paramiko", "pre-co
 
 [[package]]
 name = "jupyter-console"
-version = "6.5.0"
+version = "6.5.1"
 description = "Jupyter terminal console"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "jupyter_console-6.5.0-py3-none-any.whl", hash = "sha256:87826ab6c8c418731fd78f14ec504df735e79554e35784d0a6379018bb3ef9d7"},
-    {file = "jupyter_console-6.5.0.tar.gz", hash = "sha256:67e68f1da16bc3f6f78ed846dd5543ec0679369f8504734f10bfd206faae39ea"},
+    {file = "jupyter_console-6.5.1-py3-none-any.whl", hash = "sha256:c575bb6ed56ca78189594176341e7b31426ff30fafcd22bf3dad7be309595b5e"},
+    {file = "jupyter_console-6.5.1.tar.gz", hash = "sha256:6b91b7b6e8a715053b536db209a2f4b02429d7b28db27373a56a26b0bebd620b"},
 ]
 
 [package.dependencies]
@@ -1373,7 +1392,7 @@ files = [
 name = "karstnet"
 version = "1.2.0"
 description = "Statistical characterization of karstic network"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 files = []
@@ -1389,7 +1408,7 @@ resolved_reference = "7ffb67c498b75629f75e67b89aa5352c4b65ff74"
 name = "kiwisolver"
 version = "1.4.4"
 description = "A fast implementation of the Cassowary constraint solver"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1525,64 +1544,65 @@ files = [
 
 [[package]]
 name = "matplotlib"
-version = "3.6.3"
+version = "3.7.0"
 description = "Python plotting package"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "matplotlib-3.6.3-cp310-cp310-macosx_10_12_universal2.whl", hash = "sha256:80c166a0e28512e26755f69040e6bf2f946a02ffdb7c00bf6158cca3d2b146e6"},
-    {file = "matplotlib-3.6.3-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:eb9421c403ffd387fbe729de6d9a03005bf42faba5e8432f4e51e703215b49fc"},
-    {file = "matplotlib-3.6.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:5223affa21050fb6118353c1380c15e23aedfb436bf3e162c26dc950617a7519"},
-    {file = "matplotlib-3.6.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d00c248ab6b92bea3f8148714837937053a083ff03b4c5e30ed37e28fc0e7e56"},
-    {file = "matplotlib-3.6.3-cp310-cp310-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:ca94f0362f6b6f424b555b956971dcb94b12d0368a6c3e07dc7a40d32d6d873d"},
-    {file = "matplotlib-3.6.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:59400cc9451094b7f08cc3f321972e6e1db4cd37a978d4e8a12824bf7fd2f03b"},
-    {file = "matplotlib-3.6.3-cp310-cp310-win32.whl", hash = "sha256:57ad1aee29043163374bfa8990e1a2a10ff72c9a1bfaa92e9c46f6ea59269121"},
-    {file = "matplotlib-3.6.3-cp310-cp310-win_amd64.whl", hash = "sha256:1fcc4cad498533d3c393a160975acc9b36ffa224d15a6b90ae579eacee5d8579"},
-    {file = "matplotlib-3.6.3-cp311-cp311-macosx_10_12_universal2.whl", hash = "sha256:d2cfaa7fd62294d945b8843ea24228a27c8e7c5b48fa634f3c168153b825a21b"},
-    {file = "matplotlib-3.6.3-cp311-cp311-macosx_10_12_x86_64.whl", hash = "sha256:c3f08df2ac4636249b8bc7a85b8b82c983bef1441595936f62c2918370ca7e1d"},
-    {file = "matplotlib-3.6.3-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:ff2aa84e74f80891e6bcf292ebb1dd57714ffbe13177642d65fee25384a30894"},
-    {file = "matplotlib-3.6.3-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:11011c97d62c1db7bc20509572557842dbb8c2a2ddd3dd7f20501aa1cde3e54e"},
-    {file = "matplotlib-3.6.3-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:1c235bf9be052347373f589e018988cad177abb3f997ab1a2e2210c41562cc0c"},
-    {file = "matplotlib-3.6.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bebcff4c3ed02c6399d47329f3554193abd824d3d53b5ca02cf583bcd94470e2"},
-    {file = "matplotlib-3.6.3-cp311-cp311-win32.whl", hash = "sha256:d5f18430f5cfa5571ab8f4c72c89af52aa0618e864c60028f11a857d62200cba"},
-    {file = "matplotlib-3.6.3-cp311-cp311-win_amd64.whl", hash = "sha256:dfba7057609ca9567b9704626756f0142e97ec8c5ba2c70c6e7bd1c25ef99f06"},
-    {file = "matplotlib-3.6.3-cp38-cp38-macosx_10_12_universal2.whl", hash = "sha256:9fb8fb19d03abf3c5dab89a8677e62c4023632f919a62b6dd1d6d2dbf42cd9f5"},
-    {file = "matplotlib-3.6.3-cp38-cp38-macosx_10_12_x86_64.whl", hash = "sha256:bbf269e1d24bc25247095d71c7a969813f7080e2a7c6fa28931a603f747ab012"},
-    {file = "matplotlib-3.6.3-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:994637e2995b0342699b396a320698b07cd148bbcf2dd2fa2daba73f34dd19f2"},
-    {file = "matplotlib-3.6.3-cp38-cp38-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:77b384cee7ab8cf75ffccbfea351a09b97564fc62d149827a5e864bec81526e5"},
-    {file = "matplotlib-3.6.3-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:73b93af33634ed919e72811c9703e1105185cd3fb46d76f30b7f4cfbbd063f89"},
-    {file = "matplotlib-3.6.3-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:debeab8e2ab07e5e3dac33e12456da79c7e104270d2b2d1df92b9e40347cca75"},
-    {file = "matplotlib-3.6.3-cp38-cp38-win32.whl", hash = "sha256:acc3b1a4bddbf56fe461e36fb9ef94c2cb607fc90d24ccc650040bfcc7610de4"},
-    {file = "matplotlib-3.6.3-cp38-cp38-win_amd64.whl", hash = "sha256:1183877d008c752d7d535396096c910f4663e4b74a18313adee1213328388e1e"},
-    {file = "matplotlib-3.6.3-cp39-cp39-macosx_10_12_universal2.whl", hash = "sha256:6adc441b5b2098a4b904bbf9d9e92fb816fef50c55aa2ea6a823fc89b94bb838"},
-    {file = "matplotlib-3.6.3-cp39-cp39-macosx_10_12_x86_64.whl", hash = "sha256:6d81b11ede69e3a751424b98dc869c96c10256b2206bfdf41f9c720eee86844c"},
-    {file = "matplotlib-3.6.3-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:29f17b7f2e068dc346687cbdf80b430580bab42346625821c2d3abf3a1ec5417"},
-    {file = "matplotlib-3.6.3-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3f56a7252eee8f3438447f75f5e1148a1896a2756a92285fe5d73bed6deebff4"},
-    {file = "matplotlib-3.6.3-cp39-cp39-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:bbddfeb1495484351fb5b30cf5bdf06b3de0bc4626a707d29e43dfd61af2a780"},
-    {file = "matplotlib-3.6.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:809119d1cba3ece3c9742eb01827fe7a0e781ea3c5d89534655a75e07979344f"},
-    {file = "matplotlib-3.6.3-cp39-cp39-win32.whl", hash = "sha256:e0a64d7cc336b52e90f59e6d638ae847b966f68582a7af041e063d568e814740"},
-    {file = "matplotlib-3.6.3-cp39-cp39-win_amd64.whl", hash = "sha256:79e501eb847f4a489eb7065bb8d3187117f65a4c02d12ea3a19d6c5bef173bcc"},
-    {file = "matplotlib-3.6.3-pp38-pypy38_pp73-macosx_10_12_x86_64.whl", hash = "sha256:2787a16df07370dcba385fe20cdd0cc3cfaabd3c873ddabca78c10514c799721"},
-    {file = "matplotlib-3.6.3-pp38-pypy38_pp73-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:68d94a436f62b8a861bf3ace82067a71bafb724b4e4f9133521e4d8012420dd7"},
-    {file = "matplotlib-3.6.3-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:81b409b2790cf8d7c1ef35920f01676d2ae7afa8241844e7aa5484fdf493a9a0"},
-    {file = "matplotlib-3.6.3-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:faff486b36530a836a6b4395850322e74211cd81fc17f28b4904e1bd53668e3e"},
-    {file = "matplotlib-3.6.3-pp39-pypy39_pp73-macosx_10_12_x86_64.whl", hash = "sha256:38d38cb1ea1d80ee0f6351b65c6f76cad6060bbbead015720ba001348ae90f0c"},
-    {file = "matplotlib-3.6.3-pp39-pypy39_pp73-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:12f999661589981e74d793ee2f41b924b3b87d65fd929f6153bf0f30675c59b1"},
-    {file = "matplotlib-3.6.3-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:01b7f521a9a73c383825813af255f8c4485d1706e4f3e2ed5ae771e4403a40ab"},
-    {file = "matplotlib-3.6.3-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:9ceebaf73f1a3444fa11014f38b9da37ff7ea328d6efa1652241fe3777bfdab9"},
-    {file = "matplotlib-3.6.3.tar.gz", hash = "sha256:1f4d69707b1677560cd952544ee4962f68ff07952fb9069ff8c12b56353cb8c9"},
+    {file = "matplotlib-3.7.0-cp310-cp310-macosx_10_12_universal2.whl", hash = "sha256:3da8b9618188346239e51f1ea6c0f8f05c6e218cfcc30b399dd7dd7f52e8bceb"},
+    {file = "matplotlib-3.7.0-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:c0592ba57217c22987b7322df10f75ef95bc44dce781692b4b7524085de66019"},
+    {file = "matplotlib-3.7.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:21269450243d6928da81a9bed201f0909432a74e7d0d65db5545b9fa8a0d0223"},
+    {file = "matplotlib-3.7.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:eb2e76cd429058d8954121c334dddfcd11a6186c6975bca61f3f248c99031b05"},
+    {file = "matplotlib-3.7.0-cp310-cp310-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:de20eb1247725a2f889173d391a6d9e7e0f2540feda24030748283108b0478ec"},
+    {file = "matplotlib-3.7.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c5465735eaaafd1cfaec3fed60aee776aeb3fd3992aa2e49f4635339c931d443"},
+    {file = "matplotlib-3.7.0-cp310-cp310-win32.whl", hash = "sha256:092e6abc80cdf8a95f7d1813e16c0e99ceda8d5b195a3ab859c680f3487b80a2"},
+    {file = "matplotlib-3.7.0-cp310-cp310-win_amd64.whl", hash = "sha256:4f640534ec2760e270801056bc0d8a10777c48b30966eef78a7c35d8590915ba"},
+    {file = "matplotlib-3.7.0-cp311-cp311-macosx_10_12_universal2.whl", hash = "sha256:f336e7014889c38c59029ebacc35c59236a852e4b23836708cfd3f43d1eaeed5"},
+    {file = "matplotlib-3.7.0-cp311-cp311-macosx_10_12_x86_64.whl", hash = "sha256:3a10428d4f8d1a478ceabd652e61a175b2fdeed4175ab48da4a7b8deb561e3fa"},
+    {file = "matplotlib-3.7.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:46ca923e980f76d34c1c633343a72bb042d6ba690ecc649aababf5317997171d"},
+    {file = "matplotlib-3.7.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c849aa94ff2a70fb71f318f48a61076d1205c6013b9d3885ade7f992093ac434"},
+    {file = "matplotlib-3.7.0-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:827e78239292e561cfb70abf356a9d7eaf5bf6a85c97877f254009f20b892f89"},
+    {file = "matplotlib-3.7.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:691ef1f15360e439886186d0db77b5345b24da12cbc4fc57b26c4826db4d6cab"},
+    {file = "matplotlib-3.7.0-cp311-cp311-win32.whl", hash = "sha256:21a8aeac39b4a795e697265d800ce52ab59bdeb6bb23082e2d971f3041074f02"},
+    {file = "matplotlib-3.7.0-cp311-cp311-win_amd64.whl", hash = "sha256:01681566e95b9423021b49dea6a2395c16fa054604eacb87f0f4c439750f9114"},
+    {file = "matplotlib-3.7.0-cp38-cp38-macosx_10_12_universal2.whl", hash = "sha256:cf119eee4e57389fba5ac8b816934e95c256535e55f0b21628b4205737d1de85"},
+    {file = "matplotlib-3.7.0-cp38-cp38-macosx_10_12_x86_64.whl", hash = "sha256:21bd4033c40b95abd5b8453f036ed5aa70856e56ecbd887705c37dce007a4c21"},
+    {file = "matplotlib-3.7.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:111ef351f28fd823ed7177632070a6badd6f475607122bc9002a526f2502a0b5"},
+    {file = "matplotlib-3.7.0-cp38-cp38-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:f91d35b3ef51d29d9c661069b9e4ba431ce283ffc533b981506889e144b5b40e"},
+    {file = "matplotlib-3.7.0-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:0a776462a4a63c0bfc9df106c15a0897aa2dbab6795c693aa366e8e283958854"},
+    {file = "matplotlib-3.7.0-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0dfd4a0cbd151f6439e6d7f8dca5292839ca311e7e650596d073774847ca2e4f"},
+    {file = "matplotlib-3.7.0-cp38-cp38-win32.whl", hash = "sha256:56b7b79488209041a9bf7ddc34f1b069274489ce69e34dc63ae241d0d6b4b736"},
+    {file = "matplotlib-3.7.0-cp38-cp38-win_amd64.whl", hash = "sha256:8665855f3919c80551f377bc16df618ceabf3ef65270bc14b60302dce88ca9ab"},
+    {file = "matplotlib-3.7.0-cp39-cp39-macosx_10_12_universal2.whl", hash = "sha256:f910d924da8b9fb066b5beae0b85e34ed1b6293014892baadcf2a51da1c65807"},
+    {file = "matplotlib-3.7.0-cp39-cp39-macosx_10_12_x86_64.whl", hash = "sha256:cf6346644e8fe234dc847e6232145dac199a650d3d8025b3ef65107221584ba4"},
+    {file = "matplotlib-3.7.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:3d1e52365d8d5af699f04581ca191112e1d1220a9ce4386b57d807124d8b55e6"},
+    {file = "matplotlib-3.7.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c869b646489c6a94375714032e5cec08e3aa8d3f7d4e8ef2b0fb50a52b317ce6"},
+    {file = "matplotlib-3.7.0-cp39-cp39-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f4ddac5f59e78d04b20469bc43853a8e619bb6505c7eac8ffb343ff2c516d72f"},
+    {file = "matplotlib-3.7.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fb0304c1cd802e9a25743414c887e8a7cd51d96c9ec96d388625d2cd1c137ae3"},
+    {file = "matplotlib-3.7.0-cp39-cp39-win32.whl", hash = "sha256:a06a6c9822e80f323549c6bc9da96d4f233178212ad9a5f4ab87fd153077a507"},
+    {file = "matplotlib-3.7.0-cp39-cp39-win_amd64.whl", hash = "sha256:cb52aa97b92acdee090edfb65d1cb84ea60ab38e871ba8321a10bbcebc2a3540"},
+    {file = "matplotlib-3.7.0-pp38-pypy38_pp73-macosx_10_12_x86_64.whl", hash = "sha256:3493b48e56468c39bd9c1532566dff3b8062952721b7521e1f394eb6791495f4"},
+    {file = "matplotlib-3.7.0-pp38-pypy38_pp73-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:7d0dcd1a0bf8d56551e8617d6dc3881d8a1c7fb37d14e5ec12cbb293f3e6170a"},
+    {file = "matplotlib-3.7.0-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:51fb664c37714cbaac69c16d6b3719f517a13c96c3f76f4caadd5a0aa7ed0329"},
+    {file = "matplotlib-3.7.0-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:4497d88c559b76da320b7759d64db442178beeea06a52dc0c629086982082dcd"},
+    {file = "matplotlib-3.7.0-pp39-pypy39_pp73-macosx_10_12_x86_64.whl", hash = "sha256:9d85355c48ef8b9994293eb7c00f44aa8a43cad7a297fbf0770a25cdb2244b91"},
+    {file = "matplotlib-3.7.0-pp39-pypy39_pp73-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:03eb2c8ff8d85da679b71e14c7c95d16d014c48e0c0bfa14db85f6cdc5c92aad"},
+    {file = "matplotlib-3.7.0-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:71b751d06b2ed1fd017de512d7439c0259822864ea16731522b251a27c0b2ede"},
+    {file = "matplotlib-3.7.0-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:b51ab8a5d5d3bbd4527af633a638325f492e09e45e78afdf816ef55217a09664"},
+    {file = "matplotlib-3.7.0.tar.gz", hash = "sha256:8f6efd313430d7ef70a38a3276281cb2e8646b3a22b3b21eb227da20e15e6813"},
 ]
 
 [package.dependencies]
 contourpy = ">=1.0.1"
 cycler = ">=0.10"
 fonttools = ">=4.22.0"
+importlib-resources = {version = ">=3.2.0", markers = "python_version < \"3.10\""}
 kiwisolver = ">=1.0.1"
-numpy = ">=1.19"
+numpy = ">=1.20"
 packaging = ">=20.0"
 pillow = ">=6.2.0"
-pyparsing = ">=2.2.1"
+pyparsing = ">=2.3.1"
 python-dateutil = ">=2.7"
 
 [[package]]
@@ -1616,7 +1636,7 @@ files = [
 name = "mplstereonet"
 version = "0.6.2"
 description = "Stereonets for matplotlib"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -1780,7 +1800,7 @@ files = [
 name = "networkx"
 version = "2.8.8"
 description = "Python package for creating and manipulating graphs and networks"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
@@ -1888,14 +1908,14 @@ files = [
 
 [[package]]
 name = "openpyxl"
-version = "3.1.0"
+version = "3.1.1"
 description = "A Python library to read/write Excel 2010 xlsx/xlsm files"
 category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "openpyxl-3.1.0-py2.py3-none-any.whl", hash = "sha256:24d7d361025d186ba91eff58135d50855cf035a84371b891e58fb6eb5125660f"},
-    {file = "openpyxl-3.1.0.tar.gz", hash = "sha256:eccedbe1cdd8b2494057e73959b496821141038dbb7eb9266ea59e3f34208231"},
+    {file = "openpyxl-3.1.1-py2.py3-none-any.whl", hash = "sha256:a0266e033e65f33ee697254b66116a5793c15fc92daf64711080000df4cfe0a8"},
+    {file = "openpyxl-3.1.1.tar.gz", hash = "sha256:f06d44e2c973781068bce5ecf860a09bcdb1c7f5ce1facd5e9aa82c92c93ae72"},
 ]
 
 [package.dependencies]
@@ -1905,7 +1925,7 @@ et-xmlfile = "*"
 name = "packaging"
 version = "23.0"
 description = "Core utilities for Python packages"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -2021,7 +2041,7 @@ files = [
 name = "pillow"
 version = "9.4.0"
 description = "Python Imaging Library (Fork)"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -2261,7 +2281,7 @@ plugins = ["importlib-metadata"]
 name = "pyparsing"
 version = "3.0.9"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6.8"
 files = [
@@ -2326,14 +2346,14 @@ six = ">=1.5"
 
 [[package]]
 name = "python-json-logger"
-version = "2.0.4"
+version = "2.0.6"
 description = "A python library adding a json log formatter"
 category = "dev"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.6"
 files = [
-    {file = "python-json-logger-2.0.4.tar.gz", hash = "sha256:764d762175f99fcc4630bd4853b09632acb60a6224acb27ce08cd70f0b1b81bd"},
-    {file = "python_json_logger-2.0.4-py3-none-any.whl", hash = "sha256:3b03487b14eb9e4f77e4fc2a023358b5394b82fd89cecf5586259baed57d8c6f"},
+    {file = "python-json-logger-2.0.6.tar.gz", hash = "sha256:ed33182c2b438a366775c25c1219ebbd5bd7f71694c644d6b3b3861e19565ae3"},
+    {file = "python_json_logger-2.0.6-py3-none-any.whl", hash = "sha256:3af8e5b907b4a5b53cae249205ee3a3d3472bd7ad9ddfaec136eec2f2faf4995"},
 ]
 
 [[package]]
@@ -2771,14 +2791,14 @@ files = [
 
 [[package]]
 name = "soupsieve"
-version = "2.3.2.post1"
+version = "2.4"
 description = "A modern CSS selector implementation for Beautiful Soup."
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "soupsieve-2.3.2.post1-py3-none-any.whl", hash = "sha256:3b2503d3c7084a42b1ebd08116e5f81aadfaea95863628c80a3b774a11b7c759"},
-    {file = "soupsieve-2.3.2.post1.tar.gz", hash = "sha256:fc53893b3da2c33de295667a0e19f078c14bf86544af307354de5fcf12a3f30d"},
+    {file = "soupsieve-2.4-py3-none-any.whl", hash = "sha256:49e5368c2cda80ee7e84da9dbe3e110b70a4575f196efb74e51b94549d921955"},
+    {file = "soupsieve-2.4.tar.gz", hash = "sha256:e28dba9ca6c7c00173e34e4ba57448f0688bb681b7c5e8bf4971daafc093d69a"},
 ]
 
 [[package]]
@@ -3055,33 +3075,33 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "vtk"
-version = "9.2.5"
+version = "9.2.6"
 description = "VTK is an open-source toolkit for 3D computer graphics, image processing, and visualization"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "vtk-9.2.5-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:3915fb5f18dc584542ae5cdf1e714c0674a9203b4811111200bd274332613907"},
-    {file = "vtk-9.2.5-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:e9c1fd142da329eb644f0f94be6c0161600a20d75b324ac050c62e63614c710a"},
-    {file = "vtk-9.2.5-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:51935533a7588f8416de814ca771f97921616012d33b9f4738bf95c909d282e9"},
-    {file = "vtk-9.2.5-cp310-cp310-win_amd64.whl", hash = "sha256:9a52064278f65d2b8b19946f9a642de48725525dbb5acd06bbcea1dd827526a3"},
-    {file = "vtk-9.2.5-cp311-cp311-macosx_10_10_x86_64.whl", hash = "sha256:18bb1957c212d444da3e77a2c344f1239f935b92487595fb3e1fd1a704c65d85"},
-    {file = "vtk-9.2.5-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:1c01c653eb6d924b8a6c3c2e6ebbca18acdf0d46e03fb72c3fb16880101e5fc1"},
-    {file = "vtk-9.2.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1fe655edbce73dc91ef1ea9aa7f5cf778e499506a459d2da383b466d31aabb66"},
-    {file = "vtk-9.2.5-cp311-cp311-win_amd64.whl", hash = "sha256:3a1d19353011deef7e35f3d006fdb448a60b494615005eca90ca80c887358925"},
-    {file = "vtk-9.2.5-cp36-cp36m-macosx_10_10_x86_64.whl", hash = "sha256:d8cc4e522954789dcc01e84acb17e504feaf4a91a241857d17957657c4aade73"},
-    {file = "vtk-9.2.5-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:98ddedefd9d35434f2a2155af2c4e4b5cf5c91a4ac78e22cdb43092bba05d349"},
-    {file = "vtk-9.2.5-cp36-cp36m-win_amd64.whl", hash = "sha256:f226aeffba53b3a1a294061664feafd1185c400e7740197340e67b8bf215afd9"},
-    {file = "vtk-9.2.5-cp37-cp37m-macosx_10_10_x86_64.whl", hash = "sha256:459438cb313ff1ffb276b84c7d9a7da17a309b3d9cc3b5c6dd722cbc80fcfa74"},
-    {file = "vtk-9.2.5-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e8c93cdd320d33f5c9bd28d2feee42db682bf51ecf210eea84efd7b3cfd88c2a"},
-    {file = "vtk-9.2.5-cp37-cp37m-win_amd64.whl", hash = "sha256:5dea24ef072a40921a0d7b2dd6f53baab416df6811d2b8a306a501eb95a4f9a4"},
-    {file = "vtk-9.2.5-cp38-cp38-macosx_10_10_x86_64.whl", hash = "sha256:a59a758f99b172867ba6663680598de5bf7daddb5cd84e71e47b0165eb41deb2"},
-    {file = "vtk-9.2.5-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0b5a7236ef712c2d829c66985a8f4eff7bcc781af3c141ecaa247eb8c6ec9217"},
-    {file = "vtk-9.2.5-cp38-cp38-win_amd64.whl", hash = "sha256:494708e54a2176d88615763022a21be9cf51b092a6599ebeedbb3c18523e014c"},
-    {file = "vtk-9.2.5-cp39-cp39-macosx_10_10_x86_64.whl", hash = "sha256:af074f8d876c369a3378a62253ed25bb419a9b0400b59a8b05cf1683a405d812"},
-    {file = "vtk-9.2.5-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:6aae3fa1d0b1a7e60b30f84033b234202e8f26f01d4df7ca1cb6fff0d65c46c5"},
-    {file = "vtk-9.2.5-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bedadbf2f69b58b7da35fc65d55f038c6433054604d90c414b10f605cb08bba7"},
-    {file = "vtk-9.2.5-cp39-cp39-win_amd64.whl", hash = "sha256:4d115bd8ef4585a1e0da390dfc77d58a300c9279204b9cff4c9b5e4ee66fe261"},
+    {file = "vtk-9.2.6-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:acf8b0e0a2b51b8aa36cee1ea1ba0b73c565871efaa14cf2606d9bef36feba3a"},
+    {file = "vtk-9.2.6-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:8ec9827287f1743c736ea9b51572d20dcd15a065170808f97408eebd404275b4"},
+    {file = "vtk-9.2.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3473f3b3dc919d3e2ef0cc9927654731941fd7b79d3dcaa343cdaff3e4e40838"},
+    {file = "vtk-9.2.6-cp310-cp310-win_amd64.whl", hash = "sha256:37561b19b4b70c7034d9e689238560d7afec49ff89704b9bb3c9bb89a90ee54e"},
+    {file = "vtk-9.2.6-cp311-cp311-macosx_10_10_x86_64.whl", hash = "sha256:9289f6ee5432f0a00aeb7b674d7ca03054bc50fa6c74126751f8b19f931f52fc"},
+    {file = "vtk-9.2.6-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:0b947a33a7c5562ac4d9c8dce389f4ed720cc2559389048993ae45cbed3bbeb1"},
+    {file = "vtk-9.2.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:87930115c8067a2d482beebc48a50fcacdc0154d8d7c763471a9be8b5eb76cc3"},
+    {file = "vtk-9.2.6-cp311-cp311-win_amd64.whl", hash = "sha256:6c3ca0663f251fbd6e26d93294801ceee6c3cc329f6070dccde3b68046ab9ee7"},
+    {file = "vtk-9.2.6-cp36-cp36m-macosx_10_10_x86_64.whl", hash = "sha256:86c548da22a0bd9ce9e060364925e8fa0a551064f9660ae1d486ac3118ffb770"},
+    {file = "vtk-9.2.6-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f7622e98b3590bf909f056a1bad55575760727fd673c3e8e224134d52b11d00d"},
+    {file = "vtk-9.2.6-cp36-cp36m-win_amd64.whl", hash = "sha256:bb28432277136774e91eb1084a8f5f1c4c952d4e74f74626a16ac6e199eba5c5"},
+    {file = "vtk-9.2.6-cp37-cp37m-macosx_10_10_x86_64.whl", hash = "sha256:feb9d211583d7b1dd45ca6616bf2f9622d0eadf9e3084f53d20de819e5808d42"},
+    {file = "vtk-9.2.6-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3bc1123b6f2f3746d35325cf1a48630c8f49a3516c9970a5bdea15823909bbca"},
+    {file = "vtk-9.2.6-cp37-cp37m-win_amd64.whl", hash = "sha256:78103568e97d947026cd39a70e6719277d7341f984c06abaec64d3429e200a6f"},
+    {file = "vtk-9.2.6-cp38-cp38-macosx_10_10_x86_64.whl", hash = "sha256:8236e00d0ad24730f4b783bbc038108426e6a78c892fd6ae9a8e8eb846f3e8e3"},
+    {file = "vtk-9.2.6-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:affbb15762bcb6d9632a668ec53c6a3102d4f6c14c4178f01489c0b711114521"},
+    {file = "vtk-9.2.6-cp38-cp38-win_amd64.whl", hash = "sha256:f9d3450c00ced28f942a0a7dc5f27a667cf6b171d9ef5a090cb7c8e21dd1a121"},
+    {file = "vtk-9.2.6-cp39-cp39-macosx_10_10_x86_64.whl", hash = "sha256:9b396909a4372d3be4a01fde4a0af4f3e410742d73d185982c6f48a61090ebfe"},
+    {file = "vtk-9.2.6-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:9d41a18bbd6fac18a814bbaeeb615044da036afc2bd98cdf7ea52853fd1ef950"},
+    {file = "vtk-9.2.6-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:79991dccbc483a8e5d23e5d3ae1e358fee0526fe8f710d07868ecae58c6b9535"},
+    {file = "vtk-9.2.6-cp39-cp39-win_amd64.whl", hash = "sha256:2d905a686ee1b28dd2ac3c3595a3fbcbd171e4b1f9aabac3c8019c6f3a4f8157"},
 ]
 
 [package.dependencies]
@@ -3243,4 +3263,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "6eef16f896e25ef4331a1971b4059f6aea461919ad07c013f1c1c7cd13eca417"
+content-hash = "aab324fcdf6a18eb681472a079eb3cf92e5c3014ac1ce12aae55688beca936db"

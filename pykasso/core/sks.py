@@ -1,21 +1,20 @@
 ##### TODO
 ### Validations
-# -> objets surfaces : topography / bedding / piezometric level/ bedrock elevation  (topography > bedrock)
 # -> verbosity
 # -> volume : si size model : (300,300,20) alors (300,300,10) doit planter
 ### Geological Model
-# -> conceptual model ? 
 # -> karst - gestion des réseaux incomplets - https://scipy-lectures.org/packages/scikit-image/auto_examples/plot_labels.html
 # -> field
 # -> tracers
 # -> bedding
+### Others
+# -> logging title : mise en forme
 
 ####################
 ### Dependencies ###
 ####################
 import os
 import sys
-import copy
 import pickle
 import shutil
 import logging
@@ -34,7 +33,6 @@ from .points import PointManager
 import yaml
 import numpy as np
 import pandas as pd
-import karstnet as kn
 
 ### Fast-Marching package
 import agd
@@ -103,14 +101,14 @@ def create_project(project_directory):
 
     ### Creates a dictionary used for settings comparison between actual and previous simulation 
     this.ACTIVE_PROJECT = this.ACTIVE_PROJECT = {
-        'project_directory' : project_directory,
-        'n_simulation'      : 0,
-        'settings'          : {
+        'project_directory'    : project_directory,
+        'n_simulation'         : 0,
+        'simulation_locations' : [],
+        'settings'             : {
             # static features
             'grid'       : None,
             'domain'     : None,
             'geology'    : None,
-            'piezometry' : None,
             'beddings'   : None,
             'faults'     : None,
             # dynamic features
@@ -122,7 +120,7 @@ def create_project(project_directory):
     }
     return None
 
-def save_project(path) -> None:
+def save_project(path:str) -> None:
     """ 
     TODO
     """
@@ -130,7 +128,7 @@ def save_project(path) -> None:
         pickle.dump(this.ACTIVE_PROJECT, handle, protocol=pickle.HIGHEST_PROTOCOL)
     return None
 
-def load_project(path) -> None:
+def load_project(path:str) -> None:
     """
     TODO
     """
@@ -169,56 +167,85 @@ class SKS():
         this.ACTIVE_PROJECT['n_simulation'] += 1
         self.CORE_SETTINGS['simulation_directory'] = self.CORE_SETTINGS['outputs_directory'] + 'simulation_{}/'.format(this.ACTIVE_PROJECT['n_simulation'])
         os.makedirs(self.CORE_SETTINGS['simulation_directory'], exist_ok=True)
+        this.ACTIVE_PROJECT['simulation_locations'].append(self.CORE_SETTINGS['simulation_directory'])
+        
+        ### LOGGING ###
+        
+        ### Sets logging output formats
+        logging_title = ' %(message)s'
+        logging_entry = ' %(name)-30s | %(levelname)-8s | %(message)s'
 
-        ### Resets and creates log file
+        ### Sets logging level
+        levels = {
+            0 : logging.DEBUG,
+            1 : logging.INFO,
+            2 : logging.WARNING,
+            3 : logging.ERROR,
+            4 : logging.CRITICAL,
+        }
+        level = self.SKS_SETTINGS['verbosity']['logging']
+        if level > 4: level = 4
+        if level < 0: level = 0
+        logging_level = levels[level]
+        
+        ### Sets logging file
+        log_file = self.CORE_SETTINGS['outputs_directory'] + self.CORE_SETTINGS['log_filename']
+
+        ### Sets new logging file
         if this.ACTIVE_PROJECT['n_simulation'] == 1:
-
+            
             # Resets logging module
             root = logging.getLogger()
             list(map(root.removeHandler, root.handlers))
             list(map(root.removeFilter,  root.filters))
             
-            # Remove PIL package log entries
+            # Removes PIL package logging entries
             logging.getLogger("PIL.PngImagePlugin").setLevel(logging.CRITICAL + 1)
-
-            # Sets logging level
-            levels = {
-                0 : logging.DEBUG,
-                1 : logging.INFO,
-                2 : logging.WARNING,
-                3 : logging.ERROR,
-                4 : logging.CRITICAL,
-            }
-            logging_level = levels[self.SKS_SETTINGS['verbosity']['logging']]
-
-            # Sets new logging file
-            log_file = self.CORE_SETTINGS['outputs_directory'] + self.CORE_SETTINGS['log_filename']
+            
+            # Creates new logging file
             logging.basicConfig(
                 filename=log_file, 
                 encoding='utf-8', 
                 level=logging_level,
                 filemode="w",
-                format=' %(name)-30s | %(levelname)-8s | %(message)s'
+                format=logging_entry
             )
             
+            # Prints pyKasso 'logo'
+            this.logger = logging.getLogger("♠")
+            this.logger.info("             _                        ")
+            this.logger.info("            | |                       ")
+            this.logger.info(" _ __  _   _| | ____ _ ___ ___  ___   ")
+            this.logger.info("| `_ \| | | | |/ / _` / __/ __|/ _ \  ")
+            this.logger.info("| |_) | |_| |   < (_| \__ \__ \ (_) | ")
+            this.logger.info("| .__/ \__, |_|\_\__,_|___/___/\___/  ")
+            this.logger.info("| |     __/ |                         ")
+            this.logger.info("|_|    |___/                          ") 
+            this.logger.info("                                      ")
+      
             # Prints basic information in the log
             this.logger = logging.getLogger("☼")
-            this.logger.info("Project location : " + this.ACTIVE_PROJECT['project_directory'])
+            this.logger.info("Project directory location : " + this.ACTIVE_PROJECT['project_directory'])
+            this.logger.info("Project creation date      : " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             pykasso_version = pkg_resources.get_distribution('pyKasso').version
-            this.logger.info("pyKasso version  : " + pykasso_version)
-            
-            # TODO
-            # logging level ? 
-            # date of creation ? 
-            # this.logger.info("Logging level    : " + logging_level)
+            this.logger.info("pyKasso version used       : " + pykasso_version)
+            this.logger.info("Logging level              : " + str(logging_level)) # TODO ????????
             
         ### Prints current simulation number
+        logging.basicConfig(
+            filename=log_file, 
+            encoding='utf-8', 
+            level=logging_level,
+            filemode="w",
+            format=logging_entry
+        )
         this.logger = logging.getLogger("►")
         l = len(str(this.ACTIVE_PROJECT['n_simulation']))
         this.logger.info('***********************{}****'.format('*' * l))
         this.logger.info('*** pyKasso simulation {} ***'.format(this.ACTIVE_PROJECT['n_simulation']))
         this.logger.info('***********************{}****'.format('*' * l))
-        this.logger.info('Date : ' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        this.logger.info('Location : ' + self.CORE_SETTINGS['simulation_directory'])
+        this.logger.info('Date     : ' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         this.logger.info('---')
 
         ### Sets debug level
@@ -256,7 +283,7 @@ class SKS():
         """
         self._build_grid()              # 1 - Constructs the grid
         if not self.SKS_SETTINGS['sks']['domain_from_geology']:
-            self._build_domain()            # 2 - Constructs the domain
+            self._build_domain()        # 2 - Constructs the domain
         self._build_model()             # 3 - Constructs the model
         self._construct_fmm_variables() # 4 - Constructs fmm features 
         return None
@@ -356,7 +383,8 @@ class SKS():
         """Builds essential model parameters."""
         # Sets the random master seed
         if self.SKS_SETTINGS['sks']['seed'] == 0:
-            self.SKS_SETTINGS['sks']['seed'] = np.random.default_rng().integers(low=0, high=10**6)
+            seed = np.random.default_rng().integers(low=0, high=10**6)
+            self.SKS_SETTINGS['sks']['seed'] = seed
         self.rng = {
             'master' : np.random.default_rng(self.SKS_SETTINGS['sks']['seed']),
         }
@@ -414,7 +442,7 @@ class SKS():
 
     @wp._debug_level(3.5)
     @wp._parameters_validation('outlets', 'required')
-    @wp._memoize('outlets')
+    # @wp._memoize('outlets')
     @wp._logging()
     def _build_model_outlets(self):
         """Builds the outlets."""
@@ -426,7 +454,7 @@ class SKS():
 
     @wp._debug_level(3.6)
     @wp._parameters_validation('inlets', 'required')
-    @wp._memoize('inlets')
+    # @wp._memoize('inlets')
     @wp._logging()
     def _build_model_inlets(self):
         """Builds the inlets."""
@@ -438,7 +466,7 @@ class SKS():
     
     @wp._debug_level(3.8)
     @wp._parameters_validation('fractures', 'optional')
-    @wp._memoize('fractures')
+    # @wp._memoize('fractures')
     @wp._logging()
     def _build_model_fractures(self):
         """Builds the fractures."""
@@ -590,7 +618,8 @@ class SKS():
         TODO
         """
         if self.SKS_SETTINGS[attribute]['seed'] == 0:
-            self.SKS_SETTINGS[attribute]['seed'] = np.random.default_rng().integers(low=0, high=10**6)
+            seed = np.random.default_rng().integers(low=0, high=10**6)
+            self.SKS_SETTINGS[attribute]['seed'] = seed
         self.rng[attribute] = np.random.default_rng(self.SKS_SETTINGS[attribute]['seed'])
         return None
 
@@ -817,41 +846,12 @@ class SKS():
     def compute_karst_network(self):
         """
         Compute the karst network according to the parameters.
-
-        Append the results to the `karst_simulations` attribute as an element of an array.
-
-        Parameters
-        ----------
-        TODO
         """
         self._compute_karst_network()       # Computes conduits for each generation & store nodes and edges for network
-        self._compute_karst_indicators()    # Calculates the karst network statistics indicators with karstnet and save karst network
-        # self._export_results()              # Stores all the relevant data for this network in dictionaries
-        return None
-
-    
-    def _compute_karst_indicators(self):
-        """ 
-        TODO
-        """
-        karstnet_edges = list(self.vectors['edges'].values())   # Converts to format needed by karstnet (list)
-        karstnet_nodes = copy.deepcopy(self.vectors['nodes'])   # Converts to format needed by karstnet (dic with only coordinates) - make sure to only modify a copy!
-        for key, value in karstnet_nodes.items():               # Drops last item in list (the node type) for each dictionary entry
-            value.pop()
-
-        # Computes karstnet indicators
-        k = kn.KGraph(karstnet_edges, karstnet_nodes)           # Makes graph - edges must be a list, and nodes must be a dic of format {nodeindex: [x,y]}
-        self.stats = k.characterize_graph(self.SKS_SETTINGS['verbosity']['karstnet'])
+        self._export_results()              # Stores all the relevant data for this network in dictionaries
+        self._export_project_state()        # Exports the state of the project, useful for the 'analysis' module
         return None
     
-    
-    # def _export_results(self):
-    #     """
-    #     TODO
-    #     """
-    #     # TODO ??
-    #     return None
-
     
     def _compute_karst_network(self):
         """
@@ -1146,4 +1146,35 @@ class SKS():
         # # Display karst network
         # ax1.imshow(np.transpose(self.maps['karst'][iteration], (1,0,2)), origin='lower', extent=self.grid.extent, cmap='gray_r')
         # ax1.imshow(np.transpose(self.maps['nodes'], (1,0,2)), origin='lower', extent=self.grid.extent, cmap='gray_r')
+        return None
+    
+    
+    def _export_results(self):
+        """
+        TODO
+        """
+        path = self.CORE_SETTINGS['simulation_directory'] + 'results'
+        with open(path + '.pickle', 'wb') as handle:
+            results = {
+                'maps'    : self.maps.copy(),
+                'vectors' : self.vectors.copy(),
+            }
+            pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        return None
+    
+    
+    def _export_project_state(self):
+        """
+        TODO
+        """
+        path = self.CORE_SETTINGS['outputs_directory'] + 'project_state'
+        with open(path + '.yaml', 'w') as handle:
+            STATE_PROJECT = {
+                'grid'                 : this.ACTIVE_PROJECT['settings']['grid'],
+                'project_directory'    : this.ACTIVE_PROJECT['project_directory'],
+                'n_simulation'         : this.ACTIVE_PROJECT['n_simulation'],
+                'simulation_locations' : this.ACTIVE_PROJECT['simulation_locations'],
+            }
+            yaml.dump(STATE_PROJECT, handle)
+            
         return None
