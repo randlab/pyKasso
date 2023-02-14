@@ -1,5 +1,8 @@
 ![pyKasso's logo](/docs/source/_static/pykasso_logo.png)
 
+
+<!-- ![]() -->
+![license](https://img.shields.io/github/license/randlab/pyKasso)
 ![last-commit](https://img.shields.io/github/last-commit/randlab/pyKasso/dev)
 
 
