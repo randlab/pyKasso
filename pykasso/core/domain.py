@@ -12,7 +12,7 @@ from matplotlib.path import Path
 
 ### Typing
 from typing import Union
-from pykasso.typing import Grid, Delimitation, Topography, Bedrock, WaterLevel
+from pykasso._typing import Grid, Delimitation, Topography, Bedrock, WaterLevel
 
 
 class Domain():
@@ -137,7 +137,8 @@ class Domain():
         
     def is_coordinate_2D_valid(self, x:float, y:float) -> bool:
         if self.grid.path.contains_point((x,y)):
-            return bool(self.data_surfaces['z'][x,y])
+            i, j = self.grid.get_indices(x, y)
+            return bool(self.data_surfaces['z'][i, j])
         else:
             return False
         

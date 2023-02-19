@@ -1,5 +1,9 @@
 """
-TODO
-Contains the core of pyKasso.
+====
+core
+====
+
+Main sub-module containing the core of pyKasso.
 """
+
 from .sks import create_project, save_project, load_project, SKS

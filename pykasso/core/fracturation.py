@@ -7,6 +7,8 @@ import mpmath
 import numpy as np
 import pandas as pd
 
+# numba ?
+
 
 def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orientation_distribution='vonmises', dip_distribution='vonmises', length_distribution='power'):
     """

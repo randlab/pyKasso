@@ -10,7 +10,7 @@ import logging
 import numpy as np
 
 ### Typing
-from pykasso.typing import Domain, Geology
+from pykasso._typing import Domain, Geology
 
 class PointManager():
     """"""
@@ -54,7 +54,7 @@ class PointManager():
         probability_map = [(i,j,k) for (state,i,j,k) in nodes if state == 1]
         return probability_map
     
-    def _generate_coordinates(self, size:int=1) -> tuple:
+    def _generate_coordinates(self, size:int=1) -> np.ndarray:
         """"""
         indices = self.rng.choice(self.probability_map, size=size)
         i, j, k = zip(*indices)
@@ -64,15 +64,15 @@ class PointManager():
         z = self.domain.grid.zmin + (k + self.rng.random()) * self.domain.grid.dz
         return np.dstack((x,y,z))[0]
         
-    # TODO ?
-    #  def _generate_3D_coordinate_from_2D_coordinate(self, coordinate:tuple) -> tuple:
-    #     """"""
-    #     x, y = coordinate
-    #     if self.modes['z'] in ['surface_up', 'surface_down']:
-    #         z = self.functions['z'](x,y)
-    #     else:
-    #         z = self.functions['z']()
-    #     return (x,y,z)
+    def _generate_3D_coordinate_from_2D_coordinate(self, coordinate:tuple) -> tuple:
+        """"""
+        x, y = coordinate
+        i, j = self.domain.grid.get_indices(x, y)
+        new_probability_map = [(i_, j_, k_) for (i_, j_, k_) in self.probability_map if ((i_ == i) and (j_ == j))]
+        # if len(new_probability_map) == 0 # TODO
+        i_, j_, k_ = self.rng.choice(new_probability_map)
+        z = self.domain.grid.zmin + (k_ + self.rng.random()) * self.domain.grid.dz
+        return (x, y, z)
     
     def _controls_geologic_ids_validity(self, geologic_ids:list) -> list:
         """ 

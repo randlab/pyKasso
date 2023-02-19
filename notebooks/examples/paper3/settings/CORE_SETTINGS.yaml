@@ -1,0 +1,10 @@
+# pyKasso CORE SETTINGS 
+---
+core_settings_filename: CORE_SETTINGS.yaml
+inputs_directory: paper3/inputs/
+log_filename: pyKasso.log
+outputs_directory: paper3/outputs/
+project_directory: paper3
+settings_directory: paper3/settings/
+sks_settings_filename: SKS_SETTINGS.yaml
+...

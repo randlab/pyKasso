@@ -27,7 +27,6 @@ from .grid import Grid
 from .domain import Domain, Delimitation, Topography, Bedrock, WaterLevel
 from .geologic_features import Volume, Geology, Bedding, Faults, Fractures, ConceptualModel
 from .points import PointManager
-# from .points import _generate_coordinate, is_point_valid
 
 ### External dependencies
 import yaml
@@ -46,8 +45,8 @@ from agd.Metrics import Riemann
 this = sys.modules[__name__]
 this.ACTIVE_PROJECT = None
 
-# TODO - where should we define it ?
 # Defines default fast-marching costs
+# TODO - where should we define this dict ?
 this.default_fmm_costs = {
     'out'       : 0.999,
     'aquifer'   : 0.4,
@@ -360,6 +359,7 @@ class SKS():
         """
         ### Sets the main parameters
         self._build_model_parameters()
+        self._validate_fmm_costs_dict()
         
         ### Constructs deterministic geologic features
         self._build_model_geology()              
@@ -388,6 +388,17 @@ class SKS():
         self.rng = {
             'master' : np.random.default_rng(self.SKS_SETTINGS['sks']['seed']),
         }
+        return None
+    
+    # TODO ??
+    @wp._debug_level(3.1)
+    def _validate_fmm_costs_dict(self):
+        """Validates the presence of essential fmm costs."""
+        # TODO - test for validity
+        costs = ['ratio', 'conduits', 'out']
+        for cost in costs:
+            if cost not in self.SKS_SETTINGS['fmm']['costs']:
+                self.SKS_SETTINGS['fmm']['costs'][cost] = this.default_fmm_costs[cost]
         return None
         
     @wp._debug_level(3.2)
@@ -471,7 +482,7 @@ class SKS():
     def _build_model_fractures(self):
         """Builds the fractures."""
         self._set_rng('fractures')
-        if not (isinstance(self.SKS_SETTINGS['fractures']['data'], (str)) and (self.SKS_SETTINGS['fractures']['data'] == '')):
+        if ((not isinstance(self.SKS_SETTINGS['fractures']['data'], (str))) or (self.SKS_SETTINGS['fractures']['data'] == '')):
             self.fractures = Fractures(**self.SKS_SETTINGS['fractures'], grid=self.grid, domain=self.domain, rng=self.rng['fractures'])
         else:
             self.fractures = None
@@ -566,26 +577,26 @@ class SKS():
         # if self.bedding is not None:
         #     bedding_items += [(200 + i, 'Bedding', id, cost) for (i, (id, cost)) in enumerate(self.bedding.costs.items())]
         
-        # # 300 - Fractures
-        # if self.fractures is not None:
-        #     fractures_items = [(300 + i, 'Fractures', id, cost) for (i, (id, cost)) in enumerate(self.fractures.costs.items())]
-        #     for (id, feature, id_, cost) in fractures_items:
-        #         conceptual_model = np.where(self.fractures.data_volume == id_, id, conceptual_model)
-        #     conceptual_model_table += fractures_items
+        # 300 - Fractures
+        if self.fractures is not None:
+            fractures_items = [(300 + i, 'Fractures', id, cost) for (i, (id, cost)) in enumerate(self.fractures.costs.items())]
+            for (id, feature, id_, cost) in fractures_items:
+                conceptual_model = np.where(self.fractures.data_volume == id_, id, conceptual_model)
+            conceptual_model_table += fractures_items
             
-        # # 400 - Faults
-        # if self.faults is not None:
-        #     faults_items = [(400 + i, 'Faults', id, cost) for (i, (id, cost)) in enumerate(self.faults.costs.items())]
-        #     for (id, feature, id_, cost) in faults_items:
-        #         conceptual_model = np.where(self.faults.data_volume == id_, id, conceptual_model)
-        #     conceptual_model_table += faults_items
+        # 400 - Faults
+        if self.faults is not None:
+            faults_items = [(400 + i, 'Faults', id, cost) for (i, (id, cost)) in enumerate(self.faults.costs.items())]
+            for (id, feature, id_, cost) in faults_items:
+                conceptual_model = np.where(self.faults.data_volume == id_, id, conceptual_model)
+            conceptual_model_table += faults_items
             
-        # 500 - Faults - TODO
+        # 500 - Karst - TODO
         # if self.karsts is not None:
         #     items += [(500 + i, 'Faults', id, cost) for (i, (id, cost)) in enumerate(self.karsts.costs.items())]
         
         # 0 - Out
-        out_item = [(0, 'Out', np.nan, this.default_fmm_costs['out'])]
+        out_item = [(0, 'Out', np.nan, self.SKS_SETTINGS['fmm']['costs']['out'])]
         conceptual_model = np.where(self.domain.data_volume == 0, 0, conceptual_model)
         conceptual_model_table += out_item
         
@@ -593,7 +604,7 @@ class SKS():
         #
 
         conceptual_model_table = pd.DataFrame(conceptual_model_table, columns=['id', 'feature', 'id-feature', 'cost']).set_index('id').sort_values('id')
-        
+
         return (conceptual_model, conceptual_model_table)
     
     @wp._debug_level(4)
@@ -653,11 +664,10 @@ class SKS():
         ### Inspects validity of points
         points = self.SKS_SETTINGS[kind]['data']
         
-        # TODO - prise en charge ou pas ? 
         # 2D points # TODO - logging ?
         points_2D = [point for point in points if len(point) == 2]
         validated_points_2D = [point for point in points_2D if point_manager._is_coordinate_2D_valid(point)]
-        # validated_points_3D = [point_manager._generate_3D_coordinate_from_2D_coordinate(point) for point in validated_points_2D]
+        validated_points_3D = [point_manager._generate_3D_coordinate_from_2D_coordinate(point) for point in validated_points_2D]
         
         # 3D points # TODO - logging ?
         points_3D = [point for point in points if len(point) == 3]
@@ -902,8 +912,7 @@ class SKS():
         # If it's not the first iteration
         else:
             self.maps['cost'].append(self.maps['cost'][self.iteration-1])
-            self.maps['cost'][self.iteration] = np.where(self.maps['karst'][self.iteration-1] > 0, this.default_fmm_costs['conduits'], self.maps['cost'][self.iteration])
-            # TODO - valeur paramètrable : this.default_fmm_costs['conduits']
+            self.maps['cost'][self.iteration] = np.where(self.maps['karst'][self.iteration-1] > 0, self.SKS_SETTINGS['fmm']['costs']['conduits'], self.maps['cost'][self.iteration])
         return None
     
 

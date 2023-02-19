@@ -25,6 +25,7 @@ def _show_data(environment, feature, settings, show=True):
     }
 
     attributes = [
+        'domain',
         'slice',
         'show_grid',
         'inlets',
@@ -63,17 +64,17 @@ def _show_data(environment, feature, settings, show=True):
     kwargs['scalars'] = 'data'
 
     # Get the domain
-    if getattr(environment, 'domain') is not None:
+    if hasattr(environment, 'domain') and (getattr(environment, 'domain') is not None):
         grid = _get_data_from_attribute(grid, getattr(environment, 'domain'), 'data_volume', 'domain')
 
     # Ghost the data
     if 'ghost' in settings:
-        if 'domain' in settings:
+        if 'domain' == True:
             ghosts = np.argwhere(np.logical_or(np.isin(grid["data"], settings['ghost']), (grid["domain"] == 0)))
         else:
             ghosts = np.argwhere(np.isin(grid["data"], settings['ghost']))
     else:
-        if 'domain' in settings:
+        if 'domain' == True:
             ghosts = np.argwhere(grid["domain"] == 0)
         else:
             ghosts = None
@@ -273,6 +274,7 @@ def _show_array(array, ghost=False):
     if ghost:
         ghosts = np.argwhere(np.isin(mesh["data"], [0]))
         mesh = mesh.remove_cells(ghosts)
+        print(1)
     
     plotter = pv.Plotter()
     kwargs = {}

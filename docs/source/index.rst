@@ -3,13 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pyKasso's documentation!
-===================================
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
 Introduction
 ============
 
@@ -30,9 +23,14 @@ Citing pyKasso
 
 Work in progress
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. Header
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   User Guide <userguide/index>
+   Examples <examples/index>
+   API reference <api/index>
+   About <about/index>

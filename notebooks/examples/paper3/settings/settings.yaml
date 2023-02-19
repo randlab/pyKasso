@@ -1,0 +1,123 @@
+ ##################
+### SKS SETTINGS ###
+ ##################
+
+# orientation_datafile : 'inputs/paper3/contact.csv'
+
+---
+sks:
+  domain_from_geology: False
+  seed : 1
+
+############
+### Grid ###
+############
+
+grid:
+  x0 : 580879.18
+  y0 : 5241726.95
+  z0 : 100
+  nx : 181
+  ny : 141
+  nz : 10
+  dx : 50
+  dy : 50
+  dz : 50
+
+##############
+### Domain ###
+##############
+
+domain:
+  # delimitation : 'paper3/inputs/polygon.txt'
+  topography   : 'paper3/inputs/dem181x141.csv'
+  bedrock      : ''
+  water_level  : ''
+
+###############
+### Geology ###
+###############
+
+geology:
+  data  : 'paper3/inputs/gempy181x141.csv'
+  costs : 
+    1 : 0.6
+    2 : 0.3
+    3 : 0.6
+    4 : 0.6
+
+faults:
+  data : 'paper3/inputs/faults181x141.png'
+  costs :
+    1 : 0.2
+
+##############
+### Points ###
+##############
+
+### Outlets
+outlets:
+  number     : 3
+  data       : 'paper3/inputs/outlets2D_reference.txt'
+  shuffle    : False
+  importance : [1,1,1]
+  seed       : 1
+  mode       : 'surface_down'
+
+### Inlets
+inlets:
+  number     : 5
+  data       : 'paper3/inputs/inlets2D_reference.txt'
+  shuffle    : False
+  per_outlet : [1,1,1]
+  importance : [1]
+  seed       : 2
+  mode       : 'surface_up'
+
+####################
+### Fracturation ###
+####################
+
+fractures:
+  # data : 'paper3/inputs/fractures.gslib'
+  # data : 'paper3/inputs/frac.csv'
+  data : ''
+  seed : 12
+  costs : 
+    1 : 0.2
+    2 : 0.22
+  settings :
+    family_01:
+      alpha        : 2
+      density      : 6e-6
+      orientation  : [30, 50]
+      dip          : [0 , 10] # ?
+      length       : [1000, 3000]
+    family_02:
+      alpha        : 2
+      density      : 4e-6
+      orientation  : [120, 130]
+      dip          : [0, 10] # ?
+      length       : [1000, 3000]
+
+   
+###########
+### FMM ###
+###########
+
+fmm: 
+  algorithm : 'Riemann3'
+  costs :
+    conduits : 0.1
+    ratio : 0.5
+
+##############
+### OTHERS ###
+##############
+
+verbosity:
+  logging : 0
+  agd : 0
+  karstnet : 0
+  
+...

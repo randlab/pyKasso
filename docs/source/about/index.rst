@@ -5,7 +5,10 @@ Work in progress
 
 .. toctree::
     :hidden:
-    :maxdepth: 4
-    :glob:
-
-    ./*
+    :maxdepth: 1
+    
+    history
+    team
+    citing
+    publications
+    bibliography

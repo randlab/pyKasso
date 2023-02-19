@@ -1,6 +1,9 @@
 """
-Visualization sub-module
-Allows user to visualize the pykasso's environnement variables.
+=============
+visualization
+=============
+
+A sub-module for karst network visualization.
 """
 
 from .main import *

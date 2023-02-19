@@ -61,8 +61,10 @@ class GeologicFeature():
                 return self._set_data_from_pickle(data)
             elif extension in ['png', 'jpg']:
                 return self._set_data_from_image(grid, data, axis)
-            elif extension in ['csv', 'txt']:
-                return self._set_data_from_csv(data)
+            elif extension == 'csv':
+                return self._set_data_from_csv(grid, data)
+            elif extension == 'txt':
+                return self._set_data_from_txt(grid, data)
             else:
                 return self._set_data_ones(grid)
                 
@@ -98,11 +100,24 @@ class GeologicFeature():
         return data
     
     
-    def _set_data_from_csv(self, data):
+    def _set_data_from_csv(self, grid, data):
         """ 
         TODO
         """
-        return np.genfromtxt(data, delimiter=',')
+        data = np.genfromtxt(data, delimiter=',').T
+        if self.dim == 3:
+            data = np.repeat(data[:, :, np.newaxis], grid.nz, axis=2)
+        return data
+    
+    
+    def _set_data_from_txt(self, grid, data):
+        """ 
+        TODO
+        """
+        data = np.genfromtxt(data)
+        if self.dim == 3:
+            data = np.repeat(data[:, :, np.newaxis], grid.nz, axis=2)
+        return data
 
 
     def _set_data_from_grd(self):
@@ -126,9 +141,10 @@ class GeologicFeature():
         If nz > 1, the layer is horizontally repeated.
         This method usage is not recommended, it should be used only for quick testing.
         """
+        from PIL import Image
         
         # Reads image
-        pil_image = PIL.Image.open(data).convert('L')
+        pil_image = PIL.Image.open(data).convert('L').transpose(Image.FLIP_TOP_BOTTOM)
 
         if self.dim == 3:
 
@@ -154,10 +170,6 @@ class GeologicFeature():
             elif (axis.lower() == 'z'):
                 npy_image = np.repeat(npy_image[:, :, np.newaxis], grid.nz, axis=2)
 
-        # TODO - sens des images, à checker
-        # image = np.transpose(image, (1,0)) #imread return image with mxn format so we also need to transpose it
-        # #image = np.flipud(image)           #we need to flip it since the data reading start from bottom
-        # image = np.fliplr(image)
         return npy_image
 
 #############################################################################
@@ -236,6 +248,8 @@ class Volume(GeologicFeature):
         if 'costs' in kwargs:
             self.costs = kwargs['costs']
             for i in self.stats.index:
+                if i == 0:
+                    continue
                 if i not in self.costs:
                     # TODO
                     msg = "_set_fmm_costs - TODO"
@@ -313,7 +327,7 @@ class Fractures(Volume):
         """
         label = 'fractures'
 
-        if 'settings' in kwargs:
+        if ((data == '') and ('settings' in kwargs)):
             fractures_families_settings = kwargs['settings'].values()
 
             fractures_df = pd.DataFrame()
@@ -321,6 +335,9 @@ class Fractures(Volume):
 
             # Generates one array for each fractures family
             for (i, fractures_family_settings) in enumerate(fractures_families_settings):
+                
+                # TODO -> validations
+                fractures_family_settings['density'] = float(fractures_family_settings['density'])
                 fractures_df_ = generate_fractures(grid=grid, rng=kwargs['rng'], **fractures_family_settings)
                 fractures_df_.insert(0, 'family_id', i+1)
                 fractures_df = pd.concat([fractures_df, fractures_df_])
@@ -340,26 +357,6 @@ class Fractures(Volume):
         self._set_fmm_costs(kwargs)
         
         
-### TODO ??
-
-# class Karst(Volume):
-#     """
-#     TODO
-#     """
-    
-#     def __init__(self, data, grid, **kwargs):
-#         """
-#         TODO
-#         """
-#         label = 'Karst'
-#         dim = 3
-#         super().__init__(label, dim, data, grid, **kwargs)
-
-#         # TODO
-#         # Validation de l'array
-
-
-
 #############################################################
 
 class ConceptualModel():

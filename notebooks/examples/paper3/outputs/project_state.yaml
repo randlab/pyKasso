@@ -1,0 +1,18 @@
+grid:
+  dx: 50
+  dy: 50
+  dz: 50
+  nx: 181
+  ny: 141
+  nz: 10
+  x0: 580879.18
+  y0: 5241726.95
+  z0: 100
+n_simulation: 5
+project_directory: paper3
+simulation_locations:
+- paper3/outputs/simulation_1/
+- paper3/outputs/simulation_2/
+- paper3/outputs/simulation_3/
+- paper3/outputs/simulation_4/
+- paper3/outputs/simulation_5/

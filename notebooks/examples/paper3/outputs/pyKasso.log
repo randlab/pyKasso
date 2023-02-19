@@ -1,0 +1,313 @@
+ ♠                              | INFO     |              _                        
+ ♠                              | INFO     |             | |                       
+ ♠                              | INFO     |  _ __  _   _| | ____ _ ___ ___  ___   
+ ♠                              | INFO     | | `_ \| | | | |/ / _` / __/ __|/ _ \  
+ ♠                              | INFO     | | |_) | |_| |   < (_| \__ \__ \ (_) | 
+ ♠                              | INFO     | | .__/ \__, |_|\_\__,_|___/___/\___/  
+ ♠                              | INFO     | | |     __/ |                         
+ ♠                              | INFO     | |_|    |___/                          
+ ♠                              | INFO     |                                       
+ ☼                              | INFO     | Project directory location : paper3
+ ☼                              | INFO     | Project creation date      : 2023-02-19 22:40:40
+ ☼                              | INFO     | pyKasso version used       : 0.1.0
+ ☼                              | INFO     | Logging level              : 10
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | *** pyKasso simulation 1 ***
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | Location : paper3/outputs/simulation_1/
+ ►                              | INFO     | Date     : 2023-02-19 22:40:40
+ ►                              | INFO     | ---
+ grid.validation                | INFO     | 'grid' settings have been validated
+ grid.construction              | DEBUG    | '_build_grid' went well
+ grid.construction              | INFO     | 'grid' has been constructed
+ domain.validation              | WARNING  | The 'delimitation' attribute is missing (optional).
+ domain.validation              | INFO     | 'domain' settings have been validated
+ domain.construction            | DEBUG    | '_build_domain_delimitation' went well
+ domain.construction            | DEBUG    | '_build_domain_topography' went well
+ domain.construction            | DEBUG    | '_build_domain_bedrock' went well
+ domain.construction            | DEBUG    | '_build_domain_water_level' went well
+ domain.construction            | DEBUG    | '_build_domain' went well
+ domain.construction            | INFO     | 'domain' has been constructed
+ sks.validation                 | INFO     | 'sks' settings have been validated
+ geology.validation             | WARNING  | The 'axis' attribute is missing (optional).
+ geology.validation             | DEBUG    | The 'geology' data dimensions match with the z-side surface of the grid. Dat will be replicated on z-axis.
+ geology.validation             | INFO     | 'geology' settings have been validated
+ geology.construction           | DEBUG    | '_build_model_geology' went well
+ geology.construction           | INFO     | 'geology' has been constructed
+ faults.validation              | WARNING  | The 'axis' attribute is missing (optional).
+ faults.validation              | INFO     | 'faults' settings have been validated
+ faults.construction            | DEBUG    | '_build_model_faults' went well
+ faults.construction            | INFO     | 'faults' has been constructed
+ outlets.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ outlets.validation             | INFO     | 'outlets' settings have been validated
+ outlets.validation             | WARNING  | 3/3 outlets have been discarded because out of domain.
+ outlets.validation             | DEBUG    | '_build_model_outlets' went well
+ inlets.validation              | WARNING  | The 'geology' attribute is missing (optional).
+ inlets.validation              | INFO     | 'inlets' settings have been validated
+ inlets.validation              | WARNING  | 5/5 inlets have been discarded because out of domain.
+ inlets.validation              | DEBUG    | '_build_model_inlets' went well
+ fractures.validation           | WARNING  | The 'axis' attribute is missing (optional).
+ fractures.validation           | INFO     | 'fractures' settings have been validated
+ fractures.validation           | DEBUG    | '_build_model_fractures' went well
+ fractures.validation           | DEBUG    | '_build_simple_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_complete_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_model' went well
+ fmm.validation                 | INFO     | 'fmm' settings have been validated
+ fmm.construction               | DEBUG    | '_construct_fmm_variables' went well
+ fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 1/3
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 2/3
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 3/3
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | *** pyKasso simulation 2 ***
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | Location : paper3/outputs/simulation_2/
+ ►                              | INFO     | Date     : 2023-02-19 22:40:44
+ ►                              | INFO     | ---
+ grid.validation                | INFO     | 'grid' settings have been validated
+ grid.construction              | INFO     | 'grid' has been reused from previous simulation
+ domain.validation              | WARNING  | The 'delimitation' attribute is missing (optional).
+ domain.validation              | INFO     | 'domain' settings have been validated
+ domain.construction            | INFO     | 'domain' has been reused from previous simulation
+ sks.validation                 | INFO     | 'sks' settings have been validated
+ geology.validation             | WARNING  | The 'axis' attribute is missing (optional).
+ geology.validation             | DEBUG    | The 'geology' data dimensions match with the z-side surface of the grid. Dat will be replicated on z-axis.
+ geology.validation             | INFO     | 'geology' settings have been validated
+ geology.construction           | INFO     | 'geology' has been reused from previous simulation
+ faults.validation              | WARNING  | The 'axis' attribute is missing (optional).
+ faults.validation              | INFO     | 'faults' settings have been validated
+ faults.construction            | INFO     | 'faults' has been reused from previous simulation
+ outlets.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ outlets.validation             | INFO     | 'outlets' settings have been validated
+ outlets.validation             | WARNING  | 3/3 outlets have been discarded because out of domain.
+ outlets.validation             | DEBUG    | '_build_model_outlets' went well
+ inlets.validation              | WARNING  | The 'geology' attribute is missing (optional).
+ inlets.validation              | INFO     | 'inlets' settings have been validated
+ inlets.validation              | WARNING  | 5/5 inlets have been discarded because out of domain.
+ inlets.validation              | DEBUG    | '_build_model_inlets' went well
+ fractures.validation           | WARNING  | The 'axis' attribute is missing (optional).
+ fractures.validation           | INFO     | 'fractures' settings have been validated
+ fractures.validation           | DEBUG    | '_build_model_fractures' went well
+ fractures.validation           | DEBUG    | '_build_simple_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_complete_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_model' went well
+ fmm.validation                 | INFO     | 'fmm' settings have been validated
+ fmm.construction               | DEBUG    | '_construct_fmm_variables' went well
+ fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 1/3
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 2/3
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 3/3
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | *** pyKasso simulation 3 ***
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | Location : paper3/outputs/simulation_3/
+ ►                              | INFO     | Date     : 2023-02-19 22:40:47
+ ►                              | INFO     | ---
+ grid.validation                | INFO     | 'grid' settings have been validated
+ grid.construction              | INFO     | 'grid' has been reused from previous simulation
+ domain.validation              | WARNING  | The 'delimitation' attribute is missing (optional).
+ domain.validation              | INFO     | 'domain' settings have been validated
+ domain.construction            | INFO     | 'domain' has been reused from previous simulation
+ sks.validation                 | INFO     | 'sks' settings have been validated
+ geology.validation             | WARNING  | The 'axis' attribute is missing (optional).
+ geology.validation             | DEBUG    | The 'geology' data dimensions match with the z-side surface of the grid. Dat will be replicated on z-axis.
+ geology.validation             | INFO     | 'geology' settings have been validated
+ geology.construction           | INFO     | 'geology' has been reused from previous simulation
+ faults.validation              | WARNING  | The 'axis' attribute is missing (optional).
+ faults.validation              | INFO     | 'faults' settings have been validated
+ faults.construction            | INFO     | 'faults' has been reused from previous simulation
+ outlets.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ outlets.validation             | INFO     | 'outlets' settings have been validated
+ outlets.validation             | WARNING  | 3/3 outlets have been discarded because out of domain.
+ outlets.validation             | DEBUG    | '_build_model_outlets' went well
+ inlets.validation              | WARNING  | The 'geology' attribute is missing (optional).
+ inlets.validation              | INFO     | 'inlets' settings have been validated
+ inlets.validation              | WARNING  | 5/5 inlets have been discarded because out of domain.
+ inlets.validation              | DEBUG    | '_build_model_inlets' went well
+ fractures.validation           | WARNING  | The 'axis' attribute is missing (optional).
+ fractures.validation           | INFO     | 'fractures' settings have been validated
+ fractures.validation           | DEBUG    | '_build_model_fractures' went well
+ fractures.validation           | DEBUG    | '_build_simple_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_complete_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_model' went well
+ fmm.validation                 | INFO     | 'fmm' settings have been validated
+ fmm.construction               | DEBUG    | '_construct_fmm_variables' went well
+ fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 1/3
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 2/3
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 3/3
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | *** pyKasso simulation 4 ***
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | Location : paper3/outputs/simulation_4/
+ ►                              | INFO     | Date     : 2023-02-19 22:40:50
+ ►                              | INFO     | ---
+ grid.validation                | INFO     | 'grid' settings have been validated
+ grid.construction              | INFO     | 'grid' has been reused from previous simulation
+ domain.validation              | WARNING  | The 'delimitation' attribute is missing (optional).
+ domain.validation              | INFO     | 'domain' settings have been validated
+ domain.construction            | INFO     | 'domain' has been reused from previous simulation
+ sks.validation                 | INFO     | 'sks' settings have been validated
+ geology.validation             | WARNING  | The 'axis' attribute is missing (optional).
+ geology.validation             | DEBUG    | The 'geology' data dimensions match with the z-side surface of the grid. Dat will be replicated on z-axis.
+ geology.validation             | INFO     | 'geology' settings have been validated
+ geology.construction           | INFO     | 'geology' has been reused from previous simulation
+ faults.validation              | WARNING  | The 'axis' attribute is missing (optional).
+ faults.validation              | INFO     | 'faults' settings have been validated
+ faults.construction            | INFO     | 'faults' has been reused from previous simulation
+ outlets.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ outlets.validation             | INFO     | 'outlets' settings have been validated
+ outlets.validation             | WARNING  | 3/3 outlets have been discarded because out of domain.
+ outlets.validation             | DEBUG    | '_build_model_outlets' went well
+ inlets.validation              | WARNING  | The 'geology' attribute is missing (optional).
+ inlets.validation              | INFO     | 'inlets' settings have been validated
+ inlets.validation              | WARNING  | 5/5 inlets have been discarded because out of domain.
+ inlets.validation              | DEBUG    | '_build_model_inlets' went well
+ fractures.validation           | WARNING  | The 'axis' attribute is missing (optional).
+ fractures.validation           | INFO     | 'fractures' settings have been validated
+ fractures.validation           | DEBUG    | '_build_model_fractures' went well
+ fractures.validation           | DEBUG    | '_build_simple_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_complete_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_model' went well
+ fmm.validation                 | INFO     | 'fmm' settings have been validated
+ fmm.construction               | DEBUG    | '_construct_fmm_variables' went well
+ fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 1/3
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 2/3
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 3/3
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | *** pyKasso simulation 5 ***
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | Location : paper3/outputs/simulation_5/
+ ►                              | INFO     | Date     : 2023-02-19 22:40:53
+ ►                              | INFO     | ---
+ grid.validation                | INFO     | 'grid' settings have been validated
+ grid.construction              | INFO     | 'grid' has been reused from previous simulation
+ domain.validation              | WARNING  | The 'delimitation' attribute is missing (optional).
+ domain.validation              | INFO     | 'domain' settings have been validated
+ domain.construction            | INFO     | 'domain' has been reused from previous simulation
+ sks.validation                 | INFO     | 'sks' settings have been validated
+ geology.validation             | WARNING  | The 'axis' attribute is missing (optional).
+ geology.validation             | DEBUG    | The 'geology' data dimensions match with the z-side surface of the grid. Dat will be replicated on z-axis.
+ geology.validation             | INFO     | 'geology' settings have been validated
+ geology.construction           | INFO     | 'geology' has been reused from previous simulation
+ faults.validation              | WARNING  | The 'axis' attribute is missing (optional).
+ faults.validation              | INFO     | 'faults' settings have been validated
+ faults.construction            | INFO     | 'faults' has been reused from previous simulation
+ outlets.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ outlets.validation             | INFO     | 'outlets' settings have been validated
+ outlets.validation             | WARNING  | 3/3 outlets have been discarded because out of domain.
+ outlets.validation             | DEBUG    | '_build_model_outlets' went well
+ inlets.validation              | WARNING  | The 'geology' attribute is missing (optional).
+ inlets.validation              | INFO     | 'inlets' settings have been validated
+ inlets.validation              | WARNING  | 5/5 inlets have been discarded because out of domain.
+ inlets.validation              | DEBUG    | '_build_model_inlets' went well
+ fractures.validation           | WARNING  | The 'axis' attribute is missing (optional).
+ fractures.validation           | INFO     | 'fractures' settings have been validated
+ fractures.validation           | DEBUG    | '_build_model_fractures' went well
+ fractures.validation           | DEBUG    | '_build_simple_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_complete_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_conceptual_model' went well
+ fractures.validation           | DEBUG    | '_build_model' went well
+ fmm.validation                 | INFO     | 'fmm' settings have been validated
+ fmm.construction               | DEBUG    | '_construct_fmm_variables' went well
+ fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 1/3
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 2/3
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 3/3
+ matplotlib                     | DEBUG    | CACHEDIR=C:\Users\franc\.matplotlib
+ matplotlib.font_manager        | DEBUG    | Using fontManager instance from C:\Users\franc\.matplotlib\fontlist-v330.json

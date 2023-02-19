@@ -44,7 +44,6 @@ this.ATTRIBUTES = {
     },
     'beddings' : {
         'data'  : ['optional', ''],
-        'costs' : ['optional', {}],
     },
     'faults' : {
         'data' : ['optional', ''],
@@ -55,10 +54,7 @@ this.ATTRIBUTES = {
         'data'       : ['optional', ''],
         'shuffle'    : ['optional', False],
         'importance' : ['required', []],
-        'mode'       : ['optional', 'uniform'],
-        # 'x'          : ['optional', 'lambda : grid.xmin + grid.nx * rng.random() * grid.dx'],
-        # 'y'          : ['optional', 'lambda : grid.ymin + grid.ny * rng.random() * grid.dy'],
-        # 'z'          : ['optional', 'lambda : grid.zmin + grid.dz/1000'],
+        'mode'       : ['optional', 'surface_down'],
         'geology'    : ['optional', None],
         'seed'       : ['optional', 0],
     },
@@ -68,23 +64,20 @@ this.ATTRIBUTES = {
         'shuffle'    : ['optional', False],
         'importance' : ['required', []],
         'per_outlet' : ['required', []],
-        'mode'       : ['optional', 'uniform'],
-        # 'x'          : ['optional', 'lambda : grid.xmin + grid.nx * rng.random() * grid.dx'],
-        # 'y'          : ['optional', 'lambda : grid.ymin + grid.ny * rng.random() * grid.dy'],
-        # 'z'          : ['optional', 'lambda : grid.zmax - grid.dz/1000'],
+        'mode'       : ['optional', 'surface_up'],
         'geology'    : ['optional', None],
         'seed'       : ['optional', 0],
     },
     'tracers'   : {},
     'fractures' : {
         'data'     : ['optional', ''],
+        'axis'     : ['optional', 'z'],
         'seed'     : ['optional', 0],
         'settings' : ['optional', ''],
         
     },
     'fmm' : {
         'algorithm' : ['optional', 'Isotropic3'],
-        'costs'     : ['optional', {'ratio' : 0.5}]
     },
 }
 
@@ -176,6 +169,10 @@ def read_file(path:str, attribute:str) -> np.ndarray:
         ### Images
         elif extension in ['jpg', 'png']:
             return None
+        
+        ### CSV
+        elif extension == 'csv':
+            data = np.genfromtxt(path, delimiter=',').T
 
         ### Others
         else:
@@ -261,7 +258,7 @@ def validate_settings(feature:str, feature_settings:dict, grid=None) -> dict:
     elif feature == 'tracers':
         settings = validate_tracers_settings(feature_settings)
     elif feature == 'fractures':
-        settings = validate_fractures_settings(feature_settings)
+        settings = validate_fractures_settings(feature_settings, grid)
     elif feature == 'fmm':
         settings = validate_fmm_settings(feature_settings)
         
@@ -454,9 +451,9 @@ def is_volume_dimensions_valid(array:np.ndarray, attribute:str, grid, axis:str) 
         'z' : (nx, ny),
     }
     
+    data_size = len(array)
     ### GSLIB ndarray case
     if len(array.shape) == 1:
-        data_size = len(array)
         if data_size == nx * ny * nz:
             return True
         else:
@@ -466,7 +463,7 @@ def is_volume_dimensions_valid(array:np.ndarray, attribute:str, grid, axis:str) 
                 this.logger.debug(msg)
                 return True
             else:
-                msg += "neither with the {}-side surface of the grid (data : {}, grid_volume : {}, grid_{}_surface : {})".format(attribute, axis, data_size, nx * ny * nz, axis, axis_surface_size[axis])
+                msg += "neither with the {}-side surface of the grid (data : {}, grid_volume : {}, grid_{}_surface : {}).".format(attribute, axis, data_size, nx * ny * nz, axis, axis_surface_size[axis])
                 this.logger.critical(msg)
                 raise ValueError(msg)
 
@@ -478,7 +475,7 @@ def is_volume_dimensions_valid(array:np.ndarray, attribute:str, grid, axis:str) 
                 this.logger.debug(msg)
                 return True
             else:
-                msg = "The '{}' data dimensions do not match with the {}-side surface of the grid.".format(attribute, axis)
+                msg = "The '{}' data dimensions do not match with the {}-side surface of the grid (data : {}, grid_volume : {}, grid_{}_surface : {}).".format(attribute, axis, array.shape, (nx,ny,nz), axis, axis_surface_shapes[axis])
                 this.logger.critical(msg)
                 raise ValueError(msg)
 
@@ -589,17 +586,17 @@ def validate_tracers_settings(settings:dict) -> dict:
 #################
 
 ### TODO
-def validate_fractures_settings(settings:dict) -> dict:
-    # Checks attributes presence
-    for attribute in this.ATTRIBUTES['fractures']:
-        kind, default_value = this.ATTRIBUTES['fractures'][attribute]
-        settings = validate_attribute_presence(settings, attribute, kind, default_value, is_subattribute=True)
+def validate_fractures_settings(settings:dict, grid) -> dict:
+    
+    settings = validate_geologic_feature_settings(settings, 'fractures', grid)
+    
     return settings
 
 ###########
 ### FMM ###
 ###########
 def validate_fmm_settings(settings:dict) -> dict:
+    
     # Checks attributes presence
     for attribute in this.ATTRIBUTES['fmm']:
         kind, default_value = this.ATTRIBUTES['fmm'][attribute]
