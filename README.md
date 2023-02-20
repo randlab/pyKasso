@@ -2,7 +2,7 @@
 
 
 <!-- ![]() -->
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/randlab/pyKasso/dev?urlpath=https%3A%2F%2Fgithub.com%2Frandlab%2FpyKasso%2Ftree%2Fdev%2Fnotebooks%2Fexamples%2F%20example_core.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/randlab/pyKasso/dev)
 ![license](https://img.shields.io/github/license/randlab/pyKasso)
 ![last-commit](https://img.shields.io/github/last-commit/randlab/pyKasso/dev)
 
