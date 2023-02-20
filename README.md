@@ -8,7 +8,6 @@ This is the stable 2D version as of June 2022.
 Note: This may not work on non-Windows machines
 
 1. Clone this repository (make sure you are in the correct branch).
-    - Go to this branch's GitHub page [here](https://github.com/randlab/pyKasso/tree/replace-fast-marching-with-HFM)
     - Click the green "Code" button on the top right
     - Clone using your method of choice (GitHub Desktop for example)
 2. Clone the karsnet repository and keep track of which directory it is in:
@@ -18,9 +17,7 @@ Note: This may not work on non-Windows machines
     - `conda activate pykasso2D`    
 4. Manually install karstnet from the folder you cloned:
     - `pip install -e your/path/to/karstnet`
-5. Manually install the xlrd package:
-    - `conda install xlrd`
-6. Test by opening a Jupyter notebook, and running a simple example:
+5. Test by opening a Jupyter notebook, and running a simple example:
 	- `jupyter lab`
 	- In Jupyter Lab, navigate in the directory in the right sidebar to your GitHub folder and to the pyKasso repository. 
 	- Find the folder called "notebooks"
@@ -54,9 +51,7 @@ pyKasso requires the following python packages to function properly:
 - numpy
 - pandas
 - matplotlib
-- xlrd
 - openpyxl
-- [skfmm](https://github.com/scikit-fmm/scikit-fmm) use `conda install scikit-fmm`
 - [karstnet](https://github.com/UniNE-CHYN/karstnet) use `pip install -e your\path\to\karstnet`
 	- networkx
 	- scipy
