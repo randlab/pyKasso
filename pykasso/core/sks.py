@@ -226,8 +226,12 @@ class SKS():
             this.logger = logging.getLogger("☼")
             this.logger.info("Project directory location : " + this.ACTIVE_PROJECT['project_directory'])
             this.logger.info("Project creation date      : " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            pykasso_version = pkg_resources.get_distribution('pyKasso').version
-            this.logger.info("pyKasso version used       : " + pykasso_version)
+            # TODO - error with binder
+            try:
+                pykasso_version = pkg_resources.get_distribution('pyKasso').version
+                this.logger.info("pyKasso version used       : " + pykasso_version)
+            except:
+                pass
             this.logger.info("Logging level              : " + str(logging_level)) # TODO ????????
             
         ### Prints current simulation number
