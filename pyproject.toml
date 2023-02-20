@@ -49,13 +49,6 @@ jupyterlab = "^3.5.2"
 ipyvtklink = "^0.2.3"
 snakeviz = "^2.1.1"
 sphinx = "^6.1.3"
-poetry2conda = "^0.3.0"
-
-[tool.poetry2conda]
-name = "python 3.9"
-
-[tool.poetry2conda.dependencies]
-foo = { channel = "agd-lbr" }
 
 [build-system]
 requires = ["poetry-core"]
