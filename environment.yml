@@ -20,5 +20,5 @@ dependencies:
   - mpmath>=1.2.1,<2.0.0
   - pyyaml>=6.0,<7.0
   - scipy>=1.9.3,<2.0.0
-  - agd>=0.1.31,<0.2.0
+  - agd
   - hfm
