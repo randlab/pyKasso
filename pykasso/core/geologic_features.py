@@ -54,6 +54,7 @@ class GeologicFeature():
         if isinstance(data, np.ndarray):
             return data
         else:
+            print(data)
             extension = data.split('.')[-1]
             if extension == 'gslib':
                 return self._set_data_from_gslib(grid, data)
@@ -327,8 +328,9 @@ class Fractures(Volume):
         """
         label = 'fractures'
 
-        if ((data == '') and ('settings' in kwargs)):
-            fractures_families_settings = kwargs['settings'].values()
+        if ((data == '') and ('settings' in kwargs) and (kwargs['settings'] != '')):
+            print(kwargs)
+            fractures_families_settings = kwargs['settings']
 
             fractures_df = pd.DataFrame()
             fractures_npy = {}
