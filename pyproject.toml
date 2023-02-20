@@ -27,6 +27,7 @@ packages = [{ include = "misc" }]
 python = "^3.9"
 numpy = "^1.24.0"
 pandas = "^1.5.2"
+matplotlib = "^3.6.2"
 openpyxl = "^3.0.10"
 mpmath = "^1.2.1"
 pyyaml = "^6.0"
@@ -39,7 +40,6 @@ networkx = "^2.8.8"
 mplstereonet = "^0.6.2"
 
 [tool.poetry.group.visualization.dependencies]
-matplotlib = "^3.6.2"
 pyvista = "^0.37.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -53,6 +53,9 @@ poetry2conda = "^0.3.0"
 
 [tool.poetry2conda]
 name = "python 3.9"
+
+[tool.poetry2conda.dependencies]
+foo = { channel = "agd-lbr" }
 
 [build-system]
 requires = ["poetry-core"]
