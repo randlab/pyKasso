@@ -31,7 +31,7 @@ OR, try the older simpler install version:
 
 Install from source (you must first change directories to the project main directory):
 ```
-pip install .
+pip install -e your/path/to/pykasso
 ```
 
 # Dependencies
