@@ -29,11 +29,17 @@ From source:
 poetry install
 ```
 
-### Check installation
+### AGD
+
+Currently, you also need to manually install the binaries from agd-hfm packgage according to your operating system :
+
+https://anaconda.org/AGD-LBR/hfm/files
+
+<!-- ### Check installation
 
 ```
 poetry run pytest tests/
-```
+``` -->
 
 ### Dependencies
 
