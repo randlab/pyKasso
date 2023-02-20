@@ -7,18 +7,14 @@
 # the pyproject.toml file and then use poetry2conda again to update this file.
 # Alternatively, stop using (ana)conda.
 ###############################################################################
-# name: pykasso
-# dependencies:
-#   - python>=3.9,<4.0
-#   - numpy>=1.24.0,<2.0.0
-#   - pandas>=1.5.2,<2.0.0
-#   - openpyxl>=3.0.10,<4.0.0
-#   - mpmath>=1.2.1,<2.0.0
-#   - pyyaml>=6.0,<7.0
-#   - agd>=0.1.31,<0.2.0
-#   - scipy>=1.9.3,<2.0.0
 
 name: python 3.9
 dependencies:
   - python=3.9
-  - numpy
+  - numpy>=1.24.0,<2.0.0
+  - pandas>=1.5.2,<2.0.0
+  - openpyxl>=3.0.10,<4.0.0
+  - mpmath>=1.2.1,<2.0.0
+  - pyyaml>=6.0,<7.0
+  # - agd>=0.1.31,<0.2.0
+  - scipy>=1.9.3,<2.0.0
