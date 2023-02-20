@@ -155,7 +155,7 @@ class SKS():
         settings_names = ['CORE_SETTINGS', 'SKS_SETTINGS']
         for settings, settings_name in zip(settings_list, settings_names):
             if settings is None:
-                settings = this.ACTIVE_PROJECT['project_directory'] + '/settings/{}.YAML'.format(settings_name)
+                settings = this.ACTIVE_PROJECT['project_directory'] + '/settings/{}.yaml'.format(settings_name)
             if isinstance(settings, str):
                 with open(settings, 'r') as f:
                     setattr(self, settings_name.upper(), yaml.safe_load(f))
