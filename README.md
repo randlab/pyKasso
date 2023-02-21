@@ -27,7 +27,7 @@ Note: This may not work on non-Windows machines
 	- Change the paths in the notebook to your local paths
 	- Try to run the notebook
 
-You may experienced issues with the `agd-hfm` package. If such a message appear during pykasso execution
+You may experience issues with the `agd-hfm` package. If such a message appear during pykasso execution
 ```
 ERROR : the HFMpy library is not found, and the path to the FileHFM binaries is not set
 ```
