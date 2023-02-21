@@ -16,3 +16,6 @@ dependencies:
   - networkx
   - agd
   - hfm
+  - pip
+  - pip:
+    - mplstereonet
