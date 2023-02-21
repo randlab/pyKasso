@@ -10,8 +10,10 @@ Note: This may not work on non-Windows machines
 1. Clone this repository (make sure you are in the correct branch).
     - Click the green "Code" button on the top right
     - Clone using your method of choice (GitHub Desktop for example)
+	- `git clone -b cfpy https://github.com/randlab/pyKasso.git`
 2. Clone the karsnet repository and keep track of which directory it is in:
     - Karsnet GitHub page is [here](https://github.com/karstnet/karstnet)
+	- `git clone https://github.com/karstnet/karstnet.git`
 3. Create and activate a new environment called pykasso2D from the environment.yml file provided:
     - `conda env create --file your/path/to/environment.yml`
     - `conda activate pykasso2D`    
