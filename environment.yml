@@ -1,4 +1,4 @@
-name: pykasso2D
+name: pykasso2D_
 channels:
   - conda-forge
   - agd-lbr

@@ -17,8 +17,9 @@ Note: This may not work on non-Windows machines
 3. Create and activate a new environment called pykasso2D from the environment.yml file provided:
     - `conda env create --file your/path/to/environment.yml`
     - `conda activate pykasso2D`    
-4. Manually install karstnet from the folder you cloned:
+4. Manually install karstnet and pykasso from the folders you cloned:
     - `pip install -e your/path/to/karstnet`
+	- `pip install -e your/path/to/pykasso`
 5. Test by opening a Jupyter notebook, and running a simple example:
 	- `jupyter notebook`
 	- In Jupyter notebook, navigate in the directory to your GitHub folder and to the pyKasso repository. 
