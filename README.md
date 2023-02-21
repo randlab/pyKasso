@@ -7,7 +7,7 @@ This is the stable 2D version as of June 2022.
 ## Installation
 Note: This may not work on non-Windows machines
 
-1. Clone this repository (make sure you are in the correct branch).
+1. Clone this repository:
     - Click the green "Code" button on the top right
     - Clone using your method of choice (GitHub Desktop for example)
 	- `git clone -b cfpy https://github.com/randlab/pyKasso.git`
@@ -24,8 +24,7 @@ Note: This may not work on non-Windows machines
 	- `jupyter notebook`
 	- In Jupyter notebook, navigate in the directory to your GitHub folder and to the pyKasso repository. 
 	- Find the folder called "notebooks"
-	- Open the notebook "simple_fastmarching_example.ipynb"
-	- Change the paths in the notebook to your local paths
+	- Open the notebook "installation_test.ipynb"
 	- Try to run the notebook
 
 You may experience issues with the `agd-hfm` package. If such a message appear during pykasso execution
@@ -40,12 +39,6 @@ You can easily locate the root of your environnement with `conda env list`, `sit
 
 Note: You may need to install some of the packages listed in the dependencies below if they didn't get installed properly from the environment.yml file. 
 
-OR, try the older simpler install version:
-
-Install from source (you must first change directories to the project main directory):
-```
-pip install -e your/path/to/pykasso
-```
 
 # Dependencies
 
