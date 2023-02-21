@@ -20,8 +20,8 @@ Note: This may not work on non-Windows machines
 4. Manually install karstnet from the folder you cloned:
     - `pip install -e your/path/to/karstnet`
 5. Test by opening a Jupyter notebook, and running a simple example:
-	- `jupyter lab`
-	- In Jupyter Lab, navigate in the directory in the right sidebar to your GitHub folder and to the pyKasso repository. 
+	- `jupyter notebook`
+	- In Jupyter notebook, navigate in the directory to your GitHub folder and to the pyKasso repository. 
 	- Find the folder called "notebooks"
 	- Open the notebook "simple_fastmarching_example.ipynb"
 	- Change the paths in the notebook to your local paths
