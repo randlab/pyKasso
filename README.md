@@ -26,7 +26,17 @@ Note: This may not work on non-Windows machines
 	- Open the notebook "simple_fastmarching_example.ipynb"
 	- Change the paths in the notebook to your local paths
 	- Try to run the notebook
-    
+
+You may experienced issues with the `agd-hfm` package. If such a message appear during pykasso execution
+```
+ERROR : the HFMpy library is not found, and the path to the FileHFM binaries is not set
+```
+it means you have to manually install the binaries from agd-hfm packgage, according to your python version and your operating system you will select the adequate binaries here : 
+https://anaconda.org/AGD-LBR/hfm/files
+You should unzip it twice, and directly add the content in the `site-packages` directory of your current python environnement.
+You can easily locate the root of your environnement with `conda env list`, `site-packages` should be then in the `Lib/` directory.  
+
+
 Note: You may need to install some of the packages listed in the dependencies below if they didn't get installed properly from the environment.yml file. 
 
 OR, try the older simpler install version:
