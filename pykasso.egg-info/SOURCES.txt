@@ -1,8 +1,12 @@
+LICENSE
 MANIFEST.in
 README.md
 setup.py
 pykasso/__init__.py
 pykasso/base.py
+pykasso/base_original.py
+pykasso/base_paper.py
+pykasso/swmmpy.py
 pykasso.egg-info/PKG-INFO
 pykasso.egg-info/SOURCES.txt
 pykasso.egg-info/dependency_links.txt

@@ -72,7 +72,7 @@ topography_datafile : 'inputs/paper3/dem181x141.csv'
 #'import' - Import from gslib file (in progress)
 # 'contact' - Calculate orientation from a 2D array of contact surface
 orientation_mode : 'topo'
-orientation_datafile : 'inputs/paper3/contact.csv' #only used if mode='contact', or 'gslib'
+orientation_datafile : 'inputs/paper3/contact181x141.csv' #only used if mode='contact', or 'gslib'
 #for the gempy output scalar field, use scalar_map200x251.csv
 #for the contact surface, use contact200x251.csv
 
