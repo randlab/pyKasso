@@ -1,0 +1,142 @@
+ ##################
+### SKS SETTINGS ###
+ ##################
+
+---
+############
+### Grid ###
+############
+
+x0   : 580879.18
+y0   : 5241726.95
+xnum : 181
+ynum : 141
+dx   : 50
+dy   : 50
+
+###############
+### Polygon ###
+###############
+
+data_has_polygon : False
+polygon_data     : 'inputs/paper3/polygon.txt'
+
+####################
+### PointManager ###
+####################
+
+###Outlets
+# 'random'    - generate n random points
+# 'import'    - import points
+# 'composite' - add n random points to imported points
+outlets_mode    : 'import'
+outlets_data    : 'inputs/paper3/outlets2D_base.txt'
+outlets_number  : 3    #if random or composite, how many outlets to generate
+outlets_shuffle : False #if False: do not shuffle outlet order, if True: shuffle outlet order randomly
+outlets_importance : [1,1,1] #how to iterate over outlets: length of array indicates number of iterations, each integer indicates number of outlets in that iteration, sum of integers = total number of outlets
+#to run each outlet separately:              [1,1,1,...]  
+
+###Inlets
+# 'random'    - generate n random points
+# 'import'    - import points
+# 'composite' - add n random points to imported points
+inlets_mode    : 'import'
+inlets_data    : 'inputs/paper3/inlets2D_base.txt'
+inlets_number  : 5      #if random or composite, how many inlets to generate
+inlets_shuffle : False   #if False: do not shuffle inlet order, if True: shuffle inlet order randomly
+inlets_per_outlet : [1,1,1]    #how many inlets to assign to each outlet : length of array=number of outlets, each integer=number of inlets to assign to that outlet, sum of integers=total number of inlets [2,1,2]
+inlets_importance : [1]  #how to iterate over inlets: length of array indicates number of inlet iterations, each integer indicates number of inlets to run in that iteration, sum of integers = total number of inlets
+
+######################
+### GeologyManager ###
+######################
+
+###Geology
+# 'null'   - No geology
+# 'import' - Import geology via GSLIB (old version not compatible with hfm library)
+# 'image'  - Import geology via image
+# 'csv'    - Import geology via csv
+# 'gslib'  - Import geology via GSLIB (new version)
+geological_mode     : 'csv'
+geological_datafile : 'inputs/paper3/simplegeo181x141.csv'    
+#geology input options for gottesacker: 
+#geo=surficial geologic map; gempy=2D map of gempy model; simplegeo=2D projection of 3D gempy model
+
+###Topography
+#'null'   - No topography
+#'csv'    - Import topography from csv file 
+topography_mode : 'csv'
+topography_datafile : 'inputs/paper3/dem181x141.csv'
+
+###Orientation
+#'null'   - No orientation
+#'topo'   - Calculate orientation from a 2D topo array 
+#'import' - Import from gslib file (in progress)
+# 'surface' - Calculate orientation from a 2D array of contact surface
+orientation_mode : 'surface'
+orientation_datafile : 'inputs/paper3/contact181x141.csv' #only used if mode is not null or topo
+#scalar_map200x251.csv = gempy output scalar field;  contact200x251.csv = contact surface
+
+###Faults
+# 'null'   - No faults
+# 'csv'    - Import topography from csv file 
+# 'import' - Import faults from gslib
+# 'image'  - Import faults via image
+faults_mode     : 'null'
+faults_datafile : 'inputs/paper3/faults181x141.csv'  #only used if faults mode is not null
+
+###Fractures
+# 'null'   - No fractures
+# 'import' - Import fractures
+# 'image'  - Import fractures via image
+# 'random' - Generate random fractures
+fractures_mode     : 'random'
+fractures_datafile : 'inputs/paper3/fractures.gslib'
+
+# If fractures mode is 'generate'
+fractures_densities       : [   6e-6,   4e-6]  #smaller = spaced farther apart
+fractures_min_orientation : [     30,    120]  #orientations taken from Goldscheider dissertation
+fractures_max_orientation : [     50,    130]  
+
+# For fracture size
+fractures_alpha      : 2      #power law coefficient
+fractures_min_length : 75    #in map units (whatever units dx and dy are in)
+fractures_max_length : 3000    
+
+###############################
+### Fast-Marching Algorithm ###
+###############################
+
+#Choose which algorithm to use:
+#'skfmm'     : scikit fast-marching: 2D, fast, requires minimal inputs, but does not represent high-relief catchments well (original algorithm)
+#'Isotropic2': agd-hfm: 2D, equivalent of skfmm
+#'Isotropic3': adg-hfm: 3D, equivalent of skfmm
+#'Riemann2'  : agd-hfm: 2D, anisotropic, requires an anisotropy vector field (topography or geologic orientation), performs well in high-relief catchments
+#'Riemann3'  : agd-hfm: 3D version of anisotropic algorithm
+#for more options, see agd-hfm library documentation
+
+algorithm : 'Riemann2'
+
+#Travel cost through each feature (higher=slower/harder, will be avoided by conduits)
+cost_out       : 0.999  #highest, e.g. 0.999
+cost_aquifer   : 0.3    
+cost_aquiclude : 0.4    
+cost_faults    : 0.2    
+cost_fractures : 0.2    
+cost_conduits  : 0.1    #lowest, e.g. 0.1
+cost_ratio     : 0.75    #.4   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (should be less than 0.5 for conduits to go downgradient,  0.25 is good)
+#if ratio = 1: same travel cost parallel and perpendicular to gradient
+#if ratio < 1: travel cost is lower parallel to gradient (paths will follow steepest gradient), decrease value to increase contrast
+#if ratio > 1: travel cost is lower perpendicular to gradient (paths will follow contours), increase value to increase contrast
+
+### Formation to consider and FMM code associated
+geology_id       : [0,1,2] # Only for 'import' geological mode. 0=null, 1=flysch, 2=limestone
+geology_cost     : [cost_out, cost_aquiclude, cost_aquifer]
+
+#############
+### Other ###
+#############
+
+rand_seed : 0   # if 0 = total random
+verbosity : 0
+...
