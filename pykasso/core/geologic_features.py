@@ -12,7 +12,6 @@ from .fracturation import generate_fractures, voxelize_fractures
 # TODO
 # - Gestion du format .grd (http://peterbird.name/guide/grd_format.htm)
 
-this = sys.modules['pykasso.core.sks']
 
 class GeologicFeature():
     """
@@ -54,7 +53,6 @@ class GeologicFeature():
         if isinstance(data, np.ndarray):
             return data
         else:
-            print(data)
             extension = data.split('.')[-1]
             if extension == 'gslib':
                 return self._set_data_from_gslib(grid, data)
@@ -146,21 +144,12 @@ class GeologicFeature():
         
         # Reads image
         pil_image = PIL.Image.open(data).convert('L').transpose(Image.FLIP_TOP_BOTTOM)
-
-        if self.dim == 3:
-
-            if (axis.lower() == 'x'):
-                pil_image = pil_image.resize((grid.ny, grid.nz))
-            elif (axis.lower() == 'y'):
-                pil_image = pil_image.resize((grid.nx, grid.nz))
-            elif (axis.lower() == 'z'):
-                pil_image = pil_image.resize((grid.nx, grid.ny))
         
         # npy_image = (npy_image[:,:] == 0)*1
         npy_image = np.asarray(pil_image).T + 1000
         n_colors = np.unique(npy_image)
         for i, color in enumerate(np.flip(n_colors)):
-            npy_image = np.where(npy_image == color, i, npy_image)
+            npy_image = np.where(npy_image == color, i+1, npy_image)
             
         if self.dim == 3:
 
@@ -185,6 +174,7 @@ class Surface(GeologicFeature):
         """
         dim = 2
         super().__init__(label, dim, data, grid, **kwargs)
+    
     
     def _surface_to_volume(self, condition, grid):
         """
@@ -214,12 +204,9 @@ class Volume(GeologicFeature):
         dim = 3
         super().__init__(label, dim, data, grid, **kwargs)
         self._compute_statistics(grid)
-        # self._compute_data_surface(domain)
+        self.costs = kwargs['costs']
         
     def _compute_statistics(self, grid):
-        """
-        TODO
-        """
         values, counts = np.unique(self.data_volume, return_counts=True)
         stats = {
             'counts' : counts,
@@ -229,49 +216,6 @@ class Volume(GeologicFeature):
         self.stats = pd.DataFrame(data=stats, index=values)
         return None
     
-    # def _compute_data_surface(self, domain):
-    #     """
-    #     TODO
-    #     """
-    #     # TODO à terminer
-    #     i,j,k = np.indices(domain.data_volume.shape)
-    #     test = domain.data_volume.astype('bool')
-    #     surface_indices = k.max(axis=2, initial=-1, where=test)
-    #     i,j = np.indices(surface_indices.shape)
-    #     self.data_surface = self.data_volume[i, j, surface_indices]
-    #     return None
-    
-    def _set_fmm_costs(self, kwargs):
-        """ 
-        TODO
-        """
-        # TODO - Sets the fmm costs
-        if 'costs' in kwargs:
-            self.costs = kwargs['costs']
-            for i in self.stats.index:
-                if i == 0:
-                    continue
-                if i not in self.costs:
-                    # TODO
-                    msg = "_set_fmm_costs - TODO"
-                    raise KeyError(msg)
-        else:
-            # TODO msg log
-            self.costs = {}
-            if self.label == 'geology':
-                for i in self.stats.index :
-                    if i == 0:
-                        continue
-                    self.costs[i] = this.default_fmm_costs['aquifer']
-            elif self.label == 'fractures':
-                for i in self.stats.index :
-                    if i == 0:
-                        continue
-                    self.costs[i] = this.default_fmm_costs[self.label] + ((i - 1) * (1/100))
-            else:
-                self.costs[1] = this.default_fmm_costs[self.label]
-                
-
         
 #############################################################################
 ### 2D Objects ###
@@ -302,7 +246,6 @@ class Geology(Volume):
         """
         label = 'geology'
         super().__init__(label, data, grid, **kwargs)
-        self._set_fmm_costs(kwargs)
 
 
 class Faults(Volume):
@@ -315,7 +258,6 @@ class Faults(Volume):
         """
         label = 'faults'
         super().__init__(label, data, grid, **kwargs)
-        self._set_fmm_costs(kwargs)
 
 
 class Fractures(Volume):
@@ -328,10 +270,9 @@ class Fractures(Volume):
         """
         label = 'fractures'
 
-        if ((data == '') and ('settings' in kwargs) and (kwargs['settings'] != '')):
-            print(kwargs)
+        # if ((data == '') and ('settings' in kwargs) and (kwargs['settings'] != '')):
+        if data == 'random':
             fractures_families_settings = kwargs['settings']
-
             fractures_df = pd.DataFrame()
             fractures_npy = {}
 
@@ -339,8 +280,9 @@ class Fractures(Volume):
             for (i, fractures_family_settings) in enumerate(fractures_families_settings):
                 
                 # TODO -> validations
-                fractures_family_settings['density'] = float(fractures_family_settings['density'])
-                fractures_df_ = generate_fractures(grid=grid, rng=kwargs['rng'], **fractures_family_settings)
+                settings = fractures_families_settings[fractures_family_settings]
+                settings['density'] = float(settings['density'])
+                fractures_df_ = generate_fractures(grid=grid, rng=kwargs['rng'], **settings)
                 fractures_df_.insert(0, 'family_id', i+1)
                 fractures_df = pd.concat([fractures_df, fractures_df_])
 
@@ -356,7 +298,6 @@ class Fractures(Volume):
             data = total
 
         super().__init__(label, data, grid, **kwargs)
-        self._set_fmm_costs(kwargs)
         
         
 #############################################################

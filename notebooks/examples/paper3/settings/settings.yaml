@@ -16,13 +16,13 @@ sks:
 grid:
   x0 : 580879.18
   y0 : 5241726.95
-  z0 : 100
+  z0 : 800
   nx : 181
   ny : 141
-  nz : 10
+  nz : 52
   dx : 50
   dy : 50
-  dz : 50
+  dz : 27.5
 
 ##############
 ### Domain ###
@@ -30,8 +30,8 @@ grid:
 
 domain:
   # delimitation : 'paper3/inputs/polygon.txt'
-  topography   : 'paper3/inputs/dem181x141.csv'
-  bedrock      : ''
+  topography   : 'paper3/inputs/topography_small.txt'
+  bedrock      : 'paper3/inputs/bedrock_small.txt'
   water_level  : ''
 
 ###############
@@ -39,17 +39,17 @@ domain:
 ###############
 
 geology:
-  data  : 'paper3/inputs/gempy181x141.csv'
+  data  : 'paper3/inputs/geology_small.npy'
   costs : 
     1 : 0.6
     2 : 0.3
     3 : 0.6
     4 : 0.6
 
-faults:
-  data : 'paper3/inputs/faults181x141.png'
-  costs :
-    1 : 0.2
+# faults:
+#   data : 'paper3/inputs/faults181x141.png'
+#   costs :
+#     1 : 0.2
 
 ##############
 ### Points ###
@@ -81,11 +81,11 @@ inlets:
 fractures:
   # data : 'paper3/inputs/fractures.gslib'
   # data : 'paper3/inputs/frac.csv'
-  data : ''
+  data : 'random'
   seed : 12
   costs : 
     1 : 0.2
-    2 : 0.22
+    2 : 0.18
   settings :
     family_01:
       alpha        : 2

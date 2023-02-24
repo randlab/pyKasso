@@ -20,7 +20,7 @@ AUTHORIZED_FEATURES = [
     'karst',
 ]
 
-def show(environment, feature='GRID', engine='matplotlib', settings={}):
+def show(environment, feature, engine='pyvista', settings={}):
     """
     TODO
     """

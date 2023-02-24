@@ -19,7 +19,7 @@ class Domain():
     """
     Class modeling the extension of the domain within the grid.
     """
-    def __init__(self, grid:Grid, data:np.ndarray=None, delimitation:Delimitation=None, topography:Topography=None, bedrock:Bedrock=None, water_level:WaterLevel=None) -> None:
+    def __init__(self, grid:Grid, delimitation:Delimitation=None, topography:Topography=None, bedrock:Bedrock=None, water_level:WaterLevel=None) -> None:
         """ """
         # Initialization
         self.grid        = grid
@@ -32,15 +32,11 @@ class Domain():
         
         ### Computes domain extension
         # Volumetric domain extension
-        if data is None:
-            if delimitation is not None: self.data_volume += delimitation.data_volume
-            if topography   is not None: self.data_volume += topography.data_volume
-            if bedrock      is not None: self.data_volume += np.logical_not(bedrock.data_volume).astype(int)
-            self.data_volume = np.where(self.data_volume == self.data_volume.max(), 1, 0)
-        else:
-            # TODO - mieux définir le domaine, ai-je le droit de le couper avec bedrock par exemple ?
-            # Montrer des exemples
-            self.data_volume = data
+        if delimitation is not None: self.data_volume += delimitation.data_volume
+        if topography   is not None: self.data_volume += topography.data_volume
+        if bedrock      is not None: self.data_volume += np.logical_not(bedrock.data_volume).astype(int)
+        self.data_volume = np.where(self.data_volume == self.data_volume.max(), 1, 0)
+            
         # Apparent surface from domain according to dimension
         self.data_surfaces = {
             'x' : self.data_volume.max(axis=0),
@@ -58,7 +54,8 @@ class Domain():
         if self.water_level is not None:
             self._set_phreatic_domains()
     
-    def _set_faces(self):
+    
+    def _set_faces(self) -> None:
         """"""
         self.faces = {}
         I, J, K = np.indices(self.data_volume.shape)
@@ -83,13 +80,13 @@ class Domain():
         self.faces['down'] = volume_down
         return None
      
-    def _set_border_domains(self):
+    def _set_border_domains(self) -> None:
         """"""
         self.borders = {}
         
         # Full borders
         k = np.zeros((3,3,3), dtype=int); k[:,1,1], k[1,:,1], k[1,1,:] = 1,1,1
-        self.borders['domain'] = binary_dilation(self.data_volume==0, k, border_value=1) & self.data_volume
+        self.borders['domain_full'] = binary_dilation(self.data_volume==0, k, border_value=1) & self.data_volume
         
         # x and y directions borders
         k = np.zeros((3,3), dtype=int); k[:,1], k[1,:] = 1,1
@@ -97,13 +94,14 @@ class Domain():
         for z in range(self.grid.nz):            
             self.borders['domain_sides'][:,:,z] = binary_dilation(self.data_volume[:,:,z]==0, k, border_value=1) & self.data_volume[:,:,z]
             
-        # Bedrock elevation border
-        self.borders['bedrock_elevation_sides'] = np.logical_and(self.borders['domain_sides'] , self.faces['down'])
+        # Domain x Face 'up'
+        self.borders['domain_up'] = np.logical_and(self.borders['domain_sides'], self.faces['up'])
+        
+        # Domain x Face 'down'
+        self.borders['domain_down'] = np.logical_and(self.borders['domain_sides'], self.faces['down'])    
         return None
         
-        
-    # TODO - names ?
-    def _set_phreatic_domains(self):
+    def _set_phreatic_domains(self) -> None:
         """"""
         water_volume  = self.water_level.data_volume
         water_surface = self.water_level.data_surface
@@ -112,12 +110,12 @@ class Domain():
             'vadose_zone'         : np.logical_and(self.data_volume, np.logical_not(water_volume)),
             'phreatic_zone'       : np.logical_and(self.data_volume, water_volume),
             'water_level_surface' : np.logical_and(self.data_volume, water_surface),
-            'water_level_borders' : np.logical_and(self.borders['domain_sides'], water_volume),
         }    
         
         # Water level surface border
-        self.borders['water_level_surface_sides'] = np.logical_and(self.borders['domain_sides'] , self.phreatic['water_level_surface'])
-        
+        self.borders['vadose_zone']         = np.logical_and(self.borders['domain_sides'] , self.phreatic['vadose_zone'])
+        self.borders['phreatic_zone']       = np.logical_and(self.borders['domain_sides'] , self.phreatic['phreatic_zone'])
+        self.borders['water_level_surface'] = np.logical_and(self.borders['domain_sides'] , self.phreatic['water_level_surface'])
         
         return None
         

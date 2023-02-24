@@ -69,12 +69,12 @@ def _show_data(environment, feature, settings, show=True):
 
     # Ghost the data
     if 'ghost' in settings:
-        if 'domain' == True:
+        if settings['domain'] == True:
             ghosts = np.argwhere(np.logical_or(np.isin(grid["data"], settings['ghost']), (grid["domain"] == 0)))
         else:
             ghosts = np.argwhere(np.isin(grid["data"], settings['ghost']))
     else:
-        if 'domain' == True:
+        if settings['domain'] == True:
             ghosts = np.argwhere(grid["domain"] == 0)
         else:
             ghosts = None
@@ -88,7 +88,7 @@ def _show_data(environment, feature, settings, show=True):
 
     if settings['inlets']:
         inlets = _get_points(environment.inlets)
-
+        
     if settings['outlets']:
         outlets = _get_points(environment.outlets)
 
@@ -101,6 +101,9 @@ def _show_data(environment, feature, settings, show=True):
     #####################
 
     plotter = pv.Plotter()
+    
+    # Title
+    plotter.add_text(feature, font_size=10)
 
     # Data
     if settings['slice']:
@@ -118,11 +121,20 @@ def _show_data(environment, feature, settings, show=True):
     # Points
     if settings['inlets']:
         plotter.add_points(inlets, render_points_as_spheres=False, point_size=20, color='r')
+        # plotter.add_point_labels(inlets, "labels", point_size=20, font_size=36)
     if settings['outlets']:
         plotter.add_points(outlets, render_points_as_spheres=False, point_size=20, color='b')
 
     if show:
-        plotter.show(cpos='xy')
+        if environment.grid.nx == 1:
+            cpos = 'yz'
+        elif environment.grid.ny == 1:
+            cpos = 'xz'
+        elif environment.grid.nz == 1:
+            cpos = 'xy'
+        else:
+            cpos = 'xy'
+        plotter.show(cpos=cpos)
 
     return _
 
@@ -233,9 +245,11 @@ def _get_points(points):
     """
     TODO
     """
+    labels = points.index.values.tolist()
     points = points[['x', 'y', 'z']].values
     points = points.astype('float32')
     cloud  = pv.wrap(points)
+    cloud['labels'] = labels
     return cloud
 
 
@@ -274,9 +288,9 @@ def _show_array(array, ghost=False):
     if ghost:
         ghosts = np.argwhere(np.isin(mesh["data"], [0]))
         mesh = mesh.remove_cells(ghosts)
-        print(1)
     
     plotter = pv.Plotter()
+    plotter.show_grid()
     kwargs = {}
     kwargs['scalars'] = 'data'
     _ = plotter.add_mesh(mesh, **kwargs)

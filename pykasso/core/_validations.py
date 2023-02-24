@@ -2,6 +2,7 @@
 Input validations functions
 """
 
+import PIL
 import os
 import sys
 import logging
@@ -14,12 +15,14 @@ import numpy as np
 # revoir la VERBOSITY des messages 
 # message different quand la feature est vide ?? 
 
+sks  = sys.modules['pykasso.core.sks']
 this = sys.modules[__name__]
 
 this.ATTRIBUTES = {
     'sks' : {
-        'seed'                : ['optional', 0],
-        'domain_from_geology' : ['required', '']
+        'seed'      : ['optional', 0],
+        'algorithm' : ['optional', 'Isotropic3'],
+        'costs'     : ['optional', {}]
     },
     'grid' : {
         'x0' : ['required', ''],
@@ -72,12 +75,8 @@ this.ATTRIBUTES = {
     'fractures' : {
         'data'     : ['optional', ''],
         'axis'     : ['optional', 'z'],
-        'seed'     : ['optional', 0],
         'settings' : ['optional', ''],
-        
-    },
-    'fmm' : {
-        'algorithm' : ['optional', 'Isotropic3'],
+        'seed'     : ['optional', 0],
     },
 }
 
@@ -168,8 +167,8 @@ def read_file(path:str, attribute:str) -> np.ndarray:
 
         ### Images
         elif extension in ['jpg', 'png']:
-            return None
-        
+            data = np.asarray(PIL.Image.open(path).convert('L')).T
+
         ### CSV
         elif extension == 'csv':
             data = np.genfromtxt(path, delimiter=',').T
@@ -224,6 +223,7 @@ def is_coordinate_type_valid(coordinate:tuple, types:tuple, attribute:str) -> bo
     else:
         return True
                    
+
 def is_surface_dimensions_valid(array:np.ndarray, grid) -> bool:
     nx, ny, nz = grid.shape
     if not (array.shape == (nx, ny)):
@@ -259,19 +259,23 @@ def validate_settings(feature:str, feature_settings:dict, grid=None) -> dict:
         settings = validate_tracers_settings(feature_settings)
     elif feature == 'fractures':
         settings = validate_fractures_settings(feature_settings, grid)
-    elif feature == 'fmm':
-        settings = validate_fmm_settings(feature_settings)
         
     return settings
 
 ###########
-### SKS ### (Seeds)
+### SKS ### (Seed - Algorithm - Costs)
 ###########
 def validate_sks_settings(settings:dict) -> dict:
     # Checks attributes presence
     for attribute in this.ATTRIBUTES['sks']:
         kind, default_value = this.ATTRIBUTES['sks'][attribute]
         settings = validate_attribute_presence(settings, attribute, kind, default_value, is_subattribute=True)
+        
+    # Checks the presence of essential fmm costs
+    costs = ['ratio', 'conduits', 'out']
+    for cost in costs:
+        if cost not in settings['costs']:
+            settings['costs'][cost] = sks.default_fmm_costs[cost]
     return settings
 
 ############
@@ -387,6 +391,7 @@ def validate_surface_settings(settings:dict, attribute:str, grid) -> dict:
 
         # Tries to open file
         data = read_file(path, attribute)
+        
     else:
         data = settings[attribute]
         
@@ -430,13 +435,36 @@ def validate_geologic_feature_settings(settings:dict, attribute:str, grid) -> di
         data = settings['data']
 
     # Checks if data dimensions are valid
-    if attribute in ['piezometry', 'beddings']:
+    if attribute in ['beddings']:
         is_surface_dimensions_valid(data, grid)
     else:
         if isinstance(data, (np.ndarray)):
             is_volume_dimensions_valid(data, attribute, grid, settings['axis'])
-        
+            
+    # Checks if provided 'costs' are valid
+    ids = np.unique(data)
+    if 'costs' in settings:
+        for i in ids:
+            if i not in settings['costs']:
+                msg = "The data ids ({}) do not match with 'costs' dictionnary entries ({})".format(list(ids), list(settings['costs'].keys()))
+                this.logger.error(msg)
+                raise KeyError(msg)
+    else:
+        settings['costs'] = {}
+        if attribute == 'geology':
+            for i in ids:
+                settings['costs'][i] = sks.default_fmm_costs['aquifer']
+        # elif attribute == 'fractures': # TODO 
+        #     for i in ids:
+        #         if i == 0:
+        #             continue
+        #         settings['costs'][i] = this.default_fmm_costs[self.label] + ((i - 1) * (1/100))
+        else:
+            settings['costs'][1] = sks.default_fmm_costs[attribute]
+        msg = "'costs' dictionary has been set automatically."
+        this.logger.warning(msg)
     return settings
+
 
 def is_volume_dimensions_valid(array:np.ndarray, attribute:str, grid, axis:str) -> bool:
     nx, ny, nz = grid.shape
@@ -469,15 +497,14 @@ def is_volume_dimensions_valid(array:np.ndarray, attribute:str, grid, axis:str) 
 
     ### 2D ndarray case
     elif len(array.shape) == 2:
-        if axis == 'z':
-            if array.shape == axis_surface_shapes[axis]:
-                msg = "The '{}' data dimensions match with the {}-side surface of the grid. Dat will be replicated on {}-axis.".format(attribute, axis, axis)
-                this.logger.debug(msg)
-                return True
-            else:
-                msg = "The '{}' data dimensions do not match with the {}-side surface of the grid (data : {}, grid_volume : {}, grid_{}_surface : {}).".format(attribute, axis, array.shape, (nx,ny,nz), axis, axis_surface_shapes[axis])
-                this.logger.critical(msg)
-                raise ValueError(msg)
+        if array.shape == axis_surface_shapes[axis]:
+            msg = "The '{}' data dimensions match with the {}-side surface of the grid. Dat will be replicated on {}-axis.".format(attribute, axis, axis)
+            this.logger.debug(msg)
+            return True
+        else:
+            msg = "The '{}' data dimensions do not match with the {}-side surface of the grid (data : {}, grid_volume : {}, grid_{}_surface : {}).".format(attribute, axis, array.shape, (nx,ny,nz), axis, axis_surface_shapes[axis])
+            this.logger.critical(msg)
+            raise ValueError(msg)
 
     ### 3D ndarray case
     elif len(array.shape) == 3:
@@ -590,22 +617,4 @@ def validate_fractures_settings(settings:dict, grid) -> dict:
     
     settings = validate_geologic_feature_settings(settings, 'fractures', grid)
     
-    return settings
-
-###########
-### FMM ###
-###########
-def validate_fmm_settings(settings:dict) -> dict:
-    
-    # Checks attributes presence
-    for attribute in this.ATTRIBUTES['fmm']:
-        kind, default_value = this.ATTRIBUTES['fmm'][attribute]
-        settings['fmm'] = validate_attribute_presence(settings['fmm'], attribute, kind, default_value, is_subattribute=True)
-
-    # TODO - develop more test
-    # if len(settings['inlets']['per_outlet']) != settings['outlets']['number']:
-    #     msg = "_validate_fmm_settings... TODO"
-    #     this.logger.critical(msg)
-    #     raise ValueError(msg)
-
     return settings

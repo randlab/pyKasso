@@ -1,0 +1,80 @@
+ ♠                              | INFO     |              _                        
+ ♠                              | INFO     |             | |                       
+ ♠                              | INFO     |  _ __  _   _| | ____ _ ___ ___  ___   
+ ♠                              | INFO     | | `_ \| | | | |/ / _` / __/ __|/ _ \  
+ ♠                              | INFO     | | |_) | |_| |   < (_| \__ \__ \ (_) | 
+ ♠                              | INFO     | | .__/ \__, |_|\_\__,_|___/___/\___/  
+ ♠                              | INFO     | | |     __/ |                         
+ ♠                              | INFO     | |_|    |___/                          
+ ♠                              | INFO     |                                       
+ ☼                              | INFO     | Project directory location : test
+ ☼                              | INFO     | Project creation date      : 2023-02-24 21:32:52
+ ☼                              | INFO     | pyKasso version used       : 0.1.0
+ ☼                              | INFO     | Logging level              : 10
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | *** pyKasso simulation 1 ***
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | Location : test/outputs/simulation_1/
+ ►                              | INFO     | Date     : 2023-02-24 21:32:52
+ ►                              | INFO     | ---
+ ►                              | INFO     | Debug mode : True
+ ►                              | INFO     | Debug level :
+ ►                              | INFO     | -> model          : 3.4
+ ►                              | INFO     | -> simulation     : 10
+ ►                              | INFO     | -> max. iteration : 1000
+ ►                              | INFO     | ---
+ grid.validation                | INFO     | 'grid' settings have been validated
+ grid.construction              | DEBUG    | '_build_grid' went well
+ grid.construction              | INFO     | 'grid' has been constructed
+ domain.validation              | INFO     | 'domain' settings have been validated
+ domain.construction            | DEBUG    | '_build_domain_delimitation' went well
+ domain.construction            | DEBUG    | '_build_domain_topography' went well
+ domain.construction            | DEBUG    | '_build_domain_bedrock' went well
+ domain.construction            | DEBUG    | '_build_domain_water_level' went well
+ domain.construction            | DEBUG    | '_build_domain' went well
+ domain.construction            | INFO     | 'domain' has been constructed
+ sks.validation                 | WARNING  | The 'sks' attribute is missing (optional).
+ sks.validation                 | WARNING  | The 'seed' attribute is missing (optional).
+ sks.validation                 | WARNING  | The 'algorithm' attribute is missing (optional).
+ sks.validation                 | WARNING  | The 'costs' attribute is missing (optional).
+ sks.validation                 | INFO     | 'sks' settings have been validated
+ geology.validation             | DEBUG    | The 'geology' data dimensions match with the x-side surface of the grid. Dat will be replicated on x-axis.
+ geology.validation             | ERROR    | The data ids ([0, 91]) do not match with 'costs' dictionnary entries ([1, 2])
+ geology.validation             | CRITICAL | Critical error during '_build_model'
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | *** pyKasso simulation 2 ***
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | Location : test/outputs/simulation_2/
+ ►                              | INFO     | Date     : 2023-02-24 21:34:04
+ ►                              | INFO     | ---
+ ►                              | INFO     | Debug mode : True
+ ►                              | INFO     | Debug level :
+ ►                              | INFO     | -> model          : 3.4
+ ►                              | INFO     | -> simulation     : 10
+ ►                              | INFO     | -> max. iteration : 1000
+ ►                              | INFO     | ---
+ grid.validation                | INFO     | 'grid' settings have been validated
+ grid.construction              | DEBUG    | '_build_grid' went well
+ grid.construction              | INFO     | 'grid' has been constructed
+ domain.validation              | INFO     | 'domain' settings have been validated
+ domain.construction            | DEBUG    | '_build_domain_delimitation' went well
+ domain.construction            | DEBUG    | '_build_domain_topography' went well
+ domain.construction            | DEBUG    | '_build_domain_bedrock' went well
+ domain.construction            | DEBUG    | '_build_domain_water_level' went well
+ domain.construction            | DEBUG    | '_build_domain' went well
+ domain.construction            | INFO     | 'domain' has been constructed
+ sks.validation                 | WARNING  | The 'sks' attribute is missing (optional).
+ sks.validation                 | WARNING  | The 'seed' attribute is missing (optional).
+ sks.validation                 | WARNING  | The 'algorithm' attribute is missing (optional).
+ sks.validation                 | WARNING  | The 'costs' attribute is missing (optional).
+ sks.validation                 | INFO     | 'sks' settings have been validated
+ geology.validation             | DEBUG    | The 'geology' data dimensions match with the x-side surface of the grid. Dat will be replicated on x-axis.
+ geology.validation             | INFO     | 'geology' settings have been validated
+ geology.construction           | DEBUG    | '_build_model_geology' went well
+ geology.construction           | INFO     | 'geology' has been constructed
+ faults.validation              | DEBUG    | The 'faults' data dimensions match with the y-side surface of the grid. Dat will be replicated on y-axis.
+ faults.validation              | WARNING  | 'costs' dictionary has been set automatically.
+ faults.validation              | INFO     | 'faults' settings have been validated
+ faults.construction            | DEBUG    | '_build_model_faults' went well
+ faults.construction            | INFO     | 'faults' has been constructed
+ faults.construction            | CRITICAL | DEBUG MODE

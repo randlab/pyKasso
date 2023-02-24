@@ -1,0 +1,14 @@
+grid:
+  dx: 10
+  dy: 10
+  dz: 10
+  nx: 100
+  ny: 100
+  nz: 100
+  x0: 0
+  y0: 0
+  z0: 100
+n_simulation: 1
+project_directory: test
+simulation_locations:
+- test/outputs/simulation_1/

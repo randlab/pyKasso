@@ -5,14 +5,27 @@ TODO
 import numpy as np
 import matplotlib.pyplot as plt
 
-def _show_grid(environment):
+def _show_data(environment, feature, settings, show=True):
+    """ """
+    nx, ny, nz = environment.grid.shape
+    
+    # Get the grid
+    grid = np.ones((nx, ny, nz))
+    
+    ax = plt.figure().add_subplot(projection='3d')
+    ax.voxels(grid, edgecolor='k')
+
+    plt.show()
     return None
 
-def _show_mask(environment):
-    return None
+# def _show_grid(environment):
+#     return None
 
-def _show_geology(environment):
-    return None
+# def _show_mask(environment):
+#     return None
+
+# def _show_geology(environment):
+#     return None
 
 
 

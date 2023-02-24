@@ -1,20 +1,16 @@
-##### TODO
-### Validations
-# -> verbosity
-# -> volume : si size model : (300,300,20) alors (300,300,10) doit planter
-### Geological Model
-# -> karst - gestion des réseaux incomplets - https://scipy-lectures.org/packages/scikit-image/auto_examples/plot_labels.html
-# -> field
-# -> tracers
-# -> bedding
-### Others
-# -> logging title : mise en forme
+### Documentation
+
+# Domain
+
+# With str, data cannot be compared during memoize step
+
 
 ####################
 ### Dependencies ###
 ####################
 import os
 import sys
+import copy
 import pickle
 import shutil
 import logging
@@ -46,7 +42,6 @@ this = sys.modules[__name__]
 this.ACTIVE_PROJECT = None
 
 # Defines default fast-marching costs
-# TODO - where should we define this dict ?
 this.default_fmm_costs = {
     'out'       : 0.999,
     'aquifer'   : 0.4,
@@ -63,10 +58,7 @@ this.default_fmm_costs = {
 ### Module functions ###
 ########################
 
-def create_project(project_directory):
-    """
-    TODO
-    """
+def create_project(project_directory:str):
     # Uncomment this to tell apart the development version and the main version
     print('CAUTION: You are using the development version of this package.')
 
@@ -120,17 +112,11 @@ def create_project(project_directory):
     return None
 
 def save_project(path:str) -> None:
-    """ 
-    TODO
-    """
     with open(path + '.pickle', 'wb') as handle:
         pickle.dump(this.ACTIVE_PROJECT, handle, protocol=pickle.HIGHEST_PROTOCOL)
     return None
 
 def load_project(path:str) -> None:
-    """
-    TODO
-    """
     with open(path, 'rb') as handle:
         this.ACTIVE_PROJECT = pickle.load(handle)
     return None
@@ -146,15 +132,15 @@ class SKS():
     TODO
     """
 
-    def __init__(self, sks_settings=None, core_settings=None, debug_level=None):
+    def __init__(self, sks_settings={}, core_settings={}, debug_level=None):
         """
         TODO
         """
         ### Loads core and sks settings
-        settings_list  = [core_settings, sks_settings]
+        settings_list  = [copy.deepcopy(core_settings), copy.deepcopy(sks_settings)]
         settings_names = ['CORE_SETTINGS', 'SKS_SETTINGS']
         for settings, settings_name in zip(settings_list, settings_names):
-            if settings is None:
+            if settings == {}:
                 settings = this.ACTIVE_PROJECT['project_directory'] + '/settings/{}.yaml'.format(settings_name)
             if isinstance(settings, str):
                 with open(settings, 'r') as f:
@@ -167,6 +153,18 @@ class SKS():
         self.CORE_SETTINGS['simulation_directory'] = self.CORE_SETTINGS['outputs_directory'] + 'simulation_{}/'.format(this.ACTIVE_PROJECT['n_simulation'])
         os.makedirs(self.CORE_SETTINGS['simulation_directory'], exist_ok=True)
         this.ACTIVE_PROJECT['simulation_locations'].append(self.CORE_SETTINGS['simulation_directory'])
+        
+        ### Checks if verbosity levels have been declared
+        if 'verbosity' not in self.SKS_SETTINGS:
+            self.SKS_SETTINGS['verbosity'] = {
+                'logging' : 0,
+                'agd'     : 0,
+            }
+        else:
+            if 'logging' not in self.SKS_SETTINGS['verbosity']:
+                self.SKS_SETTINGS['logging'] = 0
+            if 'agd' not in self.SKS_SETTINGS['verbosity']:
+                self.SKS_SETTINGS['agd'] = 0
         
         ### LOGGING ###
         
@@ -285,8 +283,7 @@ class SKS():
         TODO
         """
         self._build_grid()              # 1 - Constructs the grid
-        if not self.SKS_SETTINGS['sks']['domain_from_geology']:
-            self._build_domain()        # 2 - Constructs the domain
+        self._build_domain()            # 2 - Constructs the domain
         self._build_model()             # 3 - Constructs the model
         self._construct_fmm_variables() # 4 - Constructs fmm features 
         return None
@@ -296,7 +293,7 @@ class SKS():
     @wp._parameters_validation('grid', 'required')
     @wp._memoize('grid')
     @wp._logging()
-    def _build_grid(self):
+    def _build_grid(self) -> None:
         """Builds the grid."""
         self.grid = Grid(**self.SKS_SETTINGS['grid'])
         return None
@@ -306,7 +303,7 @@ class SKS():
     @wp._parameters_validation('domain', 'optional')
     @wp._memoize('domain')
     @wp._logging()
-    def _build_domain(self):
+    def _build_domain(self) -> None:
         """Builds the domain."""
         delimitation = self._build_domain_delimitation()         
         topography   = self._build_domain_topography()         
@@ -363,7 +360,6 @@ class SKS():
         """
         ### Sets the main parameters
         self._build_model_parameters()
-        self._validate_fmm_costs_dict()
         
         ### Constructs deterministic geologic features
         self._build_model_geology()              
@@ -382,27 +378,17 @@ class SKS():
         return None
     
     @wp._debug_level(3.1)
-    @wp._parameters_validation('sks', 'required')
+    @wp._parameters_validation('sks', 'optional')
     def _build_model_parameters(self):
         """Builds essential model parameters."""
         # Sets the random master seed
+        self.rng = {}
         if self.SKS_SETTINGS['sks']['seed'] == 0:
             seed = np.random.default_rng().integers(low=0, high=10**6)
             self.SKS_SETTINGS['sks']['seed'] = seed
         self.rng = {
             'master' : np.random.default_rng(self.SKS_SETTINGS['sks']['seed']),
         }
-        return None
-    
-    # TODO ??
-    @wp._debug_level(3.1)
-    def _validate_fmm_costs_dict(self):
-        """Validates the presence of essential fmm costs."""
-        # TODO - test for validity
-        costs = ['ratio', 'conduits', 'out']
-        for cost in costs:
-            if cost not in self.SKS_SETTINGS['fmm']['costs']:
-                self.SKS_SETTINGS['fmm']['costs'][cost] = this.default_fmm_costs[cost]
         return None
         
     @wp._debug_level(3.2)
@@ -411,12 +397,7 @@ class SKS():
     @wp._logging()
     def _build_model_geology(self):
         """Builds the geology."""
-        if self.SKS_SETTINGS['sks']['domain_from_geology']:
-            self.geology = Geology(**self.SKS_SETTINGS['geology'], grid=self.grid)
-            data = np.where(self.geology.data_volume > 0, 1, 0)
-            self.domain = Domain(self.grid, data=data, delimitation=None, topography=None, bedrock=None)
-        else:
-            self.geology = Geology(**self.SKS_SETTINGS['geology'], grid=self.grid, domain=self.domain)
+        self.geology = Geology(**self.SKS_SETTINGS['geology'], grid=self.grid, domain=self.domain)
         return None
     
     # @wp._debug_level(3.3)
@@ -486,7 +467,10 @@ class SKS():
     def _build_model_fractures(self):
         """Builds the fractures."""
         self._set_rng('fractures')
-        if ((not isinstance(self.SKS_SETTINGS['fractures']['data'], (str))) or (self.SKS_SETTINGS['fractures']['data'] == '')):
+        if not (isinstance(self.SKS_SETTINGS['fractures']['data'], (str)) and (self.SKS_SETTINGS['fractures']['data'] == '')):
+            self.fractures = Fractures(**self.SKS_SETTINGS['fractures'], grid=self.grid, domain=self.domain, rng=self.rng['fractures'])
+        elif self.SKS_SETTINGS['fractures']['data'] == 'random':
+            # TODO
             self.fractures = Fractures(**self.SKS_SETTINGS['fractures'], grid=self.grid, domain=self.domain, rng=self.rng['fractures'])
         else:
             self.fractures = None
@@ -675,7 +659,7 @@ class SKS():
         
         # 3D points # TODO - logging ?
         points_3D = [point for point in points if len(point) == 3]
-        validated_points_3D = [point for point in points_3D if point_manager._is_coordinate_3D_valid(point)]
+        validated_points_3D += [point for point in points_3D if point_manager._is_coordinate_3D_valid(point)]
 
         diff = len(points) - len(validated_points_3D)
         if diff > 0:

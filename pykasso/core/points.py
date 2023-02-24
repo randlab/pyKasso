@@ -26,24 +26,23 @@ class PointManager():
     
     def _get_domain(self):
         """"""
-        ## TODO - numbers instead of names ?  
-        if self.mode == 'uniform':
-            data = self.domain.data_volume
-        elif self.mode == 'surface_up':
-            data = self.domain.faces['up']
-        elif self.mode == 'surface_down':
-            data = self.domain.faces['down']
-        elif self.mode == 'borders':
-            data = self.domain.borders['domain']
-        elif self.mode == 'side_borders':
-            data = self.domain.borders['domain_sides']
-        elif self.mode == 'water_level_surface':
-            data = self.domain.phreatic['water_level_surface']
-        elif self.mode == 'water_level_surface_borders':
-            data = self.domain.borders['water_level_surface_sides']
-        elif self.mode == 'water_level_borders':
-            data = self.domain.phreatic['water_level_borders']     
-        return data
+        modes = {
+            # domain
+            "domain"         : "",
+            "domain_surface" : "",
+            "domain_bottom"  : "",
+            # borders
+            "domain_borders"         : "",
+            "domain_borders_surface" : "",
+            "domain_borders_bottom"  : "", 
+            # phreatic
+            "vadose"                   : "",
+            "vadose_borders"           : "",
+            "phreatic"                 : "",
+            "phreatic_surface"         : "",
+            "phreatic_borders_surface" : "",
+        }   
+        return 0
     
     def _calculate_probability_map(self, array:np.ndarray) -> list:
         """"""

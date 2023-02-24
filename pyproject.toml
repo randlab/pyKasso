@@ -33,6 +33,7 @@ mpmath = "^1.2.1"
 pyyaml = "^6.0"
 agd = "^0.1.31"
 scipy = "^1.9.3"
+plotly = "^5.13.1"
 
 [tool.poetry.group.analysis.dependencies]
 karstnet = { git = "https://github.com/karstnet/karstnet.git", branch = "master" }
