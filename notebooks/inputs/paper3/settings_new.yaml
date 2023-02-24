@@ -120,11 +120,12 @@ algorithm : 'Riemann2'
 #Travel cost through each feature (higher=slower/harder, will be avoided by conduits)
 cost_out       : 0.999  #highest, e.g. 0.999
 cost_aquifer   : 0.3    
-cost_aquiclude : 0.4    
+cost_aquiclude : 0.6    
 cost_faults    : 0.2    
 cost_fractures : 0.2    
 cost_conduits  : 0.1    #lowest, e.g. 0.1
-cost_ratio     : 0.75    #.4   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (should be less than 0.5 for conduits to go downgradient,  0.25 is good)
+
+cost_ratio     : 0.7    #.4   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (should be less than 0.5 for conduits to go downgradient,  0.25 is good)
 #if ratio = 1: same travel cost parallel and perpendicular to gradient
 #if ratio < 1: travel cost is lower parallel to gradient (paths will follow steepest gradient), decrease value to increase contrast
 #if ratio > 1: travel cost is lower perpendicular to gradient (paths will follow contours), increase value to increase contrast
