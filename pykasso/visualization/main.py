@@ -2,6 +2,22 @@
 TODO
 """
 
+####################
+### Dependencies ###
+####################
+import pickle
+
+### External dependencies
+import yaml
+import numpy as np
+
+import pyvista as pv # ???
+from pykasso.visualization import _pyvista
+
+################################
+### Visualization sub-module ###
+################################
+
 AUTHORIZED_FEATURES = [
     'grid',
     'domain',
@@ -19,6 +35,188 @@ AUTHORIZED_FEATURES = [
     'time',
     'karst',
 ]
+
+class Visualization():
+    """"""
+    def __init__(self, project_state:str) -> None:
+        """"""
+        with open(project_state, 'r') as f:
+            self.project_state = yaml.safe_load(f)
+            self.grid = self._get_grid()
+            
+    def _get_grid(self):
+        grid_settings = self.project_state['grid']
+        grid = pv.UniformGrid()
+        grid.dimensions = np.array((grid_settings['nx'], grid_settings['ny'], grid_settings['nz'])) + 1
+        grid.origin     = (grid_settings['x0'] - grid_settings['dx']/2, grid_settings['y0'] - grid_settings['dy']/2, grid_settings['z0'] - grid_settings['dz']/2)
+        grid.spacing    = (grid_settings['dx'], grid_settings['dy'], grid_settings['dz'])
+        grid = grid.cast_to_unstructured_grid()
+        return grid
+    
+    def show(self, simulations:list, features:list, settings={}):
+        """"""
+        # Sets default settings values
+        default_settings = {
+            'ghosts'   : [],
+            'surfaces' : [],
+            'outline'  : True,
+            'grid'     : False,
+            'inlets'   : False,
+            'outlets'  : False,
+            'cpos'     : None,
+        }
+        for key, value in default_settings.items():
+            if key not in settings:
+                settings[key] = value
+        
+        plotter = pv.Plotter(shape=(len(features), len(simulations)), border=True)
+        ACTORS = []
+        
+        for i, n_simulation in enumerate(simulations):
+            
+            for j, feature in enumerate(features):
+                
+                simulation_data_path = self.project_state['simulation_locations'][n_simulation] + 'results.pickle'
+                simulation_data      = self._read_pickle(simulation_data_path)
+                
+                plotter.subplot(j, i)
+                text = 'Simulation {} - {}'.format(n_simulation, feature)
+                plotter.add_text(text, font_size=20)
+                
+                actors = self._show_feature(simulation_data, feature, settings)
+                for actor in actors:
+                    plotter.add_actor(actor, reset_camera=True)
+        
+        plotter.link_views()      
+        plotter.show(cpos=settings['cpos'])
+
+        return None
+    
+    def _show_feature(self, simulation, feature:str, settings:dict={}):
+        """"""
+        # Gets the data
+        feature_data = self._get_data_from_feature(simulation, feature)
+        
+        # Gets the domain
+        pass
+        
+        # Ghosts the data
+        if len(settings['ghosts']) > 0:
+            feature_data = self._get_ghosted_data(feature_data, settings['ghosts'])
+           
+        # Cuts the data with model limits
+        pass
+        
+        ########################
+        ### Creates the plot ###
+        ########################
+        plotter = pv.Plotter()
+        actors = []
+        
+        # Plots the outline of the domain
+        if settings['outline']:
+            _ = plotter.add_mesh(self.grid.outline(), color="k")
+            actors.append(_)
+            
+        # Plots the grid of the domain
+        if settings['grid']:
+            _ = plotter.show_grid()
+            actors.append(_)
+        
+        # Plots the points
+        if settings['inlets']:
+            inlets = self._get_points(simulation['inlets'])
+            _ = plotter.add_points(inlets, render_points_as_spheres=False, point_size=20, color='r')
+            actors.append(_)
+        if settings['outlets']:
+            outlets = self._get_points(simulation['outlets'])
+            _ = plotter.add_points(outlets, render_points_as_spheres=False, point_size=20, color='b')
+            actors.append(_)
+            
+        # Plots the surfaces
+        if len(settings['surfaces']) > 0:
+            for surface in settings['surfaces']:
+                surface = self._get_surface(simulation, surface)
+                _ = plotter.add_mesh(surface, smooth_shading=True, opacity=0.66, scalars='data')
+                actors.append(_)
+        
+        # Plots the data
+        _ = plotter.add_mesh(feature_data.copy(), scalars='data', scalar_bar_args={'title': 'Vol1'})
+        actors.append(_)
+        _ = plotter.add_scalar_bar()
+        actors.append(_)
+
+        return actors
+    
+    def _get_data_from_feature(self, simulation, feature:str, iteration:int=-1):
+        """"""
+        mesh = self.grid
+        
+        if feature in ['cost', 'alpha', 'beta', 'time', 'karst']:
+            data = simulation['maps'][feature][iteration]
+        elif feature in ['delimitation', 'topography', 'bedrock', 'water_level']:
+            feature_object = getattr(simulation['domain'], feature)
+            data = getattr(feature_object, 'data_volume')
+        else:
+            feature_object = simulation[feature]
+            data = getattr(feature_object, 'data_volume')
+            
+        mesh.cell_data['data'] = data.flatten(order="F")
+        return mesh
+    
+    def _get_ghosted_data(self, data, ghosts:list):
+        """"""        
+        ghosted_cells = np.argwhere(np.isin(data["data"], ghosts))
+        data = data.remove_cells(ghosted_cells)
+        return data
+    
+    def _get_surface(self, simulation, surface:str):
+        """"""
+        grid = simulation['grid']
+        x = grid.X[:,:,0]
+        y = grid.Y[:,:,0]
+        
+        if surface == 'topography':
+            z = simulation['domain'].topography.data_surface
+        elif surface == 'water_level':
+            z = simulation['domain'].water_level.data_surface
+        elif surface == 'bedrock':
+            z = simulation['domain'].bedrock.data_surface
+
+        surf = pv.StructuredGrid(x, y, z)
+        surf['data'] = z.flatten(order="F")
+
+        return surf
+    
+    def _get_points(self, points):
+        labels = points.index.values.tolist()
+        points = points[['x', 'y', 'z']].values
+        points = points.astype('float32')
+        cloud  = pv.wrap(points)
+        cloud['labels'] = labels
+        return cloud
+            
+    def compare(self, simulations:list, settings:dict={}):
+        
+        plotter = pv.Plotter(shape=(1, len(simulations)), border=True)
+        
+        for i in simulations:
+            
+            simulation_data_path = self.project_state['simulation_locations'][i] + 'results.pickle'
+            simulation_data      = self._read_pickle(simulation_data_path)
+            plotter.subplot(0, i)
+            plotter.add_text(str(i), font_size=24)
+            actor = _pyvista._show_data(simulation_data, 'karst', {'ghost':[0]}, show=False)
+            plotter.add_actor(actor, reset_camera=True)
+        
+        return None
+    
+    def _read_pickle(self, path:str):
+        """"""
+        with open(path, 'rb') as handle:
+            return pickle.load(handle)
+        
+############################################
 
 def show(environment, feature, engine='pyvista', settings={}):
     """

@@ -1,0 +1,127 @@
+ ##################
+### SKS SETTINGS ###
+ ##################
+
+---
+sks:
+  domain_from_geology: False
+  seed : 1
+
+############
+### Grid ###
+############
+
+grid:
+  x0 : 572510
+  y0 : 250010
+  z0 : 430
+  nx : 300
+  ny : 300
+  nz : 10
+  dx : 20
+  dy : 20
+  dz : 20
+
+##############
+### Domain ###
+##############
+
+domain:
+  # delimitation : ''
+  delimitation : 'test/inputs/betteraz_polygon.txt'
+  topography   : ''
+  # topography   : 'test/inputs/topography.csv'
+  bedrock      : ''
+  water_level  : ''
+
+###############
+### Geology ###
+###############
+
+geology:
+  data  : 'test/inputs/betteraz_2D_z430.gslib'
+  costs : 
+    1 : 0.5
+    2 : 0.7
+
+faults:
+  data : 'test/inputs/faults.png'
+  axis : 'z'
+
+beddings:
+#   data  : 'test/inputs/betteraz_2D_z430.gslib'
+  data : ''
+#   costs : {1:0.5}
+
+# karst:
+#   data : ''
+
+##############
+### Points ###
+##############
+
+### Outlets
+outlets:
+  number     : 6
+  # data       : 'test/inputs/betteraz_polygon.txt'
+  data       : ''
+  shuffle    : False
+  importance : [1,1]
+  seed  : 1
+  mode : 'uniform'
+
+### Inlets
+inlets:
+  number     : 30
+  # data       : 'test/inputs/betteraz_polygon.txt'
+  shuffle    : False
+  per_outlet : [1,1,1]
+  importance : [1,1,1]
+  seed : 2
+  mode : 'uniform'
+
+### Tracers
+tracers:
+  number : 1
+  data   : ''
+
+####################
+### Fracturation ###
+####################
+
+fractures:
+  data : 'random'
+  seed : 12
+  settings :
+    family_01:
+      alpha        : 2
+      density      : 0.00001
+      orientation  : [340, 20]
+      dip          : [80, 90]
+      length       : [1000, 2000]
+    family_02:
+      alpha        : 2
+      density      : 0.00001
+      orientation  : [340, 20]
+      dip          : [0, 10]
+      length       : [1000, 2000]
+
+###########
+### FMM ###
+###########
+
+fmm: 
+  algorithm : 'Riemann3'
+  costs :
+    ratio : 0.5
+
+##############
+### OTHERS ###
+##############
+
+verbosity:
+  logging : 0
+  agd : 0
+  karstnet : 0
+  
+...

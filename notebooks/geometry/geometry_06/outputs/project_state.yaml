@@ -1,0 +1,15 @@
+grid:
+  dx: 10
+  dy: 10
+  dz: 10
+  nx: 100
+  ny: 100
+  nz: 1
+  x0: 0
+  y0: 0
+  z0: 100
+n_simulation: 2
+project_directory: geometry_06
+simulation_locations:
+- geometry_06/outputs/simulation_1/
+- geometry_06/outputs/simulation_2/

@@ -98,13 +98,17 @@ class Domain():
         self.borders['domain_up'] = np.logical_and(self.borders['domain_sides'], self.faces['up'])
         
         # Domain x Face 'down'
-        self.borders['domain_down'] = np.logical_and(self.borders['domain_sides'], self.faces['down'])    
+        self.borders['domain_down'] = np.logical_and(self.borders['domain_sides'], self.faces['down'])
+        
+        
+        k = np.zeros((3,3,3), dtype=int); k[:,1,1], k[1,:,1], k[1,1,:] = 1,1,1
+        self.borders['test'] = binary_dilation(self.faces['up']==0, k, border_value=1) & self.data_volume
         return None
         
     def _set_phreatic_domains(self) -> None:
         """"""
         water_volume  = self.water_level.data_volume
-        water_surface = self.water_level.data_surface
+        water_surface = self.water_level._surface_to_volume('=', self.grid)
         
         self.phreatic = {
             'vadose_zone'         : np.logical_and(self.data_volume, np.logical_not(water_volume)),
@@ -229,5 +233,4 @@ class WaterLevel(Surface):
     def __init__(self, data:Union[str, np.ndarray], grid:Grid, **kwargs) -> None:
         label = 'water_level'
         super().__init__(label, data, grid, **kwargs)
-        self.data_volume  = self._surface_to_volume('<=', grid)
-        self.data_surface = self._surface_to_volume('=', grid)
+        self.data_volume = self._surface_to_volume('<=', grid)

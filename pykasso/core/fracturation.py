@@ -45,23 +45,24 @@ def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orie
     ######################
     ### INITIALIZATION ###
     ######################
-
-    if len(orientation) == 2:
+    
+    if isinstance(orientation, (list)):
         orientation_min, orientation_max = orientation
     else:
-        orientation_max = orientation
-
-    if len(dip) == 2:
+        orientation_distribution = 'unique'
+    
+    if isinstance(dip, (list)):
         dip_min, dip_max = dip
     else:
-        dip_max = dip
-
-    if len(length) == 2:
+        dip_distribution = 'unique'
+    
+    if isinstance(length, (list)):
         length_min, length_max = min(length), max(length)
     else:
+        length_distribution = 'unique'
         length_max = length
-    
 
+    
     ### Redefine fracturation domain
     xd0, xd1, yd0, yd1, zd0, zd1 = grid.xmin, grid.xmax, grid.ymin, grid.ymax, grid.zmin, grid.zmax
     Lx, Ly, Lz = xd1-xd0, yd1-yd0, zd1-zd0
@@ -82,7 +83,7 @@ def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orie
     ### Total numbers of fractures
     fractures_numbers = np.array(density) * area
 
-    # Generate poisson number for each fracture family
+    ### Generate poisson number for each fracture family
     real_frac_number = rng.poisson(fractures_numbers)
 
 
@@ -102,9 +103,10 @@ def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orie
 
     # No distribution case
     if orientation_distribution == 'unique':
-        orientation_fractures = [orientation_max] * real_frac_number
+        orientation_fractures = [orientation] * real_frac_number
     
-    else:
+    elif orientation_distribution in ['uniform', 'vonmises']:
+        
         if orientation_min > orientation_max:
             orientation_min = orientation_min - 360
 
@@ -114,25 +116,26 @@ def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orie
             
         # Von Mises distribution case
         elif orientation_distribution == 'vonmises':
-            orientation_mean_angle = (orientation_max + orientation_min) / 2
-            orientation_std_angle  = (orientation_max - orientation_mean_angle) / 3
-            orientation_mean_angle = math.radians(orientation_mean_angle)
-            orientation_std_angle  = math.radians(orientation_std_angle)
+            orientation_mean_angle     = (orientation_max + orientation_min) / 2
+            orientation_std_angle      = (orientation_max - orientation_mean_angle) / 3
+            orientation_mean_angle_rad = math.radians(orientation_mean_angle)
+            orientation_std_angle_rad  = math.radians(orientation_std_angle)
 
             # Computes the kappa value for the Von Mises orientation distribution
-            orientation_func  = lambda k : orientation_std_angle**2 - 1 + mpmath.besseli(1,k) / mpmath.besseli(0,k)
+            orientation_func  = lambda k : orientation_std_angle_rad**2 - 1 + mpmath.besseli(1,k) / mpmath.besseli(0,k)
             orientation_kappa = mpmath.findroot(orientation_func, 1)
 
-            orientation_fractures = rng.vonmises(orientation_mean_angle, orientation_kappa, size=real_frac_number)
+            orientation_fractures = rng.vonmises(orientation_mean_angle_rad, orientation_kappa, size=real_frac_number)
         
     
      ##### FRACTURE DIP 
 
      # No distribution case
     if dip_distribution == 'unique':
-        dip_fractures = [dip_max] * real_frac_number
+        dip_fractures = [dip] * real_frac_number
     
-    else:
+    elif dip_distribution in ['uniform', 'vonmises']:
+        
         if dip_min > dip_max:
             dip_min = dip_min - 360
 
@@ -142,23 +145,23 @@ def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orie
             
         # Von Mises distribution case
         elif dip_distribution == 'vonmises':
-            dip_mean_angle = (dip_max + dip_min)  / 2
-            dip_std_angle  = (dip_max - dip_mean_angle) / 3
-            dip_mean_angle = math.radians(dip_mean_angle)
-            dip_std_angle  = math.radians(dip_std_angle)
+            dip_mean_angle     = (dip_max + dip_min)  / 2
+            dip_std_angle      = (dip_max - dip_mean_angle) / 3
+            dip_mean_angle_rad = math.radians(dip_mean_angle)
+            dip_std_angle_rad  = math.radians(dip_std_angle)
 
             # Computes the kappa value for the Von Mises orientation distribution
-            dip_func  = lambda k : dip_std_angle**2 - 1 + mpmath.besseli(1,k) / mpmath.besseli(0,k)
+            dip_func  = lambda k : dip_std_angle_rad**2 - 1 + mpmath.besseli(1,k) / mpmath.besseli(0,k)
             dip_kappa = mpmath.findroot(dip_func, 1)
 
-            dip_fractures = rng.vonmises(dip_mean_angle, dip_kappa, size=real_frac_number)
+            dip_fractures = rng.vonmises(dip_mean_angle_rad, dip_kappa, size=real_frac_number)
 
 
     ##### FRACTURE LENGHT
 
     # No distribution case
     if length_distribution == 'unique':
-        radius = [length_max / 2] * real_frac_number
+        radius = [length / 2] * real_frac_number
 
     # Uniform distribution case
     elif length_distribution == 'uniform':
@@ -169,15 +172,15 @@ def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orie
         palpha    = (1 - alpha)
         invpalpha = 1 / palpha
         fmina     = length_min**palpha
-        frangea   = length_min**palpha - fmina
+        frangea   = length_max**palpha - fmina
         u = rng.random(size=real_frac_number)
         frac_length = ( fmina + u * frangea )**invpalpha
         radius = frac_length/2
 
     ##### FRACTURE NORMAL VECTOR
-    x = np.sin(orientation_fractures + np.radians(90)) * np.cos(dip_fractures)
-    y = np.cos(orientation_fractures + np.radians(90)) * np.cos(dip_fractures)
-    z = np.sin(dip_fractures)
+    x = np.cos(np.radians(dip_fractures)) * np.cos(np.radians(90) - orientation_fractures)
+    y = np.cos(np.radians(dip_fractures)) * np.sin(np.radians(90) - orientation_fractures)
+    z = np.sin(np.radians(90) - np.radians(dip_fractures))
     a = y
     b = -x
     c = -z
@@ -189,7 +192,7 @@ def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orie
         'y' : ym,
         'z' : zm,
         'radius' : radius,
-        'orientation' : orientation_fractures,
+        'orientation' : np.degrees(orientation_fractures),
         'dip' : dip_fractures,
         'normal' : normal
     }

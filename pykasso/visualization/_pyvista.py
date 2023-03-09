@@ -32,8 +32,6 @@ def _show_data(environment, feature, settings, show=True):
         'outlets',
         'tracers',
     ]
-    
-    domain_features = ['delimitation', 'topography', 'bedrock', 'water_level']
 
     if 'iteration' not in settings:
         if hasattr(environment, 'iteration'):
@@ -47,15 +45,15 @@ def _show_data(environment, feature, settings, show=True):
     ### Geologic features ###
     #########################
 
-    # Get the grid
+    # Gets the grid
     grid_i = _get_grid(environment.grid)
     grid = grid_i
 
-    # Get the data
+    # Gets the data
     # if feature != 'grid':
     if feature in ['cost', 'alpha', 'beta', 'time', 'karst']:
         grid = _get_data_from_dict(grid, getattr(environment, 'maps'), feature, 'data', iteration=settings['iteration'])
-    elif feature in domain_features:
+    elif feature in ['delimitation', 'topography', 'bedrock', 'water_level']:
         domain = environment.domain
         grid = _get_data_from_attribute(grid, getattr(domain, feature), 'data_volume', 'data')
     else:
@@ -63,9 +61,13 @@ def _show_data(environment, feature, settings, show=True):
         
     kwargs['scalars'] = 'data'
 
-    # Get the domain
+    # Gets the domain
     if hasattr(environment, 'domain') and (getattr(environment, 'domain') is not None):
         grid = _get_data_from_attribute(grid, getattr(environment, 'domain'), 'data_volume', 'domain')
+        
+    # Gets the surfaces
+    if 'surfaces' in settings:
+        surfaces = [_get_surface(environment, surface_name) for surface_name in settings['surfaces']]
 
     # Ghost the data
     if 'ghost' in settings:
@@ -117,6 +119,11 @@ def _show_data(environment, feature, settings, show=True):
 
     if settings['show_grid']:
         plotter.show_grid()
+    
+    # Surfaces
+    if 'surfaces' in settings:
+        for surface in surfaces:
+            plotter.add_mesh(surface, smooth_shading=True, opacity=0.66, scalars='data')
 
     # Points
     if settings['inlets']:
@@ -124,7 +131,7 @@ def _show_data(environment, feature, settings, show=True):
         # plotter.add_point_labels(inlets, "labels", point_size=20, font_size=36)
     if settings['outlets']:
         plotter.add_points(outlets, render_points_as_spheres=False, point_size=20, color='b')
-
+    
     if show:
         if environment.grid.nx == 1:
             cpos = 'yz'
@@ -238,7 +245,6 @@ def _get_data_from_dict(mesh, dict, attribute, label, iteration):
     """
     data = dict[attribute][iteration]
     mesh.cell_data[label] = data.flatten(order="F")
-    
     return mesh
 
 def _get_points(points):
@@ -252,6 +258,22 @@ def _get_points(points):
     cloud['labels'] = labels
     return cloud
 
+def _get_surface(environment, surface_name):
+    """ """
+    grid = environment.grid
+    x = grid.X[:,:,0]
+    y = grid.Y[:,:,0]
+    if surface_name == 'topography':
+        z = environment.domain.topography.data_surface
+    elif surface_name == 'water_level':
+        z = environment.domain.water_level.data_surface
+    elif surface_name == 'bedrock':
+        z = environment.domain.bedrock.data_surface
+
+    surf = pv.StructuredGrid(x, y, z)
+    surf['data'] = z.flatten(order="F")
+
+    return surf
 
 # FRACTURES = domain.FRACTURES.location
 # print('Nbr fractures:', len(FRACTURES))
@@ -267,7 +289,7 @@ def _get_points(points):
 
 #################################################################################
 
-def _show_array(array, ghost=False):
+def _show_array(array, ghost=False, is_data_discrete=False):
     """
     TODO
     """
@@ -288,6 +310,9 @@ def _show_array(array, ghost=False):
     if ghost:
         ghosts = np.argwhere(np.isin(mesh["data"], [0]))
         mesh = mesh.remove_cells(ghosts)
+        
+    if is_data_discrete:
+        pass
     
     plotter = pv.Plotter()
     plotter.show_grid()

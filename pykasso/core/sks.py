@@ -43,7 +43,8 @@ this.ACTIVE_PROJECT = None
 
 # Defines default fast-marching costs
 this.default_fmm_costs = {
-    'out'       : 0.999,
+    # 'out'       : 0.999,
+    'out'       : 10,
     'aquifer'   : 0.4,
     'aquiclude' : 0.8,
     'beddings'  : 0.35,
@@ -438,7 +439,7 @@ class SKS():
 
     @wp._debug_level(3.5)
     @wp._parameters_validation('outlets', 'required')
-    # @wp._memoize('outlets')
+    @wp._memoize('outlets') # TODO - à vérifier
     @wp._logging()
     def _build_model_outlets(self):
         """Builds the outlets."""
@@ -450,7 +451,7 @@ class SKS():
 
     @wp._debug_level(3.6)
     @wp._parameters_validation('inlets', 'required')
-    # @wp._memoize('inlets')
+    @wp._memoize('inlets') # TODO - à vérifier
     @wp._logging()
     def _build_model_inlets(self):
         """Builds the inlets."""
@@ -462,16 +463,13 @@ class SKS():
     
     @wp._debug_level(3.8)
     @wp._parameters_validation('fractures', 'optional')
-    # @wp._memoize('fractures')
+    @wp._memoize('fractures') # TODO - à vérifier
     @wp._logging()
     def _build_model_fractures(self):
         """Builds the fractures."""
         self._set_rng('fractures')
-        if not (isinstance(self.SKS_SETTINGS['fractures']['data'], (str)) and (self.SKS_SETTINGS['fractures']['data'] == '')):
-            self.fractures = Fractures(**self.SKS_SETTINGS['fractures'], grid=self.grid, domain=self.domain, rng=self.rng['fractures'])
-        elif self.SKS_SETTINGS['fractures']['data'] == 'random':
-            # TODO
-            self.fractures = Fractures(**self.SKS_SETTINGS['fractures'], grid=self.grid, domain=self.domain, rng=self.rng['fractures'])
+        if (not (isinstance(self.SKS_SETTINGS['fractures']['data'], (str)) and (self.SKS_SETTINGS['fractures']['data'] == ''))) or ('settings' in self.SKS_SETTINGS['fractures']):
+            self.fractures = Fractures(**self.SKS_SETTINGS['fractures'], grid=self.grid, domain=self.domain, Geology=self.geology, rng=self.rng['fractures'])
         else:
             self.fractures = None
         return None
@@ -480,65 +478,62 @@ class SKS():
     @wp._logging()
     def _build_conceptual_model(self):
         """Builds the conceptual model."""
-        # TODO - Beddings
-        simple_model, simple_model_df            = self._build_simple_conceptual_model()
+        # simple_model, simple_model_df            = self._build_simple_conceptual_model()
         conceptual_model, conceptual_model_table = self._build_complete_conceptual_model()
-        self.conceptual_model = ConceptualModel(simple_model, simple_model_df, conceptual_model, conceptual_model_table)
+        # self.conceptual_model = ConceptualModel(simple_model, simple_model_df, conceptual_model, conceptual_model_table)
+        self.conceptual_model = ConceptualModel(conceptual_model, conceptual_model_table)
         return None
     
-    @wp._logging()
-    def _build_simple_conceptual_model(self):
-        """
-        # 1 - Geology
-        # 2 - Bedding
-        # 3 - Fractures
-        # 4 - Faults
-        # 5 - Karsts
-        # 0 - Out
-        # 6 - Bedrock - TODO
-        """
-        simple_model = np.zeros_like(self.grid.data_volume)
-        simple_model_table = {
-            0 : 'Out',
-            1 : 'Geology',
-            2 : 'Bedding',
-            3 : 'Fractures',
-            4 : 'Faults',
-            5 : 'Karst',
-            6 : 'Bedrock',
-        }
-        simple_model_df = pd.DataFrame(simple_model_table.items(), columns=['id', 'Feature']).set_index('id')
+    # @wp._logging()
+    # def _build_simple_conceptual_model(self):
+    #     """
+    #     # 1 - Geology
+    #     # 2 - Bedding
+    #     # 3 - Fractures
+    #     # 4 - Faults
+    #     # 5 - Karsts
+    #     # 0 - Out
+    #     # 6 - Bedrock - TODO
+    #     """
+    #     simple_model = np.zeros_like(self.grid.data_volume)
+    #     simple_model_table = {
+    #         0 : 'Out',
+    #         1 : 'Geology',
+    #         2 : 'Bedding',
+    #         3 : 'Fractures',
+    #         4 : 'Faults',
+    #         5 : 'Karst',
+    #     }
+    #     simple_model_df = pd.DataFrame(simple_model_table.items(), columns=['id', 'Feature']).set_index('id')
         
-        # 1 - Geology
-        geology = np.where(self.geology.data_volume > 0, 1, 0)
-        simple_model = np.where(geology == 1, 1, simple_model)
+    #     # 1 - Geology
+    #     geology = np.where(self.geology.data_volume > 0, 1, 0)
+    #     simple_model = np.where(geology == 1, 1, simple_model)
         
-        # 2 - Bedding
-        # if self.beddings is not None:
-        #     beddings = np.where(self.beddings[-1].data_volume > 0, 1, 0)
-        #     simple_model = np.where(beddings == 1, 2, simple_model)
+    #     # 2 - Bedding
+    #     # if self.beddings is not None:
+    #     #     beddings = np.where(self.beddings[-1].data_volume > 0, 1, 0)
+    #     #     simple_model = np.where(beddings == 1, 2, simple_model)
         
-        # 3 - Fractures
-        if self.fractures is not None:
-            fractures = np.where(self.fractures.data_volume > 0, 1, 0)
-            simple_model = np.where(fractures == 1, 3, simple_model)
+    #     # 3 - Fractures
+    #     if self.fractures is not None:
+    #         fractures = np.where(self.fractures.data_volume > 0, 1, 0)
+    #         simple_model = np.where(fractures == 1, 3, simple_model)
             
-        # 4 - Faults
-        if self.faults is not None:
-            faults = np.where(self.faults.data_volume > 0, 1, 0)
-            simple_model = np.where(faults == 1, 4, simple_model)
+    #     # 4 - Faults
+    #     if self.faults is not None:
+    #         faults = np.where(self.faults.data_volume > 0, 1, 0)
+    #         simple_model = np.where(faults == 1, 4, simple_model)
         
-        # 5 - Karst
-        # if self.karsts is not None:
-        #     karsts = np.where(self.karsts.data_volume > 0, 1, 0)
-        #     simple_model = np.where(karsts == 1, 5, simple_model)
+    #     # 5 - Karst
+    #     # if self.karsts is not None:
+    #     #     karsts = np.where(self.karsts.data_volume > 0, 1, 0)
+    #     #     simple_model = np.where(karsts == 1, 5, simple_model)
           
-        # 0 - Out
-        simple_model = np.where(self.domain.data_volume == 0, 0, simple_model)
+    #     # 0 - Out
+    #     simple_model = np.where(self.domain.data_volume == 0, 0, simple_model)
             
-        # 6 - Bedrock - TODO
-        # simple_model = np.where(self.domain.bedrock.data_volume == 0, 6, simple_model)
-        return (simple_model, simple_model_df)
+    #     return (simple_model, simple_model_df)
     
     # TODO
     @wp._logging()
@@ -584,19 +579,15 @@ class SKS():
         #     items += [(500 + i, 'Faults', id, cost) for (i, (id, cost)) in enumerate(self.karsts.costs.items())]
         
         # 0 - Out
-        out_item = [(0, 'Out', np.nan, self.SKS_SETTINGS['fmm']['costs']['out'])]
+        out_item = [(0, 'Out', np.nan, self.SKS_SETTINGS['sks']['costs']['out'])]
         conceptual_model = np.where(self.domain.data_volume == 0, 0, conceptual_model)
         conceptual_model_table += out_item
-        
-        # 600 - Bedrock - TODO
-        #
 
         conceptual_model_table = pd.DataFrame(conceptual_model_table, columns=['id', 'feature', 'id-feature', 'cost']).set_index('id').sort_values('id')
 
         return (conceptual_model, conceptual_model_table)
     
     @wp._debug_level(4)
-    @wp._parameters_validation('fmm', 'required')
     @wp._logging('fmm', 'construction')
     def _construct_fmm_variables(self):
         """
@@ -677,7 +668,7 @@ class SKS():
         # Case 2 - More points required than provided
         elif (self.SKS_SETTINGS[kind]['number'] > len(self.SKS_SETTINGS[kind]['data'])):
             n_points = self.SKS_SETTINGS[kind]['number'] - len(self.SKS_SETTINGS[kind]['data'])
-            points = self.SKS_SETTINGS[kind]['data'] + point_manager._generate_coordinates(n_points)
+            points = np.append(np.array(self.SKS_SETTINGS[kind]['data']), point_manager._generate_coordinates(n_points), axis=0)
 
         # Case 3 - Less points required than provided
         elif (self.SKS_SETTINGS[kind]['number'] < len(self.SKS_SETTINGS[kind]['data'])):
@@ -818,10 +809,10 @@ class SKS():
 
         ### Set up fast-marching
         self.fmm = {
-            'algorithm'     : self.SKS_SETTINGS['fmm']['algorithm'],
+            'algorithm'     : self.SKS_SETTINGS['sks']['algorithm'],
             'riemannMetric' : [],                                            # this changes at every iteration, but cannot be stored?
             'fastMarching'  : agd.Eikonal.dictIn({
-                'model'             : self.SKS_SETTINGS['fmm']['algorithm'], # set algorithm from settings file ('Isotropic2', 'Isotropic3', 'Riemann2', 'Riemann3')
+                'model'             : self.SKS_SETTINGS['sks']['algorithm'], # set algorithm from settings file ('Isotropic2', 'Isotropic3', 'Riemann2', 'Riemann3')
                 'order'             : 2,                                     # recommended setting: 2 (replace by variable)
                 'exportValues'      : 1,                                     # export the travel time field
                 'exportGeodesicFlow': 1                                      # export the walker paths (i.e. the conduits)
@@ -900,7 +891,7 @@ class SKS():
         # If it's not the first iteration
         else:
             self.maps['cost'].append(self.maps['cost'][self.iteration-1])
-            self.maps['cost'][self.iteration] = np.where(self.maps['karst'][self.iteration-1] > 0, self.SKS_SETTINGS['fmm']['costs']['conduits'], self.maps['cost'][self.iteration])
+            self.maps['cost'][self.iteration] = np.where(self.maps['karst'][self.iteration-1] > 0, self.SKS_SETTINGS['sks']['costs']['conduits'], self.maps['cost'][self.iteration])
         return None
     
 
@@ -914,7 +905,7 @@ class SKS():
 
         TODO : à terminer
         """
-        alpha_map = self._set_alpha_from_elevation_gradient()
+        alpha_map = self._set_alpha_from_elevation()
         
         if self.domain.water_level is not None:
             alpha_map = self._set_alpha_in_phreatic_zone(self.maps['cost'][self.iteration], alpha_map)
@@ -922,10 +913,14 @@ class SKS():
         self.maps['alpha'].append(alpha_map)
         return None
     
-    def _set_alpha_from_elevation_gradient(self):
+    def _set_alpha_from_elevation(self):
         """"""
-        return self.maps['cost'][self.iteration] * self.grid.Z
-    
+        if (self.grid.nz == 1) and (self.domain.bedrock is not None):
+            return self.maps['cost'][self.iteration] * self.domain.bedrock.data_surface.reshape(self.grid.shape)
+        else:
+            return self.maps['cost'][self.iteration] * self.grid.Z
+            
+            
     def _set_alpha_in_phreatic_zone(self, alpha, alpha_map):
         """"""
         return np.where(self.domain.phreatic['phreatic_zone'] == 1, alpha, alpha_map)
@@ -940,7 +935,7 @@ class SKS():
         If beta is higher than alpha, conduits will follow the steepest gradient.
         If beta is lower than alpha, conduits will follow contours.
         """
-        beta_map = self.maps['alpha'][self.iteration] / self.SKS_SETTINGS['fmm']['costs']['ratio']
+        beta_map = self.maps['alpha'][self.iteration] / self.SKS_SETTINGS['sks']['costs']['ratio']
         
         if self.domain.water_level is not None:
             beta_map = self._set_beta_in_phreatic_zone(self.maps['alpha'][self.iteration], beta_map)
@@ -967,15 +962,16 @@ class SKS():
         if self.domain.water_level is not None:
             orientation_x, orientation_y, orientation_z = self._set_metrics_in_phreatic_zone(orientation_x, orientation_y, orientation_z)
             
+        # if self.SKS_SETTINGS['sks']['bedrock']: # à implémenter correctement
         if self.domain.bedrock is not None:
-            pass
+            orientation_x, orientation_y, orientation_z = self._set_metrics_on_bedrock_surface(orientation_x, orientation_y, orientation_z)
         
         # if self.beddings is not None:
             # pass
     
         alpha = self.maps['alpha'][self.iteration]
         beta  = self.maps['beta'] [self.iteration]
-        self.fmm['riemannMetric'] = agd.Metrics.Riemann.needle([orientation_x, orientation_y, orientation_z], alpha, beta)  
+        self.fmm['riemannMetric'] = agd.Metrics.Riemann.needle([orientation_x, orientation_y, orientation_z], alpha, beta)
         return None
     
     def _set_metrics_from_elevation_gradient(self):
@@ -992,11 +988,34 @@ class SKS():
         orientation_z = np.where(self.domain.phreatic['phreatic_zone'] == 1, 1, orientation_z)
         return (orientation_x, orientation_y, orientation_z)
     
-    def _set_metrics_on_bedrock_surface(self):
+    def _set_metrics_on_bedrock_surface(self, orientation_x, orientation_y, orientation_z):
         """"""
-        orientation_x = np.where(self.domain.phreatic['phreatic_zone'] == 1, 1, orientation_x)
-        orientation_y = np.where(self.domain.phreatic['phreatic_zone'] == 1, 1, orientation_y)
-        orientation_z = np.where(self.domain.phreatic['phreatic_zone'] == 1, 1, orientation_z)
+        if self.grid.nx == 1:
+            bedrock = np.roll(self.domain.bedrock.data_volume, 1, axis=2)
+            bedrock[:,:,0] = 1
+            gradient_y, gradient_z = np.gradient(bedrock, self.grid.dy, self.grid.dz, axis=(1,2))
+            gradient_x = np.full_like(gradient_y, 0)
+        elif self.grid.ny == 1:
+            bedrock = np.roll(self.domain.bedrock.data_volume, 1, axis=2)
+            bedrock[:,:,0] = 1
+            gradient_x, gradient_z = np.gradient(bedrock, self.grid.dx, self.grid.dz, axis=(0,2))
+            gradient_y = np.full_like(gradient_x, 0)
+        elif self.grid.nz == 1:
+            bedrock = self.domain.bedrock.data_surface
+            gradient_x, gradient_y = np.gradient(bedrock, self.grid.dx, self.grid.dy, axis=(0,1))
+            gradient_x = gradient_x.reshape(self.grid.shape)
+            gradient_y = gradient_y.reshape(self.grid.shape)
+            gradient_z = np.full_like(gradient_x, 0)
+            bedrock = self.domain.bedrock.data_volume
+        else:
+            bedrock = np.roll(self.domain.bedrock.data_volume, 1, axis=2)
+            bedrock[:,:,0] = 1
+            gradient_x, gradient_y, gradient_z = np.gradient(bedrock, self.grid.dx, self.grid.dy, self.grid.dz)
+        
+        orientation_x = np.where(bedrock == 1, gradient_x, orientation_x)
+        orientation_y = np.where(bedrock == 1, gradient_y, orientation_y)
+        orientation_z = np.where(bedrock == 1, gradient_z, orientation_z)
+
         return (orientation_x, orientation_y, orientation_z)
 
 
@@ -1153,8 +1172,15 @@ class SKS():
         path = self.CORE_SETTINGS['simulation_directory'] + 'results'
         with open(path + '.pickle', 'wb') as handle:
             results = {
-                'maps'    : self.maps.copy(),
-                'vectors' : self.vectors.copy(),
+                'maps'      : self.maps.copy(),
+                'vectors'   : self.vectors.copy(),
+                'inlets'    : self.inlets.copy(),
+                'outlets'   : self.outlets.copy(),
+                'grid'      : self.grid,
+                'domain'    : self.domain,
+                'geology'   : self.geology,
+                'faults'    : self.faults,
+                'fractures' : self.fractures,
             }
             pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
         return None

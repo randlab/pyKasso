@@ -2,7 +2,6 @@
 TODO
 """
 
-import sys
 import PIL
 import numpy as np
 import pandas as pd
@@ -144,12 +143,15 @@ class GeologicFeature():
         
         # Reads image
         pil_image = PIL.Image.open(data).convert('L').transpose(Image.FLIP_TOP_BOTTOM)
+        npy_image = np.asarray(pil_image).T
         
-        # npy_image = (npy_image[:,:] == 0)*1
-        npy_image = np.asarray(pil_image).T + 1000
-        n_colors = np.unique(npy_image)
-        for i, color in enumerate(np.flip(n_colors)):
-            npy_image = np.where(npy_image == color, i+1, npy_image)
+        if self.label in ['faults', 'fractures']:
+            npy_image = (npy_image[:,:] == 0)*1
+        else:        
+            npy_image = npy_image + 1000
+            n_colors = np.unique(npy_image)
+            for i, color in enumerate(np.flip(n_colors)):
+                npy_image = np.where(npy_image == color, i+1, npy_image)
             
         if self.dim == 3:
 
@@ -264,39 +266,52 @@ class Fractures(Volume):
     """
     TODO
     """
-    def __init__(self, data, grid, **kwargs):
+    def __init__(self, data, grid, Geology, **kwargs):
         """
         TODO
         """
         label = 'fractures'
 
-        # if ((data == '') and ('settings' in kwargs) and (kwargs['settings'] != '')):
-        if data == 'random':
+        if 'settings' in kwargs:
             fractures_families_settings = kwargs['settings']
-            fractures_df = pd.DataFrame()
-            fractures_npy = {}
+            
+            self.table     = pd.DataFrame()
+            self.fractures_families = {}
 
             # Generates one array for each fractures family
             for (i, fractures_family_settings) in enumerate(fractures_families_settings):
                 
-                # TODO -> validations
                 settings = fractures_families_settings[fractures_family_settings]
-                settings['density'] = float(settings['density'])
-                fractures_df_ = generate_fractures(grid=grid, rng=kwargs['rng'], **settings)
-                fractures_df_.insert(0, 'family_id', i+1)
-                fractures_df = pd.concat([fractures_df, fractures_df_])
+                settings['density'] = float(settings['density']) # TODO - à mettre dans validations
+                if 'cost' in settings:
+                    del settings['cost']
+                generated_fractures = generate_fractures(grid=grid, rng=kwargs['rng'], **settings)
+                generated_fractures.insert(0, 'family_id', i+1)
+                self.table = pd.concat([self.table, generated_fractures])
 
-                fractures_npy[i+1] = voxelize_fractures(grid, fractures_df_)
+                self.fractures_families[i+1] = voxelize_fractures(grid, generated_fractures)
+            
+            # Constructs the model for fracturation
+            frac_model = np.zeros_like(grid.data_volume)
+            fractures_family_ids = list(self.fractures_families.keys())
+            fractures_family_ids = sorted(fractures_family_ids, key=lambda family_id: kwargs['costs'][family_id], reverse=True)
+            for family_id in fractures_family_ids:
+                frac_model = np.where(self.fractures_families[family_id] == 1, family_id, frac_model)
+            self.fractures_families['model'] = frac_model
                 
             # Sums fractures families
-            total = sum([d for d in fractures_npy.values()])
-            fractures_npy['t'] = total
-
-            self.fractures = fractures_df
-            self.FRACTURES = fractures_npy
-
-            data = total
-
+            frac_sum = sum([d for d in self.fractures_families.values()])
+            self.fractures_families['sum'] = frac_sum
+            
+            # Constraints model with geology if provided
+            if 'geology' in kwargs:
+                frac_model_geology = np.zeros_like(frac_model)
+                for geologic_id in kwargs['geology']:
+                    frac_model_geology = np.where(Geology.data_volume == geologic_id, frac_model, frac_model_geology)
+                self.fractures_families['model'] =frac_model_geology
+                    
+            data = self.fractures_families['model']
+                
         super().__init__(label, data, grid, **kwargs)
         
         
@@ -306,7 +321,7 @@ class ConceptualModel():
     """ 
     TODO
     """
-    def __init__(self, simple_conceptual_model, simple_conceptual_model_table, conceptual_model, conceptual_model_table):
+    def __init__(self, conceptual_model, conceptual_model_table):
         """ 
         TODO - réfléchir aux noms.
         """

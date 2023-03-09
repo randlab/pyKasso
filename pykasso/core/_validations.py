@@ -75,7 +75,6 @@ this.ATTRIBUTES = {
     'fractures' : {
         'data'     : ['optional', ''],
         'axis'     : ['optional', 'z'],
-        'settings' : ['optional', ''],
         'seed'     : ['optional', 0],
     },
 }
@@ -232,6 +231,16 @@ def is_surface_dimensions_valid(array:np.ndarray, grid) -> bool:
         raise ValueError(msg)
     else:
         return True
+    
+
+def is_costs_dictionnary_valid(costs_dictionnary:dict, ids_data:list):
+    """ """
+    for i in ids_data:
+        if i not in costs_dictionnary:
+            msg = "The data id ({}) is not within 'costs' dictionnary keys ({})".format(i, list(costs_dictionnary.keys()))
+            this.logger.error(msg)
+            raise KeyError(msg)
+    return True
     
 ################################################################################################
 ### CORE ###
@@ -404,6 +413,7 @@ def validate_surface_settings(settings:dict, attribute:str, grid) -> dict:
 ### GEOLOGIC FEATURES ### ( Geology - Beddings - Faults)
 #########################
 def validate_geologic_feature_settings(settings:dict, attribute:str, grid) -> dict:
+
     # Checks attributes presence
     for attribute_ in this.ATTRIBUTES[attribute]:
         kind, default_value = this.ATTRIBUTES[attribute][attribute_]
@@ -411,6 +421,7 @@ def validate_geologic_feature_settings(settings:dict, attribute:str, grid) -> di
  
     # If 'data' is empty
     if isinstance(settings['data'], (str)) and (settings['data'] == ''):
+        settings['costs'] = {1 : 0.4}
         return settings
     
     # Checks if type is str or numpy.ndarray
@@ -440,20 +451,16 @@ def validate_geologic_feature_settings(settings:dict, attribute:str, grid) -> di
     else:
         if isinstance(data, (np.ndarray)):
             is_volume_dimensions_valid(data, attribute, grid, settings['axis'])
-            
+    
     # Checks if provided 'costs' are valid
-    ids = np.unique(data)
+    ids_data = np.unique(data)
     if 'costs' in settings:
-        for i in ids:
-            if i not in settings['costs']:
-                msg = "The data ids ({}) do not match with 'costs' dictionnary entries ({})".format(list(ids), list(settings['costs'].keys()))
-                this.logger.error(msg)
-                raise KeyError(msg)
+        is_costs_dictionnary_valid(settings['costs'], ids_data)
     else:
         settings['costs'] = {}
         if attribute == 'geology':
-            for i in ids:
-                settings['costs'][i] = sks.default_fmm_costs['aquifer']
+            for i in range(len(ids_data)):
+                settings['costs'][i+1] = sks.default_fmm_costs['aquifer']
         # elif attribute == 'fractures': # TODO 
         #     for i in ids:
         #         if i == 0:
@@ -463,6 +470,7 @@ def validate_geologic_feature_settings(settings:dict, attribute:str, grid) -> di
             settings['costs'][1] = sks.default_fmm_costs[attribute]
         msg = "'costs' dictionary has been set automatically."
         this.logger.warning(msg)
+        
     return settings
 
 
@@ -617,4 +625,19 @@ def validate_fractures_settings(settings:dict, grid) -> dict:
     
     settings = validate_geologic_feature_settings(settings, 'fractures', grid)
     
+    if 'settings' in settings:
+        
+        if (settings['settings'] == '') or (settings['settings'] == {}):
+            del settings['settings']
+        else:
+            costs = {}
+            for (i, frac_family) in enumerate(settings['settings']):
+                for elem in ['alpha', 'density', 'orientation', 'dip', 'length']:
+                    if elem not in settings['settings'][frac_family]:
+                        print('error') # TODO
+                if 'cost' not in settings['settings'][frac_family]:
+                    print('error') # TODO
+                    settings['settings'][frac_family]['cost'] = sks.default_fmm_costs['fractures']
+                costs[i+1] = settings['settings'][frac_family]['cost']
+            settings['costs'] = costs
     return settings

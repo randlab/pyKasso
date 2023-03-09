@@ -1,0 +1,138 @@
+ ♠                              | INFO     |              _                        
+ ♠                              | INFO     |             | |                       
+ ♠                              | INFO     |  _ __  _   _| | ____ _ ___ ___  ___   
+ ♠                              | INFO     | | `_ \| | | | |/ / _` / __/ __|/ _ \  
+ ♠                              | INFO     | | |_) | |_| |   < (_| \__ \__ \ (_) | 
+ ♠                              | INFO     | | .__/ \__, |_|\_\__,_|___/___/\___/  
+ ♠                              | INFO     | | |     __/ |                         
+ ♠                              | INFO     | |_|    |___/                          
+ ♠                              | INFO     |                                       
+ ☼                              | INFO     | Project directory location : geometry_03
+ ☼                              | INFO     | Project creation date      : 2023-03-10 00:09:33
+ ☼                              | INFO     | pyKasso version used       : 0.1.0
+ ☼                              | INFO     | Logging level              : 10
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | *** pyKasso simulation 1 ***
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | Location : geometry_03/outputs/simulation_1/
+ ►                              | INFO     | Date     : 2023-03-10 00:09:33
+ ►                              | INFO     | ---
+ grid.validation                | INFO     | 'grid' settings have been validated
+ grid.construction              | DEBUG    | '_build_grid' went well
+ grid.construction              | INFO     | 'grid' has been constructed
+ domain.validation              | WARNING  | The 'delimitation' attribute is missing (optional).
+ domain.validation              | WARNING  | The 'topography' attribute is missing (optional).
+ domain.validation              | WARNING  | The 'bedrock' attribute is missing (optional).
+ domain.validation              | INFO     | 'domain' settings have been validated
+ domain.construction            | DEBUG    | '_build_domain_delimitation' went well
+ domain.construction            | DEBUG    | '_build_domain_topography' went well
+ domain.construction            | DEBUG    | '_build_domain_bedrock' went well
+ domain.construction            | DEBUG    | '_build_domain_water_level' went well
+ domain.construction            | DEBUG    | '_build_domain' went well
+ domain.construction            | INFO     | 'domain' has been constructed
+ sks.validation                 | WARNING  | The 'costs' attribute is missing (optional).
+ sks.validation                 | INFO     | 'sks' settings have been validated
+ geology.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ geology.validation             | WARNING  | The 'data' attribute is missing (optional).
+ geology.validation             | WARNING  | The 'axis' attribute is missing (optional).
+ geology.validation             | INFO     | 'geology' settings have been validated
+ geology.construction           | DEBUG    | '_build_model_geology' went well
+ geology.construction           | INFO     | 'geology' has been constructed
+ faults.validation              | WARNING  | The 'faults' attribute is missing (optional).
+ faults.validation              | WARNING  | The 'data' attribute is missing (optional).
+ faults.validation              | WARNING  | The 'axis' attribute is missing (optional).
+ faults.validation              | INFO     | 'faults' settings have been validated
+ faults.construction            | DEBUG    | '_build_model_faults' went well
+ faults.construction            | INFO     | 'faults' has been constructed
+ outlets.validation             | WARNING  | The 'shuffle' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'seed' attribute is missing (optional).
+ outlets.validation             | INFO     | 'outlets' settings have been validated
+ outlets.construction           | DEBUG    | '_build_model_outlets' went well
+ outlets.construction           | INFO     | 'outlets' has been constructed
+ inlets.validation              | WARNING  | The 'shuffle' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'geology' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'seed' attribute is missing (optional).
+ inlets.validation              | INFO     | 'inlets' settings have been validated
+ inlets.construction            | DEBUG    | '_build_model_inlets' went well
+ inlets.construction            | INFO     | 'inlets' has been constructed
+ fractures.validation           | WARNING  | The 'fractures' attribute is missing (optional).
+ fractures.validation           | WARNING  | The 'data' attribute is missing (optional).
+ fractures.validation           | WARNING  | The 'axis' attribute is missing (optional).
+ fractures.validation           | WARNING  | The 'seed' attribute is missing (optional).
+ fractures.validation           | INFO     | 'fractures' settings have been validated
+ fractures.construction         | DEBUG    | '_build_model_fractures' went well
+ fractures.construction         | INFO     | 'fractures' has been constructed
+ fractures.construction         | DEBUG    | '_build_complete_conceptual_model' went well
+ fractures.construction         | DEBUG    | '_build_conceptual_model' went well
+ fractures.construction         | DEBUG    | '_build_model' went well
+ fmm.construction               | DEBUG    | '_construct_fmm_variables' went well
+ fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 1/1
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | *** pyKasso simulation 2 ***
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | Location : geometry_03/outputs/simulation_2/
+ ►                              | INFO     | Date     : 2023-03-10 00:09:33
+ ►                              | INFO     | ---
+ grid.validation                | INFO     | 'grid' settings have been validated
+ grid.construction              | DEBUG    | '_build_grid' went well
+ grid.construction              | INFO     | 'grid' has been constructed
+ domain.validation              | WARNING  | The 'delimitation' attribute is missing (optional).
+ domain.validation              | WARNING  | The 'topography' attribute is missing (optional).
+ domain.validation              | WARNING  | The 'bedrock' attribute is missing (optional).
+ domain.validation              | INFO     | 'domain' settings have been validated
+ domain.construction            | DEBUG    | '_build_domain_delimitation' went well
+ domain.construction            | DEBUG    | '_build_domain_topography' went well
+ domain.construction            | DEBUG    | '_build_domain_bedrock' went well
+ domain.construction            | DEBUG    | '_build_domain_water_level' went well
+ domain.construction            | DEBUG    | '_build_domain' went well
+ domain.construction            | INFO     | 'domain' has been constructed
+ sks.validation                 | WARNING  | The 'costs' attribute is missing (optional).
+ sks.validation                 | INFO     | 'sks' settings have been validated
+ geology.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ geology.validation             | WARNING  | The 'data' attribute is missing (optional).
+ geology.validation             | WARNING  | The 'axis' attribute is missing (optional).
+ geology.validation             | INFO     | 'geology' settings have been validated
+ geology.construction           | DEBUG    | '_build_model_geology' went well
+ geology.construction           | INFO     | 'geology' has been constructed
+ faults.validation              | WARNING  | The 'faults' attribute is missing (optional).
+ faults.validation              | WARNING  | The 'data' attribute is missing (optional).
+ faults.validation              | WARNING  | The 'axis' attribute is missing (optional).
+ faults.validation              | INFO     | 'faults' settings have been validated
+ faults.construction            | DEBUG    | '_build_model_faults' went well
+ faults.construction            | INFO     | 'faults' has been constructed
+ outlets.validation             | WARNING  | The 'shuffle' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'seed' attribute is missing (optional).
+ outlets.validation             | INFO     | 'outlets' settings have been validated
+ outlets.construction           | DEBUG    | '_build_model_outlets' went well
+ outlets.construction           | INFO     | 'outlets' has been constructed
+ inlets.validation              | WARNING  | The 'shuffle' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'geology' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'seed' attribute is missing (optional).
+ inlets.validation              | INFO     | 'inlets' settings have been validated
+ inlets.construction            | DEBUG    | '_build_model_inlets' went well
+ inlets.construction            | INFO     | 'inlets' has been constructed
+ fractures.validation           | WARNING  | The 'fractures' attribute is missing (optional).
+ fractures.validation           | WARNING  | The 'data' attribute is missing (optional).
+ fractures.validation           | WARNING  | The 'axis' attribute is missing (optional).
+ fractures.validation           | WARNING  | The 'seed' attribute is missing (optional).
+ fractures.validation           | INFO     | 'fractures' settings have been validated
+ fractures.construction         | DEBUG    | '_build_model_fractures' went well
+ fractures.construction         | INFO     | 'fractures' has been constructed
+ fractures.construction         | DEBUG    | '_build_complete_conceptual_model' went well
+ fractures.construction         | DEBUG    | '_build_conceptual_model' went well
+ fractures.construction         | DEBUG    | '_build_model' went well
+ fmm.construction               | DEBUG    | '_construct_fmm_variables' went well
+ fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | DEBUG    | '_compute_cost_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 1/1
