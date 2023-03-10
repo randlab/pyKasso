@@ -133,3 +133,6 @@
  fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
  fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
  fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
+ fmm.modelisation               | DEBUG    | '_compute_time_map' went well
+ fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
+ fmm.modelisation               | INFO     | iteration : 1/1
