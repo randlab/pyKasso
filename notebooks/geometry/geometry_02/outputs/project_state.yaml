@@ -3,17 +3,15 @@ grid:
   dy: 10
   dz: 10
   nx: 100
-  ny: 100
+  ny: 50
   nz: 50
   x0: 0
   y0: 0
   z0: 100
-n_simulation: 6
+n_simulation: 4
 project_directory: geometry_02
 simulation_locations:
 - geometry_02/outputs/simulation_1/
 - geometry_02/outputs/simulation_2/
 - geometry_02/outputs/simulation_3/
 - geometry_02/outputs/simulation_4/
-- geometry_02/outputs/simulation_5/
-- geometry_02/outputs/simulation_6/

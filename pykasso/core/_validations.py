@@ -634,9 +634,12 @@ def validate_fractures_settings(settings:dict, grid) -> dict:
             for (i, frac_family) in enumerate(settings['settings']):
                 for elem in ['alpha', 'density', 'orientation', 'dip', 'length']:
                     if elem not in settings['settings'][frac_family]:
-                        print('error') # TODO
+                        msg = "The '{}' attribute in frac family '{}' is missing (required)".format(elem, frac_family)
+                        this.logger.critical(msg)
+                        raise KeyError(msg)
                 if 'cost' not in settings['settings'][frac_family]:
-                    print('error') # TODO
+                    msg = "The 'cost' attribute is missing (optional) and has been set with default value(s)."
+                    this.logger.warning(msg)
                     settings['settings'][frac_family]['cost'] = sks.default_fmm_costs['fractures']
                 costs[i+1] = settings['settings'][frac_family]['cost']
             settings['costs'] = costs

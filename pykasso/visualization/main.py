@@ -1,6 +1,7 @@
 """
 TODO
 """
+# todo - automatic update when visualization class is already created
 
 ####################
 ### Dependencies ###

@@ -8,20 +8,19 @@
  ♠                              | INFO     | |_|    |___/                          
  ♠                              | INFO     |                                       
  ☼                              | INFO     | Project directory location : geometry_05
- ☼                              | INFO     | Project creation date      : 2023-03-09 23:40:42
+ ☼                              | INFO     | Project creation date      : 2023-03-10 14:29:20
  ☼                              | INFO     | pyKasso version used       : 0.1.0
  ☼                              | INFO     | Logging level              : 10
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 1 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Location : geometry_05/outputs/simulation_1/
- ►                              | INFO     | Date     : 2023-03-09 23:40:42
+ ►                              | INFO     | Date     : 2023-03-10 14:29:20
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well
  grid.construction              | INFO     | 'grid' has been constructed
  domain.validation              | WARNING  | The 'delimitation' attribute is missing (optional).
- domain.validation              | WARNING  | The 'bedrock' attribute is missing (optional).
  domain.validation              | INFO     | 'domain' settings have been validated
  domain.construction            | DEBUG    | '_build_domain_delimitation' went well
  domain.construction            | DEBUG    | '_build_domain_topography' went well
@@ -75,13 +74,12 @@
  ►                              | INFO     | *** pyKasso simulation 2 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Location : geometry_05/outputs/simulation_2/
- ►                              | INFO     | Date     : 2023-03-09 23:40:43
+ ►                              | INFO     | Date     : 2023-03-10 14:29:21
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well
  grid.construction              | INFO     | 'grid' has been constructed
  domain.validation              | WARNING  | The 'delimitation' attribute is missing (optional).
- domain.validation              | WARNING  | The 'bedrock' attribute is missing (optional).
  domain.validation              | INFO     | 'domain' settings have been validated
  domain.construction            | DEBUG    | '_build_domain_delimitation' went well
  domain.construction            | DEBUG    | '_build_domain_topography' went well
@@ -131,6 +129,3 @@
  fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
  fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
  fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation               | DEBUG    | '_compute_time_map' went well
- fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation               | INFO     | iteration : 1/1

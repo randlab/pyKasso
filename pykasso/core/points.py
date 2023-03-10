@@ -76,7 +76,7 @@ class PointManager():
             probabilistic_domain = eval(modes[self.mode])
         except:
             # TODO
-            print('ERROR')
+            print('points.py - _get_domain - ERROR')
             raise
         
         # TODO
