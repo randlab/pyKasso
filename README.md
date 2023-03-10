@@ -11,33 +11,46 @@
 
 pyKasso is a python3 open-source package intended to simulate easily and quickly karst networks using a geological model, hydrogeological, and structural data. It relies on a pseudo-genetic methodology where stochastic data and fast-marching methods are combined to perform thousands of simulations rapidly. The method is based on the stochastic karst simulator developed by Borghi et al (2012). It has been extended to account for anisotropy allowing to simplify the algorithm while accounting better for the geological structure following the method presented in Fandel et al. (2022). Statistical geometrical and topological metrics are computed on the simulated networks and compared with the same statistics computed on real karst network to evaluate the plausibility of the simulations.
 
-## Quick installation...
+## Installation
 
-Work in progress
+pyKasso is currently working only with Python 3.9
 
-### ...with pip
+### Install the pyKasso and main dependencies
+
+#### Using pip
+
+<!-- ```
+pip install pykasso
+``` -->
 
 From source:
 ```
 python -m pip install .
 ```
 
-### ...with poetry
+#### Using poetry
 
 From source:
 ```
 poetry install
 ```
 
-### Install AGD
+#### Using conda
 
-Currently, you also need to manually install the binaries from agd-hfm packgage according to your operating system :
-
-https://anaconda.org/AGD-LBR/hfm/files
-
-<!-- ### Check installation
-
+From source:
 ```
+conda env create --name pykasso --file=environment.yml
+```
+
+### Manually install AGD
+
+If you installed pyKasso with pip or poetry, you also need to manually install the binaries from agd-hfm packgage according to your operating system : https://anaconda.org/AGD-LBR/hfm/files
+
+### Check installation
+
+Work in progress.
+
+<!-- ```
 poetry run pytest tests/
 ``` -->
 
@@ -46,14 +59,15 @@ poetry run pytest tests/
 pyKasso requires the following python packages to function properly:
 - [agd](https://github.com/Mirebeau/AdaptiveGridDiscretizations)
 - [karstnet](https://github.com/UniNE-CHYN/karstnet)
+- [pyvista](https://github.com/pyvista/pyvista)
 
 ## Documentation
 
-Work in progress
+Work in progress.
 
 ## Examples
 
-Work in progress
+Some basic examples are avaible here : [notebooks/geometry/](https://github.com/randlab/pyKasso/tree/dev/notebooks/geometry)
 
 ## Contact
 
