@@ -26,6 +26,8 @@ pip install pykasso
 From source:
 ```
 python -m pip install .
+python -m pip install .[analysis]
+python -m pip install .[visualization]
 ```
 
 #### Using poetry

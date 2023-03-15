@@ -73,7 +73,7 @@ def create_project(project_directory:str):
     [os.makedirs(directory, exist_ok=True) for directory in core_settings.values()]
 
     ### Populates the settings directory with initial yaml settings file
-    misc_directory = os.path.dirname(os.path.abspath(__file__)) + '/../../misc/'
+    misc_directory = os.path.dirname(os.path.abspath(__file__)) + '/../_misc/'
     core_settings.update({
         'core_settings_filename' : 'CORE_SETTINGS.yaml',
         'sks_settings_filename'  : 'SKS_SETTINGS.yaml',
