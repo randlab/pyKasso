@@ -55,25 +55,8 @@ class PointManager():
 
     def _get_domain(self):
         """"""
-        modes = {
-            # domain
-            "domain"         : "self.domain.data_volume",
-            "domain_surface" : "self.domain.faces['up']",
-            "domain_bottom"  : "self.domain.faces['down']",
-            # borders
-            "domain_borders"         : "self.domain.borders['domain_full']",
-            "domain_borders_sides"   : "self.domain.borders['domain_sides']",
-            "domain_borders_surface" : "self.domain.borders['domain_up']",
-            "domain_borders_bottom"  : "self.domain.borders['domain_down']", 
-            # phreatic
-            "vadose"                   : "self.domain.phreatic['vadose_zone']",
-            "vadose_borders"           : "self.domain.borders['vadose_zone']",
-            "phreatic"                 : "self.domain.phreatic['phreatic_zone']",
-            "phreatic_surface"         : "self.domain.phreatic['water_level_surface']",
-            "phreatic_borders_surface" : "self.domain.borders['water_level_surface']",
-        }  
         try:
-            probabilistic_domain = eval(modes[self.mode])
+            probabilistic_domain = self.domain.get_subdomain(self.mode)
         except:
             # TODO
             print('points.py - _get_domain - ERROR')

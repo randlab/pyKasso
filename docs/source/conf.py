@@ -20,7 +20,9 @@ extensions = [
    'sphinx.ext.doctest',
    'sphinx.ext.autodoc',
    'sphinx.ext.autosummary',
-    # "sphinx.ext.napoleon",
+   'sphinx.ext.napoleon',
+   'sphinx.ext.coverage',
+   
     # "sphinx.ext.intersphinx",
     # "sphinx.ext.mathjax",
     # "sphinx.ext.ifconfig",
@@ -72,3 +74,12 @@ autosummary_generate = True
 # autoclass_content = "class"
 
 # autosectionlabel_prefix_document = True
+
+
+# -- Napoleon settings ----------------------------------------------------------------
+
+# napoleon_include_init_with_doc = True
+# napoleon_use_param = True
+# napoleon_type_aliases = {
+#     "pk": "pykasso",
+# }

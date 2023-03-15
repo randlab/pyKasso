@@ -8,14 +8,14 @@
  ♠                              | INFO     | |_|    |___/                          
  ♠                              | INFO     |                                       
  ☼                              | INFO     | Project directory location : geometry_01
- ☼                              | INFO     | Project creation date      : 2023-03-10 14:17:37
+ ☼                              | INFO     | Project creation date      : 2023-03-14 20:30:14
  ☼                              | INFO     | pyKasso version used       : 0.1.0
  ☼                              | INFO     | Logging level              : 10
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 1 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Location : geometry_01/outputs/simulation_1/
- ►                              | INFO     | Date     : 2023-03-10 14:17:37
+ ►                              | INFO     | Date     : 2023-03-14 20:30:14
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well
@@ -78,7 +78,7 @@
  ►                              | INFO     | *** pyKasso simulation 2 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Location : geometry_01/outputs/simulation_2/
- ►                              | INFO     | Date     : 2023-03-10 14:17:38
+ ►                              | INFO     | Date     : 2023-03-14 20:30:15
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well
@@ -144,7 +144,7 @@
  ►                              | INFO     | *** pyKasso simulation 3 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Location : geometry_01/outputs/simulation_3/
- ►                              | INFO     | Date     : 2023-03-10 14:17:41
+ ►                              | INFO     | Date     : 2023-03-14 20:30:25
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well
@@ -206,7 +206,7 @@
  ►                              | INFO     | *** pyKasso simulation 4 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Location : geometry_01/outputs/simulation_4/
- ►                              | INFO     | Date     : 2023-03-10 14:17:42
+ ►                              | INFO     | Date     : 2023-03-14 20:30:25
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well
@@ -271,7 +271,7 @@
  ►                              | INFO     | *** pyKasso simulation 5 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Location : geometry_01/outputs/simulation_5/
- ►                              | INFO     | Date     : 2023-03-10 14:17:43
+ ►                              | INFO     | Date     : 2023-03-14 20:30:28
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well
@@ -334,7 +334,7 @@
  ►                              | INFO     | *** pyKasso simulation 6 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Location : geometry_01/outputs/simulation_6/
- ►                              | INFO     | Date     : 2023-03-10 14:17:44
+ ►                              | INFO     | Date     : 2023-03-14 20:30:29
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well
@@ -400,7 +400,7 @@
  ►                              | INFO     | *** pyKasso simulation 7 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Location : geometry_01/outputs/simulation_7/
- ►                              | INFO     | Date     : 2023-03-10 14:17:47
+ ►                              | INFO     | Date     : 2023-03-14 20:30:38
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well
@@ -461,7 +461,7 @@
  ►                              | INFO     | *** pyKasso simulation 8 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Location : geometry_01/outputs/simulation_8/
- ►                              | INFO     | Date     : 2023-03-10 14:17:48
+ ►                              | INFO     | Date     : 2023-03-14 20:30:38
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well

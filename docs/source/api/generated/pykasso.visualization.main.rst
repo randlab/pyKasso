@@ -21,6 +21,12 @@ pykasso.visualization.main
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Visualization
+   
    
 
    

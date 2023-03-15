@@ -1,33 +1,32 @@
-"""
-TODO
-"""
+"""Module with classes modeling the geological features."""
 
-import PIL
+### Local dependencies
+from .fracturation import generate_fractures, voxelize_fractures
+
+### External dependencies
 import numpy as np
 import pandas as pd
 
-from .fracturation import generate_fractures, voxelize_fractures
-
-# TODO
-# - Gestion du format .grd (http://peterbird.name/guide/grd_format.htm)
-
+##################
+### Main class ###
+##################
 
 class GeologicFeature():
-    """
-    Class modeling a three dimensional geologic feature of the studied domain.
-    """
-    def __init__(self, label:str, dim:int, data, grid, **kwargs):
-        """
-        Creates a geologic feature.
-        This class is designed to describe a particular geologic feature.
+    """Class modeling a three dimensional geological feature."""
+    
+    def __init__(self, label:str, dim:int, data, grid, **kwargs) -> None:
+        """Constructs a geological feature.
 
         Parameters
         ----------
-        "TODO"
-
-        Examples
-        --------
-        >>>
+        label : str
+            _description_
+        dim : int
+            _description_
+        data : _type_
+            _description_
+        grid : _type_
+            _description_
         """
         self.label = label
         self.dim   = dim
@@ -38,14 +37,13 @@ class GeologicFeature():
         elif self.dim == 3:
             attribute = 'data_volume'
         
+        # Sets the data
         data = self._set_data(data, grid, **kwargs)
         setattr(self, attribute, data)
 
 
-    def _set_data(self, data, grid, **kwargs):
-        """
-        Selects the right methods to load the data.
-        """
+    def _set_data(self, data, grid, **kwargs) -> np.ndarray:
+        """Selects the right methods to load the data."""
         if 'axis' in kwargs:
             axis = kwargs['axis']
             
@@ -63,24 +61,22 @@ class GeologicFeature():
                 return self._set_data_from_csv(grid, data)
             elif extension == 'txt':
                 return self._set_data_from_txt(grid, data)
+            # elif extension == 'grd':
+            #     return self._set_data_from_grd(grid, data)
             else:
                 return self._set_data_ones(grid)
                 
                 
-    def _set_data_ones(self, grid):
-        """
-        Sets data to a matrice full of ones.
-        i.e. : np.ones((nx,ny,nz))
-        """
+    def _set_data_ones(self, grid) -> np.ndarray:
+        """Sets data to a matrice full of ones. i.e. : np.ones((nx,ny,nz))."""
         if self.dim == 2:
             return np.ones((grid.nx, grid.ny), dtype=np.int8)
         elif self.dim == 3:
             return np.ones((grid.nx, grid.ny, grid.nz), dtype=np.int8)
         
 
-    def _set_data_from_gslib(self, grid, data):
-        """
-        Sets data from a gslib file.
+    def _set_data_from_gslib(self, grid, data) -> np.ndarray:
+        """Sets data from a gslib file.
 
         Filling method :
         1) x-dimension - West to East
@@ -98,53 +94,47 @@ class GeologicFeature():
         return data
     
     
-    def _set_data_from_csv(self, grid, data):
-        """ 
-        TODO
-        """
+    def _set_data_from_csv(self, grid, data) -> np.ndarray:
+        """Sets data from a .csv file."""
         data = np.genfromtxt(data, delimiter=',').T
         if self.dim == 3:
             data = np.repeat(data[:, :, np.newaxis], grid.nz, axis=2)
         return data
     
     
-    def _set_data_from_txt(self, grid, data):
-        """ 
-        TODO
-        """
-        data = np.genfromtxt(data)
+    def _set_data_from_txt(self, grid, data) -> np.ndarray:
+        """Sets data from a .txt file."""
+        data = np.genfromtxt(data).T
         if self.dim == 3:
             data = np.repeat(data[:, :, np.newaxis], grid.nz, axis=2)
         return data
 
 
-    def _set_data_from_grd(self):
-        """
-        TODO
-        """
-        pass
+    # def _set_data_from_grd(self) -> np.ndarray:
+    #     """Sets data from a .grd file."""
+    #     data = None
+    #     return data
 
 
-    def _set_data_from_pickle(self, data):
-        """
-        TODO
-        """
+    def _set_data_from_pickle(self, data) -> np.ndarray:
+        """Sets data from a numpy pickle."""
         return np.load(data)
 
 
-    def _set_data_from_image(self, grid, data, axis):
-        """
-        Sets data from an image.
-        The size of the image should be the same that the size of the grid, but this is optional.
+    def _set_data_from_image(self, grid, data, axis) -> np.ndarray:
+        """Sets data from a .jpg or .png file.
+        The size of the image must be the same as the size of the grid.
         If nz > 1, the layer is horizontally repeated.
         This method usage is not recommended, it should be used only for quick testing.
         """
+        import PIL
         from PIL import Image
         
         # Reads image
         pil_image = PIL.Image.open(data).convert('L').transpose(Image.FLIP_TOP_BOTTOM)
         npy_image = np.asarray(pil_image).T
         
+        # Processes the image
         if self.label in ['faults', 'fractures']:
             npy_image = (npy_image[:,:] == 0)*1
         else:        
@@ -153,8 +143,8 @@ class GeologicFeature():
             for i, color in enumerate(np.flip(n_colors)):
                 npy_image = np.where(npy_image == color, i+1, npy_image)
             
+        # According to axis, repeats data along if necessary
         if self.dim == 3:
-
             if (axis.lower() == 'x'):
                 npy_image = np.repeat(npy_image[np.newaxis, :, :], grid.nx, axis=0)
             elif (axis.lower() == 'y'):
@@ -164,7 +154,10 @@ class GeologicFeature():
 
         return npy_image
 
-#############################################################################
+
+##################
+### Subclasses ###
+##################
 
 class Surface(GeologicFeature):
     """ 
