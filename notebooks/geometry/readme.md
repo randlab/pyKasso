@@ -8,4 +8,3 @@
 - [Test 04](geometry_04.ipynb) : The influence of bedrock elevation
 - [Test 05](geometry_05.ipynb) : The combined influence of topography, water elevation level and bedrock elevation
 - [Test 06](geometry_06.ipynb) : Two dimensional examples
-

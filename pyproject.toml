@@ -2,7 +2,7 @@
 name = "pykasso"
 version = "0.1.0"
 description = "Python project intended to simulate stochastic karst network"
-license = "MIT"
+license = "GPL-3.0"
 authors = [
     "François Miville <francois@miville.org>",
     "Chloé Fandel",

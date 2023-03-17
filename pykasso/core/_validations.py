@@ -22,7 +22,8 @@ this.ATTRIBUTES = {
     'sks' : {
         'seed'      : ['optional', 0],
         'algorithm' : ['optional', 'Isotropic3'],
-        'costs'     : ['optional', {}]
+        'costs'     : ['optional', {}],
+        'modes'     : ['optional', {}],
     },
     'grid' : {
         'x0' : ['required', ''],
@@ -285,6 +286,15 @@ def validate_sks_settings(settings:dict) -> dict:
     for cost in costs:
         if cost not in settings['costs']:
             settings['costs'][cost] = sks.default_fmm_costs[cost]
+            
+    # Checks the presence of modes
+    modes = {
+        'elevation' : False,
+        'bedrock'   : False,
+    }
+    for elem, value in modes.items():
+        if elem not in settings['modes']:
+            settings['modes'][elem] = value
     return settings
 
 ############

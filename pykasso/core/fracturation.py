@@ -1,13 +1,12 @@
-"""
-TODO
-"""
+"""Module with fonctions designed for fractures generation and fractures discretization."""
 
+### Internal dependencies
 import math
+
+### External dependencies
 import mpmath
 import numpy as np
 import pandas as pd
-
-# numba ?
 
 
 def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orientation_distribution='vonmises', dip_distribution='vonmises', length_distribution='power'):
@@ -207,27 +206,21 @@ def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orie
 ### VOXELIZATION ###
 ####################
 
-def voxelize_fractures(grid, fractures, method='python'):
-    """
-    TODO
-    """
-    if method == 'python':
-        fracs_array = _voxelize_fractures_python(grid, fractures)
-    else:
-        print('TODO')
+def _float_eq(a, b, tolerance:float=1e-5):
+    """Returns True if the difference between a and b is lower than tolerance.
 
-    return fracs_array
+    Parameters
+    ----------
+    a : _type_
+        _description_
+    b : _type_
+        _description_
+    tolerance : float, optional
+        _description_, by default 1e-5
 
-
-
-#############################################################################################################################
-### python ###
-##############
-
-def _float_eq(a, b, tolerance=1e-5):
-    """
-    Returns True if the difference between a and b
-    is lower than tolerance.
+    Returns
+    -------
+    result : bool
     """
     if np.all( np.isnan(a) ) :
         if np.all( np.isnan(b) ) :
@@ -236,33 +229,27 @@ def _float_eq(a, b, tolerance=1e-5):
             return False
     return np.all( abs(a-b) < tolerance )
 
-def _unit_intersect(n, d):
-    """
-    Computes the intersection between a unit circle
-    and a line on a 2D plane.
+
+def _unit_intersect(n:np.ndarray, d:float):
+    """Computes the intersection between a unit circle and a line on a 2D plane.
+    The unit circle is centered on the origin (x=0, y=0) and has a radius of 1.
+    The line is defined by parameters 'n' and 'd'.
 
     Parameters
     ----------
-    The unit circle is centered on the origin (x=0, y=0) and has
-    a radius of 1.
-
-    The line is defined by two parameters :
-
-    n : numpy array of size 2
-        The normal vector perpendicular to the line
+    n : numpy.ndarray of size 2
+        The normal vector perpendicular to the line.
         Warning : The norm of n must be 1.
-
-    d : floating point value
-        Defines the position of the line, it is a
-        signed distance to the origin x=0, y=0.
+    d : float
+        Defines the position of the line.
+        It is a signed distance to the origin x=0, y=0.
         It can be positive or negative.
 
     Returns
     -------
-    [X1, X2, Y1, Y2] : numpy array with 4 floating point values
-        the coordinates of the two points of intersection when the
-        exists. Returns 4 np.NaN if there is no intersection
-
+    result : numpy.ndarray with 4 floating point values [X1, X2, Y1, Y2]
+        The coordinates of the two points of intersection when it exists.
+        Returns 4 np.NaN if there is no intersection.
     """
     nx, ny = n[0], n[1] # For readibility
 
@@ -286,33 +273,26 @@ def _unit_intersect(n, d):
 
     return np.array( [X1,X2,Y1,Y2] )
 
-def _disk_zplane_intersect(center, n, R, zi):
-    """
-    Computes the intersection between a disk
-    and a horizontal plane (constant z plane) in 3D.
+def _disk_zplane_intersect(center:np.ndarray, n:np.ndarray, R:float, zi:float):
+    """Computes the intersection between a disk and a horizontal plane (constant z plane) in 3D.
+    The disk is defined by three parameters :
 
     Parameters
     ----------
-    The disk is defined by three parameters :
-
-    center : numpy array of size 3
-        the 3D coordinates of the center of the disk.
-
-    n : numpy array of size 3
-        the normal vector perpendicular to the disk
+    center : numpy.ndarray of size 3
+        The 3D coordinates of the center of the disk.
+    n : numpy.ndarray of size 3
+        The normal vector perpendicular to the disk.
         Warning : The norm of n must be 1.
-
-    R : floating point value
-        Radius of the disk
-
-    zi : floating point value
-        Position of the horizontal plane along the z axis
+    R : float
+        Radius of the disk.
+    zi : float
+        Position of the horizontal plane along the z-axis.
 
     Returns
     -------
-    [x1, y1, x2, y2] : numpy array with 4 floating point values
-        the coordinates of the two extremities of the intersection
-        between the plane and disk if there is an intersection.
+    result : np.ndarray with 4 floating point values [x1, y1, x2, y2]
+        The coordinates of the two extremities of the intersection between the plane and disk if there is an intersection.
         Returns 4 np.NaN if there is no intersection.
     """
 
@@ -344,33 +324,26 @@ def _disk_zplane_intersect(center, n, R, zi):
 
     return np.array([x1, y1, x2, y2])
 
-def _disk_xplane_intersect(center, n, R, xi):
-    """
-    Computes the intersection between a disk
-    and a vertical plane (constant x plane) in 3D.
+def _disk_xplane_intersect(center:np.ndarray, n:np.ndarray, R:float, xi:float):
+    """Computes the intersection between a disk and a vertical plane (constant x plane) in 3D.
+    The disk is defined by three parameters :
 
     Parameters
     ----------
-    The disk is defined by three parameters :
-
-    center : numpy array of size 3
-        the 3D coordinates of the center of the disk.
-
-    n : numpy array of size 3
-        the normal vector perpendicular to the disk
+    center : np.ndarray of size 3
+        The 3D coordinates of the center of the disk.
+    n : np.ndarray of size 3
+        The normal vector perpendicular to the disk.
         Warning : The norm of n must be 1.
-
-    R : floating point value
-        Radius of the disk
-
+    R : float
+        Radius of the disk.
     xi : float
-        Position of the vertical plane along the x axis
+        Position of the vertical plane along the x-axis.
 
     Returns
     -------
-    [y1, z1, y2, z2] : numpy array with 4 floating point values
-        the coordinates of the two extremities of the intersection
-        between the plane and disk if there is an intersection.
+    result : np.ndarray with 4 floating point values [y1, z1, y2, z2]
+        The coordinates of the two extremities of the intersection between the plane and disk if there is an intersection.
         Returns 4 np.NaN if there is no intersection.
     """
 
@@ -402,33 +375,26 @@ def _disk_xplane_intersect(center, n, R, xi):
 
     return np.array([y1, z1, y2, z2])
 
-def _disk_yplane_intersect(center, n, R, yi):
-    """
-    Computes the intersection between a disk
-    and a vertical plane (constant y plane) in 3D.
+def _disk_yplane_intersect(center:np.ndarray, n:np.ndarray, R:float, yi:float):
+    """Computes the intersection between a disk and a vertical plane (constant y plane) in 3D.
+    The disk is defined by three parameters :
 
     Parameters
     ----------
-    The disk is defined by three parameters :
-
-    center : numpy array of size 3
-        the 3D coordinates of the center of the disk.
-
-    n : numpy array of size 3
-        the normal vector perpendicular to the disk
+    center : np.ndarray of size 3
+        The 3D coordinates of the center of the disk.
+    n : np.ndarray of size 3
+        The normal vector perpendicular to the disk.
         Warning : The norm of n must be 1.
-
-    R : floating point value
-        Radius of the disk
-
+    R : float
+        Radius of the disk.
     yi : float
-        Position of the vertical plane along the y axis
+        Position of the vertical plane along the y-axis.
 
     Returns
     -------
-    [x1, z1, x2, z2] : numpy array with 4 floating point values
-        the coordinates of the two extremities of the intersection
-        between the plane and disk if there is an intersection.
+    result : np.ndarray with 4 floating point values [x1, z1, x2, z2]
+        The coordinates of the two extremities of the intersection between the plane and disk if there is an intersection.
         Returns 4 np.NaN if there is no intersection.
     """
 
@@ -459,22 +425,20 @@ def _disk_yplane_intersect(center, n, R, yi):
 
     return np.array([x1, z1, x2, z2])
 
-def _rst2d(m, xs, xe, ys, ye):
-    """
-    Rasterize a line on a 2D plane.
+def _rst2d(m:np.ndarray, xs:int, xe:int, ys:int, ye:int):
+    """Rasterizes a line on a 2D plane.
 
     Parameters
     ----------
-    m : 2D numpy array
-
-    xs, xe, ys, ye : integer values
-        indices of positions on the grid m
-        starting and ending location of the line
+    m : numpy.ndarray of dim 2
+    xs, xe, ys, ye : int
+        Indices of positions on the grid m.
+        Starting and ending location of the line.
 
     Returns
     -------
-    m : 2D numpy array
-        with value 1 where the grid is touched by the line
+    m : numpy.ndarray of dim 2
+        With value 1 where the grid is touched by the line.
     """
 
     nx, ny = m.shape
@@ -520,13 +484,19 @@ def _rst2d(m, xs, xe, ys, ye):
     m[i,j] = 1
     return
 
-def _voxelize_fractures_python(grid, fractures):
-    """
-    Rasterizes a set of fractures on a 3D grid.
+def voxelize_fractures(grid, fractures):
+    """Rasterizes a set of fractures on a 3D grid.
+    
+    Parameters
+    ----------
+    grid : _type_
+        _description_
+    fractures : _type_
+        _description_
 
     Returns
     -------
-    raster_fractures : 3D numpy array
+    raster_fractures : numpy.ndarray of dim 3 
         With value 1 where the grid is touched by a fracture
     """
 

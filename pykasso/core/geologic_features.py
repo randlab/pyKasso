@@ -12,7 +12,7 @@ import pandas as pd
 ##################
 
 class GeologicFeature():
-    """Class modeling a three dimensional geological feature."""
+    """Class modeling a geological feature."""
     
     def __init__(self, label:str, dim:int, data, grid, **kwargs) -> None:
         """Constructs a geological feature.
@@ -79,13 +79,13 @@ class GeologicFeature():
         """Sets data from a gslib file.
 
         Filling method :
-        1) x-dimension - West to East
-        2) y-dimension - South to North
-        3) z-dimension - Bottom to Top
+        1) x-axis from West to East
+        2) y-axis from South to North
+        3) z-axis from Bottom to Top
         """
         data = np.genfromtxt(data, skip_header=3)
         if len(data) == grid.nx * grid.ny * grid.nz:
-            data = np.reshape(data, (grid.nx, grid.ny, grid.nz), order='F') #reshape to xy grid using Fortran ordering
+            data = np.reshape(data, (grid.nx, grid.ny, grid.nz), order='F')
         else:
             data = np.reshape(data, (grid.nx, grid.ny), order='F')
             
@@ -155,26 +155,20 @@ class GeologicFeature():
         return npy_image
 
 
-##################
-### Subclasses ###
-##################
+#######################
+### Main subclasses ###
+#######################
 
 class Surface(GeologicFeature):
-    """ 
-    TODO
-    """
+    """Subclass modeling a two dimensional geological feature."""
+    
     def __init__(self, label, data, grid, **kwargs):
-        """
-        TODO
-        """
         dim = 2
         super().__init__(label, dim, data, grid, **kwargs)
     
     
     def _surface_to_volume(self, condition, grid):
-        """
-        TODO
-        """
+        """Converts a two dimensional array in a three dimensional array."""
         k = grid.get_k(self.data_surface)
         data_volume = np.zeros((grid.nx, grid.ny, grid.nz))
         for z in range(grid.nz):
@@ -189,19 +183,17 @@ class Surface(GeologicFeature):
 
    
 class Volume(GeologicFeature):
-    """ 
-    TODO
-    """
+    """Subclass modeling a three dimensional geological feature."""
+    
     def __init__(self, label, data, grid, **kwargs):
-        """
-        TODO
-        """
         dim = 3
         super().__init__(label, dim, data, grid, **kwargs)
         self._compute_statistics(grid)
         self.costs = kwargs['costs']
         
+        
     def _compute_statistics(self, grid):
+        """Computes the statistics (counts and frequency) on the data."""
         values, counts = np.unique(self.data_volume, return_counts=True)
         stats = {
             'counts' : counts,
@@ -212,57 +204,42 @@ class Volume(GeologicFeature):
         return None
     
         
-#############################################################################
-### 2D Objects ###
-##################
+#####################
+### 2D Subclasses ###
+#####################
 
 class Bedding(Surface):
-    """
-    TODO
-    """
+    """Subclass modeling a bedding."""
+    
     def __init__(self, data, grid, **kwargs):
         label = 'bedding'
-        
         super().__init__(label, data, grid, **kwargs)
-        
         self._surface_to_volume('=', grid)
 
-#############################################################################
-### 3D Objects ###
-##################
+#####################
+### 3D Subclasses ###
+#####################
 
 class Geology(Volume):
-    """
-    TODO
-    """
+    """Class modeling the geologic model."""
+    
     def __init__(self, data, grid, **kwargs):
-        """
-        TODO
-        """
         label = 'geology'
         super().__init__(label, data, grid, **kwargs)
 
 
 class Faults(Volume):
-    """
-    TODO
-    """
+    """Class modeling the faults model."""
+    
     def __init__(self, data, grid, **kwargs):
-        """
-        TODO
-        """
         label = 'faults'
         super().__init__(label, data, grid, **kwargs)
 
 
 class Fractures(Volume):
-    """
-    TODO
-    """
+    """Class modeling the fracturation model."""
+    
     def __init__(self, data, grid, Geology, **kwargs):
-        """
-        TODO
-        """
         label = 'fractures'
 
         if 'settings' in kwargs:
@@ -306,19 +283,3 @@ class Fractures(Volume):
             data = self.fractures_families['model']
                 
         super().__init__(label, data, grid, **kwargs)
-        
-        
-#############################################################
-
-class ConceptualModel():
-    """ 
-    TODO
-    """
-    def __init__(self, conceptual_model, conceptual_model_table):
-        """ 
-        TODO - réfléchir aux noms.
-        """
-        self.data_volume = conceptual_model
-        self.table       = conceptual_model_table
-        # self.conceptual_model_overview       = simple_conceptual_model
-        # self.conceptual_model_overview_table = simple_conceptual_model_table

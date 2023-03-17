@@ -157,7 +157,7 @@ class Domain():
     ###############
     
     def get_subdomain(self, subdomain_name:str) -> np.ndarray:
-        """Returns the np-array modeling the requested subdomain. 
+        """Returns the numpy.ndarray modeling the requested subdomain. 
 
         Parameters
         ----------
@@ -178,9 +178,10 @@ class Domain():
 
         Returns
         -------
-        result : np.ndarray
+        out : np.ndarray
         """
-        return eval(self.subdomains_names[subdomain_name])
+        out = eval(self.subdomains_names[subdomain_name])
+        return out
 
     
     def is_coordinate_in_domain(self, x:float, y:float, z:float) -> bool:
@@ -197,13 +198,15 @@ class Domain():
 
         Returns
         -------
-        result : bool
+        out : bool
         """
         if self.grid.is_inbox(x,y,z):
             i, j, k = self.grid.get_indices(x,y,z)
-            return bool(self.data_volume[i,j,k])
+            out = bool(self.data_volume[i,j,k])
+            return out
         else:
-            return False
+            out = False
+            return out
         
     def is_coordinate_in_subdomain(self, subdomain:str, x:float, y:float, z:float) -> bool:
         """Returns true if a (x, y, z)-coordinate point is inside the subdomain, otherwise false.
@@ -233,14 +236,16 @@ class Domain():
 
         Returns
         -------
-        result : bool
+        out : bool
         """
         subdomain = eval(self.subdomains_names[subdomain])
         if self.grid.is_inbox(x,y,z):
             i, j, k = self.grid.get_indices(x,y,z)
-            return bool(subdomain[i,j,k])
+            out = bool(subdomain[i,j,k])
+            return out
         else: 
-            return False
+            out = False
+            return out
         
     def is_coordinate_2D_valid(self, x:float, y:float) -> bool:
         """Returns true if a z-coordinate exists for a (x, y)-coordinate point projected inside the domain, otherwise false.
@@ -254,13 +259,15 @@ class Domain():
 
         Returns
         -------
-        result : bool
+        out : bool
         """
         if self.grid.path.contains_point((x,y)):
             i, j = self.grid.get_indices(x, y)
-            return bool(self.data_surfaces['z'][i, j])
+            out = bool(self.data_surfaces['z'][i, j])
+            return out
         else:
-            return False
+            out = False
+            return out
         
     
 #################################

@@ -36,6 +36,10 @@ class Grid():
             Cell width in the y-axis.
         dz : float
             Cell depth in the z-axis.
+            
+        Notes
+        -----
+            .
 
         Examples
         --------
@@ -271,7 +275,7 @@ class Grid():
 
         Returns
         -------
-        result : int
+        out : int
             i-index.
 
         Examples
@@ -295,7 +299,7 @@ class Grid():
 
         Returns
         -------
-        result : int
+        out : int
             j-index.
 
         Examples
@@ -319,7 +323,7 @@ class Grid():
 
         Returns
         -------
-        result : int
+        out : int
             k-index.
 
         Examples
@@ -347,7 +351,7 @@ class Grid():
 
         Returns
         -------
-        result : tuple
+        out : tuple
             i and j-index, or i, j and k-index.
             
         Examples
@@ -359,9 +363,11 @@ class Grid():
         (7, 3, 2)
         """
         if z is None:
-            return (self.get_i(x), self.get_j(y))
+            out = (self.get_i(x), self.get_j(y))
+            return out
         else:
-            return (self.get_i(x), self.get_j(y), self.get_k(z))
+            out = (self.get_i(x), self.get_j(y), self.get_k(z))
+            return out
 
     def get_x(self, i:int) -> float:
         """Retrieves x-coordinate from i-index.
@@ -373,7 +379,7 @@ class Grid():
 
         Returns
         -------
-        result : float
+        out : float
             x-coordinate.
 
         Examples
@@ -398,7 +404,7 @@ class Grid():
 
         Returns
         -------
-        result : float
+        out : float
             y-coordinate.
 
         Examples
@@ -423,7 +429,7 @@ class Grid():
 
         Returns
         -------
-        result : float
+        out : float
             z-coordinate.
 
         Examples
@@ -452,7 +458,7 @@ class Grid():
 
         Returns
         -------
-        result : tuple
+        out : tuple
             x and y-coordinates, or x, y and z-coordinates.
             
         Examples
@@ -464,9 +470,11 @@ class Grid():
         (50.0, 100.0, 150.0)
         """
         if k is None:
-            return (self.get_x(i), self.get_y(j))
+            out = (self.get_x(i), self.get_y(j))
+            return out
         else:
-            return (self.get_x(i), self.get_y(j), self.get_z(k))
+            out = (self.get_x(i), self.get_y(j), self.get_z(k))
+            return out
 
     def is_inbox(self, x:float, y:float, z:float) -> bool:
         """Returns true if a (x, y, z)-coordinate point is inside the grid, otherwise false.
@@ -482,7 +490,7 @@ class Grid():
 
         Returns
         -------
-        result : bool
+        out : bool
 
         Examples
         --------
@@ -493,4 +501,5 @@ class Grid():
         False
         """
         i, j, k = self.get_i(x), self.get_j(y), self.get_k(z)
-        return bool( (k-self.nz+1)*k <= 0 ) and ( (j-self.ny+1)*j <= 0 ) and ( (i-self.nx+1)*i <= 0 )
+        out = bool( (k-self.nz+1)*k <= 0 ) and ( (j-self.ny+1)*j <= 0 ) and ( (i-self.nx+1)*i <= 0 )
+        return out

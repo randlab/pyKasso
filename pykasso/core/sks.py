@@ -21,7 +21,7 @@ import pkg_resources
 import pykasso.core._wrappers as wp
 from .grid import Grid
 from .domain import Domain, Delimitation, Topography, Bedrock, WaterLevel
-from .geologic_features import Volume, Geology, Bedding, Faults, Fractures, ConceptualModel
+from .geologic_features import Geology, Faults, Fractures
 from .points import PointManager
 
 ### External dependencies
@@ -480,8 +480,8 @@ class SKS():
         """Builds the conceptual model."""
         # simple_model, simple_model_df            = self._build_simple_conceptual_model()
         conceptual_model, conceptual_model_table = self._build_complete_conceptual_model()
-        # self.conceptual_model = ConceptualModel(simple_model, simple_model_df, conceptual_model, conceptual_model_table)
-        self.conceptual_model = ConceptualModel(conceptual_model, conceptual_model_table)
+        self.conceptual_model = conceptual_model
+        self.conceptual_model_table = conceptual_model_table
         return None
     
     # @wp._logging()
@@ -885,8 +885,8 @@ class SKS():
         # If it's the first iteration, iniatialize the cost map according to the conceptual model.
         if self.iteration == 0:
             self.maps['cost'].append(np.zeros((self.grid.nx, self.grid.ny, self.grid.nz)))
-            for (i, row) in self.conceptual_model.table.iterrows():
-                self.maps['cost'][0] = np.where(self.conceptual_model.data_volume == row.name, row.cost, self.maps['cost'][0])
+            for (i, row) in self.conceptual_model_table.iterrows():
+                self.maps['cost'][0] = np.where(self.conceptual_model == row.name, row.cost, self.maps['cost'][0])
                 
         # If it's not the first iteration
         else:
@@ -905,7 +905,10 @@ class SKS():
 
         TODO : à terminer
         """
-        alpha_map = self._set_alpha_from_elevation()
+        alpha_map = self.maps['cost'][self.iteration].copy()
+        
+        if self.SKS_SETTINGS['sks']['modes']['elevation']:
+            alpha_map = self._set_alpha_from_elevation()
         
         if self.domain.water_level is not None:
             alpha_map = self._set_alpha_in_phreatic_zone(self.maps['cost'][self.iteration], alpha_map)
@@ -962,9 +965,9 @@ class SKS():
         if self.domain.water_level is not None:
             orientation_x, orientation_y, orientation_z = self._set_metrics_in_phreatic_zone(orientation_x, orientation_y, orientation_z)
             
-        # if self.SKS_SETTINGS['sks']['bedrock']: # à implémenter correctement
-        if self.domain.bedrock is not None:
-            orientation_x, orientation_y, orientation_z = self._set_metrics_on_bedrock_surface(orientation_x, orientation_y, orientation_z)
+        if self.SKS_SETTINGS['sks']['modes']['bedrock']:
+            if self.domain.bedrock is not None:
+                orientation_x, orientation_y, orientation_z = self._set_metrics_on_bedrock_surface(orientation_x, orientation_y, orientation_z)
         
         # if self.beddings is not None:
             # pass
@@ -978,7 +981,7 @@ class SKS():
         """"""
         orientation_x = np.zeros_like(self.grid.data_volume) 
         orientation_y = np.zeros_like(self.grid.data_volume) 
-        orientation_z = np.ones_like (self.grid.data_volume)
+        orientation_z = np.ones_like (self.grid.data_volume) * np.abs(self.grid.dz)
         return (orientation_x, orientation_y, orientation_z)
     
     def _set_metrics_in_phreatic_zone(self, orientation_x, orientation_y, orientation_z):
