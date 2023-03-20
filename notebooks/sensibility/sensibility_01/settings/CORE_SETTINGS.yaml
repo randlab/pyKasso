@@ -1,0 +1,10 @@
+# pyKasso CORE SETTINGS 
+---
+core_settings_filename: CORE_SETTINGS.yaml
+inputs_directory: sensibility_01/inputs/
+log_filename: pyKasso.log
+outputs_directory: sensibility_01/outputs/
+project_directory: sensibility_01
+settings_directory: sensibility_01/settings/
+sks_settings_filename: SKS_SETTINGS.yaml
+...

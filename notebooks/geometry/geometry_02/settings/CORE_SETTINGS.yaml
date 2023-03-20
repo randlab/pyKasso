@@ -1,0 +1,10 @@
+# pyKasso CORE SETTINGS 
+---
+core_settings_filename: CORE_SETTINGS.yaml
+inputs_directory: geometry_02/inputs/
+log_filename: pyKasso.log
+outputs_directory: geometry_02/outputs/
+project_directory: geometry_02
+settings_directory: geometry_02/settings/
+sks_settings_filename: SKS_SETTINGS.yaml
+...

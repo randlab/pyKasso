@@ -266,3 +266,55 @@
  fmm.modelisation               | DEBUG    | '_compute_time_map' went well
  fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
  fmm.modelisation               | INFO     | iteration : 9/9
+ PIL.Image                      | DEBUG    | Error closing: Operation on closed image
+ PIL.Image                      | DEBUG    | Error closing: Operation on closed image
+ PIL.Image                      | DEBUG    | Error closing: Operation on closed image
+ PIL.Image                      | DEBUG    | Error closing: Operation on closed image
+ PIL.Image                      | DEBUG    | Importing BlpImagePlugin
+ PIL.Image                      | DEBUG    | Importing BmpImagePlugin
+ PIL.Image                      | DEBUG    | Importing BufrStubImagePlugin
+ PIL.Image                      | DEBUG    | Importing CurImagePlugin
+ PIL.Image                      | DEBUG    | Importing DcxImagePlugin
+ PIL.Image                      | DEBUG    | Importing DdsImagePlugin
+ PIL.Image                      | DEBUG    | Importing EpsImagePlugin
+ PIL.Image                      | DEBUG    | Importing FitsImagePlugin
+ PIL.Image                      | DEBUG    | Importing FitsStubImagePlugin
+ PIL.Image                      | DEBUG    | Importing FliImagePlugin
+ PIL.Image                      | DEBUG    | Importing FpxImagePlugin
+ PIL.Image                      | DEBUG    | Image: failed to import FpxImagePlugin: No module named 'olefile'
+ PIL.Image                      | DEBUG    | Importing FtexImagePlugin
+ PIL.Image                      | DEBUG    | Importing GbrImagePlugin
+ PIL.Image                      | DEBUG    | Importing GifImagePlugin
+ PIL.Image                      | DEBUG    | Importing GribStubImagePlugin
+ PIL.Image                      | DEBUG    | Importing Hdf5StubImagePlugin
+ PIL.Image                      | DEBUG    | Importing IcnsImagePlugin
+ PIL.Image                      | DEBUG    | Importing IcoImagePlugin
+ PIL.Image                      | DEBUG    | Importing ImImagePlugin
+ PIL.Image                      | DEBUG    | Importing ImtImagePlugin
+ PIL.Image                      | DEBUG    | Importing IptcImagePlugin
+ PIL.Image                      | DEBUG    | Importing JpegImagePlugin
+ PIL.Image                      | DEBUG    | Importing Jpeg2KImagePlugin
+ PIL.Image                      | DEBUG    | Importing McIdasImagePlugin
+ PIL.Image                      | DEBUG    | Importing MicImagePlugin
+ PIL.Image                      | DEBUG    | Image: failed to import MicImagePlugin: No module named 'olefile'
+ PIL.Image                      | DEBUG    | Importing MpegImagePlugin
+ PIL.Image                      | DEBUG    | Importing MpoImagePlugin
+ PIL.Image                      | DEBUG    | Importing MspImagePlugin
+ PIL.Image                      | DEBUG    | Importing PalmImagePlugin
+ PIL.Image                      | DEBUG    | Importing PcdImagePlugin
+ PIL.Image                      | DEBUG    | Importing PcxImagePlugin
+ PIL.Image                      | DEBUG    | Importing PdfImagePlugin
+ PIL.Image                      | DEBUG    | Importing PixarImagePlugin
+ PIL.Image                      | DEBUG    | Importing PngImagePlugin
+ PIL.Image                      | DEBUG    | Importing PpmImagePlugin
+ PIL.Image                      | DEBUG    | Importing PsdImagePlugin
+ PIL.Image                      | DEBUG    | Importing SgiImagePlugin
+ PIL.Image                      | DEBUG    | Importing SpiderImagePlugin
+ PIL.Image                      | DEBUG    | Importing SunImagePlugin
+ PIL.Image                      | DEBUG    | Importing TgaImagePlugin
+ PIL.Image                      | DEBUG    | Importing TiffImagePlugin
+ PIL.Image                      | DEBUG    | Importing WebPImagePlugin
+ PIL.Image                      | DEBUG    | Importing WmfImagePlugin
+ PIL.Image                      | DEBUG    | Importing XbmImagePlugin
+ PIL.Image                      | DEBUG    | Importing XpmImagePlugin
+ PIL.Image                      | DEBUG    | Importing XVThumbImagePlugin
