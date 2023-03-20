@@ -1,4 +1,4 @@
-pykasso.core.geologic\_features
+﻿pykasso.core.geologic\_features
 ===============================
 
 .. automodule:: pykasso.core.geologic_features
@@ -18,7 +18,6 @@ pykasso.core.geologic\_features
    .. autosummary::
    
       Bedding
-      ConceptualModel
       Faults
       Fractures
       GeologicFeature

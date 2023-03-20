@@ -13,7 +13,7 @@ pyKasso is a python3 open-source package intended to simulate easily and quickly
 
 ## Installation
 
-pyKasso is currently working only with Python 3.9
+pyKasso is currently only working with Python 3.9
 
 ### Install the pyKasso and main dependencies
 
@@ -66,6 +66,9 @@ pyKasso requires the following python packages to function properly:
 ## Documentation
 
 Work in progress.
+
+![gif_01](/docs/source/_static/gif_01.gif)
+![gif_02](/docs/source/_static/gif_02.gif)
 
 ## Examples
 

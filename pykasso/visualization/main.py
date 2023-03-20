@@ -39,6 +39,11 @@ AUTHORIZED_FEATURES = [
 
 class Visualization():
     """"""
+    
+    ######################
+    ### Initialization ###
+    ######################
+    
     def __init__(self, project_state:str) -> None:
         """"""
         with open(project_state, 'r') as f:
@@ -53,6 +58,10 @@ class Visualization():
         grid.spacing    = (grid_settings['dx'], grid_settings['dy'], grid_settings['dz'])
         grid = grid.cast_to_unstructured_grid()
         return grid
+    
+    #################
+    ### Show data ###
+    #################
     
     def show(self, simulations:list, features:list, settings={}):
         """"""
@@ -77,8 +86,7 @@ class Visualization():
             
             for j, feature in enumerate(features):
                 
-                simulation_data_path = self.project_state['simulation_locations'][n_simulation] + 'results.pickle'
-                simulation_data      = self._read_pickle(simulation_data_path)
+                simulation_data = self._get_simulation_data(n_simulation)
                 
                 plotter.subplot(j, i)
                 text = 'Simulation {} - {}'.format(n_simulation, feature)
@@ -93,8 +101,48 @@ class Visualization():
 
         return None
     
+    ###########
+    ### GIF ###
+    ###########
+
+    def create_gif(self, simulation:int, feature:str, location:str, zoom:float=1, ghosts:list=[], n_points:int=24, fps:int=10, window_size=[1024, 768]) -> None:
+        
+        ### Method based on those examples: https://docs.pyvista.org/examples/02-plot/orbit.html#orbiting
+        
+        ### Gets the simulation data
+        simulation_data = self._get_simulation_data(simulation)
+        
+        ### Gets the mesh
+        mesh = self._get_data_from_feature(simulation_data, feature)
+        if len(ghosts) > 0:
+            mesh = self._get_ghosted_data(mesh, ghosts)
+        
+        ### Constructs the plotter
+        plotter = pv.Plotter(off_screen=True, window_size=window_size)
+        plotter.store_image = True
+        plotter.add_mesh(mesh, lighting=False)
+        plotter.remove_scalar_bar()
+        plotter.camera.zoom(zoom)
+        
+        ### Generates the GIF
+        path = plotter.generate_orbital_path(n_points=n_points, shift=mesh.length)
+        plotter.open_gif(location, fps=fps)
+        plotter.orbit_on_path(path, write_frames=True)
+        plotter.close()
+        
+        return None
+    
+    #######################
+    ### Private methods ###
+    #######################
+    
+    def _get_simulation_data(self, n:int) -> dict:
+        simulation_data_path = self.project_state['simulation_locations'][n] + 'results.pickle'
+        simulation_data      = self._read_pickle(simulation_data_path)
+        return simulation_data
+        
     def _show_feature(self, simulation, feature:str, settings:dict={}):
-        """"""
+        
         # Gets the data
         feature_data = self._get_data_from_feature(simulation, feature)
         
@@ -108,9 +156,8 @@ class Visualization():
         # Cuts the data with model limits
         pass
         
-        ########################
-        ### Creates the plot ###
-        ########################
+
+        ### Creates the plot
         plotter = pv.Plotter()
         actors = []
         
@@ -196,26 +243,29 @@ class Visualization():
         cloud  = pv.wrap(points)
         cloud['labels'] = labels
         return cloud
-            
-    def compare(self, simulations:list, settings:dict={}):
-        
-        plotter = pv.Plotter(shape=(1, len(simulations)), border=True)
-        
-        for i in simulations:
-            
-            simulation_data_path = self.project_state['simulation_locations'][i] + 'results.pickle'
-            simulation_data      = self._read_pickle(simulation_data_path)
-            plotter.subplot(0, i)
-            plotter.add_text(str(i), font_size=24)
-            actor = _pyvista._show_data(simulation_data, 'karst', {'ghost':[0]}, show=False)
-            plotter.add_actor(actor, reset_camera=True)
-        
-        return None
     
     def _read_pickle(self, path:str):
         """"""
         with open(path, 'rb') as handle:
             return pickle.load(handle)
+        
+    ####### DELETE ???
+    # def compare(self, simulations:list, settings:dict={}):
+        
+    #     plotter = pv.Plotter(shape=(1, len(simulations)), border=True)
+        
+    #     for i in simulations:
+            
+    #         simulation_data_path = self.project_state['simulation_locations'][i] + 'results.pickle'
+    #         simulation_data      = self._read_pickle(simulation_data_path)
+    #         plotter.subplot(0, i)
+    #         plotter.add_text(str(i), font_size=24)
+    #         actor = _pyvista._show_data(simulation_data, 'karst', {'ghost':[0]}, show=False)
+    #         plotter.add_actor(actor, reset_camera=True)
+        
+    #     return None
+        
+    
         
 ############################################
 
@@ -322,6 +372,9 @@ def debug(environment, step, engine='matplotlib', settings={}):
             _pyvista._debug_plot_fmm(environment, settings)
 
     return None
+
+
+
 
 
 
