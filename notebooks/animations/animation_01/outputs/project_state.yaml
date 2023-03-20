@@ -8,7 +8,9 @@ grid:
   x0: 0
   y0: 0
   z0: 100
-n_simulation: 1
+n_simulation: 3
 project_directory: animation_01
 simulation_locations:
 - animation_01/outputs/simulation_1/
+- animation_01/outputs/simulation_2/
+- animation_01/outputs/simulation_3/
