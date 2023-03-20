@@ -11,8 +11,8 @@
 
 pyKasso is a python3 open-source package intended to simulate easily and quickly karst networks using a geological model, hydrogeological, and structural data. It relies on a pseudo-genetic methodology where stochastic data and fast-marching methods are combined to perform thousands of simulations rapidly. The method is based on the stochastic karst simulator developed by Borghi et al (2012). It has been extended to account for anisotropy allowing to simplify the algorithm while accounting better for the geological structure following the method presented in Fandel et al. (2022). Statistical geometrical and topological metrics are computed on the simulated networks and compared with the same statistics computed on real karst network to evaluate the plausibility of the simulations.
 
-![gif_01](/docs/source/_static/gif_01.gif)
-![gif_02](/docs/source/_static/gif_02.gif)
+![gif_01](/docs/source/_static/animation_01.gif)
+![gif_02](/docs/source/_static/animation_02.gif)
 
 ## Installation
 
