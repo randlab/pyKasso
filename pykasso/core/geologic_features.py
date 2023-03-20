@@ -54,7 +54,7 @@ class GeologicFeature():
             if extension == 'gslib':
                 return self._set_data_from_gslib(grid, data)
             elif extension == 'npy':
-                return self._set_data_from_pickle(data)
+                return self._set_data_from_numpy_pickle(data)
             elif extension in ['png', 'jpg']:
                 return self._set_data_from_image(grid, data, axis)
             elif extension == 'csv':
@@ -116,7 +116,7 @@ class GeologicFeature():
     #     return data
 
 
-    def _set_data_from_pickle(self, data) -> np.ndarray:
+    def _set_data_from_numpy_pickle(self, data) -> np.ndarray:
         """Sets data from a numpy pickle."""
         return np.load(data)
 
@@ -245,7 +245,7 @@ class Fractures(Volume):
         if 'settings' in kwargs:
             fractures_families_settings = kwargs['settings']
             
-            self.table     = pd.DataFrame()
+            self.table = pd.DataFrame()
             self.fractures_families = {}
 
             # Generates one array for each fractures family

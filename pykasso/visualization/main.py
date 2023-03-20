@@ -63,8 +63,8 @@ class Visualization():
     ### Show data ###
     #################
     
-    def show(self, simulations:list, features:list, settings={}):
-        """"""
+    def show(self, simulations:list, features:list, settings:dict={}):
+        
         # Sets default settings values
         default_settings = {
             'ghosts'   : [],
@@ -250,21 +250,7 @@ class Visualization():
         with open(path, 'rb') as handle:
             return pickle.load(handle)
         
-    ####### DELETE ???
-    # def compare(self, simulations:list, settings:dict={}):
-        
-    #     plotter = pv.Plotter(shape=(1, len(simulations)), border=True)
-        
-    #     for i in simulations:
-            
-    #         simulation_data_path = self.project_state['simulation_locations'][i] + 'results.pickle'
-    #         simulation_data      = self._read_pickle(simulation_data_path)
-    #         plotter.subplot(0, i)
-    #         plotter.add_text(str(i), font_size=24)
-    #         actor = _pyvista._show_data(simulation_data, 'karst', {'ghost':[0]}, show=False)
-    #         plotter.add_actor(actor, reset_camera=True)
-        
-    #     return None
+
         
     
         
