@@ -8,14 +8,14 @@
  ♠                              | INFO     | |_|    |___/                          
  ♠                              | INFO     |                                       
  ☼                              | INFO     | Project directory location : animation_01
- ☼                              | INFO     | Project creation date      : 2023-03-20 17:42:20
+ ☼                              | INFO     | Project creation date      : 2023-03-20 18:23:23
  ☼                              | INFO     | pyKasso version used       : 0.1.0
  ☼                              | INFO     | Logging level              : 10
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 1 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Location : animation_01/outputs/simulation_1/
- ►                              | INFO     | Date     : 2023-03-20 17:42:20
+ ►                              | INFO     | Date     : 2023-03-20 18:23:23
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well

@@ -105,7 +105,7 @@ class Visualization():
     ### GIF ###
     ###########
 
-    def create_gif(self, simulation:int, feature:str, location:str, zoom:float=1, ghosts:list=[], n_points:int=24, fps:int=10, window_size=[1024, 768]) -> None:
+    def create_gif(self, simulation:int, feature:str, location:str, zoom:float=1, ghosts:list=[], n_points:int=24, fps:int=10, window_size=[1024, 768], background_color:str='white') -> None:
         
         ### Method based on those examples: https://docs.pyvista.org/examples/02-plot/orbit.html#orbiting
         
@@ -123,6 +123,7 @@ class Visualization():
         plotter.add_mesh(mesh, lighting=False)
         plotter.remove_scalar_bar()
         plotter.camera.zoom(zoom)
+        plotter.set_background(background_color)
         
         ### Generates the GIF
         path = plotter.generate_orbital_path(n_points=n_points, shift=mesh.length)
