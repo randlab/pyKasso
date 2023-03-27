@@ -6,4 +6,12 @@ from .types import (
     Bedrock,
     Geology,
     WaterLevel,
+    #
+    RandomNumberGenerator,
+    #
+    Series,
+    DataFrame,
+    Styler,
+    #
+    Path,
 )

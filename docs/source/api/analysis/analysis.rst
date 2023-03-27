@@ -1,5 +1,5 @@
-pykasso.analysis package
-========================
+analysis package
+================
 
 Submodules
 ----------
@@ -7,12 +7,12 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   pykasso.analysis.main
+   analysis.analysis
 
 Module contents
 ---------------
 
-.. automodule:: pykasso.analysis
+.. automodule:: analysis
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,4 +1,7 @@
-"""Module with fonctions designed for fractures generation and fractures discretization."""
+"""
+This module contains fonctions designed for fracture generation and
+discretization.
+"""
 
 ### Internal dependencies
 import math
@@ -8,36 +11,53 @@ import mpmath
 import numpy as np
 import pandas as pd
 
+### Typing
+from typing import Union
+from pykasso._typing import Grid, RandomNumberGenerator, DataFrame
 
-def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orientation_distribution='vonmises', dip_distribution='vonmises', length_distribution='power'):
+
+def generate_fractures(grid: Grid, rng: RandomNumberGenerator, density: float,
+                       alpha: float, orientation: float, dip: float,
+                       length: float,
+                       orientation_distribution: str = 'vonmises',
+                       dip_distribution: str = 'vonmises',
+                       length_distribution: str = 'power'):
+    """Generates fractures as discrete objects and stores it in a dataframe.
+
+    Parameters
+    ----------
+    grid : Grid
+        Grid of the study site where fractures will be generated.
+    rng : RandomNumberGenerator
+        _description_
+    density : float
+        Fracture density.
+    alpha : float
+        Degree of power law.
+    orientation : float
+        Fractures orientation.
+    dip : float
+        Fractures dip.
+    length : float
+        Fractures length.
+    orientation_distribution : str, optional
+        _description_, by default 'vonmises'
+    dip_distribution : str, optional
+        _description_, by default 'vonmises'
+    length_distribution : str, optional
+        _description_, by default 'power'
+
+    Returns
+    -------
+    fractures : DataFrame
+        _description_
     """
-    TODO
-    Generates fractures as Fracture instances according to the parameters.
-    """
-    # Parameters
-    # ----------
-    # densities : array
-    #     Fracture densities for each fracture family.
-    # alpha : array
-    #     Degree of power law for each fracture family.
-    # min_orientation : array
-    #     Fractures minimum orientation for each fracture family.
-    # max_orientation : array
-    #     Fractures maximum orientation for each fracture family.
-    # min_dip : array
-    #     Fractures minimum dip for each fracture family.
-    # max_dip : array
-    #     Fractures maximum dip for each fracture family.
-    # min_length : array
-    #     The minimum length of the fractures for each fracture family.
-    # max_length : array
-    #     The maximum length of the fractures for each fracture family.
 
     # Examples
     # --------
     # >>> geol._generate_fractures(d)
     # >>> print(geol.fractures)
-
+    # """
     ## TODO
     # distribution vonmises arguments : mean, std / loc, scale (https://numpy.org/doc/stable/reference/random/generated/numpy.random.normal.html)
     
@@ -61,14 +81,14 @@ def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orie
         length_distribution = 'unique'
         length_max = length
 
-    
     ### Redefine fracturation domain
-    xd0, xd1, yd0, yd1, zd0, zd1 = grid.xmin, grid.xmax, grid.ymin, grid.ymax, grid.zmin, grid.zmax
-    Lx, Ly, Lz = xd1-xd0, yd1-yd0, zd1-zd0
+    xd0, yd0, zd0 = grid.xmin, grid.ymin, grid.zmin
+    xd1, yd1, zd1 = grid.xmax, grid.ymax, grid.zmax
+    Lx, Ly, Lz = xd1 - xd0, yd1 - yd0, zd1 - zd0
 
-    shiftx = min(Lx/2, length_max/2)
-    shifty = min(Ly/2, length_max/2)
-    shiftz = min(Lz/2, length_max/2)
+    shiftx = min(Lx / 2, length_max / 2)
+    shifty = min(Ly / 2, length_max / 2)
+    shiftz = min(Lz / 2, length_max / 2)
 
     Lex = 2 * shiftx + Lx
     Ley = 2 * shifty + Ly
@@ -85,20 +105,18 @@ def generate_fractures(grid, rng, density, alpha, orientation, dip, length, orie
     ### Generate poisson number for each fracture family
     real_frac_number = rng.poisson(fractures_numbers)
 
-
     ###########################
     ### Calculate fractures ###
     ###########################
 
-    ##### FRACTURE CENTER LOCATION 
+    ##### FRACTURE CENTER LOCATION
 
     # from triple uniform distribution
     xm = xmin + rng.random(size=real_frac_number) * Lex
     ym = ymin + rng.random(size=real_frac_number) * Ley
     zm = zmin + rng.random(size=real_frac_number) * Lez
 
-
-    ##### FRACTURE ORIENTATION 
+    ##### FRACTURE ORIENTATION
 
     # No distribution case
     if orientation_distribution == 'unique':

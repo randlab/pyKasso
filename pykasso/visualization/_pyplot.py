@@ -2,21 +2,39 @@
 TODO
 """
 
+### External dependencies
 import numpy as np
 import matplotlib.pyplot as plt
 
-def _show_data(environment, feature, settings, show=True):
-    """ """
-    nx, ny, nz = environment.grid.shape
-    
-    # Get the grid
-    grid = np.ones((nx, ny, nz))
-    
-    ax = plt.figure().add_subplot(projection='3d')
-    ax.voxels(grid, edgecolor='k')
+### Local dependencies
+from .._utils import ProjectReader
 
-    plt.show()
-    return None
+
+class PyplotVisualizer(ProjectReader):
+    """
+    TODO
+    """
+    
+    def __init__(self, project_directory: str, *args, **kwargs):
+        """
+        TODO
+        """
+        super().__init__(project_directory, *args, **kwargs)
+        
+    
+
+# def _show_data(environment, feature, settings, show=True):
+#     """ """
+#     nx, ny, nz = environment.grid.shape
+    
+#     # Get the grid
+#     grid = np.ones((nx, ny, nz))
+    
+#     ax = plt.figure().add_subplot(projection='3d')
+#     ax.voxels(grid, edgecolor='k')
+
+#     plt.show()
+#     return None
 
 # def _show_grid(environment):
 #     return None

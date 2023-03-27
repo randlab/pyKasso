@@ -1,23 +1,32 @@
-""" TODO"""
+"""pyKasso's wrappers functions."""
 
+### Internal dependencies
 import sys
 import time
 import logging
+
+### Local dependencies
 import pykasso.core._validations as val
 
+### Modules variables
 sks  = sys.modules['pykasso.core.sks']
 this = sys.modules[__name__]
-
 this.time_functions = {}
 
 
-def _debug_level(level, iteration_mode=False):
-    """
-    TODO
+def _debug_level(level:float, iteration_mode:bool=False):
+    """Debugging system.
+
+    Parameters
+    ----------
+    level : float
+        Debug level.
+    iteration_mode : bool, optional
+        _description_, by default False
     """
     def _(function):
         def _wrapper(*args, **kwargs):
-            model = args[0]
+            model = args[0] # retrieves the model
             result = ''
             if not model.debug_mode:
                 result = function(*args, **kwargs)
@@ -40,7 +49,6 @@ def _debug_level(level, iteration_mode=False):
 def _parameters_validation(feature, kind):
     def _(function):
         def _wrapper(*args, **kwargs):
-            
             sks.logger = logging.getLogger("{}.validation".format(feature))
             model = args[0]
             model.SKS_SETTINGS = val.validate_attribute_presence(model.SKS_SETTINGS, feature, kind, default_value={})

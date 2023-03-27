@@ -1,13 +1,10 @@
-### Documentation
-
-# Domain
-
-# With str, data cannot be compared during memoize step
-
+"""Module modeling the karstic network generator tool."""
 
 ####################
 ### Dependencies ###
 ####################
+
+### Internal dependencies
 import os
 import sys
 import copy
@@ -15,7 +12,7 @@ import pickle
 import shutil
 import logging
 import datetime
-import pkg_resources
+import pkg_resources # TODO - à retirer ? 
 
 ### Local dependencies
 import pykasso.core._wrappers as wp
@@ -34,12 +31,14 @@ import agd
 from agd import Eikonal
 from agd.Metrics import Riemann
 
-################################################################################################################################################
-### Module variables ###
-########################
+### Typing
+from pykasso._typing import DataFrame
 
+### Module variables
 this = sys.modules[__name__]
-this.ACTIVE_PROJECT = None
+
+# Dictionary used for memory optimization/memoizing operations
+this.ACTIVE_PROJECT = None      
 
 # Defines default fast-marching costs
 this.default_fmm_costs = {
@@ -55,15 +54,36 @@ this.default_fmm_costs = {
     'ratio'     : 0.5,
 }
 
-################################################################################################################################################
+# Defines misc directory path
+this.misc_relative_path = '/../_misc/'
+
+########################
 ### Module functions ###
 ########################
 
-def create_project(project_directory:str):
-    # Uncomment this to tell apart the development version and the main version
-    print('CAUTION: You are using the development version of this package.')
+def create_project(project_directory:str) -> None:
+    """Creates a new pyKasso's project within the provided `project_directory` path.
+    Three subdirectories will be created : 
+     - ``inputs/``, for input model data files
+     - ``outputs/``, for model results storage
+     - ``settings/``, for pyKasso's settings file
+    
+    .. warning:: pyKasso doesn't check if the directory already exists and if yes, its actual content.
 
-    # Creates the project directories
+    Parameters
+    ----------
+    project_directory : str
+        Location, path of the new project directory.
+        
+    Examples
+    --------
+    >>> import pykasso as pk
+    >>> pk.create_project('examples/betteraz/')
+    """
+    # Uncomment this to tell apart the development version and the main version
+    # print('CAUTION: You are using the development version of this package.')
+    
+    ### Creates the project subdirectories
     core_settings = {
         'project_directory'  : project_directory,
         'inputs_directory'   : project_directory + '/inputs/',
@@ -73,14 +93,14 @@ def create_project(project_directory:str):
     [os.makedirs(directory, exist_ok=True) for directory in core_settings.values()]
 
     ### Populates the settings directory with initial yaml settings file
-    misc_directory = os.path.dirname(os.path.abspath(__file__)) + '/../_misc/'
+    misc_directory = os.path.dirname(os.path.abspath(__file__)) + this.misc_relative_path
     core_settings.update({
         'core_settings_filename' : 'CORE_SETTINGS.yaml',
         'sks_settings_filename'  : 'SKS_SETTINGS.yaml',
         'log_filename'           : 'pyKasso.log',
     })
 
-    # CORE_SETTINGS
+    ### Creates the CORE_SETTINGS.yaml file in the project directory
     core_settings_filename = core_settings['settings_directory'] + core_settings['core_settings_filename']
     with open(core_settings_filename, 'w') as f:
         text = "# pyKasso CORE SETTINGS \n---\n"
@@ -88,55 +108,143 @@ def create_project(project_directory:str):
         text = text + yaml_text + "..."
         f.write(text)
 
-    # SKS_SETTINGS
+    ### Copies the default SKS_SETTINGS.yaml file from the misc directory to the project directory
     shutil.copy2(misc_directory + core_settings['sks_settings_filename'], project_directory + '/settings/')
 
-    ### Creates a dictionary used for settings comparison between actual and previous simulation 
+    ### Constructs the dictionary used for settings comparison between actual and previous simulation, used for the memoization operation
     this.ACTIVE_PROJECT = this.ACTIVE_PROJECT = {
         'project_directory'    : project_directory,
         'n_simulation'         : 0,
         'simulation_locations' : [],
         'settings'             : {
-            # static features
-            'grid'       : None,
-            'domain'     : None,
-            'geology'    : None,
-            'beddings'   : None,
-            'faults'     : None,
-            # dynamic features
-            'fractures'  : None,
-            'outlets'    : None,
-            'inlets'     : None,
+            'grid' : None, 'domain' : None, 'geology' : None, 'beddings' : None, 'faults' : None, # static features
+            'fractures' : None, 'outlets' : None, 'inlets' : None, # dynamic features
         },
         'model' : {}
     }
     return None
 
-def save_project(path:str) -> None:
-    with open(path + '.pickle', 'wb') as handle:
+
+def save_project(filename:str) -> None:
+    """Exports a pyKasso's project in a python pickle and saves it to the provided `filename`.
+
+    Parameters
+    ----------
+    filename : str
+        Filename to which the project is saved.
+        A ``.pickle`` extension will be appended to the filename if it does not already have one.
+        
+    Examples
+    --------
+    >>> import pykasso as pk
+    >>> pk.create_project('examples/betteraz/')
+    >>> pk.save_project('examples/betteraz/project.pickle')
+    
+    Notes
+    -----
+    For a description of the ``.pickle`` format, see https://docs.python.org/3/library/pickle.html.
+    """
+    # Controls filename extension
+    from numpy.compat import os_fspath
+    filename = os_fspath(filename)
+    if not filename.endswith('.pickle'):
+        filename = filename + '.pickle'
+    
+    # Saves the project in a pickle
+    with open(filename, 'wb') as handle:
         pickle.dump(this.ACTIVE_PROJECT, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
     return None
 
-def load_project(path:str) -> None:
-    with open(path, 'rb') as handle:
+
+def load_project(filename:str) -> None:
+    """Loads a pyKasso's project from a python pickle file located to the provided `filename`.
+    
+    .. warning:: Loading files that contain object arrays uses the `pickle`
+                 module, which is not secure against erroneous or maliciously
+                 constructed data.
+
+    Parameters
+    ----------
+    filename : str
+        Filename to which the project is stored.
+
+    Examples
+    --------
+    >>> import pykasso as pk
+    >>> pk.load_project('examples/betteraz/project.pickle')
+    """
+    # Loads the pickle
+    with open(filename, 'rb') as handle:
         this.ACTIVE_PROJECT = pickle.load(handle)
+        
     return None
 
 
-#########################################################################################################################################
-### SKS CLASS ###
+
+#################
+### SKS Class ###
 #################
 
 class SKS():
     """
     Class storing all the parameters, the data and the resulting simulated stochastic karst networks.
-    TODO
+    
+    Attributes
+    ----------
+    CORE_SETTINGS : dict
+        ...
+    SKS_SETTINGS : dict
+        ...
+    grid : _type_
+        ...
+    domain : _type_
+        ...
+    geology : _type_
+        ...
+    faults : _type_
+        ...
+    fractures : _type_
+        ...
+    inlets : DataFrame
+        ...
+    outlets : DataFrame
+        ...
+    
+    .. note:: ``faults`` or ``fractures`` will return None when not defined.
     """
 
-    def __init__(self, sks_settings={}, core_settings={}, debug_level=None):
+    def __init__(self, sks_settings:dict={}, core_settings:dict={}, export_settings:dict={}, debug_level:dict={}) -> None:
+        """Initializes an instance of SKS class.
+
+        Parameters
+        ----------
+        sks_settings : dict, optional
+            _description_, by default {}
+        core_settings : dict, optional
+            _description_, by default {}
+        export_settings : dict, optional
+            _description_, by default {}
+        debug_level : dict, optional
+            _description_, by default {}
+            
+        Examples
+        --------
+        >>> import pykasso as pk
+        >>> simulation = pk.SKS()
         """
-        TODO
-        """
+        ### Initialization
+        self.grid      = None
+        self.domain    = None
+        self.geology   = None
+        self.faults    = None
+        self.fractures = None
+        self.inlets    = None
+        self.outlets   = None
+        self.conceptual_model       = None
+        self.conceptual_model_table = None
+        self.rng = {}
+        
         ### Loads core and sks settings
         settings_list  = [copy.deepcopy(core_settings), copy.deepcopy(sks_settings)]
         settings_names = ['CORE_SETTINGS', 'SKS_SETTINGS']
@@ -251,7 +359,7 @@ class SKS():
         this.logger.info('---')
 
         ### Sets debug level
-        if debug_level is None:
+        if debug_level == {}:
             self.debug_mode  = False
             self.debug_level = {
                 'model'      : 20,
@@ -275,13 +383,26 @@ class SKS():
             this.logger.info('---')
         
 
-##########################################################################################################################################################################
+##########################
 ### BUILDING THE MODEL ###
 ##########################
 
-    def build_model(self):
-        """
-        TODO
+    def build_model(self) -> None:
+        """Builds the geological model. Should be called right after ``SKS`` class instantiation.
+        
+        Model building procedure:
+         1. Constructs the grid : ``self.grid`` ;
+         2. Defines the model extension : ``self.domain`` ;
+         3. Builds the geological features : ``self.geology``, ``self.faults``, ``self.inlets``, ``self.outlets``, ``self.fractures``, ``self.conceptual_model``, ``self.conceptual_model_table``;
+         4. Prepares the fast-marching method variables : _TODO_ ;
+         
+        If a geological feature has not been defined in the settings, calling its attribute will returns ``None``.  
+        
+        Examples
+        --------
+        >>> import pykasso as pk
+        >>> simulation = pk.SKS()
+        >>> simulation.build_model()
         """
         self._build_grid()              # 1 - Constructs the grid
         self._build_domain()            # 2 - Constructs the domain
@@ -289,7 +410,7 @@ class SKS():
         self._construct_fmm_variables() # 4 - Constructs fmm features 
         return None
     
-    ##### 1 - GRID ##### ##### ##### ##### #####
+    ##### 1 - GRID #########################
     @wp._debug_level(1)
     @wp._parameters_validation('grid', 'required')
     @wp._memoize('grid')
@@ -299,7 +420,7 @@ class SKS():
         self.grid = Grid(**self.SKS_SETTINGS['grid'])
         return None
     
-    ##### 2 - DOMAIN ##### ##### ##### ##### #####
+    ##### 2 - DOMAIN #########################
     @wp._debug_level(2)
     @wp._parameters_validation('domain', 'optional')
     @wp._memoize('domain')
@@ -315,7 +436,7 @@ class SKS():
     
     @wp._debug_level(2.1)
     @wp._logging()
-    def _build_domain_delimitation(self):
+    def _build_domain_delimitation(self) -> None:
         """Builds the delimitation."""
         if not (isinstance(self.SKS_SETTINGS['domain']['delimitation'], (str)) and (self.SKS_SETTINGS['domain']['delimitation'] == '')):
             if isinstance(self.SKS_SETTINGS['domain']['delimitation'], (str)):
@@ -326,7 +447,7 @@ class SKS():
 
     @wp._debug_level(2.2)
     @wp._logging()
-    def _build_domain_topography(self):
+    def _build_domain_topography(self) -> None:
         """Builds the topography."""
         if not (isinstance(self.SKS_SETTINGS['domain']['topography'], (str)) and (self.SKS_SETTINGS['domain']['topography'] == '')):
             return Topography(data=self.SKS_SETTINGS['domain']['topography'], grid=self.grid)
@@ -335,7 +456,7 @@ class SKS():
         
     @wp._debug_level(2.3)
     @wp._logging()
-    def _build_domain_bedrock(self):
+    def _build_domain_bedrock(self) -> None:
         """Builds the bedrock elevation."""
         if not (isinstance(self.SKS_SETTINGS['domain']['bedrock'], (str)) and (self.SKS_SETTINGS['domain']['bedrock'] == '')):
             return Bedrock(data=self.SKS_SETTINGS['domain']['bedrock'], grid=self.grid)
@@ -344,7 +465,7 @@ class SKS():
         
     @wp._debug_level(2.4)
     @wp._logging()
-    def _build_domain_water_level(self):
+    def _build_domain_water_level(self) -> None:
         """Builds the water level elevation."""
         if not (isinstance(self.SKS_SETTINGS['domain']['water_level'], (str)) and (self.SKS_SETTINGS['domain']['water_level'] == '')):
             return WaterLevel(data=self.SKS_SETTINGS['domain']['water_level'], grid=self.grid)
@@ -352,23 +473,22 @@ class SKS():
             return None
 
         
-    ##### MODEL ##### ##### ##### ##### #####
+    ##### 3 - MODEL #########################
     @wp._debug_level(3)
     @wp._logging()
-    def _build_model(self):
-        """ 
-        TODO
-        """
+    def _build_model(self) -> None:
+        """Builds the geological features."""
+        
         ### Sets the main parameters
         self._build_model_parameters()
         
-        ### Constructs deterministic geologic features
+        ### Constructs deterministic geological features
         self._build_model_geology()              
         # TODO - self._build_model_beddings()
         self._build_model_faults()
         # TODO - self._build_model_karst()
 
-        ### Constructs stochastic geologic features 
+        ### Constructs stochastic geological features 
         self._build_model_outlets()
         self._build_model_inlets()
         # TODO - self._build_model_tracers()
@@ -378,25 +498,31 @@ class SKS():
         self._build_conceptual_model()
         return None
     
+    def _set_rng(self, attribute):
+        """Populates the rng seeds dictionary with the defined seed attribute."""
+        
+        # Generates a random seed when the seed equals 0 (default setting)
+        if self.SKS_SETTINGS[attribute]['seed'] == 0:
+            seed = np.random.default_rng().integers(low=0, high=10**6)
+            self.SKS_SETTINGS[attribute]['seed'] = seed
+            
+        # Sets the seed
+        self.rng[attribute] = np.random.default_rng(self.SKS_SETTINGS[attribute]['seed'])
+        return None
+    
     @wp._debug_level(3.1)
     @wp._parameters_validation('sks', 'optional')
-    def _build_model_parameters(self):
-        """Builds essential model parameters."""
-        # Sets the random master seed
-        self.rng = {}
-        if self.SKS_SETTINGS['sks']['seed'] == 0:
-            seed = np.random.default_rng().integers(low=0, high=10**6)
-            self.SKS_SETTINGS['sks']['seed'] = seed
-        self.rng = {
-            'master' : np.random.default_rng(self.SKS_SETTINGS['sks']['seed']),
-        }
+    def _build_model_parameters(self) -> None:
+        """Builds characteristic model parameters."""        
+        # Defines the main seed
+        self._set_rng('sks')
         return None
-        
+    
     @wp._debug_level(3.2)
     @wp._parameters_validation('geology', 'optional')
     @wp._memoize('geology')
     @wp._logging()
-    def _build_model_geology(self):
+    def _build_model_geology(self) -> None:
         """Builds the geology."""
         self.geology = Geology(**self.SKS_SETTINGS['geology'], grid=self.grid, domain=self.domain)
         return None
@@ -429,43 +555,113 @@ class SKS():
     @wp._parameters_validation('faults', 'optional')
     @wp._memoize('faults')
     @wp._logging()
-    def _build_model_faults(self):
+    def _build_model_faults(self) -> None:
         """Builds the faults."""
         if not (isinstance(self.SKS_SETTINGS['faults']['data'], (str)) and (self.SKS_SETTINGS['faults']['data'] == '')):
             self.faults = Faults(**self.SKS_SETTINGS['faults'], grid=self.grid, domain=self.domain)
-        else:
-            self.faults = None
         return None
 
     @wp._debug_level(3.5)
     @wp._parameters_validation('outlets', 'required')
-    @wp._memoize('outlets') # TODO - à vérifier
+    @wp._memoize('outlets')
     @wp._logging()
-    def _build_model_outlets(self):
+    def _build_model_outlets(self) -> None:
         """Builds the outlets."""
         self._set_rng('outlets')
         self.outlets = self._construct_feature_points('outlets')
         if self.SKS_SETTINGS['outlets']['shuffle']:
-            self.outlets = self.outlets.sample(frac=1, random_state=self.rng['master']).reset_index(drop=True)
+            self.outlets = self.outlets.sample(frac=1, random_state=self.rng['sks']).reset_index(drop=True)
         return None
 
     @wp._debug_level(3.6)
     @wp._parameters_validation('inlets', 'required')
-    @wp._memoize('inlets') # TODO - à vérifier
+    @wp._memoize('inlets')
     @wp._logging()
-    def _build_model_inlets(self):
+    def _build_model_inlets(self) -> None:
         """Builds the inlets."""
         self._set_rng('inlets')
         self.inlets = self._construct_feature_points('inlets')
         if self.SKS_SETTINGS['inlets']['shuffle']:
-            self.inlets = self.inlets.sample(frac=1, random_state=self.rng['master']).reset_index(drop=True)
+            self.inlets = self.inlets.sample(frac=1, random_state=self.rng['sks']).reset_index(drop=True)
         return None
+    
+    def _construct_feature_points(self, kind):
+        """Constructs the inlets / outlets.
+
+        Four cases possible:
+         1. No points declared
+         2. More points required than provided : Generates additional random points
+         3. Less points required than provided : Pick random points among provided ones
+         4. Points required equals points declared
+        """
+        ### Creates a point generator instance
+        point_manager = PointManager(
+            rng = self.rng[kind],
+            mode = self.SKS_SETTINGS[kind]['mode'],
+            domain = self.domain, 
+            geology = self.geology,
+            geologic_ids = self.SKS_SETTINGS[kind]['geology']
+        ) 
+
+        ### Gets existing points
+
+        # Loads points if needed
+        if isinstance(self.SKS_SETTINGS[kind]['data'], (str)) and not (self.SKS_SETTINGS[kind]['data'] == ''):
+            self.SKS_SETTINGS[kind]['data'] = np.genfromtxt(self.SKS_SETTINGS[kind]['data'])
+        
+        ### Inspects validity of points
+        points = self.SKS_SETTINGS[kind]['data']
+        
+        # 2D points # TODO - logging ?
+        points_2D = [point for point in points if len(point) == 2]
+        validated_points_2D = [point for point in points_2D if point_manager._is_coordinate_2D_valid(point)]
+        validated_points_3D = [point_manager._generate_3D_coordinate_from_2D_coordinate(point) for point in validated_points_2D]
+        
+        # 3D points # TODO - logging ?
+        points_3D = [point for point in points if len(point) == 3]
+        validated_points_3D += [point for point in points_3D if point_manager._is_coordinate_3D_valid(point)]
+
+        diff = len(points) - len(validated_points_3D)
+        if diff > 0:
+            # TODO - LOG - VERBOSITY
+            # TODO - log name is not correct
+            msg = '{}/{} {} have been discarded because out of domain.'.format(diff, len(self.SKS_SETTINGS[kind]['data']), kind)
+            this.logger.warning(msg)
+        self.SKS_SETTINGS[kind]['data'] = validated_points_3D
+
+        ### Get new points according to the right case
+        # Case 1 - No points declared
+        if (self.SKS_SETTINGS[kind]['data'] == '') or (self.SKS_SETTINGS[kind]['data'] == []):
+            points = point_manager._generate_coordinates(size=self.SKS_SETTINGS[kind]['number'])
+        # Case 2 - More points required than provided
+        elif (self.SKS_SETTINGS[kind]['number'] > len(self.SKS_SETTINGS[kind]['data'])):
+            n_points = self.SKS_SETTINGS[kind]['number'] - len(self.SKS_SETTINGS[kind]['data'])
+            points = np.append(np.array(self.SKS_SETTINGS[kind]['data']), point_manager._generate_coordinates(n_points), axis=0)
+        # Case 3 - Less points required than provided
+        elif (self.SKS_SETTINGS[kind]['number'] < len(self.SKS_SETTINGS[kind]['data'])):
+            points = self.rng['sks'].choice(self.SKS_SETTINGS[kind]['data'], self.SKS_SETTINGS[kind]['number'], replace=False)
+        # Case 4 - Points required equals points declared
+        else:
+            points = self.SKS_SETTINGS[kind]['data']
+
+        ### Populates the DataFrame
+        x, y, z = zip(*points)
+        data = {
+            'x' : x,
+            'y' : y,
+            'z' : z,
+        }
+        
+        # Deletes the point manager
+        del point_manager
+
+        return pd.DataFrame(data=data)
     
     @wp._debug_level(3.8)
     @wp._parameters_validation('fractures', 'optional')
-    @wp._memoize('fractures') # TODO - à vérifier
+    @wp._memoize('fractures')
     @wp._logging()
-    def _build_model_fractures(self):
+    def _build_model_fractures(self) -> None:
         """Builds the fractures."""
         self._set_rng('fractures')
         if (not (isinstance(self.SKS_SETTINGS['fractures']['data'], (str)) and (self.SKS_SETTINGS['fractures']['data'] == ''))) or ('settings' in self.SKS_SETTINGS['fractures']):
@@ -476,77 +672,19 @@ class SKS():
     
     @wp._debug_level(3.9)
     @wp._logging()
-    def _build_conceptual_model(self):
-        """Builds the conceptual model."""
-        # simple_model, simple_model_df            = self._build_simple_conceptual_model()
-        conceptual_model, conceptual_model_table = self._build_complete_conceptual_model()
-        self.conceptual_model = conceptual_model
-        self.conceptual_model_table = conceptual_model_table
-        return None
-    
-    # @wp._logging()
-    # def _build_simple_conceptual_model(self):
-    #     """
-    #     # 1 - Geology
-    #     # 2 - Bedding
-    #     # 3 - Fractures
-    #     # 4 - Faults
-    #     # 5 - Karsts
-    #     # 0 - Out
-    #     # 6 - Bedrock - TODO
-    #     """
-    #     simple_model = np.zeros_like(self.grid.data_volume)
-    #     simple_model_table = {
-    #         0 : 'Out',
-    #         1 : 'Geology',
-    #         2 : 'Bedding',
-    #         3 : 'Fractures',
-    #         4 : 'Faults',
-    #         5 : 'Karst',
-    #     }
-    #     simple_model_df = pd.DataFrame(simple_model_table.items(), columns=['id', 'Feature']).set_index('id')
+    def _build_conceptual_model(self) -> None:
+        """Builds the conceptual model.
         
-    #     # 1 - Geology
-    #     geology = np.where(self.geology.data_volume > 0, 1, 0)
-    #     simple_model = np.where(geology == 1, 1, simple_model)
-        
-    #     # 2 - Bedding
-    #     # if self.beddings is not None:
-    #     #     beddings = np.where(self.beddings[-1].data_volume > 0, 1, 0)
-    #     #     simple_model = np.where(beddings == 1, 2, simple_model)
-        
-    #     # 3 - Fractures
-    #     if self.fractures is not None:
-    #         fractures = np.where(self.fractures.data_volume > 0, 1, 0)
-    #         simple_model = np.where(fractures == 1, 3, simple_model)
-            
-    #     # 4 - Faults
-    #     if self.faults is not None:
-    #         faults = np.where(self.faults.data_volume > 0, 1, 0)
-    #         simple_model = np.where(faults == 1, 4, simple_model)
-        
-    #     # 5 - Karst
-    #     # if self.karsts is not None:
-    #     #     karsts = np.where(self.karsts.data_volume > 0, 1, 0)
-    #     #     simple_model = np.where(karsts == 1, 5, simple_model)
-          
-    #     # 0 - Out
-    #     simple_model = np.where(self.domain.data_volume == 0, 0, simple_model)
-            
-    #     return (simple_model, simple_model_df)
-    
-    # TODO
-    @wp._logging()
-    def _build_complete_conceptual_model(self):
+        Data range attributions :
+         - 100 - 199 : Geology
+         - 200 - 299 : Bedding
+         - 300 - 399 : Fractures
+         - 400 - 499 : Faults
+         - 500 - 599 : Karsts
+         - 0 - Out
+         - 600 - Bedrock - TODO
         """
-        # 100 - 199 : Geology
-        # 200 - 299 : Bedding
-        # 300 - 399 : Fractures
-        # 400 - 499 : Faults
-        # 500 - 599 : Karsts
-        # 0 - Out
-        # 600 - Bedrock - TODO
-        """
+        # Initialization
         conceptual_model = np.zeros_like(self.grid.data_volume)
         conceptual_model_table = []
         
@@ -582,123 +720,24 @@ class SKS():
         out_item = [(0, 'Out', np.nan, self.SKS_SETTINGS['sks']['costs']['out'])]
         conceptual_model = np.where(self.domain.data_volume == 0, 0, conceptual_model)
         conceptual_model_table += out_item
-
         conceptual_model_table = pd.DataFrame(conceptual_model_table, columns=['id', 'feature', 'id-feature', 'cost']).set_index('id').sort_values('id')
 
-        return (conceptual_model, conceptual_model_table)
+        # 
+        self.conceptual_model = conceptual_model
+        self.conceptual_model_table = conceptual_model_table
+        return None
     
+    ##### 4 - FMM #########################
     @wp._debug_level(4)
     @wp._logging('fmm', 'construction')
-    def _construct_fmm_variables(self):
-        """
-        TODO
-        """
+    def _construct_fmm_variables(self) -> None:
+        """Constructs the fast-marching method variables."""
         self._initialize_fmm_iterations() # Distributes inlets and outlets among karstic generations
         self._construct_fmm_iterations()  # Distributes inlets and outlets among computing iterations
         self._initialize_fmm_variables()  # Initializes useful variables for the farst-marching method
         return None
-    
-    ########################
-    ### BUILDING METHODS ###
-    ########################
-
-    def _set_rng(self, attribute):
-        """
-        Sets the corresponding seed.
-        TODO
-        """
-        if self.SKS_SETTINGS[attribute]['seed'] == 0:
-            seed = np.random.default_rng().integers(low=0, high=10**6)
-            self.SKS_SETTINGS[attribute]['seed'] = seed
-        self.rng[attribute] = np.random.default_rng(self.SKS_SETTINGS[attribute]['seed'])
-        return None
-
-    def _construct_feature_points(self, kind):
-        """
-        TODO
-        Constructs the inlets / outlets.
-
-        Four cases
-
-        1. No points declared
-        2. More points required than provided : Generates additional random points
-        3. Less points required than provided : Pick random points among provided ones
-        4. Points required equals points declared
-        """
-        # Creates a point generator instance
-        point_manager = PointManager(
-            rng = self.rng[kind],
-            mode = self.SKS_SETTINGS[kind]['mode'],
-            domain = self.domain, 
-            geology = self.geology,
-            geologic_ids = self.SKS_SETTINGS[kind]['geology']
-        ) 
-
-        ### Get existing points
-
-        # Loads points if needed
-        if isinstance(self.SKS_SETTINGS[kind]['data'], (str)) and not (self.SKS_SETTINGS[kind]['data'] == ''):
-            self.SKS_SETTINGS[kind]['data'] = np.genfromtxt(self.SKS_SETTINGS[kind]['data'])
         
-        ### Inspects validity of points
-        points = self.SKS_SETTINGS[kind]['data']
-        
-        # 2D points # TODO - logging ?
-        points_2D = [point for point in points if len(point) == 2]
-        validated_points_2D = [point for point in points_2D if point_manager._is_coordinate_2D_valid(point)]
-        validated_points_3D = [point_manager._generate_3D_coordinate_from_2D_coordinate(point) for point in validated_points_2D]
-        
-        # 3D points # TODO - logging ?
-        points_3D = [point for point in points if len(point) == 3]
-        validated_points_3D += [point for point in points_3D if point_manager._is_coordinate_3D_valid(point)]
-
-        diff = len(points) - len(validated_points_3D)
-        if diff > 0:
-            # TODO - LOG - VERBOSITY
-            # TODO - log name is not correct
-            msg = '{}/{} {} have been discarded because out of domain.'.format(diff, len(self.SKS_SETTINGS[kind]['data']), kind)
-            this.logger.warning(msg)
-        self.SKS_SETTINGS[kind]['data'] = validated_points_3D
-
-        ### Get new points according to the right case
-        # Case 1 - No points declared
-        if (self.SKS_SETTINGS[kind]['data'] == '') or (self.SKS_SETTINGS[kind]['data'] == []):
-            points = point_manager._generate_coordinates(size=self.SKS_SETTINGS[kind]['number'])
-
-        # Case 2 - More points required than provided
-        elif (self.SKS_SETTINGS[kind]['number'] > len(self.SKS_SETTINGS[kind]['data'])):
-            n_points = self.SKS_SETTINGS[kind]['number'] - len(self.SKS_SETTINGS[kind]['data'])
-            points = np.append(np.array(self.SKS_SETTINGS[kind]['data']), point_manager._generate_coordinates(n_points), axis=0)
-
-        # Case 3 - Less points required than provided
-        elif (self.SKS_SETTINGS[kind]['number'] < len(self.SKS_SETTINGS[kind]['data'])):
-            points = self.rng['master'].choice(self.SKS_SETTINGS[kind]['data'], self.SKS_SETTINGS[kind]['number'], replace=False)
-
-        # Case 4 - Points required equals points declared
-        else:
-            points = self.SKS_SETTINGS[kind]['data']
-
-        ### Populates the DataFrame
-        x, y, z = zip(*points)
-        data = {
-            'x' : x,
-            'y' : y,
-            'z' : z,
-        }
-        
-        # Deletes the point manager
-        del point_manager
-
-        return pd.DataFrame(data=data)
-    
-    ####################
-    ### FMM FEATURES ###
-    ####################
-
     def _initialize_fmm_iterations(self):
-        """
-        TODO
-        """
         # Defining some variables
         outlets_nbr = len(self.outlets)
         inlets_nbr  = len(self.inlets)
@@ -729,9 +768,6 @@ class SKS():
         return None
     
     def _construct_fmm_iterations(self):
-        """
-        TODO
-        """
         # Set up iteration structure:
         iteration = 0
         inlets  = []
@@ -767,9 +803,7 @@ class SKS():
         return None
     
     def _repartition_points(self, nbr_points, importance):
-        """
-        Correct for integers in importance factors list not summing correctly to total number of points. # TODO ?
-        """
+        """Corrects for integers in importance factors list not summing correctly to total number of points. # TODO ?"""
         total_importance = float(sum(importance))                                               # total number of points as assigned (this may not be the actual total)
         proportion       = [float(i)/total_importance       for i in importance]                # percent of points to use this iteration
         repartition      = [round(proportion[i]*nbr_points) for i in range(len(proportion))]    # number of points to use this iteration (need to round bc percentage will not result in whole number)
@@ -777,9 +811,6 @@ class SKS():
         return repartition
 
     def _initialize_fmm_variables(self):
-        """
-        TODO
-        """
         ### Raster maps
         self.maps = {
             'outlets' : np.full((self.grid.nx, self.grid.ny, self.grid.nz), np.nan), # map of null values where each cell with an outlet will have the index of that outlet
@@ -831,10 +862,15 @@ class SKS():
 ### KARST NETWORK SIMULATION ###
 ################################
 
-    # Computes karst network
-    def compute_karst_network(self):
-        """
-        Compute the karst network according to the parameters.
+    def compute_karst_network(self) -> None:
+        """Computes the karst network according to the parameters. Must be called after ``build_model()`` method.
+
+        Examples
+        --------
+        >>> import pykasso as pk
+        >>> simulation = pk.SKS()
+        >>> simulation.build_model()
+        >>> simulation.compute_karst_network
         """
         self._compute_karst_network()       # Computes conduits for each generation & store nodes and edges for network
         self._export_results()              # Stores all the relevant data for this network in dictionaries
@@ -843,9 +879,6 @@ class SKS():
     
     
     def _compute_karst_network(self):
-        """
-        TODO
-        """
         this.logger = logging.getLogger("fmm.modelisation")
         this.logger.info("Computing karst network")
         

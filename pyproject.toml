@@ -12,14 +12,17 @@ maintainers = [
     "François Miville <francois@miville.org>"
 ]
 readme = "README.md"
-homepage = ""
+homepage = "https://github.com/randlab/pyKasso"
 repository = "https://github.com/randlab/pyKasso"
-documentation = ""
-keywords = []
+documentation = "" # TODO
+keywords = ['hydrogeology', '3-D modeling', 'stochasticity']
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3.9",
     "Operating System :: OS Independent",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Topic :: Scientific/Engineering",
 ]
 
 [tool.poetry.dependencies]
@@ -33,6 +36,7 @@ pyyaml = "^6.0"
 agd = "^0.1.31"
 scipy = "^1.9.3"
 plotly = "^5.13.1"
+pytest = "^7.2.2"
 
 [tool.poetry.group.analysis.dependencies]
 karstnet = { git = "https://github.com/karstnet/karstnet.git", branch = "master" }
@@ -50,6 +54,7 @@ jupyterlab = "^3.5.2"
 ipyvtklink = "^0.2.3"
 snakeviz = "^2.1.1"
 sphinx = "^6.1.3"
+numpydoc = "^1.5.0"
 
 [build-system]
 requires = ["poetry-core"]

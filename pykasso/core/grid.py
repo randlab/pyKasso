@@ -1,20 +1,31 @@
-"""Module modeling the structured grid."""
+"""
+This module contains a class modeling a structured grid.
+"""
 
 ### External dependencies
 import numpy as np
 from matplotlib.path import Path
 
 ### Typing
-from typing import Union
+from pykasso._typing import Path as pyplotPath
+
 
 class Grid():
-    """Class modeling the three dimensional structured grid of the studied domain.
-    Its attributes are protected and thus not designed to be modified."""
+    """
+    This class models the three dimensional structured grid of the studied
+    domain.
+    """
 
-    def __init__(self, x0:float, y0:float, z0:float, nx:int, ny:int, nz:int, dx:float, dy:float, dz:float) -> None:
-        """Constructs a three dimensional structured grid of nx-nodes-length, ny-nodes-width and nz-nodes-depth.
-        Node centers are located in the center of the dx-length, dy-width and dz-depth cells.
-        The (x0,y0,z0) origin is based at the bottom left corner of the grid.
+    def __init__(self, x0: float, y0: float, z0: float, nx: int, ny: int,
+                 nz: int, dx: float, dy: float, dz: float) -> None:
+        """
+        Constructs a three dimensional structured grid of nx-nodes-length,
+        ny-nodes-width and nz-nodes-depth. Node centers are located in the
+        center of the dx-length, dy-width and dz-depth cells. The (x0,y0,z0)
+        origin is based at the bottom left corner of the grid.
+        
+        .. note::
+            Its attributes are protected and thus not designed to be modified.
 
         Parameters
         ----------
@@ -43,6 +54,7 @@ class Grid():
 
         Examples
         --------
+        >>> import pykasso as pk
         >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
         """
         # Initialization
@@ -56,43 +68,61 @@ class Grid():
         self.__dy = dy
         self.__dz = dz
 
-        # Calculates the meshgrids
-        self.__x = np.arange(self.__x0, self.__x0+(self.__nx)*self.__dx, self.__dx, dtype=np.float64) # 1D array of centerpoints of each cell along x-axis
-        self.__y = np.arange(self.__y0, self.__y0+(self.__ny)*self.__dy, self.__dy, dtype=np.float64) # 1D array of centerpoints of each cell along y-axis
-        self.__z = np.arange(self.__z0, self.__z0+(self.__nz)*self.__dz, self.__dz, dtype=np.float64) # 1D array of centerpoints of each cell along z-axis
-        self.__X, self.__Y, self.__Z = np.meshgrid(self.__x, self.__y, self.__z, indexing="ij")       # 3D array of dimensions (nx, ny, nz) with xyz coordinate of each cell's centerpoint
+        # Calculates the 1D arrays of centerpoints of each cell along each axis
+        # Then calculates 3D arrays of meshgrids
+        self.__x = np.arange(self.__x0, self.__x0 + (self.__nx) * self.__dx,
+                             self.__dx, dtype=np.float64)
+        self.__y = np.arange(self.__y0, self.__y0 + (self.__ny) * self.__dy,
+                             self.__dy, dtype=np.float64)
+        self.__z = np.arange(self.__z0, self.__z0 + (self.__nz) * self.__dz,
+                             self.__dz, dtype=np.float64)
+        self.__X, self.__Y, self.__Z = np.meshgrid(self.__x, self.__y,
+                                                   self.__z, indexing="ij")
 
         # Calculates the dimensions limits
-        self.__xlimits = [self.__x0-self.__dx/2, self.__x[-1]+self.__dx/2]
-        self.__ylimits = [self.__y0-self.__dy/2, self.__y[-1]+self.__dy/2]
-        self.__zlimits = [self.__z0-self.__dz/2, self.__z[-1]+self.__dz/2]
-        self.__extent  = [self.__xlimits[0], self.__xlimits[1], self.__ylimits[0], self.__ylimits[1]] # coordinates of extent for plt.imshow()
+        self.__xlimits = [self.__x0 - self.__dx / 2,
+                          self.__x[-1] + self.__dx / 2]
+        self.__ylimits = [self.__y0 - self.__dy / 2,
+                          self.__y[-1] + self.__dy / 2]
+        self.__zlimits = [self.__z0 - self.__dz / 2,
+                          self.__z[-1] + self.__dz / 2]
+        # Coordinates of extent for plt.imshow()
+        self.__extent = [self.__xlimits[0], self.__xlimits[1],
+                         self.__ylimits[0], self.__ylimits[1]]
 
-        # Declares minimum and maximum attributes for each dimension 
-        self.__xmin = self.__xlimits[0] # x-coordinate of leftmost edge of leftmost cells
-        self.__xmax = self.__xlimits[1] # x-coordinate of rightmost edge of rightmost cells
-        self.__ymin = self.__ylimits[0] # y-coordinate of bottom edge of bottom cells
-        self.__ymax = self.__ylimits[1] # y-coordinate of top edge of top cells
-        self.__zmin = self.__zlimits[0] # z-coordinate of deepest edge of deeptest cells
-        self.__zmax = self.__zlimits[1] # z-coordinate of shallowest edge of shallowest cells
+        # Declares minimum and maximum attributes for each dimension
+        self.__xmin = self.__xlimits[0]
+        self.__xmax = self.__xlimits[1]
+        self.__ymin = self.__ylimits[0]
+        self.__ymax = self.__ylimits[1]
+        self.__zmin = self.__zlimits[0]
+        self.__zmax = self.__zlimits[1]
 
         # Declares some useful attributes
-        self.__area   = (nx * dx) * (ny * dy)       # total area of the xy-surface
-        self.__volume = self.__area * (nz * dz)     # total volume of the grid
-        self.__nodes = nx * ny * nz                 # total number of nodes in the grid
-        self.__node_volume = dx * dy * dz           # volume of one single node
+        self.__area = (nx * dx) * (ny * dy)  # total area of the xy-surface
+        self.__volume = self.__area * (nz * dz)  # total volume of the grid
+        self.__nodes = nx * ny * nz  # total number of nodes in the grid
+        self.__node_volume = dx * dy * dz  # volume of one single node
         self.__data_volume = np.ones((nx, ny, nz))  # array modeling the grid
-        self.__shape = (nx, ny, nz)                 # shape of the modeling array
+        self.__shape = (nx, ny, nz)  # shape of the modeling array
         
         # Other attributes used in further geometrical operations
-        x_path = [self.__xlimits[0], self.__xlimits[0], self.__xlimits[1], self.__xlimits[1], self.__xlimits[0]]
-        y_path = [self.__ylimits[0], self.__ylimits[1], self.__ylimits[1], self.__ylimits[0], self.__ylimits[0]]
+        x_path = [self.__xlimits[0], self.__xlimits[0], self.__xlimits[1],
+                  self.__xlimits[1], self.__xlimits[0]]
+        y_path = [self.__ylimits[0], self.__ylimits[1], self.__ylimits[1],
+                  self.__ylimits[0], self.__ylimits[0]]
         self.__path = Path(list(zip(x_path, y_path)))
-        self.__surface_coordinates = list(zip(x_path[:-1],y_path[:-1]))
+        self.__surface_coordinates = list(zip(x_path[:-1], y_path[:-1]))
         
-
     def __str__(self) -> str:
-        return "pyKasso's grid\n[x0, y0, z0] : ({}, {}, {})\n[nx, ny, nz] : ({}, {}, {})\n[dx, dy, dz] : ({}, {}, {})".format(self.x0, self.y0, self.z0, self.nx, self.ny, self.nz, self.dx, self.dy, self.dz)
+        txt = ("pyKasso's grid"
+               "\n[x0, y0, z0] : ({}, {}, {})"
+               "\n[nx, ny, nz] : ({}, {}, {})"
+               "\n[dx, dy, dz] : ({}, {}, {})"
+               .format(self.x0, self.y0, self.z0,
+                       self.nx, self.ny, self.nz,
+                       self.dx, self.dy, self.dz))
+        return txt
 
     ###############
     ### GETTERS ###
@@ -145,17 +175,26 @@ class Grid():
 
     @property
     def x(self) -> np.ndarray:
-        """Gets the one dimensional array of centerpoints of each cell along x-axis."""
+        """
+        Gets the one dimensional array of centerpoints of each cell along
+        x-axis.
+        """
         return self.__x
 
     @property
     def y(self) -> np.ndarray:
-        """Gets the one dimensional array of centerpoints of each cell along y-axis."""
+        """
+        Gets the one dimensional array of centerpoints of each cell along
+        y-axis.
+        """
         return self.__y
 
     @property
     def z(self) -> np.ndarray:
-        """Gets the one dimensional array of centerpoints of each cell along z-axis."""
+        """
+        Gets the one dimensional array of centerpoints of each cell along
+        z-axis.
+        """
         return self.__z
 
     @property
@@ -254,19 +293,22 @@ class Grid():
         return self.__shape
 
     @property
-    def path(self):
+    def path(self) -> Path:
+        """Gets the path."""
         return self.__path
     
     @property
-    def surface_coordinates(self):
+    def surface_coordinates(self) -> list:
+        """Gets the surface coordinates."""
         return self.__surface_coordinates
 
     ###############
     ### METHODS ###
     ###############
 
-    def get_i(self, x:float) -> int:
-        """Retrieves i-index from x-coordinate.
+    def get_i(self, x: float) -> int:
+        """
+        Retrieves i-index from x-coordinate.
 
         Parameters
         ----------
@@ -285,12 +327,13 @@ class Grid():
         7
         """
         x = np.array(x)
-        out = np.ceil((x - self.x0 - self.dx/2) / self.dx)
+        out = np.ceil((x - self.x0 - self.dx / 2) / self.dx)
         out = out.astype('int32')
         return out
 
-    def get_j(self, y:float) -> int:
-        """Retrieves j-index from y-coordinate.
+    def get_j(self, y: float) -> int:
+        """
+        Retrieves j-index from y-coordinate.
 
         Parameters
         ----------
@@ -309,12 +352,13 @@ class Grid():
         3
         """
         y = np.array(y)
-        out = np.ceil((y - self.y0 - self.dy/2) / self.dy)
+        out = np.ceil((y - self.y0 - self.dy / 2) / self.dy)
         out = out.astype('int32')
         return out
 
-    def get_k(self, z:float) -> int:
-        """Retrieves k-index from z-coordinate.
+    def get_k(self, z: float) -> int:
+        """
+        Retrieves k-index from z-coordinate.
 
         Parameters
         ----------
@@ -333,12 +377,14 @@ class Grid():
         2
         """
         z = np.array(z)
-        out = np.ceil((z - self.z0 - self.dz/2) / self.dz)
+        out = np.ceil((z - self.z0 - self.dz / 2) / self.dz)
         out = out.astype('int32')
         return out
     
-    def get_indices(self, x:float, y:float, z:float=None) -> Union[tuple[float,float],tuple[float,float,float]]:
-        """Retrieves both i and j-index from x and y-coordinates. Returns also k-index when z-coordinate is provided. 
+    def get_indices(self, x: float, y: float, z: float = None) -> tuple:
+        """
+        Retrieves both i and j-index from x and y-coordinates. Returns also
+        k-index when z-coordinate is provided.
 
         Parameters
         ----------
@@ -369,8 +415,9 @@ class Grid():
             out = (self.get_i(x), self.get_j(y), self.get_k(z))
             return out
 
-    def get_x(self, i:int) -> float:
-        """Retrieves x-coordinate from i-index.
+    def get_x(self, i: int) -> float:
+        """
+        Retrieves x-coordinate from i-index.
 
         Parameters
         ----------
@@ -390,12 +437,13 @@ class Grid():
         """
         i = np.array(i)
         i = i.astype('int32')
-        out = np.where((i < 0) | (i > (self.nx-1)), None, self.x[i])
+        out = np.where((i < 0) | (i > (self.nx - 1)), None, self.x[i])
         out = float(out)
         return out
 
-    def get_y(self, j:int) -> float:
-        """Retrieves y-coordinate from j-index.
+    def get_y(self, j: int) -> float:
+        """
+        Retrieves y-coordinate from j-index.
 
         Parameters
         ----------
@@ -415,12 +463,13 @@ class Grid():
         """
         j = np.array(j)
         j = j.astype('int32')
-        out = np.where((j < 0) | (j > (self.ny-1)), None, self.y[j])
+        out = np.where((j < 0) | (j > (self.ny - 1)), None, self.y[j])
         out = float(out)
         return out
 
-    def get_z(self, k:int) -> float:
-        """Retrieves z-coordinate from k-index.
+    def get_z(self, k: int) -> float:
+        """
+        Retrieves z-coordinate from k-index.
 
         Parameters
         ----------
@@ -440,12 +489,14 @@ class Grid():
         """
         k = np.array(k)
         k = k.astype('int32')
-        out = np.where((k < 0) | (k > (self.nz-1)), None, self.z[k])
+        out = np.where((k < 0) | (k > (self.nz - 1)), None, self.z[k])
         out = float(out)
         return out
     
-    def get_coordinates(self, i:int, j:int, k:int=None) -> Union[tuple[float,float],tuple[float,float,float]]:
-        """Retrieves both x and y-coordinates from i and j-index. Returns also z-coordinate when k-index is provided.
+    def get_coordinates(self, i: int, j: int, k: int = None) -> tuple:
+        """
+        Retrieves both x and y-coordinates from i and j-index. Returns also
+        z-coordinate when k-index is provided.
 
         Parameters
         ----------
@@ -466,7 +517,7 @@ class Grid():
         >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
         >>> grid.get_coordinates(5, 5)
         (50.0, 100.0)
-        >>> grid.get_coordinates(5, 5, 15)
+        >>> grid.get_coordinates(5, 5, 5)
         (50.0, 100.0, 150.0)
         """
         if k is None:
@@ -476,8 +527,10 @@ class Grid():
             out = (self.get_x(i), self.get_y(j), self.get_z(k))
             return out
 
-    def is_inbox(self, x:float, y:float, z:float) -> bool:
-        """Returns true if a (x, y, z)-coordinate point is inside the grid, otherwise false.
+    def is_inbox(self, x: float, y: float, z: float) -> bool:
+        """
+        Returns true if a (x, y, z)-coordinate point is inside the grid,
+        otherwise false.
 
         Parameters
         ----------
@@ -501,5 +554,7 @@ class Grid():
         False
         """
         i, j, k = self.get_i(x), self.get_j(y), self.get_k(z)
-        out = bool( (k-self.nz+1)*k <= 0 ) and ( (j-self.ny+1)*j <= 0 ) and ( (i-self.nx+1)*i <= 0 )
+        out = (bool((k - self.nz + 1) * k <= 0)
+               and ((j - self.ny + 1) * j <= 0)
+               and ((i - self.nx + 1) * i <= 0))
         return out

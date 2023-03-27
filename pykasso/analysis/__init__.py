@@ -3,7 +3,13 @@
 analysis
 ========
 
-A sub-module for karst network analysis.
+A subpackage for karst network analysis.
 """
 
-from .main import *
+__all__ = []
+
+from .analysis import Analysis
+from .._version import __version__
+
+__all__.extend(['Analysis', 'statistics'])
+__all__.extend(['__version__'])

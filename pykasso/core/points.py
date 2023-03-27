@@ -1,38 +1,66 @@
 """
-# TODO
-# - Documentation
-# - Gestion des cartes de densité de probabilités pour le tirage des points
+This module contains a point manager class designed for complex conditionnal
+point generation.
 """
 
-import sys
+### Internal dependencies
 import logging
-
-### Typing
-from pykasso._typing import Domain, Geology
 
 ### External dependencies
 import numpy as np
 
-# sks  = sys.modules['pykasso.core.sks']
-# import pykasso.visualization as pkv
-# pkv.show_array(probabilistic_domain_geology, ghost=1)
+### Typing
+from pykasso._typing import Domain, Geology, RandomNumberGenerator
+
 
 class PointManager():
-    """"""
-    def __init__(self, rng, mode:str, domain:Domain, geology:Geology, geologic_ids:list) -> None:
-        """"""
+    """
+    Class modeling a point manager tool for point generation and management.
+    The tool is not stored in the memory and is erased after usage.
+    """
+    
+    def __init__(self, rng: RandomNumberGenerator, mode: str, domain: Domain,
+                 geology: Geology, geologic_ids: list) -> None:
+        """_summary_
+
+        Parameters
+        ----------
+        rng : RNG
+            A random number generator from numpy :
+            https://numpy.org/devdocs/reference/random/generator.html
+        mode : str
+            _description_
+        domain : Domain
+            _description_
+        geology : Geology
+            _description_
+        geologic_ids : list
+            _description_
+        """
+        
+        # TODO
         logging.getLogger('points.')
-        self.rng     = rng
-        self.mode    = mode
-        self.domain  = domain
+        
+        # Initialization
+        self.rng = rng
+        self.mode = mode
+        self.domain = domain
         self.geology = geology
+        
+        # Controls dictionary validity of geological constraints
         self.geologic_ids = self._controls_geologic_ids_validity(geologic_ids)
-        self.valid_domain_volume  = self._get_domain()
-        self.valid_domain_surface = np.sum(self.valid_domain_volume, axis=2) > 0 
+        
+        #
+        self.valid_domain_volume = self._get_domain()
+        
+        #
+        self.valid_domain_surface = np.sum(self.valid_domain_volume, axis=2) > 0
+        
+        #
         self.probability_map = self._calculate_probability_map(self.valid_domain_volume)
         
-    def _controls_geologic_ids_validity(self, geologic_ids:list) -> list:
-        """ 
+    def _controls_geologic_ids_validity(self, geologic_ids: list) -> list:
+        """
         Controls validity of 'geologic_ids'.
         """
         if geologic_ids is None:
@@ -45,10 +73,14 @@ class PointManager():
                 if geologic_id in values:
                     validated_geology_ids.append(geologic_id)
                 else:
-                    logging.warning("Declared geologic id #{} is not present in geology model.".format(geologic_id))
+                    msg = ("Declared geologic id #{} is not present in "
+                           "geology model.".format(geologic_id))
+                    logging.warning(msg)
                 
             if len(validated_geology_ids) == 0:
-                logging.warning("No declared geologic id is present in the geologic model, geologic constraints are ignored.".format(geologic_id))
+                msg = ("No declared geologic id is present in the geologic "
+                       "model, geologic constraints are ignored.")
+                logging.warning(msg)
                 return None
             else:
                 return validated_geology_ids
@@ -56,7 +88,7 @@ class PointManager():
     def _get_domain(self):
         """"""
         try:
-            probabilistic_domain = self.domain.get_subdomain(self.mode)
+            probabilistic_domain = self.domain._get_subdomain(self.mode)
         except:
             # TODO
             print('points.py - _get_domain - ERROR')
@@ -79,16 +111,17 @@ class PointManager():
         
         return probabilistic_domain
     
-    def _calculate_probability_map(self, array:np.ndarray) -> list:
+    def _calculate_probability_map(self, array: np.ndarray) -> list:
         """"""
-        i,j,k = np.indices(array.shape)
-        i,j,k = i.flatten(), j.flatten(), k.flatten(), 
+        i, j, k = np.indices(array.shape)
+        i, j, k = i.flatten(), j.flatten(), k.flatten()
         state = array.flatten()
         nodes = list(zip(state, i, j, k))
-        probability_map = [(i,j,k) for (state,i,j,k) in nodes if state == 1]
+        probability_map = [(i, j, k) for (state, i, j, k)
+                           in nodes if state == 1]
         return probability_map
     
-    def _generate_coordinates(self, size:int=1) -> np.ndarray:
+    def _generate_coordinates(self, size: int = 1) -> np.ndarray:
         """"""
         indices = self.rng.choice(self.probability_map, size=size)
         i, j, k = zip(*indices)
@@ -108,24 +141,26 @@ class PointManager():
         z = self.domain.grid.zmin + (k_ + self.rng.random()) * self.domain.grid.dz
         return (x, y, z)
     
-    def _is_coordinate_2D_valid(self, coordinate:tuple) -> bool:
+    def _is_coordinate_2D_valid(self, coordinate: tuple) -> bool:
         """Checks if the 2D point is valid."""
         x, y = coordinate
-        if self.domain.is_coordinate_2D_valid(x,y):
+        if self.domain.is_coordinate_2D_valid(x, y):
             i, j = self.domain.grid.get_indices(x, y)
-            return self.valid_domain_surface[i,j]
+            return self.valid_domain_surface[i, j]
         else:
             return False
         
-    def _is_coordinate_3D_valid(self, coordinate:tuple) -> bool:
+    def _is_coordinate_3D_valid(self, coordinate: tuple) -> bool:
         """Checks if the 3D points is valid."""
         x, y, z = coordinate
             
         # Case 1 - No geology
         if self.geologic_ids is None:
-            return self.domain.is_coordinate_in_domain(x,y,z)
+            return self.domain.is_coordinate_in_domain(x, y, z)
         
         # Case 2 - With geology
         else:
-            i, j, k = self.domain.grid.get_indices(x,y,z)
-            return self.domain.is_coordinate_in_domain(x,y,z) and (self.geology.data_volume[i,j,k] in self.geologic_ids)  
+            i, j, k = self.domain.grid.get_indices(x, y, z)
+            out = (self.domain.is_coordinate_in_domain(x, y, z)
+                   and (self.geology.data_volume[i, j, k] in self.geologic_ids))
+            return out

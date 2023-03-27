@@ -1,4 +1,6 @@
-"""Module with classes modeling the geological features."""
+"""
+This module contains classes modeling the geological features.
+"""
 
 ### Local dependencies
 from .fracturation import generate_fractures, voxelize_fractures
@@ -11,10 +13,11 @@ import pandas as pd
 ### Main class ###
 ##################
 
+
 class GeologicFeature():
     """Class modeling a geological feature."""
     
-    def __init__(self, label:str, dim:int, data, grid, **kwargs) -> None:
+    def __init__(self, label: str, dim: int, data, grid, **kwargs) -> None:
         """Constructs a geological feature.
 
         Parameters
@@ -29,7 +32,7 @@ class GeologicFeature():
             _description_
         """
         self.label = label
-        self.dim   = dim
+        self.dim = dim
     
         # Selects the right attribute to fill
         if self.dim == 2:
@@ -40,7 +43,6 @@ class GeologicFeature():
         # Sets the data
         data = self._set_data(data, grid, **kwargs)
         setattr(self, attribute, data)
-
 
     def _set_data(self, data, grid, **kwargs) -> np.ndarray:
         """Selects the right methods to load the data."""
@@ -66,7 +68,6 @@ class GeologicFeature():
             else:
                 return self._set_data_ones(grid)
                 
-                
     def _set_data_ones(self, grid) -> np.ndarray:
         """Sets data to a matrice full of ones. i.e. : np.ones((nx,ny,nz))."""
         if self.dim == 2:
@@ -74,9 +75,9 @@ class GeologicFeature():
         elif self.dim == 3:
             return np.ones((grid.nx, grid.ny, grid.nz), dtype=np.int8)
         
-
     def _set_data_from_gslib(self, grid, data) -> np.ndarray:
-        """Sets data from a gslib file.
+        """
+        Sets data from a gslib file.
 
         Filling method :
         1) x-axis from West to East
@@ -93,14 +94,12 @@ class GeologicFeature():
                 data = np.repeat(data[:, :, np.newaxis], grid.nz, axis=2)
         return data
     
-    
     def _set_data_from_csv(self, grid, data) -> np.ndarray:
         """Sets data from a .csv file."""
         data = np.genfromtxt(data, delimiter=',').T
         if self.dim == 3:
             data = np.repeat(data[:, :, np.newaxis], grid.nz, axis=2)
         return data
-    
     
     def _set_data_from_txt(self, grid, data) -> np.ndarray:
         """Sets data from a .txt file."""
@@ -109,48 +108,48 @@ class GeologicFeature():
             data = np.repeat(data[:, :, np.newaxis], grid.nz, axis=2)
         return data
 
-
-    # def _set_data_from_grd(self) -> np.ndarray:
-    #     """Sets data from a .grd file."""
-    #     data = None
-    #     return data
-
-
     def _set_data_from_numpy_pickle(self, data) -> np.ndarray:
         """Sets data from a numpy pickle."""
         return np.load(data)
 
-
     def _set_data_from_image(self, grid, data, axis) -> np.ndarray:
-        """Sets data from a .jpg or .png file.
-        The size of the image must be the same as the size of the grid.
-        If nz > 1, the layer is horizontally repeated.
-        This method usage is not recommended, it should be used only for quick testing.
+        """
+        Sets data from a .jpg or .png file. The size of the image must be the
+        same as the size of the grid. If nz > 1, the layer is horizontally
+        repeated.
+        
+        .. info::
+            This method usage is not recommended, it should be used only for
+            quick testing.
         """
         import PIL
         from PIL import Image
         
         # Reads image
-        pil_image = PIL.Image.open(data).convert('L').transpose(Image.FLIP_TOP_BOTTOM)
+        pil_image = (PIL.Image.open(data).convert('L')
+                     .transpose(Image.FLIP_TOP_BOTTOM))
         npy_image = np.asarray(pil_image).T
         
         # Processes the image
         if self.label in ['faults', 'fractures']:
-            npy_image = (npy_image[:,:] == 0)*1
-        else:        
+            npy_image = (npy_image[:, :] == 0) * 1
+        else:
             npy_image = npy_image + 1000
             n_colors = np.unique(npy_image)
             for i, color in enumerate(np.flip(n_colors)):
-                npy_image = np.where(npy_image == color, i+1, npy_image)
+                npy_image = np.where(npy_image == color, i + 1, npy_image)
             
         # According to axis, repeats data along if necessary
         if self.dim == 3:
             if (axis.lower() == 'x'):
-                npy_image = np.repeat(npy_image[np.newaxis, :, :], grid.nx, axis=0)
+                npy_image = np.repeat(npy_image[np.newaxis, :, :],
+                                      grid.nx, axis=0)
             elif (axis.lower() == 'y'):
-                npy_image = np.repeat(npy_image[:, np.newaxis, :], grid.ny, axis=1)
+                npy_image = np.repeat(npy_image[:, np.newaxis, :],
+                                      grid.ny, axis=1)
             elif (axis.lower() == 'z'):
-                npy_image = np.repeat(npy_image[:, :, np.newaxis], grid.nz, axis=2)
+                npy_image = np.repeat(npy_image[:, :, np.newaxis],
+                                      grid.nz, axis=2)
 
         return npy_image
 
@@ -166,7 +165,6 @@ class Surface(GeologicFeature):
         dim = 2
         super().__init__(label, dim, data, grid, **kwargs)
     
-    
     def _surface_to_volume(self, condition, grid):
         """Converts a two dimensional array in a three dimensional array."""
         k = grid.get_k(self.data_surface)
@@ -174,11 +172,14 @@ class Surface(GeologicFeature):
         for z in range(grid.nz):
             data_volume[:, :, z] = z
             if condition == '>=':
-                data_volume[:, :, z] = np.where(data_volume[:, :, z] >= k, 1, 0)
+                test = data_volume[:, :, z] >= k
+                data_volume[:, :, z] = np.where(test, 1, 0)
             elif condition == '=':
-                data_volume[:, :, z] = np.where(data_volume[:, :, z] == k, 1, 0) 
+                test = data_volume[:, :, z] == k
+                data_volume[:, :, z] = np.where(test, 1, 0)
             elif condition == '<=':
-                data_volume[:, :, z] = np.where(data_volume[:, :, z] <= k, 1, 0)
+                test = data_volume[:, :, z] <= k
+                data_volume[:, :, z] = np.where(test, 1, 0)
         return data_volume
 
    
@@ -191,14 +192,13 @@ class Volume(GeologicFeature):
         self._compute_statistics(grid)
         self.costs = kwargs['costs']
         
-        
     def _compute_statistics(self, grid):
         """Computes the statistics (counts and frequency) on the data."""
         values, counts = np.unique(self.data_volume, return_counts=True)
         stats = {
-            'counts' : counts,
-            'freq'   : counts / grid.nodes,
-            'volume' : counts * grid.node_volume,
+            'counts': counts,
+            'freq': counts / grid.nodes,
+            'volume': counts * grid.node_volume,
         }
         self.stats = pd.DataFrame(data=stats, index=values)
         return None
@@ -219,6 +219,7 @@ class Bedding(Surface):
 #####################
 ### 3D Subclasses ###
 #####################
+
 
 class Geology(Volume):
     """Class modeling the geologic model."""
@@ -243,23 +244,24 @@ class Fractures(Volume):
         label = 'fractures'
 
         if 'settings' in kwargs:
-            fractures_families_settings = kwargs['settings']
+            frac_families_settings = kwargs['settings']
             
             self.table = pd.DataFrame()
             self.fractures_families = {}
 
             # Generates one array for each fractures family
-            for (i, fractures_family_settings) in enumerate(fractures_families_settings):
+            for (i, frac_family_settings) in enumerate(frac_families_settings):
                 
-                settings = fractures_families_settings[fractures_family_settings]
-                settings['density'] = float(settings['density']) # TODO - à mettre dans validations
+                settings = frac_families_settings[frac_family_settings]
                 if 'cost' in settings:
                     del settings['cost']
-                generated_fractures = generate_fractures(grid=grid, rng=kwargs['rng'], **settings)
-                generated_fractures.insert(0, 'family_id', i+1)
+                generated_fractures = generate_fractures(grid=grid, 
+                                                         rng=kwargs['rng'],
+                                                         **settings)
+                generated_fractures.insert(0, 'family_id', i + 1)
                 self.table = pd.concat([self.table, generated_fractures])
 
-                self.fractures_families[i+1] = voxelize_fractures(grid, generated_fractures)
+                self.fractures_families[i + 1] = voxelize_fractures(grid, generated_fractures)
             
             # Constructs the model for fracturation
             frac_model = np.zeros_like(grid.data_volume)
@@ -278,7 +280,7 @@ class Fractures(Volume):
                 frac_model_geology = np.zeros_like(frac_model)
                 for geologic_id in kwargs['geology']:
                     frac_model_geology = np.where(Geology.data_volume == geologic_id, frac_model, frac_model_geology)
-                self.fractures_families['model'] =frac_model_geology
+                self.fractures_families['model'] = frac_model_geology
                     
             data = self.fractures_families['model']
                 

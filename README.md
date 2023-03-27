@@ -1,10 +1,14 @@
 ![pyKasso's banner](/docs/source/_static/pykasso_banner_logo.png)
 
 <!-- ![]() -->
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/randlab/pyKasso/dev)
+[![PyPI Version](https://img.shields.io/pypi/v/pykasso.png)](https://pypi.python.org/pypi/pykasso)
+[![PyPI Status](https://img.shields.io/pypi/status/pykasso.png)](https://pypi.python.org/pypi/pykasso)
+[![PyPI Versions](https://img.shields.io/pypi/pyversions/pykasso.png)](https://pypi.python.org/pypi/pykasso)
+
 ![license](https://img.shields.io/github/license/randlab/pyKasso)
 ![last-commit](https://img.shields.io/github/last-commit/randlab/pyKasso/dev)
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/randlab/pyKasso/dev)
 
 ## pyKasso: a stochastic karst network simulation tool
 <!-- ![pyKasso's logo](/docs/source/_static/pykasso_logo.png) -->
@@ -16,40 +20,24 @@ pyKasso is a python3 open-source package intended to simulate easily and quickly
 
 ## Installation
 
-pyKasso is currently only working with Python 3.9
+Currently, pyKasso is only working with Python 3.9.
 
-### Install the pyKasso and main dependencies
+### Using pip
 
-#### Using pip
-
-<!-- ```
+```
 pip install pykasso
-``` -->
-
-From source:
-```
-python -m pip install .
-python -m pip install .[analysis]
-python -m pip install .[visualization]
 ```
 
-#### Using poetry
+#### Manually install AGD
 
-From source:
-```
-poetry install
-```
+If you installed pyKasso with pip, you also need to manually install the binaries from agd-hfm packgage according to your operating system : https://anaconda.org/AGD-LBR/hfm/files
 
-#### Using conda
+### Using conda
 
-From source:
+Download *environment.yml*. From source:
 ```
 conda env create --name pykasso --file=environment.yml
 ```
-
-### Manually install AGD
-
-If you installed pyKasso with pip or poetry, you also need to manually install the binaries from agd-hfm packgage according to your operating system : https://anaconda.org/AGD-LBR/hfm/files
 
 ### Check installation
 

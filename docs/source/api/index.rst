@@ -1,7 +1,10 @@
 API reference
-=============   
+=============
 
-Work in progress
+.. automodule:: pykasso.analysis
+    :members:
+    :show-inheritance:
 
-
-.. include:: modules.rst
+.. toctree::
+   :caption: API Reference
+   :hidden:

@@ -653,4 +653,6 @@ def validate_fractures_settings(settings:dict, grid) -> dict:
                     settings['settings'][frac_family]['cost'] = sks.default_fmm_costs['fractures']
                 costs[i+1] = settings['settings'][frac_family]['cost']
             settings['costs'] = costs
+
+        settings['settings']['density'] = float(settings['settings']['density'])
     return settings

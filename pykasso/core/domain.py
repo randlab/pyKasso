@@ -1,4 +1,6 @@
-"""Module modeling the domain, expliciting the valid cells of the grid of the study site."""
+"""
+This module contains classes modeling the domain of the study site.
+"""
 
 ### Local dependencies
 from .geologic_features import Surface
@@ -12,10 +14,19 @@ from scipy.ndimage import binary_dilation
 from typing import Union
 from pykasso._typing import Grid, Delimitation, Topography, Bedrock, WaterLevel
 
+
 class Domain():
-    """Class modeling the spatial extension of the domain within the study site grid locating where karstic network generation is allowed."""
-    def __init__(self, grid:Grid, delimitation:Delimitation=None, topography:Topography=None, bedrock:Bedrock=None, water_level:WaterLevel=None) -> None:
-        """Constructs an array modeling the valid spatial extension for karst networks calculation.
+    """
+    Class modeling the spatial extension of the domain within the study site
+    grid locating where karstic network generation is allowed.
+    """
+    
+    def __init__(self, grid: Grid, delimitation: Delimitation = None,
+                 topography: Topography = None, bedrock: Bedrock = None,
+                 water_level: WaterLevel = None) -> None:
+        """
+        Constructs an array modeling the valid spatial extension for karst
+        networks calculation.
 
         Parameters
         ----------
@@ -35,26 +46,31 @@ class Domain():
         - TODO : Work in progress
         """
         ### Initialization
-        self.grid        = grid
+        self.grid = grid
         self.data_volume = np.zeros_like(grid.data_volume)
         self.delimitation = delimitation
-        self.topography   = topography
-        self.bedrock      = bedrock
-        self.water_level  = water_level
+        self.topography = topography
+        self.bedrock = bedrock
+        self.water_level = water_level
         
         ### Computes domain extension
         # Computes volumetric domain extension
-        if delimitation is not None: self.data_volume += delimitation.data_volume
-        if topography   is not None: self.data_volume += topography.data_volume
-        if bedrock      is not None: self.data_volume += np.logical_not(bedrock.data_volume).astype(int)
-        self.data_volume = np.where(self.data_volume == self.data_volume.max(), 1, 0) # only keeps cells where all the classes join  
+        if delimitation is not None:
+            self.data_volume += delimitation.data_volume
+        if topography is not None:
+            self.data_volume += topography.data_volume
+        if bedrock is not None:
+            self.data_volume += np.logical_not(bedrock.data_volume).astype(int)
+        # only keeps cells where all the classes joins
+        test = self.data_volume == self.data_volume.max()
+        self.data_volume = np.where(test, 1, 0)
             
         # Computes apparent surface from domain according to axis
         self.data_surfaces = {
-            'x' : self.data_volume.max(axis=0),
-            'y' : self.data_volume.max(axis=1),
-            'z' : self.data_volume.max(axis=2),
-        } 
+            'x': self.data_volume.max(axis=0),
+            'y': self.data_volume.max(axis=1),
+            'z': self.data_volume.max(axis=2),
+        }
         
         ### Computes subdomains from the lower and upper surfaces of the domain
         self._set_faces()
@@ -69,33 +85,33 @@ class Domain():
         ### Names the subdomains
         self.subdomains_names = {
             # domain
-            "domain"         : "self.data_volume",
-            "domain_surface" : "self.faces['up']",
-            "domain_bottom"  : "self.faces['down']",
+            "domain": "self.data_volume",
+            "domain_surface": "self.faces['up']",
+            "domain_bottom": "self.faces['down']",
             # borders
-            "domain_borders"         : "self.borders['domain_full']",
-            "domain_borders_sides"   : "self.borders['domain_sides']",
-            "domain_borders_surface" : "self.borders['domain_up']",
-            "domain_borders_bottom"  : "self.borders['domain_down']", 
+            "domain_borders": "self.borders['domain_full']",
+            "domain_borders_sides": "self.borders['domain_sides']",
+            "domain_borders_surface": "self.borders['domain_up']",
+            "domain_borders_bottom": "self.borders['domain_down']",
             # phreatic
-            "vadose"                   : "self.phreatic['vadose_zone']",
-            "vadose_borders"           : "self.borders['vadose_zone']",
-            "phreatic"                 : "self.phreatic['phreatic_zone']",
-            "phreatic_surface"         : "self.phreatic['water_level_surface']",
-            "phreatic_borders_surface" : "self.borders['water_level_surface']",
-        }  
-    
+            "vadose": "self.phreatic['vadose_zone']",
+            "vadose_borders": "self.borders['vadose_zone']",
+            "phreatic": "self.phreatic['phreatic_zone']",
+            "phreatic_surface": "self.phreatic['water_level_surface']",
+            "phreatic_borders_surface": "self.borders['water_level_surface']",
+        }
     
     def _set_faces(self) -> None:
         """Computes the upper and lower surfaces from the volumetric domain."""
-        self.faces = {} # faces will be stored in this dict attribute
+        self.faces = {}  # faces will be stored in this dict attribute
         domain = self.data_volume.astype('bool')
-        I, J, K = np.indices(self.data_volume.shape) # retrieves grid indices
+        I, J, K = np.indices(self.data_volume.shape)  # retrieves grid indices
         
         # for face in ['up', 'down', 'east', 'west', 'north', 'soouth']:
         for face_name in ['up', 'down']:
             if face_name in ['up', 'down']:
-                i_, j_ = np.indices(self.data_surfaces['z'].shape) # retrieves z-surface grid indices
+                # retrieves z-surface grid indices
+                i_, j_ = np.indices(self.data_surfaces['z'].shape)
                 range_ = list(range(self.grid.nz))
                 if face_name == 'up':
                     face = K.max(axis=2, initial=-1, where=domain)
@@ -104,51 +120,72 @@ class Domain():
         
             i_, j_ = i_.flatten(), j_.flatten()
             k = face.flatten()
-            nodes = list(zip(i_,j_,k))
-            valid_nodes = [(i,j,k) for (i,j,k) in nodes if k in range_]               
-            i,j,k = zip(*valid_nodes)
+            nodes = list(zip(i_, j_, k))
+            valid_nodes = [(i, j, k) for (i, j, k) in nodes if k in range_]
+            i, j, k = zip(*valid_nodes)
             volume = np.zeros_like(self.data_volume)
-            volume[i,j,k] = 1
+            volume[i, j, k] = 1
             self.faces[face_name] = volume
         return None
 
     def _set_border_domains(self) -> None:
         """Computes the borders subdomains."""
-        self.borders = {} # borders subdomains will be stored in this dict attribute
+        self.borders = {}
         
-        # Computes the full borders extent using scipy.binary_dilation algorithm
+        # Computes the full borders extent using scipy.binary_dilation
+        # algorithm
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.binary_dilation.html
-        k = np.zeros((3,3,3), dtype=int); k[:,1,1], k[1,:,1], k[1,1,:] = 1,1,1
-        self.borders['domain_full'] = binary_dilation(self.data_volume==0, k, border_value=1) & self.data_volume
+        k = np.zeros((3, 3, 3), dtype=int)
+        k[:, 1, 1], k[1, :, 1], k[1, 1, :] = 1, 1, 1
+        dilation = binary_dilation(self.data_volume == 0, k, border_value=1)
+        self.borders['domain_full'] = dilation & self.data_volume
         
         # x and y-axis borders
-        k = np.zeros((3,3), dtype=int); k[:,1], k[1,:] = 1,1
+        k = np.zeros((3, 3), dtype=int)
+        k[:, 1], k[1, :] = 1, 1
         self.borders['domain_sides'] = np.zeros_like(self.data_volume)
-        for z in range(self.grid.nz):            
-            self.borders['domain_sides'][:,:,z] = binary_dilation(self.data_volume[:,:,z]==0, k, border_value=1) & self.data_volume[:,:,z]
+        for z in range(self.grid.nz):
+            dilation = binary_dilation(self.data_volume[:, :, z] == 0, k,
+                                       border_value=1)
+            test = dilation & self.data_volume[:, :, z]
+            self.borders['domain_sides'][:, :, z] = test
             
         # 'Domain' x 'Face up'
-        self.borders['domain_up'] = np.logical_and(self.borders['domain_sides'], self.faces['up'])
+        self.borders['domain_up'] = (
+            np.logical_and(self.borders['domain_sides'], self.faces['up'])
+        )
         
         # 'Domain' x 'Face down'
-        self.borders['domain_down'] = np.logical_and(self.borders['domain_sides'], self.faces['down'])
+        self.borders['domain_down'] = (
+            np.logical_and(self.borders['domain_sides'], self.faces['down'])
+        )
         return None
         
     def _set_phreatic_domains(self) -> None:
         """Computes the subdomains derivated from the water level elevation."""
-        water_volume  = self.water_level.data_volume
+        water_volume = self.water_level.data_volume
         water_surface = self.water_level._surface_to_volume('=', self.grid)
         
+        vadose_zone = np.logical_and(self.data_volume,
+                                     np.logical_not(water_volume))
+        phreatic_zone = np.logical_and(self.data_volume, water_volume)
+        water_level_surface = np.logical_and(self.data_volume, water_surface)
         self.phreatic = {
-            'vadose_zone'         : np.logical_and(self.data_volume, np.logical_not(water_volume)), # 'Domain' x 'Vadose zone'
-            'phreatic_zone'       : np.logical_and(self.data_volume, water_volume),                 # 'Domain' x 'Phreatic zone'
-            'water_level_surface' : np.logical_and(self.data_volume, water_surface),                # 'Domain' x 'Phreatic zone' surface
-        }    
+            'vadose_zone': vadose_zone,
+            'phreatic_zone': phreatic_zone,
+            'water_level_surface': water_level_surface,
+        }
         
         # Water level surface border
-        self.borders['vadose_zone']         = np.logical_and(self.borders['domain_sides'] , self.phreatic['vadose_zone'])
-        self.borders['phreatic_zone']       = np.logical_and(self.borders['domain_sides'] , self.phreatic['phreatic_zone'])
-        self.borders['water_level_surface'] = np.logical_and(self.borders['domain_sides'] , self.phreatic['water_level_surface'])
+        vadose_zone_borders = np.logical_and(self.borders['domain_sides'],
+                                             self.phreatic['vadose_zone'])
+        phreatic_zone_borders = np.logical_and(self.borders['domain_sides'],
+                                               self.phreatic['phreatic_zone'])
+        wls_borders = np.logical_and(self.borders['domain_sides'],
+                                     self.phreatic['water_level_surface'])
+        self.borders['vadose_zone'] = vadose_zone_borders
+        self.borders['phreatic_zone'] = phreatic_zone_borders
+        self.borders['water_level_surface'] = wls_borders
         
         return None
     
@@ -156,26 +193,14 @@ class Domain():
     ### METHODS ###
     ###############
     
-    def get_subdomain(self, subdomain_name:str) -> np.ndarray:
-        """Returns the numpy.ndarray modeling the requested subdomain. 
+    def _get_subdomain(self, subdomain_name: str) -> np.ndarray:
+        """Returns the numpy.ndarray modeling the requested subdomain.
 
         Parameters
         ----------
         subdomain_name : str
-            Name of the requested subdomain:
-                - "domain"     
-                - "domain_surface"
-                - "domain_bottom"
-                - "domain_borders"
-                - "domain_borders_sides"
-                - "domain_borders_surface"
-                - "domain_borders_bottom"
-                - "vadose"
-                - "vadose_borders"
-                - "phreatic"
-                - "phreatic_surface"
-                - "phreatic_borders_surface"
-
+            Name of the requested subdomain: {}
+            
         Returns
         -------
         out : np.ndarray
@@ -183,9 +208,10 @@ class Domain():
         out = eval(self.subdomains_names[subdomain_name])
         return out
 
-    
-    def is_coordinate_in_domain(self, x:float, y:float, z:float) -> bool:
-        """Returns true if a (x, y, z)-coordinate point is inside the domain, otherwise false.
+    def is_coordinate_in_domain(self, x: float, y: float, z: float) -> bool:
+        """
+        Returns true if a (x, y, z)-coordinate point is inside the domain,
+        otherwise false.
 
         Parameters
         ----------
@@ -200,33 +226,24 @@ class Domain():
         -------
         out : bool
         """
-        if self.grid.is_inbox(x,y,z):
-            i, j, k = self.grid.get_indices(x,y,z)
-            out = bool(self.data_volume[i,j,k])
+        if self.grid.is_inbox(x, y, z):
+            i, j, k = self.grid.get_indices(x, y, z)
+            out = bool(self.data_volume[i, j, k])
             return out
         else:
             out = False
             return out
         
-    def is_coordinate_in_subdomain(self, subdomain:str, x:float, y:float, z:float) -> bool:
-        """Returns true if a (x, y, z)-coordinate point is inside the subdomain, otherwise false.
+    def is_coordinate_in_subdomain(self, subdomain: str, x: float, y: float,
+                                   z: float) -> bool:
+        """
+        Returns true if a (x, y, z)-coordinate point is inside the subdomain,
+        otherwise false.
 
         Parameters
         ----------
         subdomain : str
-            Name of the subdomain to test:
-                - "domain"     
-                - "domain_surface"
-                - "domain_bottom"
-                - "domain_borders"
-                - "domain_borders_sides"
-                - "domain_borders_surface"
-                - "domain_borders_bottom"
-                - "vadose"
-                - "vadose_borders"
-                - "phreatic"
-                - "phreatic_surface"
-                - "phreatic_borders_surface"
+            Name of the subdomain to test: {}
         x : float
             x-coordinate.
         y : float
@@ -239,16 +256,18 @@ class Domain():
         out : bool
         """
         subdomain = eval(self.subdomains_names[subdomain])
-        if self.grid.is_inbox(x,y,z):
-            i, j, k = self.grid.get_indices(x,y,z)
-            out = bool(subdomain[i,j,k])
+        if self.grid.is_inbox(x, y, z):
+            i, j, k = self.grid.get_indices(x, y, z)
+            out = bool(subdomain[i, j, k])
             return out
-        else: 
+        else:
             out = False
             return out
         
-    def is_coordinate_2D_valid(self, x:float, y:float) -> bool:
-        """Returns true if a z-coordinate exists for a (x, y)-coordinate point projected inside the domain, otherwise false.
+    def is_coordinate_2D_valid(self, x: float, y: float) -> bool:
+        """
+        Returns true if a z-coordinate exists for a (x, y)-coordinate point
+        projected inside the domain, otherwise false.
 
         Parameters
         ----------
@@ -261,7 +280,7 @@ class Domain():
         -------
         out : bool
         """
-        if self.grid.path.contains_point((x,y)):
+        if self.grid.path.contains_point((x, y)):
             i, j = self.grid.get_indices(x, y)
             out = bool(self.data_surfaces['z'][i, j])
             return out
@@ -275,9 +294,13 @@ class Domain():
 #################################
     
 class Delimitation():
-    """Class modeling the delimitation, the vertical limits of the study site."""
-    def __init__(self, vertices:list, grid:Grid) -> None:
-        """Constructs the delimitation, the vertical limits of the study site.
+    """
+    Class modeling the delimitation, the vertical limits of the study site.
+    """
+    
+    def __init__(self, vertices: list, grid: Grid) -> None:
+        """
+        Constructs the delimitation, the vertical limits of the study site.
 
         Parameters
         ----------
@@ -286,7 +309,7 @@ class Delimitation():
         grid : Grid
             Grid of the model.
         """
-        label = 'delimitation'
+        self.label = 'delimitation'
         self.vertices = vertices
         
         ### Sets the polygon with a matplotlib Path
@@ -296,30 +319,74 @@ class Delimitation():
         
         ### Sets the mask array with a numpy-array
         row, col = np.indices((grid.nx, grid.ny))
-        pts = np.column_stack((grid.X[row, col, 0].flatten(), grid.Y[row, col, 0].flatten()))
-        msk = self.path.contains_points(pts).reshape((grid.nx, grid.ny)).astype(int)
+        pts = np.column_stack((grid.X[row, col, 0].flatten(),
+                               grid.Y[row, col, 0].flatten()))
+        msk = self.path.contains_points(pts).reshape((grid.nx, grid.ny)
+                                                     ).astype(int)
         self.data_volume = np.repeat(msk[:, :, np.newaxis], grid.nz, axis=2)
         
 
 class Topography(Surface):
-    """Class modeling the topography, the horizontal upper limit of the study site."""
-    def __init__(self, data:Union[str, np.ndarray], grid:Grid, **kwargs) -> None:
+    """
+    Class modeling the topography, the horizontal upper limit of the study
+    site.
+    """
+    
+    def __init__(self, data: Union[str, np.ndarray], grid: Grid,
+                 **kwargs) -> None:
         label = 'topography'
         super().__init__(label, data, grid, **kwargs)
         self.data_volume = self._surface_to_volume('<=', grid)
         
         
 class Bedrock(Surface):
-    """Class modeling the bedrock elevation, the horizontal lower limit of the study site."""
-    def __init__(self, data:Union[str, np.ndarray], grid:Grid, **kwargs) -> None:
+    """
+    Class modeling the bedrock elevation, the horizontal lower limit of the
+    study site.
+    """
+    
+    def __init__(self, data: Union[str, np.ndarray], grid: Grid,
+                 **kwargs) -> None:
         label = 'bedrock_elevation'
         super().__init__(label, data, grid, **kwargs)
         self.data_volume = self._surface_to_volume('<=', grid)
         
         
 class WaterLevel(Surface):
-    """Class modeling the water level elevation, the phreatic/vadose limit of the study site."""
-    def __init__(self, data:Union[str, np.ndarray], grid:Grid, **kwargs) -> None:
+    """
+    Class modeling the water level elevation, the phreatic/vadose limit of the
+    study site.
+    """
+    
+    def __init__(self, data: Union[str, np.ndarray], grid: Grid,
+                 **kwargs) -> None:
         label = 'water_level'
         super().__init__(label, data, grid, **kwargs)
         self.data_volume = self._surface_to_volume('<=', grid)
+
+
+#####################
+### Documentation ###
+#####################
+
+subdomains_list = """
+            - "domain"
+            - "domain_surface"
+            - "domain_bottom"
+            - "domain_borders"
+            - "domain_borders_sides"
+            - "domain_borders_surface"
+            - "domain_borders_bottom"
+            - "vadose"
+            - "vadose_borders"
+            - "phreatic"
+            - "phreatic_surface"
+            - "phreatic_borders_surface"
+"""
+
+# Updates documentation
+Domain._get_subdomain.__doc__ = (Domain._get_subdomain.__doc__
+                                 .format(subdomains_list))
+Domain.is_coordinate_in_subdomain.__doc__ = (
+    Domain.is_coordinate_in_subdomain.__doc__.format(subdomains_list)
+)

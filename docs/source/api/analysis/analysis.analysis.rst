@@ -1,7 +1,7 @@
-pykasso.core.grid module
+analysis.analysis module
 ========================
 
-.. automodule:: pykasso.core.grid
+.. automodule:: analysis.analysis
    :members:
    :undoc-members:
    :show-inheritance:
