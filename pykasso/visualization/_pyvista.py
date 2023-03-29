@@ -24,6 +24,20 @@ class PyvistaVisualizer(PyplotVisualizer):
     """
     TODO
     """
+    DEFAULT_SETTINGS = {
+        'ghosts': [],
+        'surfaces': [],
+        'outline': True,
+        'grid': False,
+        'inlets': False,
+        'outlets': False,
+        'cpos': 'xz',
+        # 'domain',
+        'slice': False,
+        # 'tracers',
+        # other,
+        'orientation': False
+    }
     
     def __init__(self, project_directory: str, *args, **kwargs):
         """
@@ -32,7 +46,7 @@ class PyvistaVisualizer(PyplotVisualizer):
         super().__init__(project_directory, *args, **kwargs)
         
         # Sets global_theme.notebooks
-        pv.global_theme.notebook = True
+        # pv.global_theme.notebook = True
         
         # Sets the pyvista grid
         self._set_pyvista_grid()
@@ -51,63 +65,88 @@ class PyvistaVisualizer(PyplotVisualizer):
         return None
     
     def show(self, simulations: list, features: list,
-             settings: dict = {}) -> None:
+             settings: list = [{}]) -> None:
         """
         TODO
         """
+        # Updates the project state
+        self._update_project_state()
         
-        # Sets default settings values
-        default_settings = {
-            'ghosts': [],
-            'surfaces': [],
-            'outline': True,
-            'grid': False,
-            'inlets': False,
-            'outlets': False,
-            'cpos': None,
-            # 'domain',
-            'slice': False,
-            # 'tracers',
-        }
-        for key, value in default_settings.items():
-            if key not in settings:
-                settings[key] = value
-                
-        # Sets cpos
-        nx, ny, nz = self._get_grid_dimensions()
-        if nx == 1:
-            settings['cpos'] = 'yz'
-        elif ny == 1:
-            settings['cpos'] = 'xz'
-        elif nz == 1:
-            settings['cpos'] = 'xy'
-        else:
-            settings['cpos'] = 'xy'
+        # Checks settings type
+        if not isinstance(settings, (list)):
+            settings = [settings] * len(simulations)
+        
+        # Adds default settings values
+        pyvista_settings = []
+        for settings_ in settings:
+            for key, value in PyvistaVisualizer.DEFAULT_SETTINGS.items():
+                if key not in settings_:
+                    settings_[key] = value
+            pyvista_settings.append(settings_)
+        
+        # # Sets cpos
+        # nx, ny, nz = self._get_grid_dimensions()
+        # if nx == 1:
+        #     pyvista_settings['cpos'] = 'yz'
+        # elif ny == 1:
+        #     pyvista_settings['cpos'] = 'xz'
+        # elif nz == 1:
+        #     pyvista_settings['cpos'] = 'xy'
+        # else:
+        #     pyvista_settings['cpos'] = 'xz'
         
         # Creates plotter
-        shape = (len(features), len(simulations))
+        if len(features) == 1:
+            if len(simulations) <= 3:
+                rows = 1
+                columns = len(simulations)
+            else:
+                side = int(np.ceil(np.sqrt(len(simulations))))
+                rows = side
+                columns = side
+        else:
+            rows = len(features)
+            columns = len(simulations)
+        shape = (rows, columns)
         border = True
         plotter = pv.Plotter(shape=shape, border=border)
         
         # For each simulation, prints the required plots
-        for i, n_simulation in enumerate(simulations):
-            
-            for j, feature in enumerate(features):
-                
-                plotter.subplot(j, i)
-                text = 'Simulation {} - {}'.format(n_simulation, feature)
-                plotter.add_text(text, font_size=20)
-                
-                simulation_data = self._get_simulation_data(n_simulation)
-                
-                actors = self._show_feature(simulation_data, feature, settings)
-                for actor in actors:
-                    plotter.add_actor(actor, reset_camera=True)
         
+        if len(features) == 1:
+            for row in range(rows):
+                for column in range(columns):
+                    i = row * rows + column - 1
+                    n_sim = simulations[i]
+                    feature = features[0]
+                    settings = pyvista_settings[i]
+                    plotter.subplot(row, column)
+                    plotter = self._fill_plotter(plotter, n_sim,
+                                                 feature, settings)
+        else:
+            for (row, (n_sim, settings)) in enumerate(zip(simulations, pyvista_settings)):
+                for (column, feature) in enumerate(features):
+                    plotter.subplot(row, column)
+                    plotter = self._fill_plotter(plotter, n_sim,
+                                                 feature, settings)
+                    
         plotter.link_views()
-        plotter.show(cpos=settings['cpos'])
+        plotter.show(cpos='xz')
 
         return None
+    
+    def _fill_plotter(self, plotter, n_sim, feature, settings):
+        """ """
+        text = 'Simulation {} - {}'.format(n_sim, feature)
+        plotter.add_text(text, font_size=20)
+        
+        simulation_data = self._get_simulation_data(n_sim)
+        
+        actors = self._show_feature(simulation_data, feature, settings)
+        for actor in actors:
+            plotter.add_actor(actor, reset_camera=True)
+            
+        return plotter
     
     def create_gif(self, simulation: int, feature: str, location: str,
                    zoom: float = 1, ghosts: list = [], n_points: int = 24,
@@ -155,6 +194,7 @@ class PyvistaVisualizer(PyplotVisualizer):
         
         # Gets the data
         feature_data = self._get_data_from_feature(simulation, feature)
+        feature_data_ = feature_data.copy()
         
         # Gets the domain
         pass
@@ -163,7 +203,7 @@ class PyvistaVisualizer(PyplotVisualizer):
         if len(settings['ghosts']) > 0:
             feature_data = self._get_ghosted_data(feature_data,
                                                   settings['ghosts'])
-           
+        
         # Cuts the data with model limits
         pass
         
@@ -221,6 +261,29 @@ class PyvistaVisualizer(PyplotVisualizer):
             _ = plotter.add_mesh(feature_data.copy(), **kwargs)
         actors.append(_)
         
+        # TODO - Plots the orientation arrows
+        if settings['orientation']:
+            kwargs = {
+                'scalar_bar_args': {'title': 'Orientation'},
+                'lighting': False,
+            }
+            nx, ny, nz = self._get_grid_dimensions()
+            nx = nx + 1
+            ny = ny + 1
+            nz = nz + 1
+            vx, vy, vz = simulation['orientation']
+            vx = np.resize(vx, (nx, ny, nz))
+            vy = np.resize(vy, (nx, ny, nz))
+            vz = np.resize(vz, (nx, ny, nz))
+            vectors = np.column_stack((vx.ravel(), vy.ravel(), vz.ravel()))
+            feature_data_['orientation'] = vectors
+            feature_data_.set_active_vectors("orientation")
+            
+            # contours = feature_data_.contour(8, scalars="data")
+            # arrows = contours.glyph(orient="orientation")# factor=200.0)
+            _ = plotter.add_mesh(feature_data_.arrows) #, **kwargs)
+            actors.append(_)
+        
         # Plots the scalar bar
         _ = plotter.add_scalar_bar()
         actors.append(_)
@@ -274,8 +337,37 @@ class PyvistaVisualizer(PyplotVisualizer):
         return cloud
     
 
+def _show_array(array, ghost=False):
+    """
+    TODO
+    """
+    if len(array.shape) == 2:
+        nx, ny = array.shape
+        nz = 1
+    elif len(array.shape) == 3:
+        nx, ny, nz = array.shape
+    else:
+        msg = "TODO"
+        raise ValueError(msg)
 
+    mesh = pv.UniformGrid()
+    mesh.dimensions = np.array((nx, ny, nz)) + 1
+    mesh.cell_data['data'] = array.flatten(order="F")
+    mesh = mesh.cast_to_unstructured_grid()
 
+    if ghost:
+        ghosts = np.argwhere(np.isin(mesh["data"], [0]))
+        mesh = mesh.remove_cells(ghosts)
+
+    plotter = pv.Plotter()
+    plotter.show_grid()
+    kwargs = {}
+    kwargs['scalars'] = 'data'
+    _ = plotter.add_mesh(mesh, **kwargs)
+    # plotter.add_mesh(mesh.outline(), color="k")
+    plotter.show(cpos='xy')
+
+    return None
 
 
 # def show_simulation(self):
@@ -397,39 +489,39 @@ class PyvistaVisualizer(PyplotVisualizer):
 #     # return None
 
 
-# #################################################################################
+###############################################################################
 
-# def _show_array(array, ghost=False, is_data_discrete=False):
+# TODO - meilleur ghosting
+
+
+
+
+
+# def show_average_paths(self):
 #     """
-#     TODO
+#     todo
 #     """
-#     if len(array.shape) == 2:
-#         nx, ny = array.shape
-#         nz = 1
-#     elif len(array.shape) == 3:
-#         nx, ny, nz = array.shape
-#     else:
-#         msg = "TODO"
-#         raise ValueError(msg)
-    
-#     mesh = pv.UniformGrid()
-#     mesh.dimensions = np.array((nx, ny, nz)) + 1
-#     mesh.cell_data['data'] = array.flatten(order="F")
-#     mesh = mesh.cast_to_unstructured_grid()
-    
-#     if ghost:
-#         ghosts = np.argwhere(np.isin(mesh["data"], [0]))
-#         mesh = mesh.remove_cells(ghosts)
-        
-#     if is_data_discrete:
-#         pass
-    
-#     plotter = pv.Plotter()
-#     plotter.show_grid()
-#     kwargs = {}
-#     kwargs['scalars'] = 'data'
-#     _ = plotter.add_mesh(mesh, **kwargs)
-#     # plotter.add_mesh(mesh.outline(), color="k")
-#     plotter.show(cpos='xy')
-    
+#     ### Call the plotter
+#     p = pv.Plotter(notebook=False)
+
+#     ### Construct the grid
+#     vtk = pv.UniformGrid()
+#     vtk.dimensions = np.array((self.GRID.nx, self.GRID.ny, self.GRID.nz)) + 1
+#     vtk.origin     = (self.GRID.x0 - self.GRID.dx/2, self.GRID.y0 - self.GRID.dy/2, self.GRID.z0 - self.GRID.dz/2)
+#     vtk.spacing    = (self.GRID.dx, self.GRID.dy, self.GRID.dz)
+
+#     vtk['values'] = self.karst_prob.flatten(order="F")
+
+#     mesh = vtk.cast_to_unstructured_grid()
+#     ghosts = np.argwhere(vtk['values'] < 1.0)
+#     mesh.remove_cells(ghosts)
+#     p.add_mesh(mesh, show_edges=False)
+
+#     ### Plotting
+#     # p.add_title(feature)
+#     p.add_axes()
+#     bounds = p.show_bounds(mesh=vtk)
+#     p.add_actor(bounds)
+#     p.show(cpos='xy')
+
 #     return None

@@ -7,7 +7,7 @@ import numpy as np
 from matplotlib.path import Path
 
 ### Typing
-from pykasso._typing import Path as pyplotPath
+from pykasso._typing import Path as pyplotPath  # TODO
 
 
 class Grid():

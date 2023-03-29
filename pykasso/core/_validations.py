@@ -289,8 +289,8 @@ def validate_sks_settings(settings:dict) -> dict:
             
     # Checks the presence of modes
     modes = {
-        'elevation' : False,
-        'bedrock'   : False,
+        'elevation': True,
+        'bedrock': True,
     }
     for elem, value in modes.items():
         if elem not in settings['modes']:
@@ -647,12 +647,13 @@ def validate_fractures_settings(settings:dict, grid) -> dict:
                         msg = "The '{}' attribute in frac family '{}' is missing (required)".format(elem, frac_family)
                         this.logger.critical(msg)
                         raise KeyError(msg)
+                    if elem == 'density':
+                        settings['settings'][frac_family]['density'] = float(settings['settings'][frac_family]['density'])
                 if 'cost' not in settings['settings'][frac_family]:
                     msg = "The 'cost' attribute is missing (optional) and has been set with default value(s)."
                     this.logger.warning(msg)
                     settings['settings'][frac_family]['cost'] = sks.default_fmm_costs['fractures']
                 costs[i+1] = settings['settings'][frac_family]['cost']
             settings['costs'] = costs
-
-        settings['settings']['density'] = float(settings['settings']['density'])
+        
     return settings

@@ -3,7 +3,7 @@ This module contains classes modeling the geological features.
 """
 
 ### Local dependencies
-from .fracturation import generate_fractures, voxelize_fractures
+from .fracturation import FracturesGenerator, voxelize_fractures
 
 ### External dependencies
 import numpy as np
@@ -248,6 +248,8 @@ class Fractures(Volume):
             
             self.table = pd.DataFrame()
             self.fractures_families = {}
+            
+            frac_generator = FracturesGenerator(kwargs['rng'], grid)
 
             # Generates one array for each fractures family
             for (i, frac_family_settings) in enumerate(frac_families_settings):
@@ -255,20 +257,29 @@ class Fractures(Volume):
                 settings = frac_families_settings[frac_family_settings]
                 if 'cost' in settings:
                     del settings['cost']
-                generated_fractures = generate_fractures(grid=grid, 
-                                                         rng=kwargs['rng'],
-                                                         **settings)
+                generated_fractures = (frac_generator
+                                       .generate_fractures(**settings))
                 generated_fractures.insert(0, 'family_id', i + 1)
                 self.table = pd.concat([self.table, generated_fractures])
 
-                self.fractures_families[i + 1] = voxelize_fractures(grid, generated_fractures)
+                self.fractures_families[i + 1] = (
+                    voxelize_fractures(grid, generated_fractures)
+                )
             
             # Constructs the model for fracturation
             frac_model = np.zeros_like(grid.data_volume)
             fractures_family_ids = list(self.fractures_families.keys())
-            fractures_family_ids = sorted(fractures_family_ids, key=lambda family_id: kwargs['costs'][family_id], reverse=True)
+            fractures_family_ids = sorted(
+                fractures_family_ids,
+                key=lambda family_id: kwargs['costs'][family_id],
+                reverse=True
+            )
             for family_id in fractures_family_ids:
-                frac_model = np.where(self.fractures_families[family_id] == 1, family_id, frac_model)
+                frac_model = np.where(
+                    self.fractures_families[family_id] == 1,
+                    family_id,
+                    frac_model
+                )
             self.fractures_families['model'] = frac_model
                 
             # Sums fractures families
@@ -279,7 +290,11 @@ class Fractures(Volume):
             if 'geology' in kwargs:
                 frac_model_geology = np.zeros_like(frac_model)
                 for geologic_id in kwargs['geology']:
-                    frac_model_geology = np.where(Geology.data_volume == geologic_id, frac_model, frac_model_geology)
+                    frac_model_geology = np.where(
+                        Geology.data_volume == geologic_id,
+                        frac_model,
+                        frac_model_geology
+                    )
                 self.fractures_families['model'] = frac_model_geology
                     
             data = self.fractures_families['model']

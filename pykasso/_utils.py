@@ -19,13 +19,18 @@ class ProjectReader():
     
     def __init__(self, project_directory: str, *args, **kwargs) -> None:
         # Reads the project_state.yaml file
+        self.project_directory = project_directory.strip("/")
         self.project_state = self.open_project(project_directory)
         
     def open_project(self, path: str) -> dict:
-        path = path.strip("/")
         path = path + "/outputs/project_state.yaml"
         with open(path, "r") as f:
             return yaml.safe_load(f)
+        
+    def _update_project_state(self) -> None:
+        path = self.project_directory + "/outputs/project_state.yaml"
+        with open(path, "r") as f:
+            self.project_state = yaml.safe_load(f)
     
     def _get_grid_origin(self) -> tuple:
         x0 = self.project_state['grid']['x0']
@@ -48,7 +53,9 @@ class ProjectReader():
     def _read_pickle(self, path: str):
         with open(path, 'rb') as handle:
             return pickle.load(handle)
-
+        
+    # def _update_project()
+    
 
 class GSLIB():
     """

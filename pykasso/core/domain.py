@@ -193,7 +193,7 @@ class Domain():
     ### METHODS ###
     ###############
     
-    def _get_subdomain(self, subdomain_name: str) -> np.ndarray:
+    def get_subdomain(self, subdomain_name: str) -> np.ndarray:
         """Returns the numpy.ndarray modeling the requested subdomain.
 
         Parameters
@@ -385,8 +385,8 @@ subdomains_list = """
 """
 
 # Updates documentation
-Domain._get_subdomain.__doc__ = (Domain._get_subdomain.__doc__
-                                 .format(subdomains_list))
+Domain.get_subdomain.__doc__ = (Domain.get_subdomain.__doc__
+                                .format(subdomains_list))
 Domain.is_coordinate_in_subdomain.__doc__ = (
     Domain.is_coordinate_in_subdomain.__doc__.format(subdomains_list)
 )

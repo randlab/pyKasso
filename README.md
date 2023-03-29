@@ -22,21 +22,16 @@ pyKasso is a python3 open-source package intended to simulate easily and quickly
 
 Currently, pyKasso is only working with Python 3.9.
 
-### Using pip
-
-```
-pip install pykasso
-```
-
-#### Manually install AGD
-
-If you installed pyKasso with pip, you also need to manually install the binaries from agd-hfm packgage according to your operating system : https://anaconda.org/AGD-LBR/hfm/files
-
 ### Using conda
 
 Download *environment.yml*. From source:
 ```
 conda env create --name pykasso --file=environment.yml
+```
+
+Then:
+```
+pip install -e pykasso[analysis, visualization]
 ```
 
 ### Check installation
