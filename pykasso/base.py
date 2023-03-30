@@ -588,7 +588,7 @@ class GeologyManager():
                 # pdf = ((alpha - 1)/min_fracture_length) * np.float_power(x / min_fracture_length, -alpha) / C
                 # cdf = (np.float_power(min_fracture_length, -alpha+1) - np.float_power(x, -alpha+1)) / (np.float_power(min_fracture_length, -alpha+1) - np.float_power(max_fracture_length, -alpha+1))
                 # cdf_reverse = np.float_power( np.float_power(min_fracture_length, -alpha+1) - P(x) * (np.float_power(min_fracture_length, -alpha+1) - np.float_power(max_fracture_length, -alpha+1)) , (1/(-alpha+1)))
-                frac_length = np.float_power(np.float_power(fractures_min_length, -fractures_alpha+1) - np.random.rand() * (np.float_power(fractures_min_length, -fractures_alpha+1) - np.float_power(fractures_max_length, -fractures_alpha+1)) , (1/(-fractures_alpha+1)))
+                frac_length = np.float_power(np.float_power(fractures_min_length[frac_family], -fractures_alpha[frac_family]+1) - np.random.rand() * (np.float_power(fractures_min_length[frac_family], -fractures_alpha[frac_family]+1) - np.float_power(fractures_max_length[frac_family], -fractures_alpha[frac_family]+1)) , (1/(-fractures_alpha[frac_family]+1)))
 
                 # FRACTURE ORIENTATION
                 # -> from von Mises distribution

@@ -91,9 +91,9 @@ fractures_min_orientation : [    340,    70]
 fractures_max_orientation : [     20,   110]
 
 # For fracture size
-fractures_alpha : 2                         #changed to fractures_alpha from alpha
-fractures_min_length : 100
-fractures_max_length : 4000
+fractures_alpha : [2,2]                         #changed to fractures_alpha from alpha
+fractures_min_length : [100, 100]
+fractures_max_length : [4000, 4000]
 
 ###############################
 ### Fast-Marching Algorithm ###
