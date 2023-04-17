@@ -42,7 +42,7 @@ Work in progress.
 ```
 poetry run pytest tests/
 ```
--->
+
 
 ### Dependencies
 
@@ -50,6 +50,7 @@ pyKasso requires the following python packages to function properly:
 - [agd](https://github.com/Mirebeau/AdaptiveGridDiscretizations)
 - [karstnet](https://github.com/UniNE-CHYN/karstnet)
 - [pyvista](https://github.com/pyvista/pyvista)
+-->
 
 ## Documentation
 
