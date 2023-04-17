@@ -5,7 +5,6 @@ from typing import TypeVar, TYPE_CHECKING
 
 from numpy import random
 from pandas import core, io
-from matplotlib import path
 
 if TYPE_CHECKING:
     import pykasso.core.grid as pcg
@@ -29,5 +28,3 @@ RandomNumberGenerator = TypeVar('RandomNumberGenerator',
 Series = TypeVar('Series', bound='core.series.Series')
 DataFrame = TypeVar('DataFrame', bound='core.frame.DataFrame')
 Styler = TypeVar('Styler', bound='io.formats.style.Styler')
-# Matplotlib
-Path = TypeVar('Path', bound='path.Path')

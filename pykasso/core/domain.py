@@ -7,11 +7,10 @@ from .geologic_features import Surface
 
 ### External dependencies
 import numpy as np
-from matplotlib.path import Path
+from shapely.geometry import Point, Polygon
 from scipy.ndimage import binary_dilation
 
 ### Typing
-from typing import Union
 from pykasso._typing import Grid, Delimitation, Topography, Bedrock, WaterLevel
 
 
@@ -61,7 +60,7 @@ class Domain():
             self.data_volume += topography.data_volume
         if bedrock is not None:
             self.data_volume += np.logical_not(bedrock.data_volume).astype(int)
-        # only keeps cells where all the classes joins
+        # only keeps cells where all the classes join
         test = self.data_volume == self.data_volume.max()
         self.data_volume = np.where(test, 1, 0)
             
@@ -79,8 +78,10 @@ class Domain():
         self._set_border_domains()
         
         ### Computes subdomains from water level elevation model
-        if self.water_level is not None:
-            self._set_phreatic_domains()
+        self._set_phreatic_domains()
+        
+        ### Computes subdomains from bedrock elevation model
+        self._set_bedrock_domains()
             
         ### Names the subdomains
         self.subdomains_names = {
@@ -163,30 +164,67 @@ class Domain():
         
     def _set_phreatic_domains(self) -> None:
         """Computes the subdomains derivated from the water level elevation."""
-        water_volume = self.water_level.data_volume
-        water_surface = self.water_level._surface_to_volume('=', self.grid)
+        if self.water_level is None:
+            vadose_zone = self.data_volume.copy()
+            phreatic_zone = np.zeros_like(self.grid.data_volume)
+            water_level_surface = np.zeros_like(self.grid.data_volume)
+            vadose_zone_borders = self.borders['domain_sides']
+            phreatic_zone_borders = np.zeros_like(self.grid.data_volume)
+            wls_borders = np.zeros_like(self.grid.data_volume)
+        else:
+            water_volume = self.water_level.data_volume
+            water_surface = self.water_level._surface_to_volume('=', self.grid)
+            
+            vadose_zone = np.logical_and(self.data_volume,
+                                         np.logical_not(water_volume))
+            phreatic_zone = np.logical_and(self.data_volume, water_volume)
+            water_level_surface = (
+                np.logical_and(self.data_volume, water_surface)
+            )
+            
+            # Water level surface border
+            vadose_zone_borders = np.logical_and(
+                self.borders['domain_sides'], vadose_zone)
+            phreatic_zone_borders = np.logical_and(
+                self.borders['domain_sides'], phreatic_zone)
+            wls_borders = np.logical_and(
+                self.borders['domain_sides'], water_level_surface)
         
-        vadose_zone = np.logical_and(self.data_volume,
-                                     np.logical_not(water_volume))
-        phreatic_zone = np.logical_and(self.data_volume, water_volume)
-        water_level_surface = np.logical_and(self.data_volume, water_surface)
+        # Sets the new domains
         self.phreatic = {
             'vadose_zone': vadose_zone,
             'phreatic_zone': phreatic_zone,
             'water_level_surface': water_level_surface,
+            
         }
-        
-        # Water level surface border
-        vadose_zone_borders = np.logical_and(self.borders['domain_sides'],
-                                             self.phreatic['vadose_zone'])
-        phreatic_zone_borders = np.logical_and(self.borders['domain_sides'],
-                                               self.phreatic['phreatic_zone'])
-        wls_borders = np.logical_and(self.borders['domain_sides'],
-                                     self.phreatic['water_level_surface'])
         self.borders['vadose_zone'] = vadose_zone_borders
         self.borders['phreatic_zone'] = phreatic_zone_borders
         self.borders['water_level_surface'] = wls_borders
         
+        return None
+    
+    def _set_bedrock_domains(self) -> None:
+        """ """
+        if self.bedrock is None:
+            bedrock = np.zeros_like(self.grid.data_volume)
+            bedrock_vadose = np.zeros_like(self.grid.data_volume)
+            bedrock_phreatic = np.zeros_like(self.grid.data_volume)
+        else:
+            roll_value = 2
+            bedrock = (
+                np.roll(self.bedrock.data_volume, roll_value, axis=2)
+            )
+            bedrock_vadose = np.logical_and(bedrock,
+                                            self.phreatic['vadose_zone'])
+            bedrock_phreatic = np.logical_and(bedrock,
+                                              self.phreatic['phreatic_zone'])
+        
+        # Sets the new domains
+        self.bedrock_domains = {
+            'bedrock': bedrock,
+            'bedrock_vadose': bedrock_vadose,
+            'bedrock_phreatic': bedrock_phreatic,
+        }
         return None
     
     ###############
@@ -280,13 +318,21 @@ class Domain():
         -------
         out : bool
         """
-        if self.grid.path.contains_point((x, y)):
+        point = Point(x, y)
+        if self.grid.polygon.contains(point):
             i, j = self.grid.get_indices(x, y)
             out = bool(self.data_surfaces['z'][i, j])
-            return out
+        elif self.grid.polygon.touches(point):
+            i, j = self.grid.get_indices(x, y)
+            test_x = self.grid.is_x_valid(x)
+            test_y = self.grid.is_y_valid(y)
+            if test_x and test_y:
+                out = bool(self.data_surfaces['z'][i, j])
+            else:
+                out = False
         else:
             out = False
-            return out
+        return out
         
     
 #################################
@@ -312,17 +358,16 @@ class Delimitation():
         self.label = 'delimitation'
         self.vertices = vertices
         
-        ### Sets the polygon with a matplotlib Path
+        ### Sets the polygon with shapely
         path_vertices = self.vertices.copy()
-        path_vertices.append(path_vertices[0])
-        self.path = Path(path_vertices)
+        self.polygon = Polygon(path_vertices)
         
         ### Sets the mask array with a numpy-array
         row, col = np.indices((grid.nx, grid.ny))
         pts = np.column_stack((grid.X[row, col, 0].flatten(),
                                grid.Y[row, col, 0].flatten()))
-        msk = self.path.contains_points(pts).reshape((grid.nx, grid.ny)
-                                                     ).astype(int)
+        msk = [self.polygon.contains(Point(x, y)) for (x, y) in pts]
+        msk = np.array(msk).reshape((grid.nx, grid.ny)).astype(int)
         self.data_volume = np.repeat(msk[:, :, np.newaxis], grid.nz, axis=2)
         
 
@@ -332,11 +377,9 @@ class Topography(Surface):
     site.
     """
     
-    def __init__(self, data: Union[str, np.ndarray], grid: Grid,
-                 **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         label = 'topography'
-        super().__init__(label, data, grid, **kwargs)
-        self.data_volume = self._surface_to_volume('<=', grid)
+        super().__init__(label, *args, **kwargs)
         
         
 class Bedrock(Surface):
@@ -345,11 +388,9 @@ class Bedrock(Surface):
     study site.
     """
     
-    def __init__(self, data: Union[str, np.ndarray], grid: Grid,
-                 **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         label = 'bedrock_elevation'
-        super().__init__(label, data, grid, **kwargs)
-        self.data_volume = self._surface_to_volume('<=', grid)
+        super().__init__(label, *args, **kwargs)
         
         
 class WaterLevel(Surface):
@@ -358,11 +399,9 @@ class WaterLevel(Surface):
     study site.
     """
     
-    def __init__(self, data: Union[str, np.ndarray], grid: Grid,
-                 **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         label = 'water_level'
-        super().__init__(label, data, grid, **kwargs)
-        self.data_volume = self._surface_to_volume('<=', grid)
+        super().__init__(label, *args, **kwargs)
 
 
 #####################

@@ -56,12 +56,12 @@ class PyvistaVisualizer(PyplotVisualizer):
         x0, y0, z0 = self._get_grid_origin()
         nx, ny, nz = self._get_grid_dimensions()
         dx, dy, dz = self._get_grid_spacing()
-        grid = pv.UniformGrid()
+        pv_grid = pv.UniformGrid()
         # Constructs grid
-        grid.origin = (x0 - dx / 2, y0 - dy / 2, z0 - dz / 2)
-        grid.dimensions = np.array((nx, ny, nz)) + 1
-        grid.spacing = (dx, dy, dz)
-        self.grid = grid.cast_to_unstructured_grid()
+        pv_grid.origin = (x0 - dx / 2, y0 - dy / 2, z0 - dz / 2)
+        pv_grid.dimensions = np.array((nx, ny, nz)) + 1
+        pv_grid.spacing = (dx, dy, dz)
+        self.pv_grid = pv_grid.cast_to_unstructured_grid()
         return None
     
     def show(self, simulations: list, features: list,
@@ -105,8 +105,8 @@ class PyvistaVisualizer(PyplotVisualizer):
                 rows = side
                 columns = side
         else:
-            rows = len(features)
-            columns = len(simulations)
+            rows = len(simulations)
+            columns = len(features)
         shape = (rows, columns)
         border = True
         plotter = pv.Plotter(shape=shape, border=border)
@@ -124,7 +124,9 @@ class PyvistaVisualizer(PyplotVisualizer):
                     plotter = self._fill_plotter(plotter, n_sim,
                                                  feature, settings)
         else:
-            for (row, (n_sim, settings)) in enumerate(zip(simulations, pyvista_settings)):
+            for (row, (n_sim, settings)) in enumerate(zip(simulations,
+                                                          pyvista_settings)
+                                                      ):
                 for (column, feature) in enumerate(features):
                     plotter.subplot(row, column)
                     plotter = self._fill_plotter(plotter, n_sim,
@@ -181,14 +183,7 @@ class PyvistaVisualizer(PyplotVisualizer):
         plotter.open_gif(location, fps=fps)
         plotter.orbit_on_path(path, write_frames=True)
         plotter.close()
-        
         return None
-    
-    def _get_simulation_data(self, n: int) -> dict:
-        simulation_directory = self.project_state['simulation_locations'][n]
-        simulation_data_path = simulation_directory + 'results.pickle'
-        simulation_data = self._read_pickle(simulation_data_path)
-        return simulation_data
         
     def _show_feature(self, simulation, feature: str, settings: dict = {}):
         
@@ -213,7 +208,7 @@ class PyvistaVisualizer(PyplotVisualizer):
         
         # Plots the outline of the domain
         if settings['outline']:
-            _ = plotter.add_mesh(self.grid.outline(), color="k")
+            _ = plotter.add_mesh(self.pv_grid.outline(), color="k")
             actors.append(_)
             
         # Plots the grid of the domain
@@ -292,7 +287,7 @@ class PyvistaVisualizer(PyplotVisualizer):
   
     def _get_data_from_feature(self, simulation, feature: str,
                                iteration: int = -1):
-        mesh = self.grid.copy()
+        mesh = self.pv_grid.copy()
         
         if feature in ANISOTROPIC_FEATURES:
             data = simulation['maps'][feature][iteration]
@@ -312,7 +307,7 @@ class PyvistaVisualizer(PyplotVisualizer):
         return data
     
     def _get_surface(self, simulation, surface: str):
-        grid = simulation['grid']
+        grid = simulation['grid'] # TODO 
         x = grid.X[:, :, 0]
         y = grid.Y[:, :, 0]
         
@@ -396,10 +391,6 @@ def _show_array(array, ghost=False):
         #         grid = grid.remove_cells(ghosts)
 
         # return None
-
-
-
-
 
 
 

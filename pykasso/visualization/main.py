@@ -2,8 +2,6 @@
 This module contains ...
 """
 
-# TODO - automatic update when visualization class is already created
-
 ### Internal dependencies
 import sys
 import importlib
@@ -22,7 +20,6 @@ GEOLOGICAL_FEATURES = [
     'grid',
     'domain',
     'geology',
-    # 'beddings'
     'faults',
     'fractures',
 ]
@@ -74,7 +71,6 @@ class Visualizer(subclass):
     
     def __init__(self, project_directory: str, notebook: bool = True,
                  *args, **kwargs) -> None:
-        """"""
         super().__init__(project_directory, *args, **kwargs)
         
     def _is_feature_name_valid(self, feature) -> bool:

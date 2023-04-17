@@ -8,6 +8,7 @@ import logging
 
 ### External dependencies
 import numpy as np
+from shapely.geometry import Point
 
 ### Typing
 from pykasso._typing import Domain, Geology, RandomNumberGenerator
@@ -159,7 +160,8 @@ class PointGenerator():
         x, y = coordinate
         if self.domain.is_coordinate_2D_valid(x, y):
             i, j = self.domain.grid.get_indices(x, y)
-            return self.valid_domain_surface[i, j]
+            out = self.valid_domain_surface[i, j]
+            return out
         else:
             return False
         

@@ -7,76 +7,77 @@ import os
 import sys
 import logging
 import numpy as np
+from shapely.geometry import Point
 
 ############
 ### TODO ###
 ############
 # validations verbosity
-# revoir la VERBOSITY des messages 
-# message different quand la feature est vide ?? 
+# revoir la VERBOSITY des messages
+# message different quand la feature est vide ??
 
-sks  = sys.modules['pykasso.core.sks']
+sks = sys.modules['pykasso.core.sks']
 this = sys.modules[__name__]
 
 this.ATTRIBUTES = {
-    'sks' : {
-        'seed'      : ['optional', 0],
-        'algorithm' : ['optional', 'Isotropic3'],
-        'costs'     : ['optional', {}],
-        'modes'     : ['optional', {}],
+    'sks': {
+        'seed': ['optional', 0],
+        'algorithm': ['optional', 'Isotropic3'],
+        'costs': ['optional', {}],
+        'mode': ['optional', 'A'],
     },
-    'grid' : {
-        'x0' : ['required', ''],
-        'y0' : ['required', ''],
-        'z0' : ['required', ''],
-        'nx' : ['required', ''],
-        'ny' : ['required', ''],
-        'nz' : ['required', ''],
-        'dx' : ['required', ''],
-        'dy' : ['required', ''],
-        'dz' : ['required', ''],
+    'grid': {
+        'x0': ['required', ''],
+        'y0': ['required', ''],
+        'z0': ['required', ''],
+        'nx': ['required', ''],
+        'ny': ['required', ''],
+        'nz': ['required', ''],
+        'dx': ['required', ''],
+        'dy': ['required', ''],
+        'dz': ['required', ''],
     },
-    'domain' : {
-        'delimitation' : ['optional', ''],
-        'topography'   : ['optional', ''],
-        'bedrock'      : ['optional', ''],
-        'water_level'  : ['optional', ''],
+    'domain': {
+        'delimitation': ['optional', ''],
+        'topography': ['optional', ''],
+        'bedrock': ['optional', ''],
+        'water_level': ['optional', ''],
     },
-    'geology' : {
-        'data' : ['optional', ''],
-        'axis' : ['optional', 'z'],
+    'geology': {
+        'data': ['optional', ''],
+        'axis': ['optional', 'z'],
     },
-    'beddings' : {
-        'data'  : ['optional', ''],
+    'beddings': {
+        'data': ['optional', ''],
     },
-    'faults' : {
-        'data' : ['optional', ''],
-        'axis' : ['optional', 'z'],
+    'faults': {
+        'data': ['optional', ''],
+        'axis': ['optional', 'z'],
     },
-    'outlets' : {
-        'number'     : ['required', ''],
-        'data'       : ['optional', ''],
-        'shuffle'    : ['optional', False],
-        'importance' : ['required', []],
-        'mode'       : ['optional', 'surface_down'],
-        'geology'    : ['optional', None],
-        'seed'       : ['optional', 0],
+    'outlets': {
+        'number': ['required', ''],
+        'data': ['optional', ''],
+        'shuffle': ['optional', False],
+        'importance': ['required', []],
+        'mode': ['optional', 'surface_down'],
+        'geology': ['optional', None],
+        'seed': ['optional', 0],
     },
-    'inlets'  : {
-        'number'     : ['required', ''],
-        'data'       : ['optional', ''],
-        'shuffle'    : ['optional', False],
-        'importance' : ['required', []],
-        'per_outlet' : ['required', []],
-        'mode'       : ['optional', 'surface_up'],
-        'geology'    : ['optional', None],
-        'seed'       : ['optional', 0],
+    'inlets': {
+        'number': ['required', ''],
+        'data': ['optional', ''],
+        'shuffle': ['optional', False],
+        'importance': ['required', []],
+        'per_outlet': ['required', []],
+        'mode': ['optional', 'surface_up'],
+        'geology': ['optional', None],
+        'seed': ['optional', 0],
     },
-    'tracers'   : {},
-    'fractures' : {
-        'data'     : ['optional', ''],
-        'axis'     : ['optional', 'z'],
-        'seed'     : ['optional', 0],
+    'tracers': {},
+    'fractures': {
+        'data': ['optional', ''],
+        'axis': ['optional', 'z'],
+        'seed': ['optional', 0],
     },
 }
 
@@ -252,7 +253,7 @@ def is_costs_dictionnary_valid(costs_dictionnary:dict, ids_data:list):
 ####################################################################################
 
 def validate_settings(feature:str, feature_settings:dict, grid=None) -> dict:
-    """ 
+    """
     TODO
     """
     if feature == 'sks': 
@@ -287,14 +288,6 @@ def validate_sks_settings(settings:dict) -> dict:
         if cost not in settings['costs']:
             settings['costs'][cost] = sks.default_fmm_costs[cost]
             
-    # Checks the presence of modes
-    modes = {
-        'elevation': True,
-        'bedrock': True,
-    }
-    for elem, value in modes.items():
-        if elem not in settings['modes']:
-            settings['modes'][elem] = value
     return settings
 
 ############
@@ -383,7 +376,7 @@ def validate_delimitation_settings(settings:dict, grid) -> dict:
             is_coordinate_type_valid(coordinate, (int, float), 'delimitation')
             
     # Checks if vertex are well in grid limits
-    validated_vertices = [k for k,(x,y) in enumerate(data) if (grid.path.contains_point((x,y)) == True)]
+    validated_vertices = [k for k,(x,y) in enumerate(data) if (grid.polygon.contains(Point(x,y)) == True)]
 
     if len(validated_vertices) < 3:
         msg = "Not enough vertices inside the grid limits to create a delimitation (3 minimum)."

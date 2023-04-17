@@ -28,8 +28,6 @@ visualization
    
 Utilities
 ---------
-test
-    Run pyKasso unittests
 __version__
     pyKasso version string
 """

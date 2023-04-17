@@ -8,14 +8,14 @@
  ♠                              | INFO     | |_|    |___/                          
  ♠                              | INFO     |                                       
  ☼                              | INFO     | Project directory location : geometry_01
- ☼                              | INFO     | Project creation date      : 2023-03-29 23:14:34
+ ☼                              | INFO     | Project creation date      : 2023-04-17 18:48:31
  ☼                              | INFO     | pyKasso version used       : TODO
  ☼                              | INFO     | Logging level              : 10
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 1 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Location : geometry_01/outputs/simulation_1/
- ►                              | INFO     | Date     : 2023-03-29 23:14:34
+ ►                              | INFO     | Date     : 2023-04-17 18:48:31
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well
@@ -33,7 +33,7 @@
  domain.construction            | DEBUG    | '_build_domain' went well
  domain.construction            | INFO     | 'domain' has been constructed
  sks.validation                 | WARNING  | The 'costs' attribute is missing (optional).
- sks.validation                 | WARNING  | The 'modes' attribute is missing (optional).
+ sks.validation                 | WARNING  | The 'mode' attribute is missing (optional).
  sks.validation                 | INFO     | 'sks' settings have been validated
  geology.validation             | WARNING  | The 'geology' attribute is missing (optional).
  geology.validation             | WARNING  | The 'data' attribute is missing (optional).
@@ -78,7 +78,7 @@
  ►                              | INFO     | *** pyKasso simulation 2 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Location : geometry_01/outputs/simulation_2/
- ►                              | INFO     | Date     : 2023-03-29 23:14:34
+ ►                              | INFO     | Date     : 2023-04-17 18:48:31
  ►                              | INFO     | ---
  grid.validation                | INFO     | 'grid' settings have been validated
  grid.construction              | DEBUG    | '_build_grid' went well
@@ -96,7 +96,7 @@
  domain.construction            | DEBUG    | '_build_domain' went well
  domain.construction            | INFO     | 'domain' has been constructed
  sks.validation                 | WARNING  | The 'costs' attribute is missing (optional).
- sks.validation                 | WARNING  | The 'modes' attribute is missing (optional).
+ sks.validation                 | WARNING  | The 'mode' attribute is missing (optional).
  sks.validation                 | INFO     | 'sks' settings have been validated
  geology.validation             | WARNING  | The 'geology' attribute is missing (optional).
  geology.validation             | WARNING  | The 'data' attribute is missing (optional).
@@ -137,6 +137,3 @@
  fmm.modelisation               | DEBUG    | '_compute_alpha_map' went well
  fmm.modelisation               | DEBUG    | '_compute_beta_map' went well
  fmm.modelisation               | DEBUG    | '_compute_riemann_metric' went well
- fmm.modelisation               | DEBUG    | '_compute_time_map' went well
- fmm.modelisation               | DEBUG    | '_compute_karst_map' went well
- fmm.modelisation               | INFO     | iteration : 1/1

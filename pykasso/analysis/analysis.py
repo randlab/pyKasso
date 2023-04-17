@@ -50,6 +50,7 @@ class Analysis(ProjectReader):
         >>> analysis = pka.Analysis('examples/betteraz/')
         """
         super().__init__(project_directory)
+        self.k = None
         
     def compute_metrics(self) -> DataFrame:
         """
@@ -102,9 +103,11 @@ class Analysis(ProjectReader):
             # Computes karstnet metrics
             # Makes graph - edges must be a list, and nodes must be a dic of
             # format {nodeindex: [x,y]}
-            k = kn.KGraph(karstnet_edges, karstnet_nodes)
+            self.edges = karstnet_edges  # TODO - remove self
+            self.nodes = karstnet_nodes  # TODO - remove self
+            self.k = kn.KGraph(karstnet_edges, karstnet_nodes)  # TODO - remove self
             verbosity = 0
-            metrics = k.characterize_graph(verbosity)
+            metrics = self.k.characterize_graph(verbosity)
 
             # Concatenates dataframes
             df_ = pd.DataFrame(metrics, index=[i])
@@ -181,7 +184,7 @@ class Analysis(ProjectReader):
         >>> karst_mean = analysis.compute_average_karstic_network()
         """
         # Initialization
-        nx, ny, nz = self._get_grid_shape()
+        nx, ny, nz = self._get_grid_dimensions()
         karst_map = np.zeros((nx, ny, nz))
         # For each simulation, retrieves data and sums it
         for path in self.project_state['simulation_locations']:

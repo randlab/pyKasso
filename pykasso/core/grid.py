@@ -4,10 +4,7 @@ This module contains a class modeling a structured grid.
 
 ### External dependencies
 import numpy as np
-from matplotlib.path import Path
-
-### Typing
-from pykasso._typing import Path as pyplotPath  # TODO
+from shapely.geometry import Polygon
 
 
 class Grid():
@@ -111,8 +108,8 @@ class Grid():
                   self.__xlimits[1], self.__xlimits[0]]
         y_path = [self.__ylimits[0], self.__ylimits[1], self.__ylimits[1],
                   self.__ylimits[0], self.__ylimits[0]]
-        self.__path = Path(list(zip(x_path, y_path)))
         self.__surface_coordinates = list(zip(x_path[:-1], y_path[:-1]))
+        self.__polygon = Polygon(self.__surface_coordinates)
         
     def __str__(self) -> str:
         txt = ("pyKasso's grid"
@@ -291,17 +288,17 @@ class Grid():
     def shape(self) -> tuple:
         """Gets the dimensions of the grid."""
         return self.__shape
-
-    @property
-    def path(self) -> Path:
-        """Gets the path."""
-        return self.__path
     
     @property
     def surface_coordinates(self) -> list:
         """Gets the surface coordinates."""
         return self.__surface_coordinates
 
+    @property
+    def polygon(self) -> Polygon:
+        """Gets the surface polygon."""
+        return self.__polygon
+    
     ###############
     ### METHODS ###
     ###############
@@ -317,7 +314,7 @@ class Grid():
 
         Returns
         -------
-        out : int
+        i : int
             i-index.
 
         Examples
@@ -327,9 +324,9 @@ class Grid():
         7
         """
         x = np.array(x)
-        out = np.ceil((x - self.x0 - self.dx / 2) / self.dx)
-        out = out.astype('int32')
-        return out
+        i = np.floor((x - (self.x0 - (self.dx / 2))) / self.dx)
+        i = i.astype('int32')
+        return i
 
     def get_j(self, y: float) -> int:
         """
@@ -342,7 +339,7 @@ class Grid():
 
         Returns
         -------
-        out : int
+        j : int
             j-index.
 
         Examples
@@ -352,9 +349,9 @@ class Grid():
         3
         """
         y = np.array(y)
-        out = np.ceil((y - self.y0 - self.dy / 2) / self.dy)
-        out = out.astype('int32')
-        return out
+        j = np.floor((y - (self.y0 - (self.dy / 2))) / self.dy)
+        j = j.astype('int32')
+        return j
 
     def get_k(self, z: float) -> int:
         """
@@ -367,7 +364,7 @@ class Grid():
 
         Returns
         -------
-        out : int
+        k : int
             k-index.
 
         Examples
@@ -377,9 +374,9 @@ class Grid():
         2
         """
         z = np.array(z)
-        out = np.ceil((z - self.z0 - self.dz / 2) / self.dz)
-        out = out.astype('int32')
-        return out
+        k = np.floor((z - (self.z0 - (self.dz / 2))) / self.dz)
+        k = k.astype('int32')
+        return k
     
     def get_indices(self, x: float, y: float, z: float = None) -> tuple:
         """
@@ -526,11 +523,61 @@ class Grid():
         else:
             out = (self.get_x(i), self.get_y(j), self.get_z(k))
             return out
+        
+    def is_x_valid(self, x: float) -> bool:
+        """
+        Returns true if the x-coordinate is inside the grid domain.
+
+        Parameters
+        ----------
+        x : float
+            x-coordinate.
+
+        Returns
+        -------
+        out : bool
+        """
+        i = self.get_i(x)
+        out = bool((i - self.nx + 1) * i <= 0)
+        return out
+    
+    def is_y_valid(self, y: float) -> bool:
+        """
+        Returns true if the y-coordinate is inside the grid domain.
+
+        Parameters
+        ----------
+        y : float
+            y-coordinate.
+
+        Returns
+        -------
+        out : bool
+        """
+        j = self.get_j(y)
+        out = bool((j - self.ny + 1) * j <= 0)
+        return out
+    
+    def is_z_valid(self, z: float) -> bool:
+        """
+        Returns true if the z-coordinate is inside the grid domain.
+
+        Parameters
+        ----------
+        z : float
+            z-coordinate.
+
+        Returns
+        -------
+        out : bool
+        """
+        k = self.get_k(z)
+        out = bool((k - self.nz + 1) * k <= 0)
+        return out
 
     def is_inbox(self, x: float, y: float, z: float) -> bool:
         """
-        Returns true if a (x, y, z)-coordinate point is inside the grid,
-        otherwise false.
+        Returns true if a (x, y, z)-coordinate point is inside the grid.
 
         Parameters
         ----------
@@ -553,8 +600,5 @@ class Grid():
         >>> grid.is_inbox(70, 70, 1000)
         False
         """
-        i, j, k = self.get_i(x), self.get_j(y), self.get_k(z)
-        out = (bool((k - self.nz + 1) * k <= 0)
-               and ((j - self.ny + 1) * j <= 0)
-               and ((i - self.nx + 1) * i <= 0))
+        out = self.is_x_valid(x) and self.is_y_valid(y) and self.is_z_valid(z)
         return out

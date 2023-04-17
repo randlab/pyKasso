@@ -5,6 +5,7 @@ TODO
 ### External dependencies
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 ### Local dependencies
 from .._utils import ProjectReader
@@ -14,6 +15,11 @@ class PyplotVisualizer(ProjectReader):
     """
     TODO
     """
+    DEFAULT_SETTINGS = {
+        'surfaces': [],
+        'inlets': False,
+        'outlets': False,
+    }
     
     def __init__(self, project_directory: str, *args, **kwargs):
         """
@@ -22,6 +28,216 @@ class PyplotVisualizer(ProjectReader):
         super().__init__(project_directory, *args, **kwargs)
         
     
+        
+    # def show_karst_system(self, n_sim: int = -1, settings: dict = {}) -> None:
+        
+    #     # Adds default settings values
+    #     settings = self._get_mpl_default_settings(settings)
+        
+    #     # Retrieves the data
+    #     simulation = self._get_simulation_data(n_sim)
+        
+    #     # Creates the plot
+    #     # fig = plt.figure(figsize=None, dpi=None)  # TODO
+    #     fig, ax = self._create_figure()
+        
+        
+    #     # Plots the surfaces
+    #     # surfs = []
+    #     for surface in settings['surfaces']:
+    #         x, y, z = self._get_mpl_surface(simulation, surface)
+    #         ax.plot_surface(x, y, z, linewidth=0, antialiased=False)
+    #     # surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+        
+    #     # Plots the inlets
+    #     if settings['inlets']:
+    #         inlets = simulation['inlets']
+    #         points = inlets[['x', 'y', 'z']].values
+    #         xs, ys, zs = zip(*points)
+    #         ax.scatter(xs, ys, zs, marker='o', c='r', s=40)
+        
+    #     # Plots the outlets
+    #     if settings['outlets']:
+    #         outlets = simulation['outlets']
+    #         points = outlets[['x', 'y', 'z']].values
+    #         xs, ys, zs = zip(*points)
+    #         ax.scatter(xs, ys, zs, marker='o', c='b', s=40)
+        
+        
+    #     edges = simulation['vectors']['edges']
+    #     nodes = simulation['vectors']['nodes']
+    #     nodes_list = list(nodes.values())
+    #     xs, ys, zs, t = zip(*nodes_list)
+    #     ax.scatter(xs, ys, zs, marker='o')
+
+    #     return None
+    
+    # def _get_mpl_default_settings(self, settings):
+    #     for key, value in PyplotVisualizer.DEFAULT_SETTINGS.items():
+    #         if key not in settings:
+    #             settings[key] = value
+    #     return settings
+    
+    # def _get_mpl_surface(self, simulation, surface: str):
+    #     grid = simulation['grid']
+    #     x = grid.X[:, :, 0]
+    #     y = grid.Y[:, :, 0]
+
+    #     if surface == 'topography':
+    #         z = simulation['domain'].topography.data_surface
+    #     elif surface == 'water_level':
+    #         z = simulation['domain'].water_level.data_surface
+    #     elif surface == 'bedrock':
+    #         z = simulation['domain'].bedrock.data_surface
+        
+    #     return (x, y, z)
+
+    def _get_feature_data(self, data: dict, feature: str, iteration: str):
+        if feature in ['geology']:
+            featured_data = data[feature].data_volume
+        if feature in ['karst']:
+            featured_data = data['maps'][feature][iteration]
+        return featured_data
+    
+    ###############
+    ### PLOT 2D ###
+    ###############
+    
+    def plot2D(self, n_sim: int, feature: str, axis: str = 'z', n: int = 0):
+        
+        # Retrieves the data
+        sim_data = self._get_simulation_data(n_sim)
+        
+        # Retrieves the data feature
+        iteration = -1
+        data = self._get_feature_data(sim_data, feature, iteration)
+        
+        # Slices the data
+        sliced_data = self._slice_data(data, axis, n)
+        
+        # Creates the figure
+        fig, ax = self._create_figure2D(axis)
+        
+        # Plots the data
+        # TODO
+        # cmap
+        ax.imshow(sliced_data, origin="lower", extent=self.grid.extent)
+        
+        # Sets the colorbar
+        # TODO
+        
+        return None
+    
+    def _slice_data(self, data: np.ndarray, axis: str, n: int):
+        
+        if axis == 'x':
+            np_slice = (n, slice(None), slice(None))
+        elif axis == 'y':
+            np_slice = (slice(None), n, slice(None))
+        elif axis == 'z':
+            np_slice = (slice(None), slice(None), n)
+            
+        sliced_data = data[np_slice]
+        
+        return sliced_data
+    
+    def _create_figure2D(self, axis: str):
+        
+        # Declares the figure
+        fig = plt.figure()
+        ax = plt.subplot()
+        
+        if axis == 'x':
+            ax.set_xlabel('y')
+            ax.set_ylabel('z')
+        elif axis == 'y':
+            ax.set_xlabel('x')
+            ax.set_ylabel('z')
+        elif axis == 'z':
+            ax.set_xlabel('x')
+            ax.set_ylabel('y')
+        
+        out = (fig, ax)
+        return out
+
+    ###############
+    ### PLOT 3D ###
+    ###############
+    
+    def plot3D(self, n_sim: int, feature: str, mode: str = 'vectors'):
+        
+        # Retrieves the data
+        sim_data = self._get_simulation_data(n_sim)
+        
+        # Creates the figure
+        fig, ax = self._create_figure3D()
+        
+        # Retrieves the data feature
+        if (feature == 'karst') and (mode == 'vectors'):
+            # Gets nodes
+            nodes_ = sim_data['vectors']['nodes']
+            nodes = {}
+            for node in nodes_:
+                nodes[node] = nodes_[node][:3]
+                
+            # Gets edges
+            edges = sim_data['vectors']['edges'].values()
+            
+            # Plots the karstic network
+            ax = self._plot_graph(ax, nodes, edges)
+            
+        else:
+            iteration = -1
+            data = self._get_feature_data(sim_data, feature, iteration)
+            
+            # Sets the colors
+            # TODO
+        
+            # Plots the feature data
+            ax.voxels(data, facecolors=None, edgecolors=None)
+        
+        return None
+    
+    def _create_figure3D(self) -> tuple:
+        
+        # Declares the figure
+        fig = plt.figure()
+        ax = plt.subplot(projection='3d')
+        
+        # Sets axis labels
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
+        
+        # Returns the figure
+        out = (fig, ax)
+        return out
+    
+    def _plot_graph(self, ax, nodes: dict, edges: list):
+        
+        # Plots edges
+        nodes_to_plot = []
+        for edge in edges:
+            n_node1, n_node2 = edge
+            nodes_to_plot.extend([n_node1, n_node2])
+            node1 = nodes[n_node1]
+            node2 = nodes[n_node2]
+            x1, y1, z1 = node1
+            x2, y2, z2 = node2
+            xs = [x1, x2]
+            ys = [y1, y2]
+            zs = [z1, z2]
+            ax.plot(xs, ys, zs)
+        
+        # Plots nodes
+        nodes_list = []
+        for node_to_plot in nodes_to_plot:
+            nodes_list.append(nodes[node_to_plot])
+        xs, ys, zs = zip(*nodes_list)
+        ax.scatter(xs, ys, zs, marker='o')
+        return ax
+        
+        
 
 # #     #############################
 # #     ### Visualization methods ###

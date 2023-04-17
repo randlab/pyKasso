@@ -34,13 +34,15 @@ Then:
 pip install -e pykasso[analysis, visualization]
 ```
 
+<!-- 
 ### Check installation
 
 Work in progress.
 
-<!-- ```
+```
 poetry run pytest tests/
-``` -->
+```
+-->
 
 ### Dependencies
 

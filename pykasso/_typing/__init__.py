@@ -12,6 +12,4 @@ from .types import (
     Series,
     DataFrame,
     Styler,
-    #
-    Path,
 )

@@ -3,13 +3,13 @@ This module contains fonctions designed for fracture generation and
 discretization.
 """
 
-### Internal dependencies
-import math
-
 ### External dependencies
 import mpmath
 import numpy as np
 import pandas as pd
+
+### Local dependencies
+from pykasso.core.geologic_features import Volume
 
 ### Typing
 from pykasso._typing import Grid, RandomNumberGenerator
@@ -20,19 +20,92 @@ from pykasso._typing import Grid, RandomNumberGenerator
 # (https://numpy.org/doc/stable/reference/random/generated/numpy.random.normal.html)
 
 
-class FracturesGenerator():
-    """
-    TODO
-    """
+class Fractures(Volume):
+    """Class modeling the fracturation model."""
     
-    def __init__(self, rng: RandomNumberGenerator, grid: Grid):
-        """
-        TODO
-        """
-        self.rng = rng
-        self.grid = grid
+    def __init__(self, rng: RandomNumberGenerator, *args, **kwargs):
+        label = 'fractures'
+        super().__init__(label, *args, **kwargs)
         
-    def generate_fractures(self, density: float, alpha: float,
+        self.rng = rng
+        self.i = 0
+        self.families = pd.DataFrame()
+        self.fractures = pd.DataFrame()
+        self.fractures_voxelized = {}
+        
+    def generate_fracture_family(self, name, grid, **settings):
+        self.i = self.i + 1
+        if 'cost' in settings:
+            cost = settings['cost']
+            del settings['cost']
+        
+        # Creates family
+        frac_family = {
+            'id': [self.i],
+            'name': [name],
+            'cost': [cost],
+            # 'geology': pass # TODO - add geology
+        }
+        frac_family = pd.DataFrame(data=frac_family)
+            
+        # Generates fractures
+        fractures = self.generate_fractures(grid, **settings)
+        fractures.insert(0, 'family_id', self.i)
+        
+        # Updates tables
+        self.fractures = pd.concat([self.fractures, fractures])
+        self.families = pd.concat([self.families, frac_family])
+        
+        # Voxelizes the fractures
+        self.fractures_voxelized[self.i] = voxelize_fractures(grid, fractures)
+        return None
+     
+    def generate_model(self):
+        """Constructs the model for fracturation."""
+
+        frac_model = np.zeros_like(self.fractures_voxelized[self.i])
+        
+        # Sorts fracture families by cost
+        self.families = self.families.sort_values(['cost', 'id'])
+        fractures_family_ids = self.families['id'].values
+        
+        # Updates the final array
+        for family_id in fractures_family_ids:
+            frac_model = np.where(
+                self.fractures_voxelized[family_id] == 1,
+                family_id,
+                frac_model
+            )
+        self.data_volume = frac_model
+        
+        # Sets the costs
+        costs = pd.Series(self.families['cost'].values,
+                          index=self.families['id']).to_dict()
+        self._set_costs(costs)
+        
+        ######### TODO #########
+        # Sums fractures families
+        # frac_sum = sum([d for d in self.fractures_voxelized.values()])
+        # self.fractures_families['sum'] = frac_sum
+        ###
+        
+        # # Constraints model with geology if provided
+        # if 'geology' in kwargs:
+        #     frac_model_geology = np.zeros_like(frac_model)
+        #     for geologic_id in kwargs['geology']:
+        #         frac_model_geology = np.where(
+        #             Geology.data_volume == geologic_id,
+        #             frac_model,
+        #             frac_model_geology
+        #         )
+        #     self.fractures_families['model'] = frac_model_geology
+                
+        # data = self.fractures_families['model']
+        ######### TODO #########
+        
+        return None
+                
+    def generate_fractures(self, grid, density: float, alpha: float,
                            orientation: float, dip: float,
                            length: float,
                            orientation_distribution: str = 'vonmises',
@@ -69,9 +142,9 @@ class FracturesGenerator():
             length_max = length
 
         ### Redefine fracturation domain
-        Lx = self.grid.xmax - self.grid.xmin
-        Ly = self.grid.ymax - self.grid.ymin
-        Lz = self.grid.zmax - self.grid.zmin
+        Lx = grid.xmax - grid.xmin
+        Ly = grid.ymax - grid.ymin
+        Lz = grid.zmax - grid.zmin
 
         shift_x = min(Lx / 2, length_max / 2)
         shift_y = min(Ly / 2, length_max / 2)
@@ -82,9 +155,9 @@ class FracturesGenerator():
         Lez = 2 * shift_z + Lz
 
         area = Lex * Ley
-        xmin = self.grid.xmin - shift_x
-        ymin = self.grid.ymin - shift_y
-        zmin = self.grid.zmin - shift_z
+        xmin = grid.xmin - shift_x
+        ymin = grid.ymin - shift_y
+        zmin = grid.zmin - shift_z
 
         ### Total numbers of fractures
         fractures_numbers = np.array(density) * area
@@ -123,8 +196,8 @@ class FracturesGenerator():
             # Computes ...
             orient_mean_angle = (orientation_max + orientation_min) / 2
             orient_std_angle = (orientation_max - orient_mean_angle) / 3
-            orient_mean_angle_rad = math.radians(orient_mean_angle)
-            orient_std_angle_rad = math.radians(orient_std_angle)
+            orient_mean_angle_rad = np.radians(orient_mean_angle)
+            orient_std_angle_rad = np.radians(orient_std_angle)
 
             # Computes the kappa value for the Von Mises orient. distribution
             orient_kappa = self._solve_kappa(orient_std_angle_rad)
@@ -133,6 +206,7 @@ class FracturesGenerator():
                                       orient_kappa,
                                       real_frac_number)
             )
+            orientation_fractures = np.degrees(orientation_fractures)
             
         ##### FRACTURE DIP
         
@@ -153,8 +227,8 @@ class FracturesGenerator():
         elif dip_distribution == 'vonmises':
             dip_mean_angle = (dip_max + dip_min) / 2
             dip_std_angle = (dip_max - dip_mean_angle) / 3
-            dip_mean_angle_rad = math.radians(dip_mean_angle)
-            dip_std_angle_rad = math.radians(dip_std_angle)
+            dip_mean_angle_rad = np.radians(dip_mean_angle)
+            dip_std_angle_rad = np.radians(dip_std_angle)
             
             # Computes the kappa value for the Von Mises orient. distribution
             dip_kappa = self._solve_kappa(dip_std_angle_rad)
@@ -163,6 +237,7 @@ class FracturesGenerator():
                                       dip_kappa,
                                       real_frac_number)
             )
+            dip_fractures = np.degrees(dip_fractures)
 
         ##### FRACTURE LENGHT
 
@@ -194,7 +269,7 @@ class FracturesGenerator():
             'y': ym,
             'z': zm,
             'radius': radius,
-            'orientation': np.degrees(orientation_fractures),
+            'orientation': orientation_fractures,
             'dip': dip_fractures,
             'normal': normal
         }
@@ -238,9 +313,11 @@ class FracturesGenerator():
  
 def calculate_normal(dip, orientation):
     """"""
-    x = np.cos(np.radians(dip)) * np.cos(np.radians(90) - orientation)
-    y = np.cos(np.radians(dip)) * np.sin(np.radians(90) - orientation)
-    z = np.sin(np.radians(90) - np.radians(dip))
+    orientation = np.radians(orientation)
+    dip = np.radians(dip)
+    x = np.cos(dip) * np.cos(np.radians(90) - orientation)
+    y = np.cos(dip) * np.sin(np.radians(90) - orientation)
+    z = np.sin(np.radians(90) - dip)
     a = y
     b = -x
     c = -z
