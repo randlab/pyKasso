@@ -6,12 +6,13 @@ TODO
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from IPython import get_ipython  # ??
 
 ### Local dependencies
-from .._utils import ProjectReader
+from ._visualizer import Visualizer
 
 
-class PyplotVisualizer(ProjectReader):
+class PyplotVisualizer(Visualizer):
     """
     TODO
     """
@@ -21,12 +22,17 @@ class PyplotVisualizer(ProjectReader):
         'outlets': False,
     }
     
-    def __init__(self, project_directory: str, *args, **kwargs):
+    def __init__(self, project_directory: str, notebook: bool = True,
+                 *args, **kwargs):
         """
         TODO
         """
         super().__init__(project_directory, *args, **kwargs)
         
+        if notebook:
+            get_ipython().run_line_magic('matplotlib', 'inline')
+        else:
+            get_ipython().run_line_magic('matplotlib', 'qt')
     
         
     # def show_karst_system(self, n_sim: int = -1, settings: dict = {}) -> None:

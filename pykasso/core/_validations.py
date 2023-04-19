@@ -152,7 +152,7 @@ def is_extension_valid(path:str, valid_extensions:list) -> bool:
         return True
 
 
-def read_file(path:str, attribute:str) -> np.ndarray:
+def read_file(path: str, attribute: str) -> np.ndarray:
     """
     TODO
     """
@@ -186,17 +186,18 @@ def read_file(path:str, attribute:str) -> np.ndarray:
         return data
 
 
-def is_attribute_value_valid(attribute:str, value:float, logical_test:str, compared_to:float) -> bool:
+def is_attribute_value_valid(attribute: str, value: float, logical_test: str,
+                             compared_to: float) -> bool:
     """
     TODO
     """
     logical_test_text = {
-        '>'  : 'greater than',
-        '>=' : 'greater than or equal to',
-        '<'  : 'less than',
-        '<=' : 'less than or equal to',
-        '==' : 'equal to',
-        '!=' : 'not equal to'
+        '>': 'greater than',
+        '>=': 'greater than or equal to',
+        '<': 'less than',
+        '<=': 'less than or equal to',
+        '==': 'equal to',
+        '!=': 'not equal to'
     }
     test = str(value) + logical_test + str(compared_to)
     if not eval(test):
@@ -207,7 +208,7 @@ def is_attribute_value_valid(attribute:str, value:float, logical_test:str, compa
         return True
 
 
-def is_list_length_valid(data:list, value:int, attribute:str) -> bool:
+def is_list_length_valid(data: list, value: int, attribute: str) -> bool:
     if len(data) < value:
         msg = "'{}' data length is too short ({} elements minimum).".format(attribute, value)
         this.logger.critical(msg)
@@ -216,7 +217,8 @@ def is_list_length_valid(data:list, value:int, attribute:str) -> bool:
         return True
 
      
-def is_coordinate_type_valid(coordinate:tuple, types:tuple, attribute:str) -> bool:
+def is_coordinate_type_valid(coordinate: tuple, types: tuple,
+                             attribute: str) -> bool:
     if not isinstance(coordinate, types):
         msg = "The values of the '{}' attribute contains at least one invalid vertex. Coordinates must be of type : {}.".format(attribute, types)
         this.logger.critical(msg)
@@ -225,7 +227,7 @@ def is_coordinate_type_valid(coordinate:tuple, types:tuple, attribute:str) -> bo
         return True
                    
 
-def is_surface_dimensions_valid(array:np.ndarray, grid) -> bool:
+def is_surface_dimensions_valid(array: np.ndarray, grid) -> bool:
     nx, ny, nz = grid.shape
     if not (array.shape == (nx, ny)):
         msg = 'TODO - array shape : {} / nx, ny : {}'.format(array.shape, (nx, ny))
@@ -235,7 +237,7 @@ def is_surface_dimensions_valid(array:np.ndarray, grid) -> bool:
         return True
     
 
-def is_costs_dictionnary_valid(costs_dictionnary:dict, ids_data:list):
+def is_costs_dictionnary_valid(costs_dictionnary: dict, ids_data: list):
     """ """
     for i in ids_data:
         if i not in costs_dictionnary:
@@ -244,15 +246,10 @@ def is_costs_dictionnary_valid(costs_dictionnary:dict, ids_data:list):
             raise KeyError(msg)
     return True
     
-################################################################################################
-### CORE ###
-############
 
 ####################################################################################
-####################################################################################
-####################################################################################
 
-def validate_settings(feature:str, feature_settings:dict, grid=None) -> dict:
+def validate_settings(feature: str, feature_settings: dict, grid=None) -> dict:
     """
     TODO
     """
@@ -263,7 +260,8 @@ def validate_settings(feature:str, feature_settings:dict, grid=None) -> dict:
     elif feature == 'domain':
         settings = validate_domain_settings(feature_settings, grid)
     elif feature in ['geology', 'beddings', 'faults']:
-        settings = validate_geologic_feature_settings(feature_settings, feature, grid)
+        settings = validate_geologic_feature_settings(feature_settings,
+                                                      feature, grid)
     elif feature in ['inlets', 'outlets']:
         settings = validate_points_feature_settings(feature_settings, feature)
     elif feature == 'tracers':
@@ -276,11 +274,14 @@ def validate_settings(feature:str, feature_settings:dict, grid=None) -> dict:
 ###########
 ### SKS ### (Seed - Algorithm - Costs)
 ###########
-def validate_sks_settings(settings:dict) -> dict:
+
+def validate_sks_settings(settings: dict) -> dict:
     # Checks attributes presence
     for attribute in this.ATTRIBUTES['sks']:
         kind, default_value = this.ATTRIBUTES['sks'][attribute]
-        settings = validate_attribute_presence(settings, attribute, kind, default_value, is_subattribute=True)
+        settings = validate_attribute_presence(settings, attribute, kind,
+                                               default_value,
+                                               is_subattribute=True)
         
     # Checks the presence of essential fmm costs
     costs = ['ratio', 'conduits', 'out']
@@ -293,11 +294,14 @@ def validate_sks_settings(settings:dict) -> dict:
 ############
 ### GRID ###
 ############
-def validate_grid_settings(settings:dict) -> dict:
+
+def validate_grid_settings(settings: dict) -> dict:
     # Checks attributes presence
     for attribute in this.ATTRIBUTES['grid']:
         kind, default_value = this.ATTRIBUTES['grid'][attribute]
-        settings = validate_attribute_presence(settings, attribute, kind, default_value, is_subattribute=True)
+        settings = validate_attribute_presence(settings, attribute, kind,
+                                               default_value,
+                                               is_subattribute=True)
 
     # Checks if the values of attributes are of type int or float
     for attribute in ['x0', 'y0', 'z0', 'dx', 'dy', 'dz']:
@@ -320,10 +324,11 @@ def validate_domain_settings(settings:dict, grid) -> dict:
     # Checks attributes presence
     for attribute in this.ATTRIBUTES['domain']:
         kind, default_value = this.ATTRIBUTES['domain'][attribute]
-        settings = validate_attribute_presence(settings, attribute, kind, default_value, is_subattribute=True)
+        settings = validate_attribute_presence(settings, attribute, kind,
+                                               default_value,
+                                               is_subattribute=True)
     
     for attribute in ['delimitation', 'topography', 'bedrock', 'water_level']:
-        
         
         # Checks if data exists
         if isinstance(settings[attribute], (str)) and (settings[attribute] == ''):
@@ -337,7 +342,7 @@ def validate_domain_settings(settings:dict, grid) -> dict:
     
     return settings
  
-def validate_delimitation_settings(settings:dict, grid) -> dict:
+def validate_delimitation_settings(settings: dict, grid) -> dict:
     ### Checks if type is valid
     is_attribute_type_valid('delimitation', settings['delimitation'], (str, list, np.ndarray))
     
@@ -389,7 +394,7 @@ def validate_delimitation_settings(settings:dict, grid) -> dict:
         
     return settings
 
-def validate_surface_settings(settings:dict, attribute:str, grid) -> dict:
+def validate_surface_settings(settings: dict, attribute: str, grid) -> dict:
     
     # Checks if type is valid
     is_attribute_type_valid(attribute, settings[attribute], (str, np.ndarray))
@@ -415,7 +420,9 @@ def validate_surface_settings(settings:dict, attribute:str, grid) -> dict:
 #########################
 ### GEOLOGIC FEATURES ### ( Geology - Beddings - Faults)
 #########################
-def validate_geologic_feature_settings(settings:dict, attribute:str, grid) -> dict:
+
+def validate_geologic_feature_settings(settings: dict, attribute: str,
+                                       grid) -> dict:
 
     # Checks attributes presence
     for attribute_ in this.ATTRIBUTES[attribute]:
@@ -566,6 +573,8 @@ def validate_points_feature_settings(settings:dict, attribute:str) -> dict:
 
             # Tries to open file
             points = read_file(path, 'data')
+            if len(points.shape) == 1: # If points contains only one element
+                points = np.array([points])
 
         # Type is list:
         if isinstance(settings['data'], (list)):

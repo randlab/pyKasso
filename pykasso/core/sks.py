@@ -60,7 +60,7 @@ this.misc_relative_path = '/../_misc/'
 ########################
 
 
-def create_project(project_directory: str, example: str = None) -> None:
+def create_project(project_directory: str = None, example: str = None) -> None:
     """
     Creates a new pyKasso's project within the provided `project_directory`
     path.
@@ -83,48 +83,73 @@ def create_project(project_directory: str, example: str = None) -> None:
     Examples
     --------
     >>> import pykasso as pk
-    >>> pk.create_project('examples/betteraz/')
+    >>> pk.create_project('projects/example_01/')
+    >>> pk.create_project(example='betteraz')
     """
-    # Uncomment this to tell apart the development version and the main version
-    # print('CAUTION: You are using the development version of this package.')
     
-    ### Creates the project subdirectories
+    # Defines some useful paths and locations
+    current_location = os.getcwd()
+    pckg_location = os.path.dirname(os.path.abspath(__file__))
+    misc_directory = pckg_location + this.misc_relative_path
+    
+    # Tests type of parameters
+    is_project_dir_defined = (project_directory is not None)
+    is_example_provided = (example is not None)
+    
+    # Cleans variables
+    if is_project_dir_defined:
+        project_directory = project_directory.lower().strip('/')
+    if is_example_provided:
+        example = example.lower()
+    
+    # Tests validity of 'example' parameter
+    if (not is_project_dir_defined) and is_example_provided:
+        valid_examples = os.listdir(misc_directory + 'cases/')
+        if example not in valid_examples:
+            msg = "'example' argument value is not valid. Valid examples names : {}"
+            msg = msg.format(valid_examples)
+            raise ValueError(msg)
+        else:
+            
+            project_directory = example
+
+    ### Defines the project subdirectories
     this.core_settings = {
+        'current_location': current_location,
         'project_directory': project_directory,
         'inputs_directory': project_directory + '/inputs/',
         'outputs_directory': project_directory + '/outputs/',
         'settings_directory': project_directory + '/settings/',
-    }
-    [os.makedirs(directory, exist_ok=True) for directory in core_settings.values()]
-
-    ### Populates the settings directory with initial yaml settings file
-    location = os.path.dirname(os.path.abspath(__file__))
-    misc_directory = location + this.misc_relative_path
-    this.core_settings.update({
         'core_settings_filename': 'CORE_SETTINGS.yaml',
         'sks_settings_filename': 'SKS_SETTINGS.yaml',
         'log_filename': 'pyKasso.log',
-    })
+    }
     
-    # Copies directly the requested example from the _misc directory
-    if example is not None:
-        example = example.strip('/')
-        # path = 
-        return None
+    if (not is_project_dir_defined) and is_example_provided:
+        # Copies the files from queried example
+        source = misc_directory + 'cases/' + example
+        destination = current_location + '/' + example
+        shutil.copytree(source, destination, dirs_exist_ok=True)
+    else:
+        # Creates the directories
+        os.makedirs(this.core_settings['project_directory'], exist_ok=True)
+        os.makedirs(this.core_settings['inputs_directory'], exist_ok=True)
+        os.makedirs(this.core_settings['outputs_directory'], exist_ok=True)
+        os.makedirs(this.core_settings['settings_directory'], exist_ok=True)
+        
+        ### Creates the CORE_SETTINGS.yaml file in the project directory
+        # core_settings_filename = (core_settings['settings_directory']
+        #                           + core_settings['core_settings_filename'])
+        # with open(core_settings_filename, 'w') as f:
+        #     text = "# pyKasso CORE SETTINGS \n---\n"
+        #     yaml_text = yaml.safe_dump(core_settings)
+        #     text = text + yaml_text + "..."
+        #     f.write(text)
 
-    ### Creates the CORE_SETTINGS.yaml file in the project directory
-    # core_settings_filename = (core_settings['settings_directory']
-    #                           + core_settings['core_settings_filename'])
-    # with open(core_settings_filename, 'w') as f:
-    #     text = "# pyKasso CORE SETTINGS \n---\n"
-    #     yaml_text = yaml.safe_dump(core_settings)
-    #     text = text + yaml_text + "..."
-    #     f.write(text)
-
-    ### Copies the default SKS_SETTINGS.yaml file from the misc directory to
-    ### the project directory
-    path = misc_directory + this.core_settings['sks_settings_filename']
-    shutil.copy2(path, project_directory + '/settings/')
+        # Copies the default SKS_SETTINGS.yaml file from the misc directory to
+        # the project directory
+        source = misc_directory + this.core_settings['sks_settings_filename']
+        shutil.copy2(source, project_directory + '/settings/')
 
     ### Constructs the dictionary used for settings comparison between actual
     ### and previous simulation, used for the memoization operation
@@ -133,16 +158,16 @@ def create_project(project_directory: str, example: str = None) -> None:
         'n_simulation': 0,
         'simulation_locations': [],
         'settings': {
+            ### static features ###
             'grid': None,
             'domain': None,
             'geology': None,
             'beddings': None,
             'faults': None,
-            # static features
+            ### dynamic features ###
             'fractures': None,
             'outlets': None,
             'inlets': None,
-            # dynamic features
         },
         'model': {}
     }
@@ -679,7 +704,10 @@ class SKS():
         logical_test_02 = not (self.SKS_SETTINGS[kind]['data'] == '')
         if logical_test_01 and logical_test_02:
             path = self.SKS_SETTINGS[kind]['data']
-            self.SKS_SETTINGS[kind]['data'] = np.genfromtxt(path)
+            data = np.genfromtxt(path)
+            if len(data.shape) == 1:
+                data = np.array([data])
+            self.SKS_SETTINGS[kind]['data'] = data
         
         ### Inspects validity of points
         points = self.SKS_SETTINGS[kind]['data']
@@ -695,7 +723,10 @@ class SKS():
         
         # 3D points # TODO - logging ?
         points_3D = [point for point in points if len(point) == 3]
-        validated_points_3D += [point for point in points_3D if point_manager._is_coordinate_3D_valid(point)]
+        validated_points_3D += (
+            [point for point in points_3D
+             if point_manager._is_coordinate_3D_valid(point)]
+        )
 
         diff = len(points) - len(validated_points_3D)
         if diff > 0:
@@ -746,10 +777,10 @@ class SKS():
         test_c = ('settings' in self.SKS_SETTINGS['fractures'])
         if (not (test_a and test_b)) or test_c:
             self.fractures = Fractures(rng=self.rng['fractures'])
-            axis = self.SKS_SETTINGS['fractures']['axis']
             
             # Generates fractures families
             if 'settings' in self.SKS_SETTINGS['fractures']:
+                
                 frac_settings = self.SKS_SETTINGS['fractures']['settings']
                 for frac_name, frac_settings in frac_settings.items():
                     self.fractures.generate_fracture_family(frac_name,
@@ -758,6 +789,7 @@ class SKS():
                 self.fractures.generate_model()
             # Loads data
             else:
+                axis = self.SKS_SETTINGS['fractures']['axis']
                 self.fractures.set_data(fractures, self.grid, axis)
                 costs = self.SKS_SETTINGS['fractures']['costs']
                 self.fractures._set_costs(costs)

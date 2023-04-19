@@ -1,0 +1,111 @@
+ ######################
+### PYKASSO SETTINGS ###
+ ######################
+
+---
+sks:
+  seed : 1
+  algorithm : 'Isotropic3'
+
+############
+### Grid ###
+############
+
+grid:
+  x0 : 572510
+  y0 : 250010
+  z0 : 430
+  nx : 300
+  ny : 300
+  nz : 20
+  dx : 20
+  dy : 20
+  dz : 20
+
+##############
+### Domain ###
+##############
+
+domain:
+  delimitation : 'betteraz/inputs/betteraz_polygon.txt'
+  topography   : ''
+  bedrock      : ''
+  water_level  : ''
+
+###############
+### Geology ###
+###############
+
+geology:
+  data  : 'betteraz/inputs/betteraz_2D_z430.gslib'
+  costs : 
+    1 : 0.5
+    2 : 0.7
+
+faults:
+  data : 'betteraz/inputs/betteraz_fault_20_2D.gslib'
+
+##############
+### Points ###
+##############
+
+### Outlets
+outlets:
+  number     : 1
+  data       : 'betteraz/inputs/outlets.txt'
+  shuffle    : False
+  importance : [1]
+  seed       : 1
+  mode       : 'domain_bottom'
+
+### Inlets
+inlets:
+  number     : 15
+  data       : 'betteraz/inputs/inlets_01.txt'
+  shuffle    : False
+  per_outlet : [1]
+  importance : [1,1,1]
+  seed       : 2
+  mode       : 'domain_surface'
+
+####################
+### Fracturation ###
+####################
+
+fractures:
+  data : ''
+  seed : 12
+  settings :
+    family_01:
+      alpha        : 2
+      density      : 0.00001
+      orientation  : [340, 20]
+      dip          : [80, 90]
+      length       : [1000, 2000]
+    family_02:
+      alpha        : 2
+      density      : 0.00001
+      orientation  : [340, 20]
+      dip          : [0, 10]
+      length       : [1000, 2000]
+
+# fractures_densities       : [5.83e-6,1.38e-6,2.22e-6, 2.5e-6,4.16e-6,6.66e-6,   5e-6]
+# fractures_min_orientation : [      0,     15,     30,     60,    105,    120,    150]
+# fractures_max_orientation : [     15,     30,     45,    105,    120,    150,    180]
+# fractures_min_dip         : [     80,     80,     80,     80,     80,     80,     80]
+# fractures_max_dip         : [     90,     90,     90,     90,     90,     90,     90]
+
+# # For fracture size
+# fractures_alpha      : [   2,   2,   2,   2,   2,   2,   2]
+# fractures_min_length : [ 100, 100, 100, 100, 100, 100, 100]
+# fractures_max_length : [8500,8500,8500,8500,8500,8500,8500]
+
+##############
+### OTHERS ###
+##############
+
+verbosity:
+  logging : 0
+  agd : 0
+  karstnet : 0
+...

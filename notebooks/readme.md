@@ -1,13 +1,18 @@
 # Notebooks
 
+## Binder
+
+A notebook collection with easy examples for demonstration with binder:
+https://mybinder.org/v2/gh/randlab/pyKasso/dev
+
 ## Geometry
 
-Work in progress.
+A notebook collection illustrating pyKasso's behavior in various over-simplified geological situations. 
 
-## Sensibility
+<!-- ## Sensibility
 
 Work in progress.
 
 ## Examples
 
-Work in progress.
+Work in progress. -->

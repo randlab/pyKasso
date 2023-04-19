@@ -2,12 +2,17 @@
 This module contains classes modeling the geological features.
 """
 
+### Internal dependencies
+import sys
+
 ### External dependencies
 import numpy as np
 import pandas as pd
 
 ### Local dependencies
 from .._utils import DataReader
+
+sks = sys.modules['pykasso.core.sks']
 
 ##################
 ### Main class ###
@@ -63,6 +68,55 @@ class GeologicFeature(DataReader):
                                                             data,
                                                             True,
                                                             axis)
+        return None
+    
+    def to_file(self, name: str = None, data: str = ''):
+        
+        grid = sks.ACTIVE_PROJECT['settings']['grid']
+
+        
+        path = sks.ACTIVE_PROJECT['simulation_locations'][-1]
+        
+        if name is not None:
+            extension = name.split('.')[-1]
+            # if extension == 'a':
+            #     pass
+            # elif extension == 'a':
+            #     pass
+            # elif extension == 'a':
+            #     pass
+            # elif extension == 'a':
+            #     pass
+            # elif extension == 'a':
+            #     pass
+        else:
+            extension = ''
+            filename = self.label + extension
+        return None
+    
+    def _save_to_gslib(self):
+        grid = sks.ACTIVE_PROJECT['settings']['grid']
+        x0, y0, z0 = grid['x0'], grid['y0'], grid['z0']
+        nx, ny, nz = grid['nx'], grid['ny'], grid['nz']
+        dx, dy, dz = grid['dx'], grid['dy'], grid['dz']
+        comment = ("x0: {}, y0: {}, z0:, {}, nx: {}, ny: {}, nz: {}, dx: {},"
+                   "dy: {}, dz: {}").format(x0, y0, z0, nx, ny, nz, dx, dy, dz)
+        n_var = 1
+        
+        
+        pass
+    
+    def _save_to_np_pickle(self) -> None:
+        # np.save()
+        return None
+    
+    def _save_to_csv(self) -> None:
+        return None
+    
+    def _save_to_asc(self) -> None:
+        return None
+    
+    def _save_to_grd(self) -> None:
         return None
                 
 #######################

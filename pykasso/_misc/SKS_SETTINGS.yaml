@@ -1,36 +1,34 @@
- ##################
-### SKS SETTINGS ###
- ##################
+ ######################
+### PYKASSO SETTINGS ###
+ ######################
 
 ---
 sks:
-  domain_from_geology: False
-  seed : 1
+  seed : 0
+  algorithm : 'Isotropic3'
 
 ############
 ### Grid ###
 ############
 
 grid:
-  x0 : 572510
-  y0 : 250010
-  z0 : 430
-  nx : 300
-  ny : 300
+  x0 : 0
+  y0 : 0
+  z0 : 20
+  nx : 100
+  ny : 100
   nz : 10
-  dx : 20
-  dy : 20
-  dz : 20
+  dx : 10
+  dy : 10
+  dz : 10
 
 ##############
 ### Domain ###
 ##############
 
 domain:
-  # delimitation : ''
-  delimitation : 'test/inputs/betteraz_polygon.txt'
+  delimitation : ''
   topography   : ''
-  # topography   : 'test/inputs/topography.csv'
   bedrock      : ''
   water_level  : ''
 
@@ -39,22 +37,12 @@ domain:
 ###############
 
 geology:
-  data  : 'test/inputs/betteraz_2D_z430.gslib'
-  costs : 
-    1 : 0.5
-    2 : 0.7
+  data  : ''
+  costs : {}
 
 faults:
-  data : 'test/inputs/faults.png'
-  axis : 'z'
-
-beddings:
-#   data  : 'test/inputs/betteraz_2D_z430.gslib'
   data : ''
-#   costs : {1:0.5}
-
-# karst:
-#   data : ''
+  costs : {}
 
 ##############
 ### Points ###
@@ -62,28 +50,22 @@ beddings:
 
 ### Outlets
 outlets:
-  number     : 6
-  # data       : 'test/inputs/betteraz_polygon.txt'
+  number     : 1
   data       : ''
   shuffle    : False
-  importance : [1,1]
-  seed  : 1
-  mode : 'uniform'
+  importance : [1]
+  seed       : 1
+  mode       : 'domain_bottom'
 
 ### Inlets
 inlets:
   number     : 30
-  # data       : 'test/inputs/betteraz_polygon.txt'
+  data       : ''
   shuffle    : False
-  per_outlet : [1,1,1]
+  per_outlet : [1]
   importance : [1,1,1]
-  seed : 2
-  mode : 'uniform'
-
-### Tracers
-tracers:
-  number : 1
-  data   : ''
+  seed       : 2
+  mode       : 'domain_surface'
 
 ####################
 ### Fracturation ###
@@ -105,15 +87,6 @@ fractures:
       orientation  : [340, 20]
       dip          : [0, 10]
       length       : [1000, 2000]
-
-###########
-### FMM ###
-###########
-
-fmm: 
-  algorithm : 'Riemann3'
-  costs :
-    ratio : 0.5
 
 ##############
 ### OTHERS ###

@@ -12,12 +12,8 @@ import numpy as np
 import pyvista as pv
 
 ### Local dependencies
+from ._visualizer import DOMAIN_FEATURES, ANISOTROPIC_FEATURES
 from ._pyplot import PyplotVisualizer
-from .main import DOMAIN_FEATURES, ANISOTROPIC_FEATURES
-
-### Typing
-# pyvista grid
-# actors
 
 
 class PyvistaVisualizer(PyplotVisualizer):
@@ -34,19 +30,18 @@ class PyvistaVisualizer(PyplotVisualizer):
         'cpos': 'xz',
         # 'domain',
         'slice': False,
-        # 'tracers',
-        # other,
-        'orientation': False
+        'orientation': False  # TODO - to remvoe ?
     }
     
-    def __init__(self, project_directory: str, *args, **kwargs):
+    def __init__(self, project_directory: str, notebook: bool = True,
+                 *args, **kwargs):
         """
         TODO
         """
-        super().__init__(project_directory, *args, **kwargs)
+        super().__init__(project_directory, notebook, *args, **kwargs)
         
         # Sets global_theme.notebooks
-        # pv.global_theme.notebook = True
+        pv.global_theme.notebook = notebook
         
         # Sets the pyvista grid
         self._set_pyvista_grid()
@@ -84,17 +79,6 @@ class PyvistaVisualizer(PyplotVisualizer):
                     settings_[key] = value
             pyvista_settings.append(settings_)
         
-        # # Sets cpos
-        # nx, ny, nz = self._get_grid_dimensions()
-        # if nx == 1:
-        #     pyvista_settings['cpos'] = 'yz'
-        # elif ny == 1:
-        #     pyvista_settings['cpos'] = 'xz'
-        # elif nz == 1:
-        #     pyvista_settings['cpos'] = 'xy'
-        # else:
-        #     pyvista_settings['cpos'] = 'xz'
-        
         # Creates plotter
         if len(features) == 1:
             if len(simulations) <= 3:
@@ -112,7 +96,6 @@ class PyvistaVisualizer(PyplotVisualizer):
         plotter = pv.Plotter(shape=shape, border=border)
         
         # For each simulation, prints the required plots
-        
         if len(features) == 1:
             for row in range(rows):
                 for column in range(columns):
@@ -153,9 +136,14 @@ class PyvistaVisualizer(PyplotVisualizer):
     def create_gif(self, simulation: int, feature: str, location: str,
                    zoom: float = 1, ghosts: list = [], n_points: int = 24,
                    fps: int = 10, window_size=[1024, 768],
-                   background_color: str = 'white') -> None:
+                   colormap: str = 'viridis',
+                   background_color: str = 'white',
+                   background_color_top: str = None) -> None:
         """
         TODO
+        
+        colormap: str
+            https://matplotlib.org/stable/tutorials/colors/colormaps.html
         """
         
         ### Method based on those examples:
@@ -166,22 +154,57 @@ class PyvistaVisualizer(PyplotVisualizer):
         
         ### Gets the mesh
         mesh = self._get_data_from_feature(simulation_data, feature)
+        # mesh_ = mesh.copy()
         if len(ghosts) > 0:
             mesh = self._get_ghosted_data(mesh, ghosts)
         
         ### Constructs the plotter
         plotter = pv.Plotter(off_screen=True, window_size=window_size)
         plotter.store_image = True
-        plotter.add_mesh(mesh, lighting=False)
+        
+        # Plots the data
+        kwargs = {
+            'cmap': colormap,
+            'scalar_bar_args': {'title': 'Vol1'},
+            'scalars': 'data',
+            'lighting': True,
+        }
+        plotter.add_mesh(mesh, **kwargs)
         plotter.remove_scalar_bar()
-        plotter.camera.zoom(zoom)
+        
+        # Sets background color
+        if background_color_top is None:
+            background_color_top = background_color
         plotter.set_background(background_color)
         
+        ### Sets the initial camera position
+        plotter.camera.zoom(zoom)
+        # plotter.camera.roll = 0
+        plotter.camera.elevation = 0
+        plotter.camera.azimuth = 0
+        
         ### Generates the GIF
-        path = plotter.generate_orbital_path(n_points=n_points,
-                                             shift=mesh.length)
+        
+        # Open a gif
         plotter.open_gif(location, fps=fps)
-        plotter.orbit_on_path(path, write_frames=True)
+        
+        # Creates the camera positions
+        azimuth_step = 360 / n_points
+        
+        # Loops
+        for i in range(n_points):
+            
+            # Updates camera position
+            # plotter.camera.roll
+            # plotter.camera.elevation
+            plotter.camera.azimuth += azimuth_step
+            
+            # Updates the background
+            
+            # Writes the frame in the gif
+            plotter.write_frame()
+        
+        # Closes and finalizes movie
         plotter.close()
         return None
         

@@ -32,6 +32,8 @@ class Fractures(Volume):
         self.families = pd.DataFrame()
         self.fractures = pd.DataFrame()
         self.fractures_voxelized = {}
+        self.model = 'superposition'
+        self.models = {}
         
     def generate_fracture_family(self, name, grid, **settings):
         self.i = self.i + 1
@@ -61,9 +63,10 @@ class Fractures(Volume):
         return None
      
     def generate_model(self):
-        """Constructs the model for fracturation."""
+        """Constructs the models for fracturation."""
 
-        frac_model = np.zeros_like(self.fractures_voxelized[self.i])
+        ### 1 - Superposition of families
+        frac_model_01 = np.zeros_like(self.fractures_voxelized[self.i])
         
         # Sorts fracture families by cost
         self.families = self.families.sort_values(['cost', 'id'])
@@ -71,24 +74,29 @@ class Fractures(Volume):
         
         # Updates the final array
         for family_id in fractures_family_ids:
-            frac_model = np.where(
+            frac_model_01 = np.where(
                 self.fractures_voxelized[family_id] == 1,
                 family_id,
-                frac_model
+                frac_model_01
             )
-        self.data_volume = frac_model
+        self.models['superposition'] = frac_model_01
         
-        # Sets the costs
-        costs = pd.Series(self.families['cost'].values,
-                          index=self.families['id']).to_dict()
-        self._set_costs(costs)
+        ### 2 - Sums of families
+        frac_model_02 = np.zeros_like(self.fractures_voxelized[self.i])
+        frac_model_02 = sum([d for d in self.fractures_voxelized.values()])
+        self.models['sum'] = frac_model_02
+        
+        ### 3 - 
+        frac_model_03 = np.zeros_like(self.fractures_voxelized[self.i])
+        frac_model_03 = sum([d for d in self.fractures_voxelized.values()])
+        frac_model_03 = np.where(frac_model_03 > 0, 1, 0)
+        self.models['binary'] = frac_model_03
+        
+        ### Selects final model - TODO
+        selection = self.model
+        self.data_volume = self.models[selection].copy()
         
         ######### TODO #########
-        # Sums fractures families
-        # frac_sum = sum([d for d in self.fractures_voxelized.values()])
-        # self.fractures_families['sum'] = frac_sum
-        ###
-        
         # # Constraints model with geology if provided
         # if 'geology' in kwargs:
         #     frac_model_geology = np.zeros_like(frac_model)
@@ -102,6 +110,11 @@ class Fractures(Volume):
                 
         # data = self.fractures_families['model']
         ######### TODO #########
+        
+        # Sets the costs
+        costs = pd.Series(self.families['cost'].values,
+                          index=self.families['id']).to_dict()
+        self._set_costs(costs)
         
         return None
                 
@@ -315,9 +328,9 @@ def calculate_normal(dip, orientation):
     """"""
     orientation = np.radians(orientation)
     dip = np.radians(dip)
-    x = np.cos(dip) * np.cos(np.radians(90) - orientation)
-    y = np.cos(dip) * np.sin(np.radians(90) - orientation)
-    z = np.sin(np.radians(90) - dip)
+    x = np.sin(dip) * np.cos(np.radians(90) - orientation)
+    y = np.sin(dip) * np.sin(np.radians(90) - orientation)
+    z = np.cos(dip)
     a = y
     b = -x
     c = -z
@@ -648,7 +661,6 @@ def voxelize_fractures(grid, fractures):
     raster_fractures = np.zeros((nx, ny, nz), dtype=np.int_)
 
     # Loop over the fractures
-    # for f in tqdm(fractures, desc="Rasterizing"):
     for (i, f) in fractures.iterrows():
 
         # Get fracture geometry
@@ -661,7 +673,6 @@ def voxelize_fractures(grid, fractures):
         # Test orientation of the fractures
         if nfz**2 <= (nfx**2 + nfy**2):  # subvertical case
             # Vertical index of the center of the fracture
-            # kc = ( (zc - z0) / dz  ).astype(int)
             kc = ((zc - z0) / dz)
             kc = int(kc)
 
@@ -685,8 +696,6 @@ def voxelize_fractures(grid, fractures):
                 if np.isfinite(intersect[0]):
 
                     # Get matrix indices from x and y coordinates
-                    # i1, j1 = xy2ij(intersect[0], intersect[1])
-                    # i2, j2 = xy2ij(intersect[2], intersect[3])
                     i1, j1 = grid.get_i(intersect[0]), grid.get_j(intersect[1])
                     i2, j2 = grid.get_i(intersect[2]), grid.get_j(intersect[3])
 
@@ -695,7 +704,6 @@ def voxelize_fractures(grid, fractures):
 
         elif nfx**2 < (nfz**2 + nfy**2):  # subhorizontal case 1
             # Horizontal x index of the center of the fracture
-            # ic = ( (xc - x0) / dx  ).astype(int)
             ic = ((xc - x0) / dx)
             ic = int(ic)
 
@@ -718,8 +726,6 @@ def voxelize_fractures(grid, fractures):
                 if np.isfinite(intersect[0]):
 
                     # Get matrix indices from y and z coordinates
-                    # j1, k1 = yz2jk(intersect[0], intersect[1])
-                    # j2, k2 = yz2jk(intersect[2], intersect[3])
                     j1, k1 = grid.get_j(intersect[0]), grid.get_k(intersect[1])
                     j2, k2 = grid.get_j(intersect[2]), grid.get_k(intersect[3])
 
@@ -728,9 +734,8 @@ def voxelize_fractures(grid, fractures):
 
         else:  # This may not be necessary
             # Horizontal y index of the center of the fracture
-            # yc = ( (yc - y0) / dx  ).astype(int)
-            yc = ((yc - y0) / dx)
-            yc = int(yc)
+            jc = ((yc - y0) / dx)
+            jc = int(jc)
 
             # Projected y extension
             vy = R * np.sqrt(1 - n[1]**2)
@@ -738,9 +743,7 @@ def voxelize_fractures(grid, fractures):
             dj = np.floor(vy / dy).astype(int)
 
             # Loop over the indices of horizontal levels
-            # for j in range( max(jc-dj,0), min(jc+dj+2,nx) ) :
-            # # TODO - correction correcte ?
-            for j in range(max(yc - dj, 0), min(yc + dj + 2, nx)):
+            for j in range(max(jc - dj, 0), min(jc + dj + 2, nx)):
 
                 # Corresponding x value
                 yi = y0 + j * dy + dy / 2
@@ -753,8 +756,6 @@ def voxelize_fractures(grid, fractures):
                 if np.isfinite(intersect[0]):
 
                     # Get matrix indices from y and z coordinates
-                    # i1, k1 = xz2ik(intersect[0], intersect[1])
-                    # i2, k2 = xz2ik(intersect[2], intersect[3])
                     i1, k1 = grid.get_i(intersect[0]), grid.get_k(intersect[1])
                     i2, k2 = grid.get_i(intersect[2]), grid.get_k(intersect[3])
 

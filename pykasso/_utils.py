@@ -111,8 +111,9 @@ class DataReader():
         from PIL import Image
         
         # Reads image
-        pil_image = (PIL.Image.open(location).convert('L')
-                     .transpose(Image.FLIP_TOP_BOTTOM))
+        pil_image = PIL.Image.open(location)
+        pil_image = pil_image.convert('L')
+        pil_image = pil_image.transpose(Image.FLIP_TOP_BOTTOM)
         data = np.asarray(pil_image).T
         return data
     
@@ -125,23 +126,17 @@ class ProjectReader():
     def __init__(self, project_directory: str, *args, **kwargs) -> None:
         # Reads the project_state.yaml file
         self.project_directory = project_directory.strip("/")
-        self.project_state = self._open_project(project_directory)
+        self.project_state = None
+        self._update_project_state()
         x0, y0, z0 = self._get_grid_origin()
         nx, ny, nz = self._get_grid_dimensions()
         dx, dy, dz = self._get_grid_spacing()
         self.grid = Grid(x0, y0, z0, nx, ny, nz, dx, dy, dz)
-    
-    ########## TO MERGE ##############
-    def _open_project(self, path: str) -> dict:
-        path = path + "/outputs/project_state.yaml"
-        with open(path, "r") as f:
-            return yaml.safe_load(f)
         
     def _update_project_state(self) -> None:
         path = self.project_directory + "/outputs/project_state.yaml"
         with open(path, "r") as f:
             self.project_state = yaml.safe_load(f)
-    ###################################
     
     def _get_grid_origin(self) -> tuple:
         x0 = self.project_state['grid']['x0']
@@ -161,9 +156,10 @@ class ProjectReader():
         dz = self.project_state['grid']['dz']
         return (dx, dy, dz)
 
-    def _read_pickle(self, path: str):
+    def _read_pickle(self, path: str) -> dict:
         with open(path, 'rb') as handle:
-            return pickle.load(handle)
+            out = pickle.load(handle)
+            return out
         
     def _get_simulation_data(self, n: int) -> dict:
         simulation_directory = self.project_state['simulation_locations'][n]

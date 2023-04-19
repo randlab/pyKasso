@@ -1,0 +1,148 @@
+ ######################
+### PYKASSO SETTINGS ###
+ ######################
+
+---
+############
+### Grid ###
+############
+
+x0 : 572510
+y0 : 250010
+z0 : 430
+nx : 300
+ny : 300
+nz : 1
+dx : 20
+dy : 20
+dz : 20
+
+###############
+### Polygon ###
+###############
+
+data_has_mask : True
+mask_data     : 'inputs/betteraz_polygon.txt'
+
+####################
+### PointManager ###
+####################
+
+###Outlets
+# 'random'    - full random points
+# 'import'    - import points
+# 'composite' - add n random points to imported points
+outlets_mode       : 'import'
+outlets_data       : 'inputs/betteraz_outlets.csv'
+outlets_number     : 1
+outlets_shuffle    : False
+outlets_importance : [1]
+
+###Inlets
+# 'random'    - full random points
+# 'import'    - import points
+# 'composite' - add n random points to imported points
+inlets_mode       : 'import'
+inlets_data       : 'inputs/betteraz_inlets_case_2.csv'
+inlets_number     : 50
+inlets_shuffle    : False
+inlets_per_outlet : [1]
+inlets_importance : [1]
+
+######################
+### GeologyManager ###
+######################
+
+###Geology
+# 'null'  - No geology
+# 'gslib' - Import geology via GSLIB
+# 'csv'   - Import geology via csv
+# 'image' - Import geology via image
+geology_mode     : 'gslib'
+geology_datafile : 'inputs/betteraz_2D_z430.gslib'
+
+###Topography
+# 'null' - No topography
+# 'csv'  - Import topography from csv file
+topography_mode     : 'null'
+topography_datafile : ''
+
+###Orientation
+# 'null'    - No orientation
+# 'topo'    - Calculate orientation from a topography array
+# 'surface' - Calculate from array of elevation of lower boundary of karst unit (as csv)
+orientation_mode     : 'null'
+orientation_datafile : ''
+
+###Faults
+# 'null'  - No faults
+# 'gslib' - Import faults
+# 'csv'   - Import faults via csv
+# 'image' - Import faults via image
+faults_mode     : 'gslib'
+faults_datafile : 'inputs/betteraz_fault_20_2D.gslib'
+
+###Fractures
+# 'null'   - No fractures
+# 'gslib'  - Import fractures
+# 'csv'    - Import fractures via csv
+# 'image'  - Import fractures via image
+# 'random' - Generate random fractures
+fractures_mode     : 'random'
+fractures_datafile : 'inputs/betteraz_fault_20_2D.gslib'
+
+# If fractures mode is 'generate'
+# Each value in list is for a separate fracture family - length of list indicates number of families
+fractures_densities       : [5.83e-6,1.38e-6,2.22e-6, 2.5e-6,4.16e-6,6.66e-6,   5e-6]
+fractures_min_orientation : [      0,     15,     30,     60,    105,    120,    150]
+fractures_max_orientation : [     15,     30,     45,    105,    120,    150,    180]
+fractures_min_dip         : [     80,     80,     80,     80,     80,     80,     80]
+fractures_max_dip         : [     90,     90,     90,     90,     90,     90,     90]
+
+# For fracture size
+fractures_alpha      : [   2,   2,   2,   2,   2,   2,   2]
+fractures_min_length : [ 100, 100, 100, 100, 100, 100, 100]
+fractures_max_length : [8500,8500,8500,8500,8500,8500,8500]
+
+###############################
+### Fast-Marching Algorithm ###
+###############################
+
+#Choose which algorithm to use:
+#'Isotropic2': agd-hfm: 2D, equivalent of skfmm
+#'Isotropic3': adg-hfm: 3D, equivalent of skfmm
+#'Riemann2'  : agd-hfm: 2D, anisotropic, requires an anisotropy vector field (topography or geologic orientation), performs well in high-relief catchments
+#'Riemann3'  : agd-hfm: 3D version of anisotropic algorithm
+#Note: There are MANY more options for fast marching algorithms built into the agd-hfm library.
+##See the agd-hfm library documentation for how to use these and integrate them into pyKasso:
+  #https://github.com/Mirebeau/AdaptiveGridDiscretizations/blob/master/Notebooks_FMM/Summary.ipynb
+
+algorithm : 'Isotropic2'
+
+#Travel cost parallel to gradient (higher=slower/harder)
+#Must be between 0 and 1
+cost_out       : 0.999  #default: 0.999
+cost_aquifer   : 0.4    #default: 0.4
+cost_aquiclude : 0.8    #default: 0.8
+cost_faults    : 0.2    #default: 0.2
+cost_fractures : 0.2    #default: 0.2
+cost_conduits  : 0.1    #default: 0.1
+cost_ratio     : 0.5   #ratio of travel cost parallel to gradient / travel cost prependicular to gradient (default 0.25)
+#if ratio = 1: same travel cost parallel and perpendicular to gradient
+#if ratio < 1: travel cost is lower parallel to gradient (paths will follow steepest gradient), decrease value to increase contrast
+#if ratio > 1: travel cost is lower perpendicular to gradient (paths will follow contours), increase value to increase contrast
+
+### Formation to consider and FMM code associated
+geology_id   : [1,2] # Only for 'import' geological mode
+geology_cost : [cost_aquifer,cost_aquiclude]
+
+#############
+### Other ###
+#############
+
+# if 0 = random, if 1 = same results each run
+rand_seed : 1
+
+#Verbosity: how much output to display during run
+verbosity : 0    #0: minimal output, 1: some output; 2: more output; 3: maximum output
+...
