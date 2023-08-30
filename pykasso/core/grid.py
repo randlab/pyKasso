@@ -1,14 +1,18 @@
 """
-This module contains a class modeling a structured grid.
+Module defining the structured grid.
 """
 
 ### External dependencies
 import numpy as np
 from shapely.geometry import Polygon
 
+### TODO
+# Correct documentation
+
 
 class Grid():
-    """
+    """Defining of the pyKasso grid.
+    
     This class models the three dimensional structured grid of the studied
     domain.
     """
@@ -48,11 +52,6 @@ class Grid():
         Notes
         -----
             .
-
-        Examples
-        --------
-        >>> import pykasso as pk
-        >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
         """
         # Initialization
         self.__x0 = x0
@@ -65,29 +64,27 @@ class Grid():
         self.__dy = dy
         self.__dz = dz
 
-        # Calculates the 1D arrays of centerpoints of each cell along each axis
-        # Then calculates 3D arrays of meshgrids
+        # Calculate the 1D arrays of centerpoints of each cell along each axis
+        # 3D meshgrids are available through 'X', 'Y' and 'Z' properties.
         self.__x = np.arange(self.__x0, self.__x0 + (self.__nx) * self.__dx,
                              self.__dx, dtype=np.float64)
         self.__y = np.arange(self.__y0, self.__y0 + (self.__ny) * self.__dy,
                              self.__dy, dtype=np.float64)
         self.__z = np.arange(self.__z0, self.__z0 + (self.__nz) * self.__dz,
                              self.__dz, dtype=np.float64)
-        self.__X, self.__Y, self.__Z = np.meshgrid(self.__x, self.__y,
-                                                   self.__z, indexing="ij")
 
-        # Calculates the dimensions limits
-        self.__xlimits = [self.__x0 - self.__dx / 2,
-                          self.__x[-1] + self.__dx / 2]
-        self.__ylimits = [self.__y0 - self.__dy / 2,
-                          self.__y[-1] + self.__dy / 2]
-        self.__zlimits = [self.__z0 - self.__dz / 2,
-                          self.__z[-1] + self.__dz / 2]
+        # Calculate the dimensions limits
+        self.__xlimits = (self.__x0 - self.__dx / 2,
+                          self.__x[-1] + self.__dx / 2)
+        self.__ylimits = (self.__y0 - self.__dy / 2,
+                          self.__y[-1] + self.__dy / 2)
+        self.__zlimits = (self.__z0 - self.__dz / 2,
+                          self.__z[-1] + self.__dz / 2)
         # Coordinates of extent for plt.imshow()
-        self.__extent = [self.__xlimits[0], self.__xlimits[1],
-                         self.__ylimits[0], self.__ylimits[1]]
+        self.__extent = (self.__xlimits[0], self.__xlimits[1],
+                         self.__ylimits[0], self.__ylimits[1])
 
-        # Declares minimum and maximum attributes for each dimension
+        # Declare minimum and maximum attributes for each dimension
         self.__xmin = self.__xlimits[0]
         self.__xmax = self.__xlimits[1]
         self.__ymin = self.__ylimits[0]
@@ -95,12 +92,12 @@ class Grid():
         self.__zmin = self.__zlimits[0]
         self.__zmax = self.__zlimits[1]
 
-        # Declares some useful attributes
+        # Declare some useful attributes
         self.__area = (nx * dx) * (ny * dy)  # total area of the xy-surface
         self.__volume = self.__area * (nz * dz)  # total volume of the grid
         self.__nodes = nx * ny * nz  # total number of nodes in the grid
+        self.__node_area = dx * dy  # volume of one single node
         self.__node_volume = dx * dy * dz  # volume of one single node
-        self.__data_volume = np.ones((nx, ny, nz))  # array modeling the grid
         self.__shape = (nx, ny, nz)  # shape of the modeling array
         
         # Other attributes used in further geometrical operations
@@ -108,11 +105,14 @@ class Grid():
                   self.__xlimits[1], self.__xlimits[0]]
         y_path = [self.__ylimits[0], self.__ylimits[1], self.__ylimits[1],
                   self.__ylimits[0], self.__ylimits[0]]
-        self.__surface_coordinates = list(zip(x_path[:-1], y_path[:-1]))
+        self.__surface_coordinates = tuple(zip(x_path[:-1], y_path[:-1]))
         self.__polygon = Polygon(self.__surface_coordinates)
         
+    def __repr__(self) -> str:
+        return str(self.get_grid_parameters())
+    
     def __str__(self) -> str:
-        txt = ("pyKasso's grid"
+        txt = ("Grid"
                "\n[x0, y0, z0] : ({}, {}, {})"
                "\n[nx, ny, nz] : ({}, {}, {})"
                "\n[dx, dy, dz] : ({}, {}, {})"
@@ -120,60 +120,60 @@ class Grid():
                        self.nx, self.ny, self.nz,
                        self.dx, self.dy, self.dz))
         return txt
-
+    
     ###############
     ### GETTERS ###
     ###############
 
     @property
     def x0(self) -> float:
-        """Gets the x-coordinate origin of the grid."""
+        """Get the x-coordinate origin of the grid."""
         return self.__x0
 
     @property
     def y0(self) -> float:
-        """Gets the y-coordinate origin of the grid."""
+        """Get the y-coordinate origin of the grid."""
         return self.__y0
 
     @property
     def z0(self) -> float:
-        """Gets the z-coordinate origin of the grid."""
+        """Get the z-coordinate origin of the grid."""
         return self.__z0
 
     @property
     def nx(self) -> int:
-        """Gets the number of cells in the x-axis."""
+        """Get the number of cells in the x-axis."""
         return self.__nx
 
     @property
     def ny(self) -> int:
-        """Gets the number of cells in the y-axis."""
+        """Get the number of cells in the y-axis."""
         return self.__ny
 
     @property
     def nz(self) -> int:
-        """Gets the number of cells in the z-axis."""
+        """Get the number of cells in the z-axis."""
         return self.__nz
 
     @property
     def dx(self) -> float:
-        """Gets the cell length in the x-axis."""
+        """Get the cell length in the x-axis."""
         return self.__dx
 
     @property
     def dy(self) -> float:
-        """Gets the cell width in the y-axis."""
+        """Get the cell width in the y-axis."""
         return self.__dy
 
     @property
     def dz(self) -> float:
-        """Gets the cell depth in the z-axis."""
+        """Get the cell depth in the z-axis."""
         return self.__dz
 
     @property
     def x(self) -> np.ndarray:
         """
-        Gets the one dimensional array of centerpoints of each cell along
+        Get the one dimensional array of centerpoints of each cell along
         x-axis.
         """
         return self.__x
@@ -181,7 +181,7 @@ class Grid():
     @property
     def y(self) -> np.ndarray:
         """
-        Gets the one dimensional array of centerpoints of each cell along
+        Get the one dimensional array of centerpoints of each cell along
         y-axis.
         """
         return self.__y
@@ -189,123 +189,148 @@ class Grid():
     @property
     def z(self) -> np.ndarray:
         """
-        Gets the one dimensional array of centerpoints of each cell along
+        Get the one dimensional array of centerpoints of each cell along
         z-axis.
         """
         return self.__z
 
     @property
-    def X(self) -> np.ndarray:
-        """Gets the x-axis meshgrid."""
-        return self.__X
-
-    @property
-    def Y(self) -> np.ndarray:
-        """Gets the y-axis meshgrid."""
-        return self.__Y
-
-    @property
-    def Z(self) -> np.ndarray:
-        """Gets the z-axis meshgrid."""
-        return self.__Z
-
-    @property
     def xlimits(self) -> list:
-        """Gets the x-axis border limits."""
+        """Get the x-axis border limits."""
         return self.__xlimits
 
     @property
     def ylimits(self) -> list:
-        """Gets the y-axis border limits."""
+        """Get the y-axis border limits."""
         return self.__ylimits
 
     @property
     def zlimits(self) -> list:
-        """Gets the z-axis border limits."""
+        """Get the z-axis border limits."""
         return self.__zlimits
 
     @property
     def extent(self) -> list:
-        """Gets the [xmin, xmax, ymin, ymax] limits of the model."""
+        """Get the [xmin, xmax, ymin, ymax] limits of the model."""
         return self.__extent
 
     @property
     def xmin(self) -> float:
-        """Gets the lower limit of x-axis."""
+        """Get the lower limit of x-axis."""
         return self.__xmin
 
     @property
     def xmax(self) -> float:
-        """Gets the upper limit of x-axis."""
+        """Get the upper limit of x-axis."""
         return self.__xmax
 
     @property
     def ymin(self) -> float:
-        """Gets the lower limit of y-axis."""
+        """Get the lower limit of y-axis."""
         return self.__ymin
 
     @property
     def ymax(self) -> float:
-        """Gets the upper limit of y-axis."""
+        """Get the upper limit of y-axis."""
         return self.__ymax
 
     @property
     def zmin(self) -> float:
-        """Gets the lower limit of z-axis."""
+        """Get the lower limit of z-axis."""
         return self.__zmin
 
     @property
     def zmax(self) -> float:
-        """Gets the upper limit of z-axis."""
+        """Get the upper limit of z-axis."""
         return self.__zmax
 
     @property
     def area(self) -> float:
-        """Gets the total area of the xy-surface."""
+        """Get the total area of the xy-surface."""
         return self.__area
         
     @property
     def volume(self) -> float:
-        """Gets the total volume of the grid."""
+        """Get the total volume of the grid."""
         return self.__volume
 
     @property
     def nodes(self) -> int:
-        """Gets the total number of nodes in the grid."""
+        """Get the total number of nodes in the grid."""
         return self.__nodes
+    
+    @property
+    def node_area(self) -> float:
+        """Get the area of one single node."""
+        return self.__node_area
 
     @property
     def node_volume(self) -> float:
-        """Gets the volume of one single node."""
+        """Get the volume of one single node."""
         return self.__node_volume
     
     @property
     def data_volume(self) -> np.ndarray:
-        """Gets the array modeling the grid."""
-        return self.__data_volume
+        """Get the array modeling the grid."""
+        data_volume = np.ones((self.nx, self.ny, self.nz))
+        return data_volume
     
     @property
     def shape(self) -> tuple:
-        """Gets the dimensions of the grid."""
+        """Get the dimensions of the grid."""
         return self.__shape
     
     @property
     def surface_coordinates(self) -> list:
-        """Gets the surface coordinates."""
+        """Get the surface coordinates."""
         return self.__surface_coordinates
 
     @property
     def polygon(self) -> Polygon:
-        """Gets the surface polygon."""
+        """Get the surface polygon."""
         return self.__polygon
     
     ###############
     ### METHODS ###
     ###############
+    
+    def get_grid_parameters(self) -> dict:
+        """
+        Get the grid parameters as a dict.
+        
+        Returns
+        -------
+        grid_parameters : dict
+        """
+        grid_parameters = {
+            'x0': self.x0,
+            'y0': self.y0,
+            'z0': self.z0,
+            'nx': self.nx,
+            'ny': self.ny,
+            'nz': self.nz,
+            'dx': self.dx,
+            'dy': self.dy,
+            'dz': self.dz,
+        }
+        return grid_parameters
+    
+    def get_meshgrids(self) -> tuple:
+        """
+        Get the x, y and z-axis meshgrids.
+        
+        Returns
+        -------
+        out : tuple
+            X-, Y- and Z-axis meshgrids.
+        """
+        X, Y, Z = np.meshgrid(self.x, self.y, self.z, indexing="ij")
+        out = (X, Y, Z)
+        return out
 
     def get_i(self, x: float) -> int:
         """
-        Retrieves i-index from x-coordinate.
+        Retrieve i-index from x-coordinate.
 
         Parameters
         ----------
@@ -319,7 +344,7 @@ class Grid():
 
         Examples
         --------
-        >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
+        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
         >>> grid.get_i(70)
         7
         """
@@ -330,7 +355,7 @@ class Grid():
 
     def get_j(self, y: float) -> int:
         """
-        Retrieves j-index from y-coordinate.
+        Retrieve j-index from y-coordinate.
 
         Parameters
         ----------
@@ -344,7 +369,7 @@ class Grid():
 
         Examples
         --------
-        >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
+        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
         >>> grid.get_j(70)
         3
         """
@@ -355,7 +380,7 @@ class Grid():
 
     def get_k(self, z: float) -> int:
         """
-        Retrieves k-index from z-coordinate.
+        Retrieve k-index from z-coordinate.
 
         Parameters
         ----------
@@ -369,7 +394,7 @@ class Grid():
 
         Examples
         --------
-        >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
+        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
         >>> grid.get_k(70)
         2
         """
@@ -378,19 +403,15 @@ class Grid():
         k = k.astype('int32')
         return k
     
-    def get_indices(self, x: float, y: float, z: float = None) -> tuple:
+    def get_indices(self, point: tuple) -> tuple:
         """
-        Retrieves both i and j-index from x and y-coordinates. Returns also
+        Retrieve both i and j-index from x and y-coordinates. Returns also
         k-index when z-coordinate is provided.
 
         Parameters
         ----------
-        x : float
-            x-coordinate.
-        y : float
-            y-coordinate.
-        z : float, optional
-            z-coordinate, by default None.
+        point : tuple
+            (x, y) or (x, y, z) coordinates tuple.
 
         Returns
         -------
@@ -399,22 +420,37 @@ class Grid():
             
         Examples
         --------
-        >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
-        >>> grid.get_indices(70, 70)
+        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
+        >>> grid.get_indices((70, 70))
         (7, 3)
-        >>> grid.get_indices(70, 70, 70)
+        >>> grid.get_indices((70, 70, 70))
         (7, 3, 2)
         """
-        if z is None:
+        # Perform some preliminary tests
+        if not isinstance(point, np.ndarray):
+            point = np.array(point)
+        
+        if len(point.shape) == 1:
+            point = np.reshape(point, (-1, point.shape[0]))
+        
+        # TODO - to remove ???
+        # print(point)
+        # print(point.shape)
+        # print(len(point.shape))
+
+        if point.shape[1] == 2:
+            x, y = list(zip(*point))
             out = (self.get_i(x), self.get_j(y))
-            return out
-        else:
+        elif point.shape[1] == 3:
+            x, y, z = list(zip(*point))
             out = (self.get_i(x), self.get_j(y), self.get_k(z))
-            return out
+        else:
+            pass
+        return out
 
     def get_x(self, i: int) -> float:
         """
-        Retrieves x-coordinate from i-index.
+        Retrieve x-coordinate from i-index.
 
         Parameters
         ----------
@@ -428,7 +464,7 @@ class Grid():
 
         Examples
         --------
-        >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
+        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
         >>> grid.get_x(5)
         50
         """
@@ -440,7 +476,7 @@ class Grid():
 
     def get_y(self, j: int) -> float:
         """
-        Retrieves y-coordinate from j-index.
+        Retrieve y-coordinate from j-index.
 
         Parameters
         ----------
@@ -454,7 +490,7 @@ class Grid():
 
         Examples
         --------
-        >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
+        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
         >>> grid.get_y(5)
         100
         """
@@ -466,7 +502,7 @@ class Grid():
 
     def get_z(self, k: int) -> float:
         """
-        Retrieves z-coordinate from k-index.
+        Retrieve z-coordinate from k-index.
 
         Parameters
         ----------
@@ -480,7 +516,7 @@ class Grid():
 
         Examples
         --------
-        >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
+        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
         >>> grid.get_z(5)
         150
         """
@@ -490,19 +526,15 @@ class Grid():
         out = float(out)
         return out
     
-    def get_coordinates(self, i: int, j: int, k: int = None) -> tuple:
+    def get_coordinates(self, indices: tuple) -> tuple:
         """
-        Retrieves both x and y-coordinates from i and j-index. Returns also
+        Retrieve both x and y-coordinates from i and j-index. Returns also
         z-coordinate when k-index is provided.
 
         Parameters
         ----------
-        i : int
-            i-index.
-        j : int
-            j-index.
-        k : int
-            k-index.
+        point : tuple
+            (i, j) or (i, j, k) indices tuple.
 
         Returns
         -------
@@ -511,22 +543,25 @@ class Grid():
             
         Examples
         --------
-        >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
-        >>> grid.get_coordinates(5, 5)
+        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
+        >>> grid.get_coordinates((5, 5))
         (50.0, 100.0)
-        >>> grid.get_coordinates(5, 5, 5)
+        >>> grid.get_coordinates((5, 5, 5))
         (50.0, 100.0, 150.0)
         """
-        if k is None:
+        if len(indices) == 2:
+            i, j = indices
             out = (self.get_x(i), self.get_y(j))
-            return out
-        else:
+        elif len(indices) == 3:
+            i, j, k = indices
             out = (self.get_x(i), self.get_y(j), self.get_z(k))
-            return out
+        else:
+            pass
+        return out
         
     def is_x_valid(self, x: float) -> bool:
         """
-        Returns true if the x-coordinate is inside the grid domain.
+        Return true if the x-coordinate is inside the grid domain.
 
         Parameters
         ----------
@@ -543,7 +578,7 @@ class Grid():
     
     def is_y_valid(self, y: float) -> bool:
         """
-        Returns true if the y-coordinate is inside the grid domain.
+        Return true if the y-coordinate is inside the grid domain.
 
         Parameters
         ----------
@@ -560,7 +595,7 @@ class Grid():
     
     def is_z_valid(self, z: float) -> bool:
         """
-        Returns true if the z-coordinate is inside the grid domain.
+        Return true if the z-coordinate is inside the grid domain.
 
         Parameters
         ----------
@@ -575,18 +610,15 @@ class Grid():
         out = bool((k - self.nz + 1) * k <= 0)
         return out
 
-    def is_inbox(self, x: float, y: float, z: float) -> bool:
+    def is_inbox(self, point: tuple) -> bool:
         """
-        Returns true if a (x, y, z)-coordinate point is inside the grid.
+        Return true if a (x, y)-point is within the surface of the grid or if
+        a (x, y, z)-point is inside the grid.
 
         Parameters
         ----------
-        x : float
-            x-coordinate.
-        y : float
-            y-coordinate.
-        z : float
-            z-coordinate.
+        point : tuple
+            (x, y) or (x, y, z) coordinates tuple.
 
         Returns
         -------
@@ -594,11 +626,19 @@ class Grid():
 
         Examples
         --------
-        >>> grid = pk.Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
-        >>> grid.is_inbox(70, 70, 70)
+        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
+        >>> grid.is_inbox((70, 70, 70))
         True
-        >>> grid.is_inbox(70, 70, 1000)
+        >>> grid.is_inbox((70, 70, 1000))
         False
         """
-        out = self.is_x_valid(x) and self.is_y_valid(y) and self.is_z_valid(z)
+        if len(point) == 2:
+            x, y = point
+            out = self.is_x_valid(x) and self.is_y_valid(y)
+        elif len(point) == 3:
+            x, y, z = point
+            out = (self.is_x_valid(x) and self.is_y_valid(y)
+                   and self.is_z_valid(z))
+        else:
+            pass
         return out

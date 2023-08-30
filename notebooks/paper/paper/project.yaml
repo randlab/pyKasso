@@ -1,0 +1,29 @@
+name: paper
+description: ''
+creation_date: 2023/08/16 15:24
+pykasso_version: 0.1.2
+grid:
+  x0: 0
+  y0: 0
+  z0: 0
+  nx: 50
+  ny: 50
+  nz: 10
+  dx: 10
+  dy: 10
+  dz: 10
+core:
+  locations:
+    root: c:\Users\franc\OneDrive\Desktop\pykasso\pykasso\notebooks\paper
+    project: c:\Users\franc\OneDrive\Desktop\pykasso\pykasso\notebooks\paper\paper\
+  paths:
+    project_dir: paper\
+    inputs_dir: paper\inputs\
+    outputs_dir: paper\outputs\
+  filenames:
+    parameters: parameters.yaml
+    project: project.yaml
+    log: project.log
+n_simulations: 1
+simulations:
+- paper\outputs\simulation_1\

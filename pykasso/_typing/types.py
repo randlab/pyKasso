@@ -7,12 +7,18 @@ from numpy import random
 from pandas import core, io
 
 if TYPE_CHECKING:
+    import pykasso.core.project as pcp
     import pykasso.core.grid as pcg
-    import pykasso.core.domain as pcd
-    import pykasso.core.geologic_features as pcgf
+    import pykasso.model.domain as pcd
+    import pykasso.model.geologic_features as pcgf
 
-# Custom internal types
+### Custom internal types
+
+# Core types
+Project = TypeVar('Project', bound='pcp.Project')
 Grid = TypeVar('Grid', bound='pcg.Grid')
+
+# Model types
 Domain = TypeVar('Domain', bound='pcd.Domain')
 Delimitation = TypeVar('Delimitation', bound='pcd.Delimitation')
 Topography = TypeVar('Topography', bound='pcd.Topography')

@@ -21,10 +21,12 @@ Copyright (C) 2023 University of Neuchâtel - CHYN.
 
 Available subpackages
 ---------------------
+core
+   Kartic conduit network generator
 analysis
-   Karst network analysis tool
+   Karstic conduit network analysis tool
 visualization
-   Karst network visualization tool
+   Karst conduit network visualization tool
    
 Utilities
 ---------
@@ -34,11 +36,11 @@ __version__
 
 __all__ = []
 
-# Imports pyKasso's core
+# Import pyKasso's core
 from . import core
 from .core import *
 __all__.extend(core.__all__)
 
-# Imports pyKasso version string
+# Import pyKasso version string
 from ._version import __version__
 __all__.extend(['__version__'])

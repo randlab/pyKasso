@@ -7,21 +7,6 @@ sks:
   seed : 0
   algorithm : 'Isotropic3'
 
-############
-### Grid ###
-############
-
-grid:
-  x0 : 0
-  y0 : 0
-  z0 : 20
-  nx : 100
-  ny : 100
-  nz : 10
-  dx : 10
-  dy : 10
-  dz : 10
-
 ##############
 ### Domain ###
 ##############
@@ -72,7 +57,7 @@ inlets:
 ####################
 
 fractures:
-  data : 'random'
+  data : ''
   seed : 12
   settings :
     family_01:

@@ -4,53 +4,42 @@ perform statistical analysis.
 """
 
 ### Internal dependencies
-import os
-import sys
 import copy
 
 ### External dependencies
 import numpy as np
 import pandas as pd
-import karstnet as kn
-
-### Local dependencies
-from .._utils import ProjectReader
+import karstnet as kn   # TODO à mettre en optionnel
 
 ### Typing
 from typing import Union
-from pykasso._typing import Series, DataFrame, Styler
-
-### Module variables
-# Sets the reference metrics for statistical karstic network analysis
-# More details here : https://github.com/karstnet/karstnet
-this = sys.modules[__name__]
-package_location = os.path.dirname(os.path.abspath(__file__))
-misc_directory_path = "/../_misc/statistics.xlsx"
-statistics_path = package_location + misc_directory_path
-this.statistics = pd.read_excel(statistics_path).describe()
+from pykasso._typing import Project, Series, DataFrame, Styler
 
 
-class Analysis(ProjectReader):
+class Analyzer():
     """
     This class manages pyKasso's project and provides methods to perform
     statistical analysis.
     """
-
-    def __init__(self, project_directory: str) -> None:
-        """_summary_
-
-        Parameters
-        ----------
-        project_directory : str
-            _description_
-
-        Examples
-        --------
-        >>> import pykasso.analysis as pka
-        >>> analysis = pka.Analysis('examples/betteraz/')
+    def __init__(self, project: Project) -> None:
         """
-        super().__init__(project_directory)
-        self.k = None
+        DOC
+        """
+        # Load reference metrics for statistical karstic network analysis
+        self.project = project
+        self.k = None  # TODO : to remove ?
+        self._load_statistics()
+        
+    def _load_statistics(self) -> None:
+        """
+        Set the reference metrics for statistical karstic network analysis
+        More details here : https://github.com/karstnet/karstnet
+        """
+        package_location = self.project._pckg_paths['package_location']
+        statistics_file_path = "\\..\\_misc\\statistics.xlsx"
+        statistics_file_location = package_location + statistics_file_path
+        self.statistics = pd.read_excel(statistics_file_location).describe()
+        return None
         
     def compute_metrics(self) -> DataFrame:
         """
@@ -90,9 +79,9 @@ class Analysis(ProjectReader):
         df_metrics = pd.DataFrame()
 
         # For each simulation, retrieves data and computes metrics
-        for i, path in enumerate(self.project_state["simulation_locations"]):
+        for i, path in enumerate(self.project.simulations):
             # Retrieves data
-            results = self._read_pickle(path + "results.pickle")
+            results = self.project._read_pickle(path + "results.pickle")
             karstnet_edges = list(results["vectors"]["edges"].values())
             karstnet_nodes = copy.deepcopy(results["vectors"]["nodes"])
             
@@ -105,7 +94,7 @@ class Analysis(ProjectReader):
             # format {nodeindex: [x,y]}
             self.edges = karstnet_edges  # TODO - remove self
             self.nodes = karstnet_nodes  # TODO - remove self
-            self.k = kn.KGraph(karstnet_edges, karstnet_nodes)  # TODO - remove self
+            self.k = kn.KGraph(karstnet_edges, karstnet_nodes)  # TODO - remove 'self' ?
             verbosity = 0
             metrics = self.k.characterize_graph(verbosity)
 
@@ -158,10 +147,10 @@ class Analysis(ProjectReader):
         df_metrics = data.style
         for column_name in data:
             kwargs = {
-                'min_val': this.statistics[column_name]['min'],
-                'max_val': this.statistics[column_name]['max'],
-                'mean_val': this.statistics[column_name]['mean'],
-                'std_val': this.statistics[column_name]['std'],
+                'min_val': self.statistics[column_name]['min'],
+                'max_val': self.statistics[column_name]['max'],
+                'mean_val': self.statistics[column_name]['mean'],
+                'std_val': self.statistics[column_name]['std'],
                 'subset': [column_name]
             }
             df_metrics = df_metrics.applymap(_bg_color, **kwargs)
@@ -184,12 +173,14 @@ class Analysis(ProjectReader):
         >>> karst_mean = analysis.compute_average_karstic_network()
         """
         # Initialization
-        nx, ny, nz = self._get_grid_dimensions()
+        nx = self.project.grid.nx
+        ny = self.project.grid.ny
+        nz = self.project.grid.nz
         karst_map = np.zeros((nx, ny, nz))
         # For each simulation, retrieves data and sums it
-        for path in self.project_state['simulation_locations']:
-            results = self._read_pickle(path + 'results.pickle')
+        for path in self.project.simulations:
+            results = self.project._read_pickle(path + 'results.pickle')
             karst_map = np.add(karst_map, results['maps']['karst'][-1]).copy()
         # Calculates the mean
-        out = karst_map / self.project_state['n_simulation']
+        out = karst_map / self.project.n_simulations
         return out
