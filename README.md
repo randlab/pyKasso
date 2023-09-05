@@ -34,6 +34,11 @@ Then:
 pip install -e pykasso[analysis, visualization]
 ```
 
+In local:
+```
+pip install -e ".[analysis, visualization]"
+```
+
 <!-- 
 ### Check installation
 

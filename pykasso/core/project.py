@@ -179,7 +179,7 @@ class Project:
     def __str__(self) -> str:
         txt = ("Project"
                "\n - Name : "
-               "\n - Description : ") 
+               "\n - Description : ")
     #            "\n[dx, dy, dz] : ({}, {}, {})"
     #            .format(self.x0, self.y0, self.z0,
     #                    self.nx, self.ny, self.nz,

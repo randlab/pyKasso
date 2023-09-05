@@ -1,0 +1,30 @@
+name: example_02
+description: ''
+creation_date: 2023/09/05 17:02
+pykasso_version: 0.1.2
+grid:
+  x0: 0
+  y0: 0
+  z0: 0
+  nx: 100
+  ny: 100
+  nz: 50
+  dx: 10
+  dy: 10
+  dz: 10
+core:
+  locations:
+    root: c:\Users\franc\OneDrive\Desktop\pykasso\pykasso\notebooks\paper
+    project: c:\Users\franc\OneDrive\Desktop\pykasso\pykasso\notebooks\paper\example_02\
+  paths:
+    project_dir: example_02\
+    inputs_dir: example_02\inputs\
+    outputs_dir: example_02\outputs\
+  filenames:
+    parameters: parameters.yaml
+    project: project.yaml
+    log: project.log
+n_simulations: 2
+simulations:
+- example_02\outputs\simulation_1\
+- example_02\outputs\simulation_2\

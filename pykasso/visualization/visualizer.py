@@ -3,9 +3,9 @@ TODO
 """
 
 # TODO
-# - incorporer ces option:
-#     - 'show_edges' : True
-#     - 'cmap' : "viridis",
+# - spécifier le type des retours de chaque fonction
+# plt.figure() : options settable
+# voxels : option extent
 
 ### Internal dependencies
 import copy
@@ -44,12 +44,15 @@ def requires_pyvista():
 
 class Visualizer():
     """
-    TODO
+    This class manages pyKasso's project and provides methods to plot
+    simulated karstic conduit networks.
     """
+    
     DEFAULT_SETTINGS = {
         'surfaces': [],
-        'inlets': False,
-        'outlets': False,
+        'show_inlets': False,
+        'show_outlets': False,
+        'show_colorbar': False
     }
     
     PV_DEFAULT_SETTINGS = {
@@ -63,19 +66,21 @@ class Visualizer():
         },
         'outline': False,
         'grid': False,
-        'inlets': False,
-        'outlets': False,
+        # 'inlets': False,  # TODO - rename (see above)
+        # 'outlets': False,  # TODO - rename (see above)
         'cpos': 'xz',
         # 'domain',
         'slice': False,
         'orientation': False,  # TODO - to remove ?
-        'colorbar': False
+        # 'show_colorbar': False  # TODO - rename (see above)
     }
+    
+    MPL_DEFAULT_SETTINGS = {}
     
     def __init__(self, project: Project, notebook: bool = False,
                  *args, **kwargs) -> None:
         """
-        TODO
+        Initialize the class.
         """
         self.project = project
         self._notebook = notebook
@@ -98,7 +103,7 @@ class Visualizer():
         
     def _set_notebook_value(self, boolean):
         """
-        DOC
+        Render plots within Notebooks if 'boolean' is true.
         """
         # *** MATPLOTLIB *** #
         if boolean:
@@ -112,56 +117,51 @@ class Visualizer():
             pv.global_theme.notebook = boolean
         
         return None
-            
-    # ************************************************************* #
-    # ****          MATPLOTLIB          *************************** #
-    # ************************************************************* #
-         
-    ###############
-    ### PLOT 2D ###
-    ###############
     
-    def mpl_plot2D(self, n_sim: int, feature: str, axis: str = 'z',
-                   n_slice: int = 0, cmap: str = 'viridis'):
+    # def _set_default_kwargs(self, kwargs) -> dict:
+    #     for (key, value) in Visualizer.DEFAULT_SETTINGS.items():
+    #         kwargs.setdefault(key, value)
+    #     return kwargs
+    
+    # ************************************************************* #
+    # ****          STATIC METHODS      *************************** #
+    # ************************************************************* #
+    
+    # **** MPL **** #
+    
+    @staticmethod
+    def mpl_plot_array_2D(array: np.ndarray, axis: str = 'z',
+                          n_slice: int = -1, imshow_options: dict = {},
+                          show_colorbar: bool = True, return_ax: bool = False):
         """
-        DOC
+        TODO
         """
-        
-        # Retrieve the data
-        sim_data = self.project._get_simulation_data(n_sim)
-        
-        # Retrieve the data feature
-        iteration = -1
-        data = self._get_feature_data(sim_data, feature, iteration)
-        
-        # Slice the data
-        sliced_data = self._slice_data(data, axis, n_slice)
+        # Slice the array
+        if array.ndim == 2:
+            array = array.T
+        elif array.ndim == 3:
+            array = Visualizer._slice_array(array, axis, n_slice)
+        else:
+            msg = "Array dimension is not valid."  # TODO - better error msg ?
+            raise ValueError(msg)
         
         # Create the figure
-        fig, ax = self._create_figure2D(axis)
+        fig, ax = Visualizer._create_figure_2D(axis)
         
-        # Plot the data
-        extent = self.project.grid.extent
-        pos = ax.imshow(sliced_data, origin="lower", extent=extent, cmap=cmap)
+        # Plot the array
+        im = ax.imshow(array, origin="lower", **imshow_options)
         
         # Set the colorbar
-        fig.colorbar(pos, ax=ax)
+        if show_colorbar:
+            fig.colorbar(im, ax=ax)
         
-        return fig
+        if return_ax:
+            return (fig, ax)
+        else:
+            return fig
     
-    def _get_feature_data(self, data: dict, feature: str,
-                          iteration: str) -> np.ndarray:
-        """
-        DOC
-        """
-        if feature in ['geology']:
-            featured_data = data[feature].data_volume
-        if feature in ['karst']:
-            featured_data = data['maps'][feature][iteration]
-        return featured_data
-    
-    def _slice_data(self, data: np.ndarray, axis: str,
-                    n_slice: int) -> np.ndarray:
+    @staticmethod
+    def _slice_array(array: np.ndarray, axis: str, n_slice: int) -> np.ndarray:
         """
         DOC
         """
@@ -172,13 +172,15 @@ class Visualizer():
         elif axis == 'z':
             np_slice = (slice(None), slice(None), n_slice)
             
-        sliced_data = data[np_slice]
+        sliced_data = array[np_slice].T
         
         return sliced_data
     
-    def _create_figure2D(self, axis: str) -> tuple:
+    @staticmethod
+    def _create_figure_2D(axis: str) -> tuple:
         """
-        DOC
+        Declare the corresponding 2 dimensional matplotlib figure
+        according to the axis.
         """
         
         # Declare the figure
@@ -198,11 +200,143 @@ class Visualizer():
         out = (fig, ax)
         return out
     
-    ###############
-    ### PLOT 3D ###
-    ###############
+    @staticmethod
+    def mpl_plot_array_3D(array: np.ndarray, voxels_options: dict = {},
+                          return_ax: bool = False):
+        """
+        TODO
+        """
+        # Create the figure
+        fig, ax = Visualizer._create_figure_3D()
+        
+        # Plot the array
+        ax.voxels(array, **voxels_options)
+        
+        # Set the colors
+        # TODO
+        
+        # Set aspect on 'equal'
+        ax.set_aspect('equal')
+        
+        if return_ax:
+            return (fig, ax)
+        else:
+            return fig
     
-    def mpl_plot_karstic_system(self, n_sim: int) -> None:
+    @staticmethod
+    def _create_figure_3D() -> tuple:
+        """
+        DOC
+        """
+        # Declare the figure
+        fig = plt.figure()
+        ax = plt.subplot(projection='3d')
+        
+        # Set axis labels
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
+        
+        # Return the figure
+        out = (fig, ax)
+        return out
+    
+    # **** PV **** #
+    
+    @requires_pyvista()
+    @staticmethod
+    def pv_plot_array(array, ghost=False):
+        """
+        TODO
+        """
+        if len(array.shape) == 2:
+            nx, ny = array.shape
+            nz = 1
+        elif len(array.shape) == 3:
+            nx, ny, nz = array.shape
+        else:
+            msg = "TODO"
+            raise ValueError(msg)
+
+        mesh = pv.UniformGrid()
+        mesh.dimensions = np.array((nx, ny, nz)) + 1
+        mesh.cell_data['data'] = array.flatten(order="F")
+        mesh = mesh.cast_to_unstructured_grid()
+
+        if ghost:
+            ghosts = np.argwhere(np.isin(mesh["data"], [0]))
+            mesh = mesh.remove_cells(ghosts)
+
+        plotter = pv.Plotter()
+        plotter.show_grid()
+        kwargs = {}
+        kwargs['scalars'] = 'data'
+        _ = plotter.add_mesh(mesh, **kwargs)
+        # plotter.add_mesh(mesh.outline(), color="k")
+        plotter.show(cpos='xy')
+
+        return None
+    
+    # ************************************************************* #
+    # ****          MATPLOTLIB          *************************** #
+    # ************************************************************* #
+    
+    def mpl_plot_2D(self, feature: str, n_sim: int = -1, n_iteration: int = -1,
+                    axis: str = 'z', n_slice: int = -1,
+                    feature_options: dict = {}, show_colorbar: bool = True,
+                    inlets_options: dict = None, outlets_options: dict = None):
+        """
+        TODO
+        """
+        # Retrieve the data
+        sim_data = self.project._get_simulation_data(n_sim)
+        
+        # Retrieve the data feature
+        array = self._get_feature_data(sim_data, feature, n_iteration)
+        
+        # Plot the feature data
+        extent = self.project.grid.extent
+        feature_options.setdefault('extent', extent)
+        fig, ax = self.mpl_plot_array_2D(array, axis=axis, n_slice=n_slice,
+                                         imshow_options=feature_options,
+                                         show_colorbar=show_colorbar,
+                                         return_ax=True)
+        
+        # Plot the inlets
+        if inlets_options is not None:
+            inlets = sim_data['inlets']
+            x = inlets.x
+            y = inlets.y
+            ax.scatter(x, y, **inlets_options)
+        
+        # Plot the outlets
+        if outlets_options is not None:
+            outlets = sim_data['outlets']
+            x = outlets.x
+            y = outlets.y
+            ax.scatter(x, y, **outlets_options)
+        
+        return fig
+    
+    def mpl_plot_3D(self, feature: str, n_sim: int = -1, n_iteration: int = -1,
+                    voxels_options: dict = {}):
+        """
+        DOC
+        """
+        # Retrieve the data
+        sim_data = self.project._get_simulation_data(n_sim)
+        
+        # Retrieve the data feature
+        array = self._get_feature_data(sim_data, feature, n_iteration)
+        
+        # Plot the feature data
+        fig, ax = self.mpl_plot_array_3D(array, voxels_options, return_ax=True)
+        
+        return fig
+    
+    # **** #
+    
+    def mpl_plot_karstic_network(self, n_sim: int = -1) -> None:
         """
         DOC
         """
@@ -210,7 +344,7 @@ class Visualizer():
         sim_data = self.project._get_simulation_data(n_sim)
         
         # Create the figure
-        fig, ax = self._create_figure3D()
+        fig, ax = self._create_figure_3D()
         
         # Gets nodes
         nodes_ = sim_data['vectors']['nodes']
@@ -224,47 +358,7 @@ class Visualizer():
         # Plot the karstic network
         ax = self._plot_graph(ax, nodes, edges)
         
-        return None
-    
-    def mpl_plot3D(self, n_sim: int, feature: str):
-        """
-        DOC
-        """
-        # Retrieve the data
-        sim_data = self.project._get_simulation_data(n_sim)
-        
-        # Create the figure
-        fig, ax = self._create_figure3D()
-        
-        # Retrieve the data feature
-        iteration = -1
-        data = self._get_feature_data(sim_data, feature, iteration)
-        
-        # Set the colors
-        # TODO
-    
-        # Plot the feature data
-        ax.voxels(data, facecolors=None, edgecolors=None)
-        
         return fig
-    
-    def _create_figure3D(self) -> tuple:
-        """
-        DOC
-        """
-        
-        # Declare the figure
-        fig = plt.figure()
-        ax = plt.subplot(projection='3d')
-        
-        # Set axis labels
-        ax.set_xlabel('x')
-        ax.set_ylabel('y')
-        ax.set_zlabel('z')
-        
-        # Return the figure
-        out = (fig, ax)
-        return out
     
     def _plot_graph(self, ax, nodes: dict, edges: list):
         """
@@ -292,7 +386,25 @@ class Visualizer():
         xs, ys, zs = zip(*nodes_list)
         ax.scatter(xs, ys, zs, marker='o')
         return ax
-
+    
+    # **** #
+    
+    def _get_feature_data(self, data: dict, feature: str,
+                          iteration: str) -> np.ndarray:
+        """
+        DOC
+        """
+        if feature in ['geology', 'faults', 'fractures']:
+            featured_data = data[feature].data_volume
+        elif feature in ['karst']:
+            featured_data = data['maps'][feature][iteration]
+        elif feature in ['anisotropic']:  # TODO
+            pass
+        else:
+            msg = 'feature keyword error'
+            raise ValueError(msg)
+        return featured_data
+    
     # def show_karst_system(self, n_sim: int = -1,
     #                       settings: dict = {}) -> None:
         
@@ -782,42 +894,7 @@ class Visualizer():
 #         plotter.close()
 #         return None
     
-    # ************************************************************* #
-    # ****          STATIC METHODS      *************************** #
-    # ************************************************************* #
     
-    @staticmethod
-    def show_array(array, ghost=False):
-        """
-        TODO
-        """
-        if len(array.shape) == 2:
-            nx, ny = array.shape
-            nz = 1
-        elif len(array.shape) == 3:
-            nx, ny, nz = array.shape
-        else:
-            msg = "TODO"
-            raise ValueError(msg)
-
-        mesh = pv.UniformGrid()
-        mesh.dimensions = np.array((nx, ny, nz)) + 1
-        mesh.cell_data['data'] = array.flatten(order="F")
-        mesh = mesh.cast_to_unstructured_grid()
-
-        if ghost:
-            ghosts = np.argwhere(np.isin(mesh["data"], [0]))
-            mesh = mesh.remove_cells(ghosts)
-
-        plotter = pv.Plotter()
-        plotter.show_grid()
-        kwargs = {}
-        kwargs['scalars'] = 'data'
-        _ = plotter.add_mesh(mesh, **kwargs)
-        # plotter.add_mesh(mesh.outline(), color="k")
-        plotter.show(cpos='xy')
-
-        return None
     
     
     

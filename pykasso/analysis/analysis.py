@@ -18,12 +18,12 @@ from pykasso._typing import Project, Series, DataFrame, Styler
 
 class Analyzer():
     """
-    This class manages pyKasso's project and provides methods to perform
+    This class manages pyKasso's project and provides methods to compute
     statistical analysis.
     """
     def __init__(self, project: Project) -> None:
         """
-        DOC
+        Initialize the class.
         """
         # Load reference metrics for statistical karstic network analysis
         self.project = project
@@ -157,8 +157,10 @@ class Analyzer():
 
         return df_metrics
 
-    def compute_average_karstic_network(self) -> np.ndarray:
+    def compute_stats_on_networks(self, algorithm: str = 'mean') -> np.ndarray:
         """
+        TODO
+        
         Computes the mean of all the simulations.
         
         Returns
@@ -176,11 +178,21 @@ class Analyzer():
         nx = self.project.grid.nx
         ny = self.project.grid.ny
         nz = self.project.grid.nz
-        karst_map = np.zeros((nx, ny, nz))
-        # For each simulation, retrieves data and sums it
+        karst_map = []
+        # karst_map = np.zeros((nx, ny, nz))
+        
+        # For each simulation, retrieves data and sums it # TODO
         for path in self.project.simulations:
             results = self.project._read_pickle(path + 'results.pickle')
-            karst_map = np.add(karst_map, results['maps']['karst'][-1]).copy()
-        # Calculates the mean
-        out = karst_map / self.project.n_simulations
+            # karst_map = np.add(karst_map, results['maps']['karst'][-1]).copy()
+            karst_map.append(results['maps']['karst'][-1].copy())
+        
+        # Calculates
+        try:
+            numpy_func = getattr(np, algorithm)
+        except:
+            pass # TODO
+        
+        out = numpy_func(karst_map, axis=0)
+        # out = karst_map / self.project.n_simulations
         return out
