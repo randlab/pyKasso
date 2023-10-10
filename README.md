@@ -34,7 +34,7 @@ conda env create --name pykasso --file=environment.yml
 pip install -e pykasso[analysis, visualization]
 ``` -->
 
-### Using pip
+### Using pip.
 
 In local, from source::
 ```
