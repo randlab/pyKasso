@@ -37,20 +37,21 @@ class Fractures(Volume):
         
     def generate_fracture_family(self, name, grid, **settings):
         self.i = self.i + 1
-        if 'cost' in settings:
-            cost = settings['cost']
-            del settings['cost']
         
         # Creates family
         frac_family = {
             'id': [self.i],
             'name': [name],
-            'cost': [cost],
+            'alpha': settings['alpha'],
+            'density': settings['density'],
+            'cost': settings['cost'],
             # 'geology': pass # TODO - add geology
         }
+        
         frac_family = pd.DataFrame(data=frac_family)
             
         # Generates fractures
+        settings.pop('cost', None)
         fractures = self.generate_fractures(grid, **settings)
         fractures.insert(0, 'family_id', self.i)
         

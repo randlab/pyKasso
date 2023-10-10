@@ -94,10 +94,28 @@ class Domain():
         # Computes volumetric domain extension
         if delimitation is not None:
             self.data_volume += delimitation.data_volume
+        
+        # When topography and bedrock are both declared, control if data are
+        # well inside the grid
+        if (topography is not None) and (bedrock is not None):
+            topography_is_in_grid = (topography.data_surface >= self.grid.zmin)
+            bedrock_is_in_grid = (bedrock.data_surface >= self.grid.zmin)
+            valid_domain = np.logical_and(topography_is_in_grid,
+                                          bedrock_is_in_grid)
+            valid_domain = np.repeat(valid_domain[:, :, np.newaxis],
+                                     self.grid.nz,
+                                     axis=2)
+            self.data_volume += valid_domain
+            
+        # Add topography
         if topography is not None:
             self.data_volume += topography.data_volume
+            
+        # Add reversed bedrock
         if bedrock is not None:
-            self.data_volume += np.logical_not(bedrock.data_volume).astype(int)
+            bedrock_vol = np.logical_not(bedrock.data_volume).astype(int)
+            self.data_volume += bedrock_vol
+            
         # only keeps cells where all the classes join
         test = self.data_volume == self.data_volume.max()
         self.data_volume = np.where(test, 1, 0)
@@ -169,14 +187,28 @@ class Domain():
             out = np.logical_and(borders, phreatic_surface)
         ### BEDROCK ###
         elif subdomain == 'bedrock':
-            out = self.bedrock.data_volume
+            if self.bedrock is None:
+                out = np.zeros_like(self.grid.data_volume)
+            else:
+                out = self.bedrock.data_volume
         elif subdomain == 'bedrock_':
-            out = self._get_bedrock_subdomain()
+            if self.bedrock is None:
+                out = np.zeros_like(self.grid.data_volume)
+            else:
+                out = self._get_bedrock_subdomain()
         elif subdomain == 'bedrock_vadose':
-            # 'Bedrock' x 'Vadose zone'
-            bedrock = self._get_bedrock_subdomain()
-            vadose_zone = self._get_phreatic_subdomain('vadose_zone')
-            out = np.logical_and(bedrock, vadose_zone)
+            if self.bedrock is None:
+                out = np.zeros_like(self.grid.data_volume)
+            else:
+                # 'Bedrock' x 'Vadose zone'
+                bedrock_r = np.invert(self.bedrock.data_volume.astype(bool))
+                bedrock_vadose = self._get_bedrock_subdomain()
+                bedrock = np.logical_and(bedrock_r, bedrock_vadose)
+                if self._is_defined['water_level']:
+                    vadose_zone = self._get_phreatic_subdomain('vadose_zone')
+                else:
+                    vadose_zone = np.ones_like(bedrock)
+                out = np.logical_and(bedrock, vadose_zone)
         elif subdomain == 'bedrock_phreatic':
             # 'Bedrock' x 'Phreatic zone'
             bedrock = self._get_bedrock_subdomain()
@@ -209,9 +241,14 @@ class Domain():
         k = face.flatten()
         
         # retrieves the valid i,j,k indices
-        nodes = list(zip(i_, j_, k))
-        valid_nodes = [(i, j, k) for (i, j, k) in nodes if k in range_]
-        i, j, k = zip(*valid_nodes)
+        test = np.isin(k, range_)
+        i = i_[test]
+        j = j_[test]
+        k = k[test]
+        
+        # nodes = list(zip(i_, j_, k))
+        # valid_nodes = [(i, j, k) for (i, j, k) in nodes if k in range_]
+        # i, j, k = zip(*valid_nodes)
         
         # colors the array
         volume = np.zeros_like(self.data_volume)
@@ -275,13 +312,7 @@ class Domain():
         return volume
     
     def _get_bedrock_subdomain(self) -> np.ndarray:
-        
-        # returns empty array if water level is not defined
-        if self.bedrock is None:
-            volume = np.zeros_like(self.grid.data_volume)
-            return volume
-            
-        # defines bedrock
+        # define bedrock
         roll_value = 2
         volume = np.roll(self.bedrock.data_volume, roll_value, axis=2)
         volume[:, :, 0:2] = 1
@@ -294,7 +325,7 @@ class Domain():
 
     def is_3D_point_valid(self, point: tuple) -> bool:
         """
-        Returns true if a (x, y, z)-point is inside the domain, otherwise
+        Return true if a (x, y, z)-point is inside the domain, otherwise
         false.
 
         Parameters
@@ -348,7 +379,7 @@ class Domain():
         
     def is_2D_point_valid(self, point: tuple) -> bool:
         """
-        Returns true if a z-coordinate exists for a (x, y)-point projected
+        Return true if a z-coordinate exists for a (x, y)-point projected
         inside the domain, otherwise false.
 
         Parameters

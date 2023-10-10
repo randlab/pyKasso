@@ -8,6 +8,7 @@ import logging
 
 ### External dependencies
 import numpy as np
+import pandas as pd
 
 ### Typing
 from pykasso._typing import Domain, Geology, RandomNumberGenerator
@@ -95,8 +96,18 @@ class PointGenerator():
         i, j, k = np.indices(array.shape)
         i, j, k = i.flatten(), j.flatten(), k.flatten()
         test = array.flatten()
-        nodes = list(zip(test, i, j, k))
-        valid_cells = [(i, j, k) for (test, i, j, k) in nodes if test == 1]
+        i = i[test == 1]
+        j = j[test == 1]
+        k = k[test == 1]
+        
+        valid_cells = pd.DataFrame({
+            'i': i,
+            'j': j,
+            'k': k,
+        })
+        # valid_cells = list(zip(i, j, k))
+        # nodes = list(zip(test, i, j, k))
+        # valid_cells = [(i, j, k) for (test, i, j, k) in nodes if test == 1]
         return valid_cells
     
     def _generate_points(self, size: int = 1) -> np.ndarray:
@@ -113,8 +124,13 @@ class PointGenerator():
         """"""
         x, y = point
         i, j = self.grid.get_indices(point)
-        new_valid_cells = ([(i_, j_, k_) for (i_, j_, k_) in self.valid_cells
-                            if ((i_ == i) and (j_ == j))])
+        i, j = int(i), int(j) 
+        new_valid_cells = self.valid_cells[(self.valid_cells['i'] == i)
+                                           & (self.valid_cells['j'] == j)]
+        # print(11)
+        # print(new_valid_cells.to_numpy())
+        # new_valid_cells = ([(i_, j_, k_) for (i_, j_, k_) in self.valid_cells
+                            # if ((i_ == i) and (j_ == j))])
         # if len(new_probability_map) == 0 # TODO = erreur
         i_, j_, k_ = self.rng.choice(new_valid_cells)
         z = (self.grid.zmin + (k_ + self.rng.random()) * self.grid.dz)

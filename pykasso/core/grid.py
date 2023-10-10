@@ -6,19 +6,49 @@ Module defining the structured grid.
 import numpy as np
 from shapely.geometry import Polygon
 
-### TODO
-# Correct documentation
+### Typing
+from typing import Union
 
 
 class Grid():
-    """Defining of the pyKasso grid.
+    """Class modeling a structured grid.
     
     This class models the three dimensional structured grid of the studied
     domain.
+    
+    Attributes
+    ----------
+    x0 : float
+        x-coordinate of centerpoint of bottom left cell.
+    y0 : float
+        y-coordinate of centerpoint of bottom left cell.
+    z0 : float
+        z-coordinate of centerpoint of bottom left cell.
+    nx : int
+        Number of cells in the x-axis.
+    ny : int
+        Number of cells in the y-axis.
+    nz : int
+        Number of cells in the z-axis.
+    dx : float
+        Cell length in the x-axis.
+    dy : float
+        Cell width in the y-axis.
+    dz : float
+        Cell depth in the z-axis.
     """
 
-    def __init__(self, x0: float, y0: float, z0: float, nx: int, ny: int,
-                 nz: int, dx: float, dy: float, dz: float) -> None:
+    def __init__(self,
+                 x0: Union[int, float],
+                 y0: Union[int, float],
+                 z0: Union[int, float],
+                 nx: int,
+                 ny: int,
+                 nz: int,
+                 dx: Union[int, float],
+                 dy: Union[int, float],
+                 dz: Union[int, float]
+                 ) -> None:
         """
         Constructs a three dimensional structured grid of nx-nodes-length,
         ny-nodes-width and nz-nodes-depth. Node centers are located in the
@@ -30,30 +60,52 @@ class Grid():
 
         Parameters
         ----------
-        x0 : float
-            x-coordinate of centerpoint of bottom left cell.
-        y0 : float
-            y-coordinate of centerpoint of bottom left cell.
-        z0 : float
-            z-coordinate of centerpoint of bottom left cell.
+        x0 : Union[int, float]
+            x-coordinate of centerpoint of bottom left cell. TODO
+        y0 : Union[int, float]
+            y-coordinate of centerpoint of bottom left cell. TODO
+        z0 : Union[int, float]
+            z-coordinate of centerpoint of bottom left cell. TODO
         nx : int
-            Number of cells in the x-axis.
+            Number of cells in the x-axis. TODO
         ny : int
-            Number of cells in the y-axis.
+            Number of cells in the y-axis. TODO
         nz : int
-            Number of cells in the z-axis.
-        dx : float
-            Cell length in the x-axis.
-        dy : float
-            Cell width in the y-axis.
-        dz : float
-            Cell depth in the z-axis.
+            Number of cells in the z-axis. TODO
+        dx : Union[int, float]
+            Cell length in the x-axis. TODO
+        dy : Union[int, float]
+            Cell width in the y-axis. TODO
+        dz : Union[int, float]
+            Cell depth in the z-axis. TODO
             
         Notes
         -----
             .
         """
-        # Initialization
+        ### Input validation
+        # TODO
+        ############################# TODO ######################
+        #     # Test parameters types
+        # parameter_names = ['x0', 'y0', 'z0', 'dx', 'dy', 'dz']
+        # parameters = [x0, y0, z0, dx, dy, dz]
+        # for (parameter_name, parameter) in zip(parameter_names, parameters):
+        #     is_parameter_type_valid(parameter_name=parameter_name,
+        #                             parameter_value=parameter,
+        #                             valid_types=(int, float))
+            
+           #     for p in ['nx', 'ny', 'nz']:
+    #         is_parameter_type_valid(grid_parameters[p], p, (int))
+    #     for p in ['nx', 'ny', 'nz']:
+    #         is_parameter_value_valid(grid_parameters[p], p, '>', 0)
+    
+    #     for p in ['nx', 'ny', 'nz']:
+    #         is_parameter_type_valid(grid_parameters[p], p, (int))
+    #     for p in ['nx', 'ny', 'nz']:
+    #         is_parameter_value_valid(grid_parameters[p], p, '>', 0)
+        ############################################
+
+        ### Initialization
         self.__x0 = x0
         self.__y0 = y0
         self.__z0 = z0
@@ -107,19 +159,13 @@ class Grid():
                   self.__ylimits[0], self.__ylimits[0]]
         self.__surface_coordinates = tuple(zip(x_path[:-1], y_path[:-1]))
         self.__polygon = Polygon(self.__surface_coordinates)
-        
-    def __repr__(self) -> str:
-        return str(self.get_grid_parameters())
     
-    def __str__(self) -> str:
-        txt = ("Grid"
-               "\n[x0, y0, z0] : ({}, {}, {})"
-               "\n[nx, ny, nz] : ({}, {}, {})"
-               "\n[dx, dy, dz] : ({}, {}, {})"
-               .format(self.x0, self.y0, self.z0,
-                       self.nx, self.ny, self.nz,
-                       self.dx, self.dy, self.dz))
-        return txt
+    # TODO
+    def __repr__(self) -> str:
+        msg = ("Grid(x0={}, y0={}, z0={}, nx={}, ny={}, nz={}, dx={}, dy={},"
+               " dz={})".format(self.x0, self.y0, self.z0, self.nx, self.ny,
+                                self.nz, self.dx, self.dy, self.dz))
+        return msg
     
     ###############
     ### GETTERS ###
@@ -195,22 +241,22 @@ class Grid():
         return self.__z
 
     @property
-    def xlimits(self) -> list:
+    def xlimits(self) -> tuple[float, float]:
         """Get the x-axis border limits."""
         return self.__xlimits
 
     @property
-    def ylimits(self) -> list:
+    def ylimits(self) -> tuple[float, float]:
         """Get the y-axis border limits."""
         return self.__ylimits
 
     @property
-    def zlimits(self) -> list:
+    def zlimits(self) -> tuple[float, float]:
         """Get the z-axis border limits."""
         return self.__zlimits
 
     @property
-    def extent(self) -> list:
+    def extent(self) -> tuple[float, float, float, float]:
         """Get the [xmin, xmax, ymin, ymax] limits of the model."""
         return self.__extent
 
@@ -272,11 +318,10 @@ class Grid():
     @property
     def data_volume(self) -> np.ndarray:
         """Get the array modeling the grid."""
-        data_volume = np.ones((self.nx, self.ny, self.nz))
-        return data_volume
+        return np.ones((self.nx, self.ny, self.nz))
     
     @property
-    def shape(self) -> tuple:
+    def shape(self) -> tuple[int, int, int]:
         """Get the dimensions of the grid."""
         return self.__shape
     
@@ -296,7 +341,7 @@ class Grid():
     
     def get_grid_parameters(self) -> dict:
         """
-        Get the grid parameters as a dict.
+        Return a dictionary containing the grid parameters.
         
         Returns
         -------
@@ -315,330 +360,362 @@ class Grid():
         }
         return grid_parameters
     
-    def get_meshgrids(self) -> tuple:
+    def get_meshgrids(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
-        Get the x, y and z-axis meshgrids.
+        Return a tuple with the X, Y and Z-axis meshgrids.
         
         Returns
         -------
-        out : tuple
-            X-, Y- and Z-axis meshgrids.
+        out : (np.ndarray, np.ndarray, np.ndarray)
+            (X, Y, Z) meshgrids
         """
         X, Y, Z = np.meshgrid(self.x, self.y, self.z, indexing="ij")
         out = (X, Y, Z)
         return out
 
-    def get_i(self, x: float) -> int:
+    def get_i(self,
+              x: Union[float, list, tuple, np.ndarray]
+              ) -> np.ndarray:
         """
         Retrieve i-index from x-coordinate.
 
         Parameters
         ----------
-        x : float
+        x : array_like
             x-coordinate.
 
         Returns
         -------
-        i : int
+        i : np.ndarray
             i-index.
-
-        Examples
-        --------
-        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
-        >>> grid.get_i(70)
-        7
         """
         x = np.array(x)
         i = np.floor((x - (self.x0 - (self.dx / 2))) / self.dx)
         i = i.astype('int32')
         return i
 
-    def get_j(self, y: float) -> int:
+    def get_j(self,
+              y: Union[float, list, tuple, np.ndarray]
+              ) -> np.ndarray:
         """
         Retrieve j-index from y-coordinate.
 
         Parameters
         ----------
-        y : float
+        y : array_like
             y-coordinate.
 
         Returns
         -------
-        j : int
+        j : np.ndarray
             j-index.
-
-        Examples
-        --------
-        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
-        >>> grid.get_j(70)
-        3
         """
         y = np.array(y)
         j = np.floor((y - (self.y0 - (self.dy / 2))) / self.dy)
         j = j.astype('int32')
         return j
 
-    def get_k(self, z: float) -> int:
+    def get_k(self,
+              z: Union[float, list, tuple, np.ndarray]
+              ) -> np.ndarray:
         """
         Retrieve k-index from z-coordinate.
 
         Parameters
         ----------
-        z : float
+        z : array_like
             z-coordinate.
 
         Returns
         -------
-        k : int
+        k : np.ndarray
             k-index.
-
-        Examples
-        --------
-        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
-        >>> grid.get_k(70)
-        2
         """
         z = np.array(z)
         k = np.floor((z - (self.z0 - (self.dz / 2))) / self.dz)
         k = k.astype('int32')
         return k
     
-    def get_indices(self, point: tuple) -> tuple:
+    def get_indices(self,
+                    coordinates: Union[
+                        list,
+                        tuple[float, float],
+                        tuple[float, float, float],
+                        np.ndarray
+                    ]
+                    ) -> np.ndarray:
         """
         Retrieve both i and j-index from x and y-coordinates. Returns also
         k-index when z-coordinate is provided.
 
         Parameters
         ----------
-        point : tuple
+        coordinates : array_like
             (x, y) or (x, y, z) coordinates tuple.
 
         Returns
         -------
-        out : tuple
+        out : (2,) or (3,) np.ndarray
             i and j-index, or i, j and k-index.
             
-        Examples
-        --------
-        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
-        >>> grid.get_indices((70, 70))
-        (7, 3)
-        >>> grid.get_indices((70, 70, 70))
-        (7, 3, 2)
+        Raises
+        ------
+        TypeError
+            The shape of the `coordinates` parameter is invalid.
         """
-        # Perform some preliminary tests
-        if not isinstance(point, np.ndarray):
-            point = np.array(point)
+        # Convert type in np.ndarray
+        if not isinstance(coordinates, np.ndarray):
+            coordinates = np.array(coordinates)
         
-        if len(point.shape) == 1:
-            point = np.reshape(point, (-1, point.shape[0]))
-        
-        # TODO - to remove ???
-        # print(point)
-        # print(point.shape)
-        # print(len(point.shape))
+        # Shape the array in a (2,) array
+        if len(coordinates.shape) == 1:
+            coordinates = np.reshape(coordinates, (-1, coordinates.shape[0]))
 
-        if point.shape[1] == 2:
-            x, y = list(zip(*point))
-            out = (self.get_i(x), self.get_j(y))
-        elif point.shape[1] == 3:
-            x, y, z = list(zip(*point))
-            out = (self.get_i(x), self.get_j(y), self.get_k(z))
+        # Unzip coordinates
+        if coordinates.shape[1] == 2:
+            x = coordinates[:, 0]
+            y = coordinates[:, 1]
+            out = self.get_i(x), self.get_j(y)
+        elif coordinates.shape[1] == 3:
+            x = coordinates[:, 0]
+            y = coordinates[:, 1]
+            z = coordinates[:, 2]
+            out = self.get_i(x), self.get_j(y), self.get_k(z)
         else:
-            pass
+            msg = ("Shape of the `coordinates` parameter is invalid. Only (2, "
+                   "n) and (3, n) array like are valid.")
+            raise TypeError(msg)
+        
+        # # Output a more convinient format when only one entry
+        # if len(out) == 1:
+        #     out = out[0]
         return out
 
-    def get_x(self, i: int) -> float:
+    def get_x(self,
+              i: Union[int, list, tuple, np.ndarray]
+              ) -> np.ndarray:
         """
         Retrieve x-coordinate from i-index.
 
         Parameters
         ----------
-        i : int
+        i : array_like
             i-index.
 
         Returns
         -------
-        out : float
+        out : np.ndarray
             x-coordinate.
-
-        Examples
-        --------
-        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
-        >>> grid.get_x(5)
-        50
         """
         i = np.array(i)
         i = i.astype('int32')
         out = np.where((i < 0) | (i > (self.nx - 1)), None, self.x[i])
-        out = float(out)
         return out
 
-    def get_y(self, j: int) -> float:
+    def get_y(self,
+              j: Union[int, list, tuple, np.ndarray]
+              ) -> np.ndarray:
         """
         Retrieve y-coordinate from j-index.
 
         Parameters
         ----------
-        j : int
+        j : array_like
             j-index.
 
         Returns
         -------
-        out : float
+        out : np.ndarray
             y-coordinate.
-
-        Examples
-        --------
-        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
-        >>> grid.get_y(5)
-        100
         """
         j = np.array(j)
         j = j.astype('int32')
         out = np.where((j < 0) | (j > (self.ny - 1)), None, self.y[j])
-        out = float(out)
         return out
 
-    def get_z(self, k: int) -> float:
+    def get_z(self,
+              k: Union[int, list, tuple, np.ndarray]
+              ) -> np.ndarray:
         """
         Retrieve z-coordinate from k-index.
 
         Parameters
         ----------
-        k : int
+        k : array_like
             k-index.
 
         Returns
         -------
-        out : float
+        out : np.ndarray
             z-coordinate.
-
-        Examples
-        --------
-        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
-        >>> grid.get_z(5)
-        150
         """
         k = np.array(k)
         k = k.astype('int32')
         out = np.where((k < 0) | (k > (self.nz - 1)), None, self.z[k])
-        out = float(out)
         return out
     
-    def get_coordinates(self, indices: tuple) -> tuple:
+    def get_coordinates(self,
+                        indices: Union[
+                            list,
+                            tuple[int, int],
+                            tuple[int, int, int],
+                            np.ndarray
+                        ]
+                        ) -> np.ndarray:
         """
         Retrieve both x and y-coordinates from i and j-index. Returns also
         z-coordinate when k-index is provided.
 
         Parameters
         ----------
-        point : tuple
+        point : array_like
             (i, j) or (i, j, k) indices tuple.
 
         Returns
         -------
-        out : tuple
+        out : (2,) or (3,) np.ndarray
             x and y-coordinates, or x, y and z-coordinates.
             
-        Examples
-        --------
-        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
-        >>> grid.get_coordinates((5, 5))
-        (50.0, 100.0)
-        >>> grid.get_coordinates((5, 5, 5))
-        (50.0, 100.0, 150.0)
+        Raises
+        ------
+        TypeError
+            The shape of the `indices` parameter is invalid.
         """
-        if len(indices) == 2:
-            i, j = indices
-            out = (self.get_x(i), self.get_y(j))
-        elif len(indices) == 3:
-            i, j, k = indices
-            out = (self.get_x(i), self.get_y(j), self.get_z(k))
+        # Convert type in np.ndarray
+        if not isinstance(indices, np.ndarray):
+            indices = np.array(indices)
+        
+        # Shape the array in a (2,) array
+        if len(indices.shape) == 1:
+            indices = np.reshape(indices, (-1, indices.shape[0]))
+
+        # Unzip coordinates
+        if indices.shape[1] == 2:
+            i = indices[:, 0]
+            j = indices[:, 1]
+            # x, y = self.get_x(i), self.get_y(j)
+            # out = np.dstack((x, y))[0]
+            out = self.get_x(i), self.get_y(j)
+        elif indices.shape[1] == 3:
+            i = indices[:, 0]
+            j = indices[:, 1]
+            k = indices[:, 2]
+            # x, y, z = self.get_x(i), self.get_y(j), self.get_z(k)
+            # out = np.dstack((x, y, z))[0]
+            out = self.get_x(i), self.get_y(j), self.get_z(k)
         else:
-            pass
+            msg = ("Shape of the `indices` parameter is invalid. Only (2, "
+                   "n) and (3, n) array like are valid.")
+            raise TypeError(msg)
+        
+        # # Output a more convinient format when only one entry
+        # if len(out) == 1:
+        #     out = out[0]
         return out
         
-    def is_x_valid(self, x: float) -> bool:
+    def is_x_valid(self,
+                   x: Union[float, list, tuple, np.ndarray]
+                   ) -> np.ndarray:
         """
-        Return true if the x-coordinate is inside the grid domain.
+        Return true if the ``x`` coordinate is inside the grid domain.
 
         Parameters
         ----------
-        x : float
+        x : array_like
             x-coordinate.
 
         Returns
         -------
-        out : bool
+        out : np.ndarray as boolean
         """
         i = self.get_i(x)
-        out = bool((i - self.nx + 1) * i <= 0)
+        out = (i - self.nx + 1) * i <= 0
         return out
     
-    def is_y_valid(self, y: float) -> bool:
+    def is_y_valid(self,
+                   y: Union[float, list, tuple, np.ndarray]
+                   ) -> np.ndarray:
         """
-        Return true if the y-coordinate is inside the grid domain.
+        Return true if the ``y`` coordinate is inside the grid domain.
 
         Parameters
         ----------
-        y : float
+        y : array_like
             y-coordinate.
 
         Returns
         -------
-        out : bool
+        out : np.ndarray as boolean
         """
         j = self.get_j(y)
-        out = bool((j - self.ny + 1) * j <= 0)
+        out = (j - self.ny + 1) * j <= 0
         return out
     
-    def is_z_valid(self, z: float) -> bool:
+    def is_z_valid(self,
+                   z: Union[float, list, tuple, np.ndarray]
+                   ) -> np.ndarray:
         """
-        Return true if the z-coordinate is inside the grid domain.
+        Return true if the ``z`` coordinate is inside the grid domain.
 
         Parameters
         ----------
-        z : float
+        z : array_like
             z-coordinate.
 
         Returns
         -------
-        out : bool
+        out : np.ndarray as boolean
         """
         k = self.get_k(z)
-        out = bool((k - self.nz + 1) * k <= 0)
+        out = (k - self.nz + 1) * k <= 0
         return out
 
-    def is_inbox(self, point: tuple) -> bool:
+    def is_inbox(self,
+                 coordinates: Union[
+                     list,
+                     tuple[float, float],
+                     tuple[float, float, float],
+                     np.ndarray]
+                 ) -> np.ndarray:
         """
         Return true if a (x, y)-point is within the surface of the grid or if
         a (x, y, z)-point is inside the grid.
 
         Parameters
         ----------
-        point : tuple
+        point : array_like
             (x, y) or (x, y, z) coordinates tuple.
 
         Returns
         -------
-        out : bool
-
-        Examples
-        --------
-        >>> grid = Grid(0, 0, 0, 10, 10, 10, 10, 20, 30)
-        >>> grid.is_inbox((70, 70, 70))
-        True
-        >>> grid.is_inbox((70, 70, 1000))
-        False
+        out : (2,) or (3,) np.ndarray as boolean
         """
-        if len(point) == 2:
-            x, y = point
-            out = self.is_x_valid(x) and self.is_y_valid(y)
-        elif len(point) == 3:
-            x, y, z = point
-            out = (self.is_x_valid(x) and self.is_y_valid(y)
-                   and self.is_z_valid(z))
+        # Convert type in np.ndarray
+        if not isinstance(coordinates, np.ndarray):
+            coordinates = np.array(coordinates)
+        
+        # Shape the array in a (2,) array
+        if len(coordinates.shape) == 1:
+            coordinates = np.reshape(coordinates, (-1, coordinates.shape[0]))
+            
+        # Unzip coordinates
+        if coordinates.shape[1] == 2:
+            x = coordinates[:, 0]
+            y = coordinates[:, 1]
+            i, j = self.is_x_valid(x), self.is_y_valid(y)
+            out = np.logical_and(i, j)
+        elif coordinates.shape[1] == 3:
+            x = coordinates[:, 0]
+            y = coordinates[:, 1]
+            z = coordinates[:, 2]
+            i, j, k = self.is_x_valid(x), self.is_y_valid(y), self.is_z_valid(z)
+            out = np.logical_and.reduce([i, j, k])
         else:
-            pass
+            msg = ("Shape of the `coordinates` parameter is invalid. Only (2, "
+                   "n) and (3, n) array like are valid.")
+            raise TypeError(msg)
+        
+        # Output a more convinient format when only one entry
+        if len(out) == 1:
+            out = out[0]
         return out

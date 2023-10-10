@@ -29,12 +29,14 @@ Download *environment.yml*. From source:
 conda env create --name pykasso --file=environment.yml
 ```
 
-Then:
+<!-- Then:
 ```
 pip install -e pykasso[analysis, visualization]
-```
+``` -->
 
-In local:
+### Using pip
+
+In local, from source::
 ```
 pip install -e ".[analysis, visualization]"
 ```
@@ -64,6 +66,7 @@ Work in progress.
 ## Examples
 
 Some basic examples are avaible here : [notebooks/geometry/](https://github.com/randlab/pyKasso/tree/dev/notebooks/geometry)
+Other examps : [notebooks/paper/](https://github.com/randlab/pyKasso/tree/dev/notebooks/paper)
 
 ## Contact
 

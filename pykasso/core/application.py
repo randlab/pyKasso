@@ -3,6 +3,7 @@ Module containing the application class.
 """
 
 ### Internal dependencies
+import warnings
 
 ### External dependencies
 
@@ -12,36 +13,45 @@ from pykasso.model.sks import SKS
 from pykasso.analysis.analysis import Analyzer
 from pykasso.visualization.visualizer import Visualizer
 
+### Validation
 from pykasso._utils.validation import (is_parameter_type_valid,
                                        is_key_in_dict,
                                        is_parameter_value_valid)
 
+### Variables
+from pykasso.core._namespaces import (GRID_PARAMETERS)
+
 
 class Application():
-    """Embedding of the pyKasso subpackages.
+    """
+    Class modeling an application and embedding the pyKasso subpackages.
      
-    This class provides the capability to access to the different pyKasso
-    subpackages.
+    This class manages a pyKasso project and provides access to the different
+    subpackages by storing them as class attributes.
     
     Attributes
     ----------
     project
-        -
+        Project class. TODO
     model
-        -
+        Model class. TODO
     analyzer
-        -
+        Analyzer class. TODO
     visualizer
-        -
+        Visualizer class TODO
+        
+    Notes
+    -----
+    The attributes are set to ``None`` until a project is created or loaded.
         
     Examples
     --------
+    This class can be instancied by using the public function ``pykasso()``.
     >>> import pykasso as pk
     >>> app = pk.pykasso()
     """
     
     def __init__(self) -> None:
-        """Initialize the application."""
         self.__project = None
         self.__model = None
         self.__analyzer = None
@@ -51,45 +61,56 @@ class Application():
     ### MANAGE PROJECT ###
     ######################
         
-    def new_project(self, project_name: str, grid_parameters: dict,
-                    force: bool = True) -> None:
-        """Create a new project.
+    def new_project(self,
+                    project_name: str,
+                    grid_parameters: dict,
+                    force: bool = True
+                    ) -> None:
+        """
+        Create a new project.
+        
+        Instance a ``Project`` class within the ``project`` attribute and
+        initialize the subpackages.
 
         Parameters
         ----------
         project_name : str
-            The name of the project.
+            The name of the project. A new directory is created if the
+            argument points to a non-existant folder.
         grid_parameters : dict
-            The grid parameters.
+            The dictionary containing the grid parameters.
         force : bool, optional
-            TODO, by default True
+            If True, overwrite files in case of conflict when ``project_name``
+            points to an already existing directory.
+            Default is True.
 
         Examples
         --------
         >>> import pykasso as pk
         >>> app = pk.pykasso()
-        >>> grid = {TODO}
+        >>> project_name = TODO
+        >>> grid_parameters = {TODO}
         >>> app.new_project(TODO)
         """
         
         ### Input validation
         
-        # Parameters type
-        is_parameter_type_valid(project_name, 'project_name', (str))
-        is_parameter_type_valid(grid_parameters, 'grid_parameters', (dict))
+        # Test 'project_name' type
+        is_parameter_type_valid(parameter_name='project_name',
+                                parameter_value=project_name,
+                                valid_types=(str))
         
-        # Grid parameters presence
-        for p in ['x0', 'y0', 'z0', 'nx', 'ny', 'nz', 'dx', 'dy', 'dz']:
-            is_key_in_dict(grid_parameters, 'grid_parameters', p)
+        # Test 'grid_parameters' type
+        is_parameter_type_valid(parameter_name='grid_parameters',
+                                parameter_value=grid_parameters,
+                                valid_types=(dict))
+
+        # Test 'Grid' parameters presence
+        for parameter in GRID_PARAMETERS:
+            is_key_in_dict(dictionary=grid_parameters,
+                           dictionary_name='grid_parameters',
+                           key_to_test=parameter)
             
-        # Grid parameters values
-        for p in ['x0', 'y0', 'z0', 'dx', 'dy', 'dz']:
-            is_parameter_type_valid(grid_parameters[p], p, (int, float))
-        for p in ['nx', 'ny', 'nz']:
-            is_parameter_type_valid(grid_parameters[p], p, (int))
-        for p in ['nx', 'ny', 'nz']:
-            is_parameter_value_valid(grid_parameters[p], p, '>', 0)
-        
         ### Initialization of the application
         
         # Set a project instance
@@ -108,58 +129,78 @@ class Application():
         
         return None
     
-    def open_project(self) -> None:
-        return None
+    def open_project(self) -> NotImplementedError:
+        """
+        Not implemented yet.
+        """
+        msg = "Not implemented yet."
+        raise NotImplementedError(msg)
     
-    def save_project(self) -> None:
-        return None
+    def save_project(self) -> NotImplementedError:
+        """
+        Not implemented yet.
+        """
+        msg = "Not implemented yet."
+        raise NotImplementedError(msg)
     
-    def export_project(self) -> None:
-        return None
+    def export_project(self) -> NotImplementedError:
+        """
+        Not implemented yet.
+        """
+        msg = "Not implemented yet."
+        raise NotImplementedError(msg)
 
     ###############
     ### GETTERS ###
     ###############
 
     @property
-    def project(self):
-        """Return the project class."""
+    def project(self) -> Project:
+        """
+        Return the project class.
+        """
         if self.__project is None:
-            txt = "No project available yet. Please create or load a project."
-            print(txt)
+            msg = "No project available yet. Please create or load a project."
+            print(msg)
             return None
         else:
             return self.__project
         
     @property
-    def model(self):
-        """Return the model class."""
+    def model(self) -> SKS:
+        """
+        Return the SKS model class.
+        """
         if self.__model is None:
-            txt = ("This feature is not available yet. Please create or load a"
+            msg = ("This feature is not available yet. Please create or load a"
                    " project first.")
-            print(txt)
+            print(msg)
             return None
         else:
             return self.__model
         
     @property
-    def analyzer(self):
-        """Return the analyzer class."""
+    def analyzer(self) -> Analyzer:
+        """
+        Return the analyzer class.
+        """
         if self.__analyzer is None:
-            txt = ("This feature is not available yet. Please create or load a"
+            msg = ("This feature is not available yet. Please create or load a"
                    " project first.")
-            print(txt)
+            print(msg)
             return None
         else:
             return self.__analyzer
         
     @property
-    def visualizer(self):
-        """Return the visualizer class."""
+    def visualizer(self) -> Visualizer:
+        """
+        Return the visualizer class.
+        """
         if self.__visualizer is None:
-            txt = ("This feature is not available yet. Please create or load a"
+            msg = ("This feature is not available yet. Please create or load a"
                    " project first.")
-            print(txt)
+            print(msg)
             return None
         else:
             return self.__visualizer

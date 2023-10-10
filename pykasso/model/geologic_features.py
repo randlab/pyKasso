@@ -2,17 +2,13 @@
 This module contains classes modeling the geological features.
 """
 
-### Internal dependencies
-import sys
-
 ### External dependencies
 import numpy as np
 import pandas as pd
 
 ### Local dependencies
-from pykasso._utils.readers import DataReader
+from pykasso._utils.datareader import DataReader
 
-sks = sys.modules['pykasso.model.sks']
 
 ##################
 ### Main class ###
@@ -31,11 +27,13 @@ sks = sys.modules['pykasso.model.sks']
 
 
 class GeologicFeature(DataReader):
-    """Class modeling a geological feature."""
+    """
+    Class modeling a geological feature.
+    """
     
     def __init__(self, label: str, dim: int, *args, **kwargs) -> None:
         """
-        Constructs a geological feature.
+        Construct a geological feature.
 
         Parameters
         ----------
@@ -51,7 +49,7 @@ class GeologicFeature(DataReader):
         self.data_surface = None
         self.data_volume = None
         
-    def set_data(self, data, grid, axis: str = None) -> None:
+    def set_data(self, data, axis: str = None) -> None:
         
         if isinstance(data, np.ndarray):
             if self.dim == 2:
@@ -60,72 +58,24 @@ class GeologicFeature(DataReader):
                 self.data_volume = data
         else:
             if self.dim == 2:
-                self.data_surface = self._set_data_from_file(grid,
-                                                             data,
-                                                             False)
+                self.data_surface = self.get_data_from_file(data,
+                                                            False)
             elif self.dim == 3:
-                self.data_volume = self._set_data_from_file(grid,
-                                                            data,
-                                                            True,
-                                                            axis)
+                self.data_volume = self.get_data_from_file(data,
+                                                           True,
+                                                           axis)
         return None
     
-    def to_file(self, name: str = None, data: str = ''):
-        
-        grid = sks.ACTIVE_PROJECT['settings']['grid']
-
-        
-        path = sks.ACTIVE_PROJECT['simulation_locations'][-1]
-        
-        if name is not None:
-            extension = name.split('.')[-1]
-            # if extension == 'a':
-            #     pass
-            # elif extension == 'a':
-            #     pass
-            # elif extension == 'a':
-            #     pass
-            # elif extension == 'a':
-            #     pass
-            # elif extension == 'a':
-            #     pass
-        else:
-            extension = ''
-            filename = self.label + extension
-        return None
-    
-    def _save_to_gslib(self):
-        grid = sks.ACTIVE_PROJECT['settings']['grid']
-        x0, y0, z0 = grid['x0'], grid['y0'], grid['z0']
-        nx, ny, nz = grid['nx'], grid['ny'], grid['nz']
-        dx, dy, dz = grid['dx'], grid['dy'], grid['dz']
-        comment = ("x0: {}, y0: {}, z0:, {}, nx: {}, ny: {}, nz: {}, dx: {},"
-                   "dy: {}, dz: {}").format(x0, y0, z0, nx, ny, nz, dx, dy, dz)
-        n_var = 1
-        
-        
-        pass
-    
-    def _save_to_np_pickle(self) -> None:
-        # np.save()
-        return None
-    
-    def _save_to_csv(self) -> None:
-        return None
-    
-    def _save_to_asc(self) -> None:
-        return None
-    
-    def _save_to_grd(self) -> None:
-        return None
-                
+  
 #######################
 ### Main subclasses ###
 #######################
 
 
 class Surface(GeologicFeature):
-    """Subclass modeling a two dimensional geological feature."""
+    """
+    Subclass modeling a two dimensional geological feature.
+    """
     
     def __init__(self, label, *args, **kwargs):
         dim = 2
@@ -179,7 +129,9 @@ class Volume(GeologicFeature):
 
 
 class Geology(Volume):
-    """Class modeling the geologic model."""
+    """
+    Class modeling the geologic model.
+    """
     
     def __init__(self, *args, **kwargs):
         label = 'geology'
@@ -187,7 +139,9 @@ class Geology(Volume):
 
 
 class Faults(Volume):
-    """Class modeling the faults model."""
+    """
+    Class modeling the faults model.
+    """
     
     def __init__(self, *args, **kwargs):
         label = 'faults'

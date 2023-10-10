@@ -6,8 +6,11 @@ import PIL
 import os
 import sys
 import logging
+import rasterio
 import numpy as np
 from shapely.geometry import Point
+
+from pykasso._utils import datareader
 
 ############
 ### TODO ###
@@ -48,9 +51,9 @@ this.ATTRIBUTES = {
         'data': ['optional', ''],
         'axis': ['optional', 'z'],
     },
-    'beddings': { # TODO ???
-        'data': ['optional', ''], # TODO ???
-    }, # TODO ???
+    'beddings': {  # TODO ???
+        'data': ['optional', ''],  # TODO ???
+    },  # TODO ???
     'faults': {
         'data': ['optional', ''],
         'axis': ['optional', 'z'],
@@ -139,7 +142,7 @@ def is_path_valid(path: str, attribute: str) -> bool:
     """
     if not os.path.exists(path):
         msg = ("The path from '{}' attribute is not valid. '{}' does not"
-               "exist.".format(attribute, path))
+               " exist.".format(attribute, path))
         this.logger.error(msg)
         raise FileNotFoundError(msg)
     else:
@@ -153,7 +156,7 @@ def is_extension_valid(path: str, valid_extensions: list) -> bool:
     extension = path.split('.')[-1]
     if extension not in valid_extensions:
         msg = ("The extension '.{}' from '{}' location is not valid. Valid"
-               "extensions : {}.".format(extension, path, valid_extensions))
+               " extensions : {}.".format(extension, path, valid_extensions))
         this.logger.error(msg)
         raise ValueError(msg)
     else:
@@ -181,6 +184,10 @@ def read_file(path: str, attribute: str) -> np.ndarray:
         ### CSV
         elif extension == 'csv':
             data = np.genfromtxt(path, delimiter=',').T
+            
+        ### TIF, TIFF
+        elif extension in ['tif', 'tiff']:
+            data = rasterio.open(path).read(1).T
 
         ### Others
         else:
@@ -188,7 +195,7 @@ def read_file(path: str, attribute: str) -> np.ndarray:
 
     except Exception as err:
         msg = ("Impossible to read the file designated by the '{}' attribute."
-               "Location : {}".format(attribute, path))
+               " Location : {}".format(attribute, path))
         this.logger.error(msg)
         raise err
     else:
@@ -234,7 +241,7 @@ def is_coordinate_type_valid(coordinate: tuple, types: tuple,
                              attribute: str) -> bool:
     if not isinstance(coordinate, types):
         msg = ("The values of the '{}' attribute contains at least one invalid"
-               "vertex. Coordinates must be of type : {}."
+               " vertex. Coordinates must be of type : {}."
                .format(attribute, types))
         this.logger.critical(msg)
         raise TypeError(msg)
@@ -247,7 +254,7 @@ def is_surface_dimensions_valid(attribute: str, array: np.ndarray,
     nx, ny, nz = grid.shape
     if not (array.shape == (nx, ny)):
         msg = ("The '{}' array shape does not match with grid surface."
-               "Array shape: {}, Grid surface shappe: {}"
+               " Array shape: {}, Grid surface shape: {}"
                .format(attribute, array.shape, (nx, ny)))
         this.logger.critical(msg)
         raise ValueError(msg)
@@ -260,7 +267,7 @@ def is_costs_dictionnary_valid(costs_dictionnary: dict, ids_data: list):
     for i in ids_data:
         if i not in costs_dictionnary:
             msg = ("The data id ({}) is not within 'costs' dictionnary keys"
-                   "({})".format(i, list(costs_dictionnary.keys())))
+                   " ({})".format(i, list(costs_dictionnary.keys())))
             this.logger.error(msg)
             raise KeyError(msg)
     return True
@@ -296,18 +303,24 @@ def validate_settings(feature: str, feature_settings: dict, grid=None) -> dict:
 
 
 def validate_sks_settings(settings: dict) -> dict:
-    # Checks attributes presence
+    # Check attributes presence
     for attribute in this.ATTRIBUTES['sks']:
         kind, default_value = this.ATTRIBUTES['sks'][attribute]
         settings = validate_attribute_presence(settings, attribute, kind,
                                                default_value,
                                                is_subattribute=True)
-        
-    # Checks the presence of essential fmm costs
-    costs = ['ratio', 'conduits', 'out']
-    for cost in costs:
-        if cost not in settings['costs']:
-            settings['costs'][cost] = sks.default_fmm_costs[cost]
+    
+    # Control validity of 'algorithm' parameter
+    # TODO
+     
+    # Update the default fmm cost dictionary
+    for parameter, cost in settings['costs'].items():
+        sks.default_fmm_costs[parameter] = cost
+    
+    # Complete the settings dictionary
+    for parameter, cost in sks.default_fmm_costs.items():
+        if parameter not in settings['costs']:
+            settings['costs'][parameter] = sks.default_fmm_costs[parameter]
             
     return settings
 
@@ -386,6 +399,7 @@ def validate_delimitation_settings(settings: dict, grid) -> dict:
     
     # Type is str
     if isinstance(settings[feature], (str)):
+        
         path = settings[feature]
 
         # Checks if the datafile exist
@@ -498,7 +512,7 @@ def validate_geologic_feature_settings(settings: dict, attribute: str,
         is_path_valid(path, 'data')
 
         # Checks if extension is valid
-        valid_extensions = ['gslib', 'npy', 'png', 'jpg', 'txt', 'csv']
+        valid_extensions = ['gslib', 'npy', 'png', 'jpg', 'txt', 'csv', 'tif', 'tiff']
         is_extension_valid(path, valid_extensions)
             
         # Tries to open file
@@ -556,24 +570,30 @@ def is_volume_dimensions_valid(array: np.ndarray, attribute: str, grid,
         else:
             msg = "The '{}' data dimensions do not match with the volume "
             if data_size == axis_surface_size[axis]:
-                msg += ("but match with the {}-side surface of the grid. Data"
+                msg += ("but match with the {}-side surface of the grid. Data "
                         "will be replicated on {}-axis."
-                        .format(attribute, axis, axis))
+                        .format(attribute, axis))
                 this.logger.debug(msg)
                 return True
             else:
-                msg += "neither with the {}-side surface of the grid (data : {}, grid_volume : {}, grid_{}_surface : {}).".format(attribute, axis, data_size, nx * ny * nz, axis, axis_surface_size[axis])
+                msg += "neither with the {}-side surface of the grid (data : {}, grid_volume : {}, grid_{}_surface : {}).".format(attribute, data_size, nx * ny * nz, axis, axis_surface_size[axis])
                 this.logger.critical(msg)
                 raise ValueError(msg)
 
     ### 2D ndarray case
     elif len(array.shape) == 2:
         if array.shape == axis_surface_shapes[axis]:
-            msg = "The '{}' data dimensions match with the {}-side surface of the grid. Dat will be replicated on {}-axis.".format(attribute, axis, axis)
+            msg = ("The '{}' data dimensions match with the {}-side surface of"
+                   " the grid. Dat will be replicated on {}-axis."
+                   .format(attribute, axis, axis))
             this.logger.debug(msg)
             return True
         else:
-            msg = "The '{}' data dimensions do not match with the {}-side surface of the grid (data : {}, grid_volume : {}, grid_{}_surface : {}).".format(attribute, axis, array.shape, (nx,ny,nz), axis, axis_surface_shapes[axis])
+            msg = ("The '{}' data dimensions do not match with the {}-side "
+                   "surface of the grid (data : {}, grid_volume : {}, "
+                   "grid_{}_surface : {})."
+                   .format(attribute, axis, array.shape, (nx, ny, nz),
+                           axis, axis_surface_shapes[axis]))
             this.logger.critical(msg)
             raise ValueError(msg)
 
@@ -582,12 +602,16 @@ def is_volume_dimensions_valid(array: np.ndarray, attribute: str, grid,
         if array.shape == (nx, ny, nz):
             return True
         else:
-            msg = "The '{}' data dimensions do not match neither with the volume nor the surface of the grid (data : {}, grid : {}).".format(attribute, array.shape, grid.shape)
+            msg = ("The '{}' data dimensions do not match neither with the"
+                   " volume nor the surface of the grid (data : {}, grid : {})"
+                   ".".format(attribute, array.shape, grid.shape))
             this.logger.critical(msg)
             raise ValueError(msg)
     ### Other cases
     else:
-        msg = "The '{}' data dimensions do not match neither with the volume nor the surface of the grid (data : {}, grid : {}).".format(attribute, array.shape, grid.shape)
+        msg = ("The '{}' data dimensions do not match neither with the volume"
+               " nor the surface of the grid (data : {}, grid : {})."
+               .format(attribute, array.shape, grid.shape))
         this.logger.critical(msg)
         raise ValueError(msg)
     
@@ -600,57 +624,72 @@ def validate_points_feature_settings(settings: dict, attribute: str) -> dict:
     """
     TODO
     """
-    points = ''
-
-    # Checks attributes presence
+    # Check attributes presence
     for attribute_ in this.ATTRIBUTES[attribute]:
         kind, default_value = this.ATTRIBUTES[attribute][attribute_]
-        settings = validate_attribute_presence(settings, attribute_, kind, default_value, is_subattribute=True)
+        settings = validate_attribute_presence(settings,
+                                               attribute_,
+                                               kind,
+                                               default_value,
+                                               is_subattribute=True)
         
-    # Checks if 'number' is of type int
+    # Check if 'number' is of type int
     is_attribute_type_valid('number', settings['number'], (int))
 
-    # Checks if 'number' attribute value is valid
+    # Check if 'number' attribute value is valid
     is_attribute_value_valid('number', settings['number'], '>', 0)
+    
+    ### Check 'data'
+    
+    # If data is empty
+    if isinstance(settings['data'], str) and (settings['data'] == ''):
+        settings['data'] = []
+    
+    # Identify type of 'data'
+    if isinstance(settings['data'], str):    
+        path = settings['data']
 
-    # Checks data when provided
-    if not ((settings['data'] == []) or (settings['data'] == '')):
+        # Checks if the datafile exist
+        is_path_valid(path, 'data')
 
-        # Checks if data type is valid:
-        is_attribute_type_valid('data', settings['data'], (str, list))
+        # Tries to open file
+        dr = datareader.DataReader()
+        settings['data'] = dr.get_data_from_file(path)
 
-        # Type is str:
-        if isinstance(settings['data'], (str)):
-            path = settings['data']
+        # points = read_file(path, 'data')
+        
+    # Transform 'data' type into np.ndarray type
+    try:
+        settings['data'] = np.array(settings['data'], dtype=np.float_)
+    except:
+        pass
+        # TODO
+    
+    # If points contains only one element
+    if len(settings['data'].shape) == 1:
+        settings['data'] = np.array([settings['data']])
+    
+    # Control array size
+    if settings['data'].shape[1] not in [2, 3]:
+        # TODO
+        pass
 
-            # Checks if the datafile exist
-            is_path_valid(path, 'data')
+    # ### Checks validity of data
 
-            # Tries to open file
-            points = read_file(path, 'data')
-            if len(points.shape) == 1: # If points contains only one element
-                points = np.array([points])
+    # # Checks if each points contains 2 or 3 coordinates
+    # for point in points:
+    #     if len(point) not in [2, 3]:
+    #         msg = "The values of the 'data' attribute contains at least one invalid point. Format must be like : [[x0, y0], ..., [xn, yn]] or [[x0, y0, z0], ..., [xn, yn, zn]]."
+    #         this.logger.critical(msg)
+    #         raise ValueError(msg)
 
-        # Type is list:
-        if isinstance(settings['data'], (list)):
-            points = settings['data']
-
-        ### Checks validity of data
-
-        # Checks if each points contains 2 or 3 coordinates
-        for point in points:
-            if len(point) not in [2, 3]:
-                msg = "The values of the 'data' attribute contains at least one invalid point. Format must be like : [[x0, y0], ..., [xn, yn]] or [[x0, y0, z0], ..., [xn, yn, zn]]."
-                this.logger.critical(msg)
-                raise ValueError(msg)
-
-        # Checks type of coordinates
-        for point in points:
-            for coordinate in point:
-                if np.isnan(coordinate) or (not isinstance(coordinate, (int, float))):
-                    msg = "The values of the 'data' attribute contains at least one invalid point. Coordinates must be of type int or float."
-                    this.logger.critical(msg)
-                    raise TypeError(msg)
+    # # Checks type of coordinates
+    # for point in points:
+    #     for coordinate in point:
+    #         if np.isnan(coordinate) or (not isinstance(coordinate, (int, float))):
+    #             msg = "The values of the 'data' attribute contains at least one invalid point. Coordinates must be of type int or float."
+    #             this.logger.critical(msg)
+    #             raise TypeError(msg)
 
     # Checks if 'shuffle' is of type bool
     is_attribute_type_valid('shuffle', settings['shuffle'], (bool))

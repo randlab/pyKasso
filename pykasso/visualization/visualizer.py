@@ -1,41 +1,72 @@
 """
-TODO
+Module defining a tool for pyKasso results visulization.
 """
-
-# TODO
-# - spécifier le type des retours de chaque fonction
-# plt.figure() : options settable
-# voxels : option extent
 
 ### Internal dependencies
 import copy
+import warnings
 
 ### External dependencies
 import numpy as np
+import pandas as pd
+import matplotlib.figure
+import matplotlib.axes
+import matplotlib.colorbar
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from IPython import get_ipython
 
 ### Optional dependencies
 try:
     import pyvista as pv
+    import pyvista.core
 except ImportError:
     _has_pyvista = False
 else:
     _has_pyvista = True
 
 ### Local dependencies
-from pykasso.core._namespaces import ANISOTROPIC_FEATURES, DOMAIN_FEATURES
+from pykasso.core._namespaces import (GEOLOGICAL_FEATURES,
+                                      DOMAIN_FEATURES,
+                                      ANISOTROPIC_FEATURES,
+                                      AUTHORIZED_FEATURES,
+                                      SURFACE_FEATURES)
 
 ### Typing
-from pykasso._typing import Project
+from typing import Union
+from typing import NamedTuple
+
+from pykasso.core.project import Project
+
+
+class Figure(NamedTuple):
+    """
+    `NamedTuple` storing element from a matplotlib figure.
+    
+    Attributes
+    ----------
+    fig
+        TODO
+    ax
+        TODO
+    cbar
+        TODO
+    """
+    fig: matplotlib.figure.Figure
+    ax: matplotlib.axes._axes.Axes
+    cbar: matplotlib.colorbar.Colorbar
 
 
 def requires_pyvista():
+    """
+    If 'PyVista' package is not installed, return `ImportError` exception
+    when a method requiring 'PyVista' is called.
+    """
     def _(function):
         def _wrapper(*args, **kwargs):
             if not _has_pyvista:
-                raise ImportError("PyVista is required to do this.")
+                msg = ("PyVista is required to do this. On console : 'pip "
+                       "install pyvista'.")
+                raise ImportError(msg)
             result = function(*args, **kwargs)
             return result
         return _wrapper
@@ -48,39 +79,41 @@ class Visualizer():
     simulated karstic conduit networks.
     """
     
-    DEFAULT_SETTINGS = {
-        'surfaces': [],
-        'show_inlets': False,
-        'show_outlets': False,
-        'show_colorbar': False
-    }
-    
-    PV_DEFAULT_SETTINGS = {
-        'ghosts': [],
+    DEFAULT_PV_SETTINGS = {
+        'n_iteration': -1,
+        'text_options': {},
         'ghost_values': [],
         'ghost_subdomains': [],
-        'surfaces': {
-            'topography': False,
-            'water_level': False,
-            'bedrock': False
-        },
-        'outline': False,
-        'grid': False,
-        # 'inlets': False,  # TODO - rename (see above)
-        # 'outlets': False,  # TODO - rename (see above)
-        'cpos': 'xz',
-        # 'domain',
-        'slice': False,
-        'orientation': False,  # TODO - to remove ?
-        # 'show_colorbar': False  # TODO - rename (see above)
+        'show_grid': True,
+        'show_outline': False,
+        'data_options': {},
+        'surfaces_options': {},
+        'inlets_options': None,
+        'outlets_options': None,
+        'show_slice': False,
+        'show_colorbar': True,
+        'fractures_options': None,
+        # 'cpos': 'xz',
     }
     
-    MPL_DEFAULT_SETTINGS = {}
+    DEFAULT_MPL_IMSHOW_ORIGIN = 'lower'
+    DEFAULT_MPL_IMSHOW_EXTENT = None
+    PV_SCALAR_KEYWORD = 'data'
     
-    def __init__(self, project: Project, notebook: bool = False,
-                 *args, **kwargs) -> None:
+    def __init__(self,
+                 project: Project,
+                 notebook: bool = False,
+                 ) -> None:
         """
         Initialize the class.
+
+        Parameters
+        ----------
+        project : Project
+            pyKasso project to read.
+        notebook : bool, optional
+            If `True`, figures are rendered within python notebooks,
+            by default `False`
         """
         self.project = project
         self._notebook = notebook
@@ -88,22 +121,33 @@ class Visualizer():
         # Set notebook value
         self._set_notebook_value(notebook)
         
+        # Set the pyvista grid
         if _has_pyvista:
-            # Set the pyvista grid
             self._set_pyvista_grid()
         
     @property
-    def notebook(self):
+    def notebook(self) -> bool:
+        """
+        Get the state of the rendering aspect. If `True`, figures are
+        rendered within python notebooks.
+        """
         return self._notebook
 
     @notebook.setter
-    def notebook(self, value):
-        self._notebook = value
-        self._set_notebook_value(value)
-        
-    def _set_notebook_value(self, boolean):
+    def notebook(self,
+                 boolean: bool,
+                 ) -> None:
         """
-        Render plots within Notebooks if 'boolean' is true.
+        When `notebook` is set, modify the way the figures are rendered.
+        """
+        self._notebook = boolean
+        self._set_notebook_value(boolean)
+        
+    def _set_notebook_value(self,
+                            boolean: bool,
+                            ) -> None:
+        """
+        Render plots within python notebooks if `boolean` is `True`.
         """
         # *** MATPLOTLIB *** #
         if boolean:
@@ -113,57 +157,115 @@ class Visualizer():
         
         # *** PYVISTA *** #
         if _has_pyvista:
-            # Set global_theme.notebooks
             pv.global_theme.notebook = boolean
         
         return None
     
-    # def _set_default_kwargs(self, kwargs) -> dict:
-    #     for (key, value) in Visualizer.DEFAULT_SETTINGS.items():
-    #         kwargs.setdefault(key, value)
-    #     return kwargs
-    
     # ************************************************************* #
-    # ****          STATIC METHODS      *************************** #
+    # ****       Plot Array - Static Methods       **************** #
     # ************************************************************* #
     
-    # **** MPL **** #
+    # **** MATPLOTLIB **** #
     
     @staticmethod
-    def mpl_plot_array_2D(array: np.ndarray, axis: str = 'z',
-                          n_slice: int = -1, imshow_options: dict = {},
-                          show_colorbar: bool = True, return_ax: bool = False):
+    def mpl_plot_array_2D(array: np.ndarray,
+                          axis: str = 'z',
+                          n_slice: int = -1,
+                          imshow_options: dict = {},
+                          contour_options: dict = None,
+                          show_colorbar: bool = True,
+                          ) -> Figure:
         """
-        TODO
+        Plot a slice of a 3D array with the matplotlib library.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            3D array to slice and plot.
+        axis : str, optional
+            Axis used to slice the array, by default 'z'.
+        n_slice : int, optional
+            Indice for slicing, by default -1.
+        imshow_options : dict, optional
+            Dictionary containing the arguments for the imshow() matplotlib
+            function, by default {}.
+            More details here:
+            https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html
+        contour_options : dict, optional
+            Dictionary containing the arguments for the contour() matplotlib
+            function, by default None.
+            More details here:
+            https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.contour.html
+        show_colorbar : bool, optional
+            If `False`, remove the colorbar, by default `True`.
+            More details here:
+            https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.colorbar.html
+
+        Returns
+        -------
+        Figure
+            `NamedTuple` describing a matplotlib figure.
+            - fig: TODO;
+            - ax: TODO;
+            - cbar: TODO;
+            
+        Examples
+        --------
+        >>> TODO
         """
+        # Control array dimension
+        Visualizer._test_array_dimension(array)
+        
         # Slice the array
         if array.ndim == 2:
             array = array.T
         elif array.ndim == 3:
             array = Visualizer._slice_array(array, axis, n_slice)
-        else:
-            msg = "Array dimension is not valid."  # TODO - better error msg ?
-            raise ValueError(msg)
-        
+            
         # Create the figure
         fig, ax = Visualizer._create_figure_2D(axis)
         
         # Plot the array
-        im = ax.imshow(array, origin="lower", **imshow_options)
+        options = imshow_options.copy()
+        origin = options.pop('origin', Visualizer.DEFAULT_MPL_IMSHOW_ORIGIN)
+        extent = options.pop('extent', Visualizer.DEFAULT_MPL_IMSHOW_EXTENT)
+        im = ax.imshow(array, origin=origin, extent=extent, **options)
+        
+        # Plot the contours
+        if contour_options is not None:
+            cs = ax.contour(array, origin=origin, extent=extent,
+                            **contour_options)
         
         # Set the colorbar
         if show_colorbar:
-            fig.colorbar(im, ax=ax)
-        
-        if return_ax:
-            return (fig, ax)
+            cbar = fig.colorbar(im, ax=ax)
+            if contour_options is not None:
+                cbar.add_lines(cs)
         else:
-            return fig
+            cbar = None
+        
+        return Figure(fig, ax, cbar)
+        
+    @staticmethod
+    def _test_array_dimension(array: np.ndarray,
+                              ) -> Union[ValueError, None]:
+        """
+        Test if the array is well a (2,) or (3,) dimensional array.
+        """
+        if array.ndim not in [2, 3]:
+            msg = "Array dimension is not valid."
+            raise ValueError(msg)
+        else:
+            return None
     
     @staticmethod
-    def _slice_array(array: np.ndarray, axis: str, n_slice: int) -> np.ndarray:
+    def _slice_array(array: np.ndarray,
+                     axis: str,
+                     n_slice: int,
+                     ) -> np.ndarray:
         """
-        DOC
+        Slice a 3 dimensional ``array`` in the ``axis`` direction at the
+        ``n_slice`` rank.
         """
         if axis == 'x':
             np_slice = (n_slice, slice(None), slice(None))
@@ -173,16 +275,15 @@ class Visualizer():
             np_slice = (slice(None), slice(None), n_slice)
             
         sliced_data = array[np_slice].T
-        
         return sliced_data
     
     @staticmethod
-    def _create_figure_2D(axis: str) -> tuple:
+    def _create_figure_2D(axis: str,
+                          ) -> tuple[matplotlib.figure.Figure, plt.Axes]:
         """
-        Declare the corresponding 2 dimensional matplotlib figure
-        according to the axis.
+        Create a 2 dimensional matplotlib figure and set the label names
+        according to the `axis`.
         """
-        
         # Declare the figure
         fig = plt.figure()
         ax = plt.subplot()
@@ -196,15 +297,36 @@ class Visualizer():
         elif axis == 'z':
             ax.set_xlabel('x')
             ax.set_ylabel('y')
-        
-        out = (fig, ax)
-        return out
+        return (fig, ax)
     
     @staticmethod
-    def mpl_plot_array_3D(array: np.ndarray, voxels_options: dict = {},
-                          return_ax: bool = False):
+    def mpl_plot_array_3D(array: np.ndarray,
+                          voxels_options: dict = {},
+                          ) -> Figure:
         """
-        TODO
+        Plot a 3D `array` with the matplotlib library.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            3D array to plot.
+        voxels_options : dict, optional
+            Dictionary containing the arguments for the voxels() matplotlib
+            function, by default {}.
+            More details here:
+            https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.mplot3d.axes3d.Axes3D.voxels.html
+            
+        Returns
+        -------
+        Figure
+            `NamedTuple` describing a matplotlib figure.
+            - fig: TODO;
+            - ax: TODO;
+            - cbar: TODO;
+            
+        Examples
+        --------
+        >>> TODO
         """
         # Create the figure
         fig, ax = Visualizer._create_figure_3D()
@@ -212,21 +334,19 @@ class Visualizer():
         # Plot the array
         ax.voxels(array, **voxels_options)
         
-        # Set the colors
-        # TODO
-        
         # Set aspect on 'equal'
-        ax.set_aspect('equal')
+        aspect = 'equal'
+        ax.set_aspect(aspect)
         
-        if return_ax:
-            return (fig, ax)
-        else:
-            return fig
+        # Set the colorbar
+        cbar = None
+        
+        return Figure(fig, ax, cbar)
     
     @staticmethod
-    def _create_figure_3D() -> tuple:
+    def _create_figure_3D() -> tuple[matplotlib.figure.Figure, plt.Axes]:
         """
-        DOC
+        Create a 3 dimensional matplotlib figure and set the label names.
         """
         # Declare the figure
         fig = plt.figure()
@@ -236,109 +356,303 @@ class Visualizer():
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
-        
-        # Return the figure
-        out = (fig, ax)
-        return out
+        return (fig, ax)
     
-    # **** PV **** #
+    # **** PYVISTA **** #
     
-    @requires_pyvista()
     @staticmethod
-    def pv_plot_array(array, ghost=False):
+    @requires_pyvista()
+    def pv_plot_array(array: np.ndarray,
+                      mask_values: list = [],
+                      mask_subdomain: list = [],
+                      show_grid: bool = True,
+                      show_outline: bool = False,
+                      threshold_options: dict = {},
+                      cpos: Union[str, list[float, float, float]] = 'xy',
+                      **kwargs
+                      ) -> None:
         """
-        TODO
+        Plot a 3D ``array`` with the pyvista library.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            3D array to plot.
+        mask_values : list, optional
+            List of values to mask, by default ``[]``.
+        mask_subdomain : list, optional
+            List of pykasso subdomains to mask, by default ``[]``.
+        show_grid : bool, optional
+            If ``True``, plot the axis ans its values, by default ``True``.
+        show_outline : bool, optional
+            If ``True``, plot the full delimitation of the array regardless
+            the values masked or filtered, by default ``False``.
+        threshold_options : dict, optional
+            Dictionary containing the arguments for the threshold() matplotlib
+            function, by default ``{}``.
+            More details here:
+            https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.DataSetFilters.threshold.html
+        cpos : Union[str, list[float, float, float]]
+            Initial camera position.
+            More details here:
+            https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.camera_position.html
+        Returns
+        -------
+        None
         """
-        if len(array.shape) == 2:
+
+        # Control array dimension
+        Visualizer._test_array_dimension(array)
+        
+        # Get array shape
+        if array.ndim == 2:
             nx, ny = array.shape
             nz = 1
-        elif len(array.shape) == 3:
+        elif array.ndim == 3:
             nx, ny, nz = array.shape
-        else:
-            msg = "TODO"
-            raise ValueError(msg)
 
-        mesh = pv.UniformGrid()
-        mesh.dimensions = np.array((nx, ny, nz)) + 1
-        mesh.cell_data['data'] = array.flatten(order="F")
-        mesh = mesh.cast_to_unstructured_grid()
-
-        if ghost:
-            ghosts = np.argwhere(np.isin(mesh["data"], [0]))
-            mesh = mesh.remove_cells(ghosts)
-
+        # Create the mesh
+        mesh = Visualizer._create_empty_mesh((nx, ny, nz))
+        
+        # Fill the mesh
+        mesh.cell_data[Visualizer.PV_SCALAR_KEYWORD] = array.flatten(order="F")
+        
+        # Ghost values
+        mesh = Visualizer._ghost_values(mesh, mask_values, mask_subdomain)
+        
+        # Create the plotter
         plotter = pv.Plotter()
-        plotter.show_grid()
-        kwargs = {}
-        kwargs['scalars'] = 'data'
-        _ = plotter.add_mesh(mesh, **kwargs)
-        # plotter.add_mesh(mesh.outline(), color="k")
-        plotter.show(cpos='xy')
+        
+        # Plot the grid
+        if show_grid:
+            plotter.show_grid()
+            
+        # Plot the outline
+        if show_outline:
+            plotter.add_mesh(mesh.outline(), color="k")
+        
+        # Filter then plot the data
+        kwargs['scalars'] = Visualizer.PV_SCALAR_KEYWORD
+        threshold_options.setdefault('scalars', Visualizer.PV_SCALAR_KEYWORD)
+        mesh = mesh.threshold(**threshold_options)
+        plotter.add_mesh(mesh, **kwargs)
+        
+        # Show the plotter
+        plotter.show(cpos=cpos)
 
         return None
+    
+    @staticmethod
+    def _create_empty_mesh(shape: tuple[int, int, int]
+                           ) -> pyvista.core.pointset.UnstructuredGrid:
+        """
+        Create an empty pyvista mesh according to the `shape` tuple.
+
+        Parameters
+        ----------
+        shape : tuple[int, int, int]
+            Tuple of the shape of the mesh: (nx, ny, nz).
+
+        Returns
+        -------
+        UnstructuredGrid
+        """
+        mesh = pv.UniformGrid()
+        mesh.dimensions = np.array(shape) + 1
+        mesh = mesh.cast_to_unstructured_grid()
+        return mesh
+    
+    # TODO - should be rewritten
+    @staticmethod
+    def _ghost_values(mesh: pyvista.core.pointset.UnstructuredGrid,
+                      ghost_values: list,
+                      ghost_subdomains: list
+                      ) -> pyvista.core.pointset.UnstructuredGrid:
+        """
+        DOC
+        """
+        ghosted_cells = []
+        
+        # Ghost cells according to data value
+        if len(ghost_values) > 0:
+            test = np.isin(mesh["data"], ghost_values)
+            ghosted_cells.extend(np.argwhere(test))
+        
+        # TODO ??? improve the readability of the code
+        # Ghost cells according to subdomain
+        if len(ghost_subdomains) > 0:
+            tests = []
+            for subdomain in ghost_subdomains:
+                tests.append(subdomain == 1)
+            test_subdomains = np.logical_or.reduce(tests)
+            data_domain = test_subdomains.flatten(order="F")
+            mesh.cell_data['domain'] = data_domain
+            ghosted_cells.extend(np.argwhere(np.isin(mesh["domain"], 1)))
+            
+        mesh = mesh.remove_cells(ghosted_cells)
+        return mesh
     
     # ************************************************************* #
     # ****          MATPLOTLIB          *************************** #
     # ************************************************************* #
     
-    def mpl_plot_2D(self, feature: str, n_sim: int = -1, n_iteration: int = -1,
-                    axis: str = 'z', n_slice: int = -1,
-                    feature_options: dict = {}, show_colorbar: bool = True,
-                    inlets_options: dict = None, outlets_options: dict = None):
+    def mpl_plot_2D(self,
+                    n_sim: int = -1,
+                    feature: str = 'karst',
+                    n_iteration: int = -1,
+                    axis: str = 'z',
+                    n_slice: int = -1,
+                    imshow_options: dict = {},
+                    contour_options: dict = None,
+                    show_colorbar: bool = True,
+                    scatter_inlets_options: dict = None,
+                    scatter_outlets_options: dict = None,
+                    ) -> Figure:
         """
-        TODO
+        Plot a slice of a 3D array of a feature from a specific simulation
+        with the matplotlib library.
+
+        Parameters
+        ----------
+        n_sim : int, optional
+            Indice of the simulation to consider, by default -1.
+        feature : str, optional
+            _description_, by default 'karst'
+        n_iteration : int, optional
+            _description_, by default -1
+        axis : str, optional
+            Axis used to slice the array, by default 'z'.
+        n_slice : int, optional
+            Indice for slicing, by default -1.
+        imshow_options : dict, optional
+            Dictionary containing the arguments for the imshow() matplotlib
+            function, by default {}.
+            More details here:
+            https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html
+        contour_options : dict, optional
+            Dictionary containing the arguments for the contour() matplotlib
+            function, by default None.
+            More details here:
+            https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.contour.html
+        show_colorbar : bool, optional
+            If `False`, remove the colorbar, by default `True`.
+            More details here:
+            https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.colorbar.html
+        scatter_inlets_options : dict, optional
+            _description_, by default None
+        scatter_outlets_options : dict, optional
+            _description_, by default None
+
+        Returns
+        -------
+        Figure
+            `NamedTuple` describing a matplotlib figure.
+            - fig: TODO;
+            - ax: TODO;
+            - cbar: TODO;
+            
+        Examples
+        --------
+        >>> TODO
         """
         # Retrieve the data
         sim_data = self.project._get_simulation_data(n_sim)
         
         # Retrieve the data feature
-        array = self._get_feature_data(sim_data, feature, n_iteration)
+        array = Visualizer._get_data_from_dict(simulation_data=sim_data,
+                                               feature=feature,
+                                               n_iteration=n_iteration)
         
         # Plot the feature data
         extent = self.project.grid.extent
-        feature_options.setdefault('extent', extent)
-        fig, ax = self.mpl_plot_array_2D(array, axis=axis, n_slice=n_slice,
-                                         imshow_options=feature_options,
-                                         show_colorbar=show_colorbar,
-                                         return_ax=True)
+        imshow_options.setdefault('extent', extent)
+        f = Visualizer.mpl_plot_array_2D(array=array,
+                                         axis=axis,
+                                         n_slice=n_slice,
+                                         imshow_options=imshow_options,
+                                         contour_options=contour_options,
+                                         show_colorbar=show_colorbar)
         
         # Plot the inlets
-        if inlets_options is not None:
+        if scatter_inlets_options is not None:
             inlets = sim_data['inlets']
             x = inlets.x
             y = inlets.y
-            ax.scatter(x, y, **inlets_options)
+            f.ax.scatter(x, y, **scatter_inlets_options)
         
         # Plot the outlets
-        if outlets_options is not None:
+        if scatter_outlets_options is not None:
             outlets = sim_data['outlets']
             x = outlets.x
             y = outlets.y
-            ax.scatter(x, y, **outlets_options)
+            f.ax.scatter(x, y, **scatter_outlets_options)
         
-        return fig
+        return f
     
-    def mpl_plot_3D(self, feature: str, n_sim: int = -1, n_iteration: int = -1,
-                    voxels_options: dict = {}):
+    def mpl_plot_3D(self,
+                    n_sim: int = -1,
+                    feature: str = 'karst',
+                    n_iteration: int = -1,
+                    voxels_options: dict = {},
+                    ) -> Figure:
         """
-        DOC
+        Plot a slice of a 3D array of a feature from a specific simulation
+        with the matplotlib library.
+
+        Parameters
+        ----------
+        n_sim : int, optional
+            Indice of the simulation to consider, by default -1.
+        feature : str, optional
+            _description_, by default 'karst'
+        n_iteration : int, optional
+            _description_, by default -1
+        voxels_options : dict, optional
+            _description_, by default {}
+
+        Returns
+        -------
+        Figure
+            `NamedTuple` describing a matplotlib figure.
+            - fig: TODO;
+            - ax: TODO;
+            - cbar: TODO;
+            
+        Examples
+        --------
+        >>> TODO
         """
         # Retrieve the data
         sim_data = self.project._get_simulation_data(n_sim)
         
         # Retrieve the data feature
-        array = self._get_feature_data(sim_data, feature, n_iteration)
+        array = Visualizer._get_data_from_dict(sim_data, feature, n_iteration)
         
         # Plot the feature data
-        fig, ax = self.mpl_plot_array_3D(array, voxels_options, return_ax=True)
+        f = self.mpl_plot_array_3D(array, voxels_options)
         
-        return fig
+        return f
     
     # **** #
     
-    def mpl_plot_karstic_network(self, n_sim: int = -1) -> None:
+    def mpl_plot_karstic_network(self,
+                                 n_sim: int = -1
+                                 ) -> Figure:
         """
-        DOC
+        Plot a simple view of the karstic conduit network's appearance.
+
+        Parameters
+        ----------
+        n_sim : int, optional
+            Indice of the simulation to consider, by default -1.
+
+        Returns
+        -------
+        Figure
+            `NamedTuple` describing a matplotlib figure.
+            - fig: TODO;
+            - ax: TODO;
+            - cbar: TODO;
         """
         # Retrieve the data
         sim_data = self.project._get_simulation_data(n_sim)
@@ -358,13 +672,18 @@ class Visualizer():
         # Plot the karstic network
         ax = self._plot_graph(ax, nodes, edges)
         
-        return fig
-    
-    def _plot_graph(self, ax, nodes: dict, edges: list):
-        """
-        DOC
-        """
+        # Set empty colorbar
+        cbar = None
         
+        return Figure(fig, ax, cbar)
+    
+    def _plot_graph(self,
+                    ax: plt.Axes,
+                    nodes: dict,
+                    edges: list,
+                    ) -> plt.Axes:
+        """
+        """
         # Plot edges
         nodes_to_plot = []
         for edge in edges:
@@ -386,87 +705,6 @@ class Visualizer():
         xs, ys, zs = zip(*nodes_list)
         ax.scatter(xs, ys, zs, marker='o')
         return ax
-    
-    # **** #
-    
-    def _get_feature_data(self, data: dict, feature: str,
-                          iteration: str) -> np.ndarray:
-        """
-        DOC
-        """
-        if feature in ['geology', 'faults', 'fractures']:
-            featured_data = data[feature].data_volume
-        elif feature in ['karst']:
-            featured_data = data['maps'][feature][iteration]
-        elif feature in ['anisotropic']:  # TODO
-            pass
-        else:
-            msg = 'feature keyword error'
-            raise ValueError(msg)
-        return featured_data
-    
-    # def show_karst_system(self, n_sim: int = -1,
-    #                       settings: dict = {}) -> None:
-        
-    #     # Adds default settings values
-    #     settings = self._get_mpl_default_settings(settings)
-        
-    #     # Retrieves the data
-    #     simulation = self._get_simulation_data(n_sim)
-        
-    #     # Creates the plot
-    #     # fig = plt.figure(figsize=None, dpi=None)  # TODO
-    #     fig, ax = self._create_figure()
-        
-    #     # Plots the surfaces
-    #     # surfs = []
-    #     for surface in settings['surfaces']:
-    #         x, y, z = self._get_mpl_surface(simulation, surface)
-    #         ax.plot_surface(x, y, z, linewidth=0, antialiased=False)
-        # surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm,
-        #                        linewidth=0, antialiased=False)
-        
-    #     # Plots the inlets
-    #     if settings['inlets']:
-    #         inlets = simulation['inlets']
-    #         points = inlets[['x', 'y', 'z']].values
-    #         xs, ys, zs = zip(*points)
-    #         ax.scatter(xs, ys, zs, marker='o', c='r', s=40)
-        
-    #     # Plots the outlets
-    #     if settings['outlets']:
-    #         outlets = simulation['outlets']
-    #         points = outlets[['x', 'y', 'z']].values
-    #         xs, ys, zs = zip(*points)
-    #         ax.scatter(xs, ys, zs, marker='o', c='b', s=40)
-        
-    #     edges = simulation['vectors']['edges']
-    #     nodes = simulation['vectors']['nodes']
-    #     nodes_list = list(nodes.values())
-    #     xs, ys, zs, t = zip(*nodes_list)
-    #     ax.scatter(xs, ys, zs, marker='o')
-
-    #     return None
-    
-    # def _get_mpl_default_settings(self, settings):
-    #     for key, value in PyplotVisualizer.DEFAULT_SETTINGS.items():
-    #         if key not in settings:
-    #             settings[key] = value
-    #     return settings
-    
-    # def _get_mpl_surface(self, simulation, surface: str):
-    #     grid = simulation['grid']
-    #     x = grid.X[:, :, 0]
-    #     y = grid.Y[:, :, 0]
-
-    #     if surface == 'topography':
-    #         z = simulation['domain'].topography.data_surface
-    #     elif surface == 'water_level':
-    #         z = simulation['domain'].water_level.data_surface
-    #     elif surface == 'bedrock':
-    #         z = simulation['domain'].bedrock.data_surface
-        
-    #     return (x, y, z)
 
     # ************************************************************* #
     # ****          PYVISTA             *************************** #
@@ -474,14 +712,16 @@ class Visualizer():
     
     def _set_pyvista_grid(self) -> None:
         """
-        DOC
+        Create an empty mesh representing the grid of the simulations for
+        future pyvista plot.
         """
-        # Initialisation
-        p = self.project.grid.get_grid_parameters()
-        x0, y0, z0 = p['x0'], p['y0'], p['z0']
-        nx, ny, nz = p['nx'], p['ny'], p['nz']
-        dx, dy, dz = p['dx'], p['dy'], p['dz']
+        # Get grid parameters
+        grid = self.project.grid.get_grid_parameters()
+        x0, y0, z0 = grid['x0'], grid['y0'], grid['z0']
+        nx, ny, nz = grid['nx'], grid['ny'], grid['nz']
+        dx, dy, dz = grid['dx'], grid['dy'], grid['dz']
         pv_grid = pv.UniformGrid()
+        
         # Construct grid
         pv_grid.origin = (x0 - dx / 2, y0 - dy / 2, z0 - dz / 2)
         pv_grid.dimensions = np.array((nx, ny, nz)) + 1
@@ -490,266 +730,61 @@ class Visualizer():
         return None
     
     @requires_pyvista()
-    def pv_plot(self, n_sim, feature, settings={}, show=True,
-                return_plotter=False):
-        """
-        DOC
-        """
-        ######################
-        ### Initialisation ###
-        ######################
-        
-        # Create plotter
-        plotter = pv.Plotter()
-        
-        # Check 'settings' parameter
-        settings = self._check_pv_settings(settings)
-        if 'text' not in settings:
-            text = 'Simulation {} - {}'.format(n_sim, feature)
-            settings['text'] = text
-            
-        # Get simulation data
-        simulation_data = self.project._get_simulation_data(n_sim)
-        
-        ###############
-        ### Ploting ###
-        ###############
-        
-        # Plot actors
-        plotter = self._fill_plotter(plotter, simulation_data,
-                                     feature, settings)
-        
-        # Plot figure
-        if show:
-            plotter.show()
-        
-        if return_plotter:
-            return plotter
-        else:
-            return None
-    
-    def _check_pv_settings(self, settings):
-        """
-        DOC
-        """
-        for key, value in Visualizer.PV_DEFAULT_SETTINGS.items():
-            if key not in settings:
-                settings[key] = value
-        for key, value in Visualizer.PV_DEFAULT_SETTINGS['surfaces'].items():
-            if key not in settings['surfaces']:
-                settings['surfaces'][key] = value
-        return settings
-    
-    def _fill_plotter(self, plotter, simulation_data, feature, settings):
-        """
-        DOC
-        """
-        # Print text
-        plotter.add_text(settings['text'], font_size=20)
-        
-        # Generate actors
-        actors = self._get_actors(simulation_data, feature, settings)
-        
-        # Print actors
-        for actor in actors:
-            plotter.add_actor(actor, reset_camera=True)
-            
-        return plotter
-    
-    def _get_actors(self, simulation_data, feature, settings: dict):
-        """
-        DOC
-        """
-        
-        # Get feature data
-        iteration = -1  # TODO
-        feature_data = self._get_feature_data_from_dict(simulation_data,
-                                                        feature,
-                                                        iteration)
-        
-        # Get mesh data
-        data = self._get_mesh_from_feature(feature_data)
-            
-        # Ghost the data
-        test_ghost_values = (len(settings['ghost_values']) > 0)
-        test_ghost_subdomains = (len(settings['ghost_subdomains']) > 0)
-        if test_ghost_values or test_ghost_subdomains:
-            
-            domain = simulation_data['domain']
-            # If necessery, retrieves the subdomains
-            if test_ghost_subdomains > 0:
-                subdomains = []
-                for subdomain in settings['ghost_subdomains']:
-                    if subdomain[-2:] == '_r':
-                        subdomain = subdomain[:-2]
-                        data_domain = domain.get_subdomain(subdomain)
-                        data_domain = np.logical_not(data_domain).astype(int)
-                    else:
-                        data_domain = domain.get_subdomain(subdomain)
-                    subdomains.append(data_domain)
-            else:
-                subdomains = []
-            
-            data = self._ghost_data(data, settings['ghost_values'], subdomains)
-        
-        ### Creates the plot
-        plotter = pv.Plotter()
-        actors = []
-        
-        # Plots the outline of the domain
-        if settings['outline']:
-            _ = plotter.add_mesh(self.pv_grid.outline(), color="k")
-            actors.append(_)
-            
-        # Plots the grid of the domain
-        if settings['grid']:
-            _ = plotter.show_grid()
-            actors.append(_)
-        
-        # Plots the points
-        kwargs = {
-            'render_points_as_spheres': False,
-            'point_size': 20,
-        }
-        if settings['inlets']:
-            kwargs['color'] = 'r'
-            inlets = self._get_points(simulation_data['inlets'])
-            _ = plotter.add_points(inlets, **kwargs)
-            actors.append(_)
-        if settings['outlets']:
-            kwargs['color'] = 'b'
-            outlets = self._get_points(simulation_data['outlets'])
-            _ = plotter.add_points(outlets, **kwargs)
-            actors.append(_)
-            
-        # Plots the surfaces
-        kwargs = {
-            'smooth_shading': True,
-            'opacity': 0.66,
-            'scalars': 'data',
-        }
-        for surface_name, boolean in settings['surfaces'].items():
-            if boolean:
-                surface = self._get_surface(simulation_data, surface_name)
-                _ = plotter.add_mesh(surface, **kwargs)
-                actors.append(_)
-        
-        # Plots the data
-        kwargs = {
-            'scalar_bar_args': {'title': 'Vol1'},
-            'scalars': 'data',
-        }
-        if settings['slice']:
-            slices = data.copy().slice_orthogonal()
-            _ = plotter.add_mesh(slices, **kwargs)
-        else:
-            _ = plotter.add_mesh(data.copy(), **kwargs)
-        actors.append(_)
-        
-        # Plots the scalar bar
-        if settings['colorbar']:
-            _ = plotter.add_scalar_bar()
-            actors.append(_)
-
-        return actors
-    
-    def _get_feature_data_from_dict(self, data_dict, feature, iteration=-1):
-        """
-        DOC
-        """
-        if feature in ANISOTROPIC_FEATURES:
-            data = data_dict['maps'][feature][iteration]
-        elif feature in DOMAIN_FEATURES:
-            feature_object = getattr(data_dict['domain'], feature)
-            data = getattr(feature_object, 'data_volume')
-        else:
-            feature_object = data_dict[feature]
-            data = getattr(feature_object, 'data_volume')
-        return data
-        
-    def _get_mesh_from_feature(self, data):
-        """
-        DOC
-        """
-        mesh = self.pv_grid.copy()
-        # nx, ny, nz = data.shape
-        # data = data.reshape(nx, nz, ny, order="F")
-        data = data.flatten(order="F")
-        # data = np.rot90(data, k=1
-        # data = np.swapaxes(data, 1, 2)
-        mesh.cell_data['data'] = data
-        return mesh
-    
-    def _ghost_data(self, data, ghost_values: list, ghost_subdomains: list):
-        """
-        DOC
-        """
-        ghosted_cells = []
-        
-        # Ghost cells according to data value
-        if len(ghost_values) > 0:
-            test = np.isin(data["data"], ghost_values)
-            ghosted_cells.extend(np.argwhere(test))
-        
-        # Ghost cells according to subdomain
-        if len(ghost_subdomains) > 0:
-            tests = []
-            for subdomain in ghost_subdomains:
-                tests.append(subdomain == 1)
-            test_subdomains = np.logical_or.reduce(tests)
-            data_domain = test_subdomains.flatten(order="F")
-            data.cell_data['domain'] = data_domain
-            ghosted_cells.extend(np.argwhere(np.isin(data["domain"], 1)))
-            
-        data = data.remove_cells(ghosted_cells)
-        return data
-    
-    def _get_points(self, points):
-        """
-        DOC
-        """
-        labels = points.index.values.tolist()
-        points = points[['x', 'y', 'z']].values
-        points = points.astype('float32')
-        cloud = pv.wrap(points)
-        cloud['labels'] = labels
-        return cloud
-    
-    def _get_surface(self, simulation_data, surface_name: str):
-        X, Y, Z = self.project.grid.get_meshgrids()
-        x = X[:, :, 0]
-        y = Y[:, :, 0]
-        
-        surface_object = getattr(simulation_data['domain'], surface_name)
-        try:
-            z = surface_object.data_surface
-            surface = pv.StructuredGrid(x, y, z)
-            surface['data'] = z.flatten(order="F")
-            return surface
-        except AttributeError:
-            msg = "Simulation has no '{}' surface.".format(surface_name)
-            raise AttributeError(msg)
-    
-    @requires_pyvista()
-    def pv_show(self, simulations: list, features: list,
-                settings: list = [{}], savefig: str = None) -> None:
+    def pv_show(self,
+                simulations: list,
+                features: list,
+                settings: list = [],
+                cpos: str = 'xz',
+                # savefig: str = None,  # TODO
+                # link_views ???
+                ) -> None:
         """
         TODO
         """
-        ######################
-        ### Initialisation ###
-        ######################
         
-        ### Test parameters validity
+        #############################
+        ### Parameters validation ###
+        #############################
         
-        # Check type of 'settings' parameter
-        if not isinstance(settings, (list)):
+        # If 'simulation' is an integer, transform it in a list
+        if isinstance(simulations, int):
+            simulations = [simulations]
+        
+        # Test if 'simulations' is a list
+        if not isinstance(simulations, list):
+            msg = "Parameter 'simulations' must be of type: list."
+            raise TypeError(msg)
+        
+        # If 'features' is a string, transform it in a list
+        if isinstance(features, str):
+            features = [features]
+        
+        # Test if 'features' is a list
+        if not isinstance(features, list):
+            msg = "Parameter 'features' must be of type: list."
+            raise TypeError(msg)
+        
+        # If 'settings' has not been set
+        if settings == []:
+            settings = [{}] * len(simulations)
+            
+        # If 'settings' is a dictionary, transform it in a list
+        if isinstance(settings, dict):
             settings = [settings] * len(simulations)
         
-        ### Insert default settings values
+        # TODO - to remove
+        # # Check type of 'settings' parameter
+        # if not isinstance(settings, (list)):
+        #     settings = [settings] * len(simulations)
+        
+        ######################
+        ### Initialization ###
+        ######################
+        
+        # Insert default settings values
         pv_settings = []
         for settings_dict in settings:
-            settings_dict = self._check_pv_settings(settings_dict)
+            settings_dict = Visualizer._set_default_pv_settings(settings_dict)
             pv_settings.append(copy.deepcopy(settings_dict))
         
         ### Create plotter
@@ -771,8 +806,8 @@ class Visualizer():
         shape = (rows, columns)
         border = True
         off_screen = False
-        if savefig is not None:
-            off_screen = True
+        # if savefig is not None:
+        #     off_screen = True
         plotter = pv.Plotter(shape=shape, border=border, off_screen=off_screen)
         
         ###############
@@ -788,653 +823,622 @@ class Visualizer():
                 settings = pv_settings[i]
                 feature = features[0]
                 
-                if 'text' not in settings:
-                    text = 'Simulation {} - {}'.format(n_sim, feature)
-                    settings['text'] = text
+                text = 'Simulation {} - {}'.format(n_sim, feature)
+                settings.setdefault('text_options', {})
+                settings['text_options'].setdefault('text', text)
+                
                 data = self.project._get_simulation_data(n_sim)
                 plotter.subplot(row, column)
-                plotter = self._fill_plotter(plotter, data,
-                                             feature, settings)
+                plotter = self._fill_plotter(plotter,
+                                             data,
+                                             feature,
+                                             settings)
         else:
             for (row, (n_sim, settings)) in enumerate(zip(simulations,
                                                           pv_settings)
                                                       ):
                 for (column, feature) in enumerate(features):
-                    if 'text' not in settings:
-                        text = 'Simulation {} - {}'.format(n_sim, feature)
-                        settings['text'] = text
+                    
+                    text = 'Simulation {} - {}'.format(n_sim, feature)
+                    settings.setdefault('text_options', {})
+                    settings['text_options'].setdefault('text', text)
+                    
                     data = self.project._get_simulation_data(n_sim)
                     plotter.subplot(row, column)
-                    plotter = self._fill_plotter(plotter, data,
-                                                 feature, settings)
+                    plotter = self._fill_plotter(plotter,
+                                                 data,
+                                                 feature,
+                                                 settings)
                     
         plotter.link_views()
         
-        if savefig is not None:  # TODO
-            path = self.project_directory + '/outputs/' + savefig
-            plotter.show(cpos='xz', screenshot=path)
-        else:
-            plotter.show(cpos='xz')
+        # TODO
+        # if savefig is not None:  # TODO
+        #     path = self.project_directory + '/outputs/' + savefig
+        #     plotter.show(cpos=cpos, screenshot=path)
+        # else:
+        #     plotter.show(cpos=cpos)
+            
+        plotter.show(cpos=cpos)
 
         return None
     
+    @staticmethod
+    def _set_default_pv_settings(settings: dict) -> dict:
+        """
+        To a dictionary, set the default settings for pyvista.
+        """
+        for (parameter, value) in Visualizer.DEFAULT_PV_SETTINGS.items():
+            settings.setdefault(parameter, value)
+        return settings
     
-    #     def create_gif(self, simulation: int, feature: str, location: str,
-#                    zoom: float = 1, ghosts: list = [], n_points: int = 24,
-#                    fps: int = 10, window_size=[1024, 768],
-#                    colormap: str = 'viridis',
-#                    background_color: str = 'white',
-#                    background_color_top: str = None) -> None:
+    def _fill_plotter(self,
+                      plotter: pv.Plotter,
+                      simulation_data: dict,
+                      feature: str,
+                      settings: dict
+                      ) -> pv.Plotter:
+        """_summary_
+
+        Parameters
+        ----------
+        plotter : pv.Plotter
+            _description_
+        simulation_data : dict
+            _description_
+        feature : str
+            _description_
+        settings : dict
+            _description_
+
+        Returns
+        -------
+        pv.Plotter
+            _description_
+
+        Raises
+        ------
+        e
+            _description_
+        """
+        text_options = settings.pop('text_options')
+        
+        # Test if asked feature is valid
+        if feature not in AUTHORIZED_FEATURES:
+            msg = "Asked feature '{}' is invalid. Authorized features: {}."
+            msg = msg.format(feature, AUTHORIZED_FEATURES)
+            warnings.warn(msg)
+            text_options['text'] = '{} : Invalid feature'.format(feature)
+        
+        # Otherwise retrieve data
+        else:
+            try:
+                actors = self._get_actors(simulation_data=simulation_data,
+                                          feature=feature,
+                                          **settings)
+            
+            # If  ?  # TODO
+            except IndexError:
+                msg = "Asked feature '{}' has no data.".format(feature)
+                warnings.warn(msg)
+                text_options['text'] = '{} : No data'.format(feature)
+            
+            # If ?  # TODO
+            except Exception as e:
+                raise e
+            
+            # Generate and plot actors
+            else:
+                for actor in actors:
+                    plotter.add_actor(actor, reset_camera=True)
+           
+        # Print figure caption
+        plotter.add_text(**text_options)
+            
+        return plotter
+    
+    def _get_actors(self,
+                    simulation_data: dict,
+                    feature: str,
+                    n_iteration: int = -1,
+                    ghost_values: list = [],
+                    ghost_subdomains: list = [],
+                    show_grid: bool = True,
+                    show_outline: bool = False,
+                    data_options: dict = {},
+                    surfaces_options: dict = {},
+                    inlets_options: dict = None,
+                    outlets_options: dict = None,
+                    show_slice: bool = False,
+                    fractures_options: dict = None,
+                    show_colorbar: bool = True,
+                    ) -> list[pv.Actor]:
+        """
+        DOC
+        """
+        # Get data from feature
+        feature_data = Visualizer._get_data_from_dict(simulation_data,
+                                                      feature,
+                                                      n_iteration)
+        
+        # Create the mesh
+        mesh = self.pv_grid.copy()
+
+        # Fill the mesh
+        mesh.cell_data['data'] = feature_data.flatten(order="F")
+            
+        # Ghost the data
+        test_ghost_values = (len(ghost_values) > 0)
+        test_ghost_subdomains = (len(ghost_subdomains) > 0)
+        if test_ghost_values or test_ghost_subdomains:
+            
+            domain = simulation_data['domain']
+            # If necessery, retrieves the subdomains
+            if test_ghost_subdomains > 0:
+                subdomains = []
+                for subdomain in ghost_subdomains:
+                    if subdomain[-2:] == '_r':
+                        subdomain = subdomain[:-2]
+                        data_domain = domain.get_subdomain(subdomain)
+                        data_domain = np.logical_not(data_domain).astype(int)
+                    else:
+                        data_domain = domain.get_subdomain(subdomain)
+                    subdomains.append(data_domain)
+            else:
+                subdomains = []
+            
+            mesh = Visualizer._ghost_values(mesh, ghost_values, subdomains)
+        
+        ### Create the plot
+        plotter = pv.Plotter()
+        actors = []
+        
+        # Plot the grid of the domain
+        if show_grid:
+            _ = plotter.show_grid()
+            actors.append(_)
+        
+        # Plot the outline of the domain
+        if show_outline:
+            _ = plotter.add_mesh(self.pv_grid.outline(), color="k")
+            actors.append(_)
+            
+        # Plot the inlets
+        if inlets_options is not None:
+            inlets_options.setdefault('render_points_as_spheres', False)
+            inlets_options.setdefault('point_size', 20)
+            inlets_options.setdefault('color', 'r')
+
+            inlets = Visualizer._df_to_cloud(simulation_data['inlets'])
+            _ = plotter.add_points(inlets, **inlets_options)
+            actors.append(_)
+        
+        # Plot the outlets
+        if outlets_options is not None:
+            outlets_options.setdefault('render_points_as_spheres', False)
+            outlets_options.setdefault('point_size', 20)
+            outlets_options.setdefault('color', 'b')
+            
+            outlets = Visualizer._df_to_cloud(simulation_data['outlets'])
+            _ = plotter.add_points(outlets, **outlets_options)
+            actors.append(_)
+            
+        # Plot the surfaces
+        if surfaces_options is not None:
+            meshgrids = self.project.grid.get_meshgrids()
+            
+            for surface_name, options in surfaces_options.items():
+                options.setdefault('smooth_shading', True)
+                options.setdefault('opacity', 0.66)
+                # options.setdefault('scalars', 'data')
+                surface = Visualizer._get_surface(meshgrids,
+                                                  simulation_data,
+                                                  surface_name)
+                if surface is not None:
+                    _ = plotter.add_mesh(surface, **options)
+                    actors.append(_)
+            
+        # Plot the fractures
+        if fractures_options is not None:
+            # Set default parameters
+            f = simulation_data['fractures'].fractures
+            fractures_options.setdefault('fractures', f)
+            fid = f['family_id'].unique().tolist()
+            fractures_options.setdefault('family_id', fid)
+            fractures_options.setdefault('sort', ['radius'])
+            fractures_options.setdefault('n', 250)
+            
+            if len(fractures_options['fractures']) > 0:
+                # Sort fractures
+                fractures = Visualizer._sort_fractures(**fractures_options)
+                
+                # Get polygons
+                polygons = Visualizer._fractures_to_polygons(fractures)
+                
+                # Plot polygons
+                options_polygons = {}
+                options_polygons.setdefault('smooth_shading', True)
+                options_polygons.setdefault('opacity', 0.66)
+                for polygon in polygons:
+                    _ = plotter.add_mesh(polygon, **options_polygons)
+                    actors.append(_)
+        
+        # Plot the data
+        data_options.setdefault('scalar_bar_args', {'title': 'Vol1'})
+        data_options.setdefault('scalars', 'data')
+        if show_slice:
+            _ = plotter.add_mesh_slice_orthogonal(mesh=mesh,
+                                                  generate_triangles=False,
+                                                  widget_color=None,
+                                                  tubing=False,
+                                                  interaction_event=45,
+                                                  **data_options)
+            actors.extend(_)
+            
+        else:
+            _ = plotter.add_mesh(mesh.copy(), **data_options)
+            actors.append(_)
+        
+        # Plot the scalar bar
+        if show_colorbar:
+            _ = plotter.add_scalar_bar()
+            actors.append(_)
+
+        return actors
+    
+    ### TODO - to rewrite
+    @staticmethod
+    def _get_data_from_dict(simulation_data: dict,
+                            feature: str,
+                            n_iteration: int,
+                            ) -> np.ndarray:
+        """
+        Return the data from the ``feature`` key contained in the
+        ``simulation_data`` dictionary.
+
+        Parameters
+        ----------
+        simulation_data : dict
+            Dictionary containing data from the simulation.
+        feature : str
+            Name of the geologic feature to retrieve.
+        n_iteration : int
+            Iteration to consider to for retrieving data.
+
+        Returns
+        -------
+        np.ndarray
+            Numpy array of the required geologic feature.
+
+        Raises
+        ------
+        ValueError
+            If the geologic feature name is invalid.
+        AttributeError
+            If the geologic feature required is empty.
+        """
+        # Select the adequate way to retrieve data
+        if feature in GEOLOGICAL_FEATURES:
+            featured_data = simulation_data[feature].data_volume
+        elif feature in DOMAIN_FEATURES:
+            featured_data = getattr(simulation_data['domain'], feature)
+            featured_data = featured_data.data_volume
+        elif feature in ANISOTROPIC_FEATURES:
+            featured_data = simulation_data['maps'][feature][n_iteration]
+            # else:  # TODO
+                # msg = 'feature keyword error'
+                # raise ValueError(msg)
+        # except AttributeError:
+            
+        # except IndexError:
+            # msg = "Warning. A simulation computed with "
+            
+        return featured_data
+    
+    @staticmethod
+    @requires_pyvista()
+    def _df_to_cloud(points: pd.DataFrame) -> pv.PolyData:
+        """
+        Transform a pandas ``DataFrame`` storing points into a pyvista
+        ``PolyData``
+        
+        Parameters
+        ----------
+        points : pd.DataFrame
+            ``DataFrame`` of points to plot.
+
+        Returns
+        -------
+        pv.PolyData
+            pyvista object representing the points to plot.
+        """
+        labels = points.index.values.tolist()
+        points = points[['x', 'y', 'z']].values
+        points = points.astype('float32')
+        cloud = pv.wrap(points)
+        cloud['labels'] = labels
+        return cloud
+    
+    @staticmethod
+    @requires_pyvista()
+    def _get_surface(meshgrids: tuple[np.ndarray, np.ndarray, np.ndarray],
+                     simulation_data: dict,
+                     surface_name: str
+                     ) -> Union[pv.StructuredGrid, None]:
+        """
+        Plot a surface feature. If the surface name is invalid, or if the
+        surface feature is absent from the current simulation, print a warning
+        and return ``None``.
+
+        Parameters
+        ----------
+        meshgrids : tuple[np.ndarray, np.ndarray, np.ndarray]
+            Tuple of numpy arrays representing the meshgrids of the simulation.
+        simulation_data : dict
+            Data of the simulation.
+        surface_name : str
+            Name of the surface to plot. Valid names : 'topography',
+            'water_level', 'bedrock'.
+
+        Returns
+        -------
+        Union[pv.StructuredGrid, None]
+            The pyvista surface object. ``None`` if the surface does not exist.
+        """
+        X, Y, Z = meshgrids
+        x = X[:, :, 0]
+        y = Y[:, :, 0]
+        # Control validity of the surface name
+        if surface_name not in SURFACE_FEATURES:
+            msg = ("'{}' is not a valid name surface. Valid names: {}"
+                   .format(surface_name, SURFACE_FEATURES))
+            warnings.warn(msg)
+            return None
+        try:
+            surface_object = getattr(simulation_data['domain'], surface_name)
+            z = surface_object.data_surface
+            surface = pv.StructuredGrid(x, y, z)
+            surface['data'] = z.flatten(order="F")
+            return surface
+        except AttributeError:
+            msg = "Simulation has no '{}' surface.".format(surface_name)
+            warnings.warn(msg)
+            return None
+    
+    @staticmethod
+    def _sort_fractures(fractures: pd.DataFrame,
+                        family_id: list[int],
+                        sort: list[str],
+                        max_number: int,
+                        ) -> list:
+        """
+        Filter the pandas ``DataFrame`` storing the fractures.
+
+        Parameters
+        ----------
+        fractures : pd.DataFrame
+            ``DataFrame`` storing the fractures.
+        family_id : list[int]
+            List of family ids to plot.
+        sort : list[str]
+            List of ``DataFrame`` attributes considered to sort the values.
+        max_number : int
+            Maximum number of fractures to plot.
+
+        Returns
+        -------
+        list
+            List of fractures passing the filter.
+        """
+        # Keep fractures according to the 'family_id' parameter
+        f = fractures[fractures['family_id'].isin(family_id)]
+        
+        # Sort and keep fractures to the 'sort' and 'n' parameters
+        f = f.sort_values(sort, ascending=False).iloc[:max_number]
+        
+        # Retrieve data from fractures and convert it to python list
+        f = f[['x', 'y', 'z', 'radius', 'normal']].to_numpy().tolist()
+        return f
+        
+    @staticmethod
+    @requires_pyvista()
+    def _fractures_to_polygons(fractures: list) -> list[pv.PolyData]:
+        """
+        Transform a list of fractures in a list of pyvista polygons.
+
+        Parameters
+        ----------
+        fractures : list
+            List of fractures to plot.
+
+        Returns
+        -------
+        list[pv.PolyData]
+            List of pyvista polygons.
+        """
+        # Generate the polygons
+        polygons = []
+        for (x, y, z, r, n) in fractures:
+            poly = pv.Polygon(center=(x, y, z), radius=r, normal=n, n_sides=4)
+            polygons.append(poly)
+    
+        return polygons
+
+
+
+
+class SetVisibilityCallback:
+    """Helper callback to keep a reference to the actor being modified."""
+
+    def __init__(self, actor):
+        self.actor = actor
+
+    def __call__(self, state):
+        self.actor.SetVisibility(state)
+
+
+
+
+# ????
+#     @requires_pyvista()
+#     def pv_plot(self, n_sim, feature, settings={}, show=True,
+#                 return_plotter=False):
 #         """
-#         TODO
-        
-#         colormap: str
-#             https://matplotlib.org/stable/tutorials/colors/colormaps.html
+#         DOC
 #         """
+#         ######################
+#         ### Initialisation ###
+#         ######################
         
-#         ### Method based on those examples:
-#         # https://docs.pyvista.org/examples/02-plot/orbit.html#orbiting
+#         # Create plotter
+#         plotter = pv.Plotter()
         
-#         ### Gets the simulation data
-#         simulation_data = self._get_simulation_data(simulation)
-        
-#         ### Gets the mesh
-#         mesh = self._get_data_from_feature(simulation_data, feature)
-#         # mesh_ = mesh.copy()
-#         if len(ghosts) > 0:
-#             mesh = self._ghost_data(mesh, ghosts)
-        
-#         ### Constructs the plotter
-#         plotter = pv.Plotter(off_screen=True, window_size=window_size)
-#         plotter.store_image = True
-        
-#         # Plots the data
-#         kwargs = {
-#             'cmap': colormap,
-#             'scalar_bar_args': {'title': 'Vol1'},
-#             'scalars': 'data',
-#             'lighting': True,
-#         }
-#         plotter.add_mesh(mesh, **kwargs)
-#         plotter.remove_scalar_bar()
-        
-#         # Sets background color
-#         if background_color_top is None:
-#             background_color_top = background_color
-#         plotter.set_background(background_color)
-        
-#         ### Sets the initial camera position
-#         plotter.camera.zoom(zoom)
-#         # plotter.camera.roll = 0
-#         plotter.camera.elevation = 0
-#         plotter.camera.azimuth = 0
-        
-#         ### Generates the GIF
-        
-#         # Open a gif
-#         plotter.open_gif(location, fps=fps)
-        
-#         # Creates the camera positions
-#         azimuth_step = 360 / n_points
-        
-#         # Loops
-#         for i in range(n_points):
+#         # Check 'settings' parameter
+#         settings = self._check_pv_settings(settings)
+#         if 'text' not in settings:
+#             text = 'Simulation {} - {}'.format(n_sim, feature)
+#             settings['text'] = text
             
-#             # Updates camera position
-#             # plotter.camera.roll
-#             # plotter.camera.elevation
-#             plotter.camera.azimuth += azimuth_step
+#         # Get simulation data
+#         simulation_data = self.project._get_simulation_data(n_sim)
+        
+#         ###############
+#         ### Ploting ###
+#         ###############
+        
+#         # Plot actors
+#         plotter = self._fill_plotter(plotter, simulation_data,
+#                                      feature, settings)
+        
+#         # Plot figure
+#         if show:
+#             plotter.show()
+        
+#         if return_plotter:
+#             return plotter
+#         else:
+#             return None
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+#     #     def create_gif(self, simulation: int, feature: str, location: str,
+# #                    zoom: float = 1, ghosts: list = [], n_points: int = 24,
+# #                    fps: int = 10, window_size=[1024, 768],
+# #                    colormap: str = 'viridis',
+# #                    background_color: str = 'white',
+# #                    background_color_top: str = None) -> None:
+# #         """
+# #         TODO
+        
+# #         colormap: str
+# #             https://matplotlib.org/stable/tutorials/colors/colormaps.html
+# #         """
+        
+# #         ### Method based on those examples:
+# #         # https://docs.pyvista.org/examples/02-plot/orbit.html#orbiting
+        
+# #         ### Gets the simulation data
+# #         simulation_data = self._get_simulation_data(simulation)
+        
+# #         ### Gets the mesh
+# #         mesh = self._get_data_from_feature(simulation_data, feature)
+# #         # mesh_ = mesh.copy()
+# #         if len(ghosts) > 0:
+# #             mesh = self._ghost_data(mesh, ghosts)
+        
+# #         ### Constructs the plotter
+# #         plotter = pv.Plotter(off_screen=True, window_size=window_size)
+# #         plotter.store_image = True
+        
+# #         # Plots the data
+# #         kwargs = {
+# #             'cmap': colormap,
+# #             'scalar_bar_args': {'title': 'Vol1'},
+# #             'scalars': 'data',
+# #             'lighting': True,
+# #         }
+# #         plotter.add_mesh(mesh, **kwargs)
+# #         plotter.remove_scalar_bar()
+        
+# #         # Sets background color
+# #         if background_color_top is None:
+# #             background_color_top = background_color
+# #         plotter.set_background(background_color)
+        
+# #         ### Sets the initial camera position
+# #         plotter.camera.zoom(zoom)
+# #         # plotter.camera.roll = 0
+# #         plotter.camera.elevation = 0
+# #         plotter.camera.azimuth = 0
+        
+# #         ### Generates the GIF
+        
+# #         # Open a gif
+# #         plotter.open_gif(location, fps=fps)
+        
+# #         # Creates the camera positions
+# #         azimuth_step = 360 / n_points
+        
+# #         # Loops
+# #         for i in range(n_points):
             
-#             # Updates the background
+# #             # Updates camera position
+# #             # plotter.camera.roll
+# #             # plotter.camera.elevation
+# #             plotter.camera.azimuth += azimuth_step
             
-#             # Writes the frame in the gif
-#             plotter.write_frame()
+# #             # Updates the background
+            
+# #             # Writes the frame in the gif
+# #             plotter.write_frame()
         
-#         # Closes and finalizes movie
-#         plotter.close()
-#         return None
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-
-    
-        
-        
+# #         # Closes and finalizes movie
+# #         plotter.close()
+# #         return None
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# ??????????????????????????????????
 # def show_simulation(self):
 #         """
 #         TODO
 #         """
-        # def _show_data(environment, feature, settings):
+#         def _show_data(environment, feature, settings):
         
-        #     # Gets the domain
-        #     if hasattr(environment, 'domain') and (getattr(environment, 'domain') is not None):
-        #         grid = _get_data_from_attribute(grid, getattr(environment, 'domain'), 'data_volume', 'domain')
+#             # Gets the domain
+#             if hasattr(environment, 'domain') and (getattr(environment, 'domain') is not None):
+#                 grid = _get_data_from_attribute(grid, getattr(environment, 'domain'), 'data_volume', 'domain')
 
-        #     # Ghost the data
-        #     if 'ghost' in settings:
-        #         if settings['domain'] == True:
-        #             ghosts = np.argwhere(np.logical_or(np.isin(grid["data"], settings['ghost']), (grid["domain"] == 0)))
-        #         else:
-        #             ghosts = np.argwhere(np.isin(grid["data"], settings['ghost']))
-        #     else:
-        #         if settings['domain'] == True:
-        #             ghosts = np.argwhere(grid["domain"] == 0)
-        #         else:
-        #             ghosts = None
-            
-        #     if ghosts is not None:
-        #         grid = grid.remove_cells(ghosts)
-
-        # return None
-
-
-
-
-# ##########################################################
-# ### DEBUG ###
-# #############
-
-# def _debug_plot_model(environment, settings):
-#     """
-#     TODO
-#     """
-#     ### Call the plotter
-#     plotter = pv.Plotter(shape=(2, 4), border=True)
-
-#     features = ['geology', 'faults', 'fractures', 'beddings']
-
-#     for (i, feature) in enumerate(features):
-#         plotter.subplot(0, i)
-#         plotter.add_text(feature, font_size=24)
-
-#         if hasattr(environment, feature) and (getattr(environment, feature) is not None):
-#             actor = _show_data(environment, feature, {}, show=False)
-#             plotter.add_actor(actor, reset_camera=True)
-
-#             plotter.subplot(1, i)
-#             actor, misc = _show_data(environment, feature, {'slice':True}, show=False)
-#             plotter.add_actor(actor, reset_camera=True)
-
-#     plotter.link_views()
-#     plotter.show()
-#     return None
-
-
-# def _debug_plot_fmm(environment, settings):
-#     """
-#     TODO
-#     """
-#     ### Initializes ...
-#     if 'iterations' not in settings:
-#         settings['iterations'] = [0]
-
-#     if environment.fmm['algorithm'] == 'Isotropic3':
-#         features = ['cost', 'time', 'karst']
-#     elif environment.fmm['algorithm'] == 'Riemann3':
-#         features = ['cost', 'alpha', 'beta', 'time', 'karst']
-
-#     ### Call the plotter
-#     row = len(settings['iterations'])
-#     col = len(features)
-#     plotter = pv.Plotter(shape=(row, col), border=True)
-
-#     if hasattr(environment, 'maps'):
-#         for (i, feature) in enumerate(features):
-
-#             for j, iteration in enumerate(settings['iterations']):
-            
-#                 plotter.subplot(j, i)
-                
-#                 text = feature + ' - iteration : {}'.format(iteration)
-#                 plotter.add_text(text, font_size=10)
-
-#                 if feature == 'karst':
-#                     settings_ = {'iteration' : iteration, 'ghost' : [0]}
+#             # Ghost the data
+#             if 'ghost' in settings:
+#                 if settings['domain'] == True:
+#                     ghosts = np.argwhere(np.logical_or(np.isin(grid["data"], settings['ghost']), (grid["domain"] == 0)))
 #                 else:
-#                     settings_ = {'iteration' : iteration}
-
-#                 actor = _show_data(environment, feature, settings_, show=False)
-#                 plotter.add_actor(actor, reset_camera=True)
-
-#     plotter.link_views()
-#     plotter.show()
-
-#     return None
-
-# ######################################################################
-
-# # FRACTURES = domain.FRACTURES.location
-# # print('Nbr fractures:', len(FRACTURES))
-# # POLYGONS = []
-# # for fracture in FRACTURES:
-# #     x, y, z = fracture.get_position()
-# #     a, b, c = fracture.get_normal()
-# #     rad     = fracture.radius
-# #     POLYGONS.append(pv.Polygon(center=(x, y, z), radius=rad, normal=(a, b, c), n_sides=definition))
-
-#     # return None
-
-
-###############################################################################
-
-# def show_average_paths(self):
-#     """
-#     todo
-#     """
-#     ### Call the plotter
-#     p = pv.Plotter(notebook=False)
-
-#     ### Construct the grid
-#     vtk = pv.UniformGrid()
-#     vtk.dimensions = np.array((self.GRID.nx, self.GRID.ny, self.GRID.nz)) + 1
-#     vtk.origin     = (self.GRID.x0 - self.GRID.dx/2, self.GRID.y0 - self.GRID.dy/2, self.GRID.z0 - self.GRID.dz/2)
-#     vtk.spacing    = (self.GRID.dx, self.GRID.dy, self.GRID.dz)
-
-#     vtk['values'] = self.karst_prob.flatten(order="F")
-
-#     mesh = vtk.cast_to_unstructured_grid()
-#     ghosts = np.argwhere(vtk['values'] < 1.0)
-#     mesh.remove_cells(ghosts)
-#     p.add_mesh(mesh, show_edges=False)
-
-#     ### Plotting
-#     # p.add_title(feature)
-#     p.add_axes()
-#     bounds = p.show_bounds(mesh=vtk)
-#     p.add_actor(bounds)
-#     p.show(cpos='xy')
-
-#     return None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# #     #############################
-# #     ### Visualization methods ###
-# #     #############################
-# #
-# #     def show_catchment(self, label='geology', title=None, cmap='binary'):
-# #         """
-# #         Show the entire study domain.
-# #
-# #         Parameters
-# #         ----------
-# #         label : str, optional
-# #             Data to show : 'geology', 'topography', 'orientationx', 'orientationy' 'faults' or 'fractures'.
-# #             By default : 'geology'.
-# #         title : str, optional
-# #             Title of the plot. If 'None', 'data' becomes the label.
-# #         cmap : str, optional
-# #             Color map, 'binary' by default.
-# #         """
-# #         import matplotlib.patches as mp
-# #         fig, ax1 = plt.subplots()
-# #         #if title is None:
-# #         #    title = label
-# #         #fig.suptitle(title, fontsize=16)
-# #
-# #         # Load data to show
-# #         try:
-# #             data = [data.data[:,:,0] for data in self.geology.data if data.label==label][-1]
-# #         except:
-# #             print('no data for indicated label parameter')
-# #
-# #         im1 = ax1.imshow(data.T, origin="lower", extent=self.grid.extent, cmap=cmap)
-# #
-# #         fig.colorbar(im1, ax=ax1)
-# #         if self.settings['data_has_mask']:
-# #             import matplotlib.patches as mp
-# #             p1 = mp.PathPatch(self.mask.polygon, lw=2, fill=0, edgecolor='red', label='mask')
-# #             ax1.add_patch(p1)
-# #
-# #         # Points
-# #         for pts in self.points.points:
-# #             x, y = zip(*pts.points)
-# #             ax1.plot(x, y, 'o', label=pts.points_key)
-# #
-# #         ax1.set_aspect('equal', 'box')
-# #         plt.legend(loc='upper right')
-# #         plt.show()
-# #         return fig
-# #
-# #     def _show_maps(self, sim=-1, iteration=-1, cmap='binary'):
-# #         """
-# #         Show the simulated karst network as an image.
-# #         """
-# #         karst_network = self.karst_simulations[sim]
-# #
-# #         fig, ([ax1,ax2],[ax3,ax4]) = plt.subplots(2, 2, sharex=True, sharey=True)
-# #         fig.suptitle('Karst Network', fontsize=16)
-# #
-# #         ax1.imshow(karst_network.maps['outlets'], extent=self.grid.extent, origin='lower', cmap=cmap)
-# #         ax1.set_title('Outlets')
-# #
-# #         ax2.imshow(karst_network.maps['cost'][iteration], extent=self.grid.extent, origin='lower', cmap=cmap)
-# #         ax2.set_title('Cost')
-# #
-# #         ax3.imshow(karst_network.maps['time'][iteration], extent=self.grid.extent, origin='lower', cmap=cmap)
-# #         ax3.set_title('Time')
-# #
-# #         ax4.imshow(karst_network.maps['karst'][iteration], extent=self.grid.extent, origin='lower', cmap=cmap)
-# #         ax4.set_title('Karst')
-# #
-# #         fig.subplots_adjust(hspace=0.5)
-# #         plt.show()
-# #         return None
-# #
-# #
-# #     def show(self, data=None, title=None):
-# #         """
-# #         Show the entire study domain (defaults to showing most recent simulation).
-# #         """
-# #         if data is None:
-# #             data = self.karst_simulations[-1]
-# #
-# #         fig = plt.figure(figsize=(20,10))
-# #
-# #         # Cost map
-# #         fig.add_subplot(131, aspect='equal')
-# #         d = data.maps['cost'][-1]
-# #         plt.xlabel('Cost array'+str(d.shape))
-# #         d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
-# #         plt.imshow(d, extent=self.grid.extent, origin='lower', cmap='gray') #darker=slower
-# #         plt.colorbar(fraction=0.046, pad=0.04)
-# #
-# #         # Travel time map
-# #         fig.add_subplot(132, aspect='equal')
-# #         d = data.maps['time'][-1]
-# #         plt.xlabel('Travel time array'+str(d.shape))
-# #         d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
-# #         plt.imshow(d, extent=self.grid.extent, origin='lower', cmap='cividis') #darker=faster
-# #         plt.colorbar(fraction=0.046, pad=0.04)
-# #
-# #         # Karst map
-# #         fig.add_subplot(133, aspect='equal')
-# #         d = data.maps['karst'][-1]
-# #         plt.xlabel('Karst array'+str(d.shape))
-# #         d = np.transpose(d, (1,0)) # imshow read MxN and we have NxM
-# #         plt.imshow(d, extent=self.grid.extent, origin='lower', cmap='gray_r') #darker=conduits
-# #         plt.colorbar(fraction=0.046, pad=0.04)
-# #         i = plt.scatter(data.points['inlets'].x,  data.points['inlets'].y,  c='orange')
-# #         o = plt.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue')
-# #         p = matplotlib.patches.Rectangle((0,0),0,0, ec='r', fc='none')
-# #         if self.settings['data_has_mask']:
-# #             closed_polygon = self.mask.vertices[:]
-# #             closed_polygon.append(closed_polygon[0])
-# #             x,y = zip(*closed_polygon)
-# #             plt.plot(x,y, color='red', label='mask')
-# #         #plt.legend([i,o,p], ['inlets', 'outlets', 'catchment'], loc='upper right')
-# #         plt.legend([i,o], ['inlets', 'outlets'], loc='upper right')
-# #
-# #         if title is not None:
-# #             fig.suptitle(title, fontsize=16)
-# #         plt.show()
-# #         return fig
-# #
-# #     def show_network(self, data=None, simplify=False, ax=None, plot_nodes=True, mask=True, labels=['inlets', 'outlets'], title=None, cmap=None, color='k', alpha=1, legend=True):
-# #         """
-# #         #Chloe: This is a new function that I use to create all the figures for the paper.
-# #         Show the karst network as a graph with nodes and edges. Defaults to showing latest iteration.
-# #
-# #         Parameters
-# #         ----------
-# #         data:
-# #             karst simulation object containing nodes, edges, points, etc. Can be obtained from self.karst_simulations[i]
-# #         ax :
-# #             axis to plot on
-# #         label :
-# #             None or list of strings ['nodes','edges','inlets','outlets'], indicating which components to label
-# #         title : str
-# #             title of plot
-# #         cmap : str
-# #             colormap to use when plotting
-# #         color : str
-# #             single color to use when plotting (cannot have both cmap and color)
-# #         alpha : float
-# #             opacity to plot with (1=opaque, 0=transparent)
-# #         legend : bool
-# #             whether to display legend
-# #         plot_nodes : bool
-# #             whether to display nodes
-# #         polygon : bool
-# #             whether to display the bounding polygon
-# #         """
-# #
-# #         if ax == None:
-# #             fig,ax = plt.subplots(figsize=(10,10))
-# #             ax.set_aspect('equal')
-# #
-# #         if data == None:
-# #             data = self.karst_simulations[-1]
-# #
-# #         if mask == True:
-# #             if self.settings['data_has_mask']:
-# #                 closed_polygon = self.mask.vertices[:]
-# #                 closed_polygon.append(closed_polygon[0])
-# #                 x,y = zip(*closed_polygon)
-# #                 ax.plot(x,y, color='maroon')
-# #                 p = matplotlib.lines.Line2D([0],[0], color='k')
-# #
-# #         if simplify == True:
-# #             nodes = data.network['nodes']   #get all nodes
-# #             nodes_simple = data.network['karstnet'].graph_simpl.nodes  #get indices of only the nodes in the simplified graph
-# #             nodes_simple = {key: nodes[key] for key in nodes_simple}   #make df of only the nodes in the simplified graph, for plotting
-# #             edges = data.network['edges']   #get all edges
-# #             edges_simple = data.network['karstnet'].graph_simpl.edges  #get only the edges in the simplified graph
-# #             edges_simple = {i: edge for i,edge in enumerate(edges_simple)}   #make df of only the edges in the simplified graph, for p
-# #             nodes = pd.DataFrame.from_dict(nodes_simple, orient='index', columns=['x','y','type']) #convert to pandas for easier plotting
-# #             edges = pd.DataFrame.from_dict(edges_simple, orient='index', columns=['inNode','outNode'])
-# #         else:
-# #             nodes = pd.DataFrame.from_dict(data.network['nodes'], orient='index', columns=['x','y','type']) #convert to pandas for easier plotting
-# #             edges = pd.DataFrame.from_dict(data.network['edges'], orient='index', columns=['inNode','outNode'])
-# #
-# #         #Set up data for plotting:
-# #         fromX = nodes.x.loc[edges.inNode]      #calculate coordinates for link start and end points
-# #         fromY = nodes.y.loc[edges.inNode]
-# #         toX   = nodes.x.loc[edges.outNode]
-# #         toY   = nodes.y.loc[edges.outNode]
-# #
-# #         #Plot nodes and edges:
-# #         if plot_nodes:
-# #             n = ax.scatter(nodes.x,              nodes.y,                  c='k',         alpha=alpha, s=5)  #scatterplot nodes
-# #         i = ax.scatter(data.points['inlets'].x,  data.points['inlets'].y,  c='orange',    s=30) #scatterplot inlets
-# #         o = ax.scatter(data.points['outlets'].x, data.points['outlets'].y, c='steelblue', s=30) #scatterplot outlets
-# #         e = matplotlib.lines.Line2D([0],[0])                                                  #line artist for legend
-# #         for ind in edges.index:                                                               #loop over edge indices
-# #             if cmap is not None:
-# #                 ax.plot((fromX.iloc[ind], toX.iloc[ind]), (fromY.iloc[ind], toY.iloc[ind]), c=plt.cm.get_cmap(cmap)(ind/len(edges)), alpha=alpha)  #plot each edge, moving along color gradient to show order
-# #             elif color is not None:
-# #                 ax.plot((fromX.iloc[ind], toX.iloc[ind]), (fromY.iloc[ind], toY.iloc[ind]), c=color, alpha=alpha)  #plot each edge in same color
-# #
-# #         #Add labels:
-# #         if labels == None:
-# #             pass
-# #         else:
-# #             if 'nodes' in labels:                                         #label node indices
-# #                 for ind in nodes.index:                                   #loop over node indices
-# #                     ax.annotate(str(ind), xy=(nodes.y[ind]-10, nodes.x[ind]))  #annotate slightly to left of each node
-# #             if 'edges' in labels:
-# #                 for ind in edges.index:
-# #                     ax.annotate(str(ind), xy=(edges.y[ind]-10, edges.x[ind]))  #annotate slightly to left of each edge
-# #             if 'inlets' in labels:
-# #                 for index,inlet in data.points['inlets'].iterrows():
-# #                     ax.annotate(str(int(inlet.outlet))+'-'+str(int(inlet.inlet_iteration)),  xy=(inlet.x-(6*self.grid.dx),  inlet.y))
-# #             if 'outlets' in labels:
-# #                 for index,outlet in data.points['outlets'].iterrows():
-# #                     ax.annotate(str(int(outlet.name)), xy=(outlet.x-(4*self.grid.dx), outlet.y))
-# #
-# #         #Add legend & title:
-# #         if legend:
-# #             if plot_nodes:
-# #                 if plot_polygon:
-# #                     ax.legend([i,o,n,e,p],['inlets','outlets','nodes','edges','mask'])
-# #                 else:
-# #                     ax.legend([i,o,n,e],['inlets','outlets','nodes','edges'])
-# #             else:
-# #                 if plot_polygon:
-# #                     ax.legend([i,o,e,p],['inlets','outlets','edges','mask'])
-# #                 else:
-# #                     ax.legend([i,o,e],['inlets','outlets','edges','mask'])
-# #         if title is not None:
-# #             ax.set_title(title, fontsize=16)
-# #
-# #         return None
-
-
-
-# #     def show_catchment(self, label='geology', title=None, cmap='binary'):
-# #         """
-# #         Show the entire study domain.
-# #
-# #         Parameters
-# #         ----------
-# #         label : str, optional
-# #             Data to show : 'geology', 'topography', 'orientationx', 'orientationy' 'faults' or 'fractures'.
-# #             By default : 'geology'.
-# #         title : str, optional
-# #             Title of the plot. If 'None', 'data' becomes the label.
-# #         cmap : str, optional
-# #             Color map, 'binary' by default.
-# #         """
-# #         import matplotlib.patches as mp
-# #         fig, ax1 = plt.subplots()
-# #         #if title is None:
-# #         #    title = label
-# #         #fig.suptitle(title, fontsize=16)
-# #
-# #         # Load data to show
-# #         try:
-# #             data = [data.data[:,:,0] for data in self.geology.data if data.label==label][-1]
-# #         except:
-# #             print('no data for indicated label parameter')
-# #
-# #         im1 = ax1.imshow(data.T, origin="lower", extent=self.grid.extent, cmap=cmap)
-# #
-# #         fig.colorbar(im1, ax=ax1)
-# #         if self.settings['data_has_mask']:
-# #             import matplotlib.patches as mp
-# #             p1 = mp.PathPatch(self.mask.polygon, lw=2, fill=0, edgecolor='red', label='mask')
-# #             ax1.add_patch(p1)
-# #
-# #         # Points
-# #         for pts in self.points.points:
-# #             x, y = zip(*pts.points)
-# #             ax1.plot(x, y, 'o', label=pts.points_key)
-# #
-# #         ax1.set_aspect('equal', 'box')
-# #         plt.legend(loc='upper right')
-# #         plt.show()
-# #         return fig
+#                     ghosts = np.argwhere(np.isin(grid["data"], settings['ghost']))
+#             else:
+#                 if settings['domain'] == True:
+#                     ghosts = np.argwhere(grid["domain"] == 0)
+#                 else:
+#                     ghosts = None
+            
+#             if ghosts is not None:
+#                 grid = grid.remove_cells(ghosts)
+
+#         return None

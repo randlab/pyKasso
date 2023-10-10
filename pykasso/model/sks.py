@@ -2,6 +2,9 @@
 This module contains a class modeling the karstic network generator tool.
 """
 
+# TODO
+# inputs subdir merge within input paths ?
+
 ### Internal dependencies
 import os
 import sys
@@ -26,7 +29,7 @@ from .domain import Domain, Delimitation, Topography, Bedrock, WaterLevel
 from .geologic_features import Geology, Faults
 from .fracturation import Fractures
 from .points import PointGenerator
-from pykasso._utils.array import normalize_array, transform_array_where
+from pykasso._utils.array import normalize_array
 
 ### Typing
 from pykasso._typing import Project
@@ -43,7 +46,7 @@ this.default_fmm_costs = {
     'out': 10,  # TODO
     'aquifer': 0.4,
     'aquiclude': 0.8,
-    'beddings': 0.35,
+    'beddings': 0.35,  # TODO
     'faults': 0.2,
     'fractures': 0.2,
     'karst': 0.1,
@@ -94,15 +97,6 @@ class SKS():
         ### Initialization
         self.project = project
         self.grid = project.grid
-        self.domain = None
-        self.geology = None
-        self.faults = None
-        self.fractures = None
-        self.inlets = None
-        self.outlets = None
-        self.conceptual_model = None
-        self.conceptual_model_table = None
-        self.rng = {}
 
     def generate(self, model_parameters: dict = {},
                  export_settings: dict = {}) -> None:
@@ -134,6 +128,16 @@ class SKS():
         """
         Initialize and configure the basic settings
         """
+        self.domain = None
+        self.geology = None
+        self.faults = None
+        self.fractures = None
+        self.inlets = None
+        self.outlets = None
+        self.conceptual_model = None
+        self.conceptual_model_table = None
+        self.rng = {}
+        
         ### Load model parameters
         self._load_model_parameters()
         
@@ -165,15 +169,32 @@ class SKS():
         if isinstance(model_parameters, dict):
             self.model_parameters = model_parameters
         
+        # Inject the inputs directory within the data paths
+        inputs_dir = self.project.core['paths']['inputs_dir']
+        for key, dict_parameters in self.model_parameters.items():
+            if key == 'domain':
+                for key_, value in dict_parameters.items():
+                    if not isinstance(value, str):
+                        continue
+                    new_path = inputs_dir + value
+                    dict_parameters[key_] = new_path
+                self.model_parameters['domain'].update(dict_parameters)
+            else:
+                for key_, value in dict_parameters.items():
+                    if key_ == 'data':
+                        if not isinstance(value, str):
+                            continue
+                        new_path = inputs_dir + value
+                        dict_parameters[key_] = new_path
         return None
     
     def _create_sim_dir(self) -> None:
         """
         Create simulation directory
         """
-        self.project.n_simulations += 1
+        self.project._increment_n_simulations()
         outputs_dir = self.project.core['paths']['outputs_dir']
-        sim_dir = 'simulation_{}\\'.format(self.project.n_simulations)
+        sim_dir = 'simulation_{}/'.format(self.project.n_simulations)
         sim_path = outputs_dir + sim_dir
         os.makedirs(sim_path, exist_ok=True)
         self.project.simulations.append(sim_path)
@@ -290,8 +311,9 @@ class SKS():
         topography = self.model_parameters['domain']['topography']
         test_a = isinstance(topography, (str))
         if not (test_a and (topography == '')):
-            instance = Topography()
-            instance.set_data(data=topography, grid=self.grid)
+            instance = Topography(grid=self.grid)
+            data = topography
+            instance.set_data(data=data)
             instance._surface_to_volume('<=', self.grid)
             return instance
         else:
@@ -305,8 +327,8 @@ class SKS():
         bedrock = self.model_parameters['domain']['bedrock']
         test_a = isinstance(bedrock, (str))
         if not (test_a and (bedrock == '')):
-            instance = Bedrock()
-            instance.set_data(data=bedrock, grid=self.grid)
+            instance = Bedrock(grid=self.grid)
+            instance.set_data(data=bedrock)
             instance._surface_to_volume('<=', self.grid)
             return instance
         else:
@@ -320,8 +342,8 @@ class SKS():
         water_level = self.model_parameters['domain']['water_level']
         test_a = isinstance(water_level, (str))
         if not (test_a and (water_level == '')):
-            instance = WaterLevel()
-            instance.set_data(data=water_level, grid=self.grid)
+            instance = WaterLevel(grid=self.grid)
+            instance.set_data(data=water_level)
             instance._surface_to_volume('<=', self.grid)
             return instance
         else:
@@ -381,13 +403,13 @@ class SKS():
         """
         geology = self.model_parameters['geology']['data']
         test_a = isinstance(geology, (str))
-        self.geology = Geology()
+        self.geology = Geology(grid=self.grid)
         if not (test_a and (geology == '')):
             axis = self.model_parameters['geology']['axis']
-            self.geology.set_data(data=geology, grid=self.grid, axis=axis)
+            self.geology.set_data(data=geology, axis=axis)
         else:
             self.geology.data_volume = (
-                self.geology._set_data_full_3D(grid=self.grid, value=1)
+                self.geology._get_data_full_3D(value=1)
             )
         costs = self.model_parameters['geology']['costs']
         self.geology._set_costs(costs)
@@ -404,9 +426,9 @@ class SKS():
         faults = self.model_parameters['faults']['data']
         test_a = isinstance(faults, (str))
         if not (test_a and (faults == '')):
-            self.faults = Faults()
+            self.faults = Faults(grid=self.grid)
             axis = self.model_parameters['faults']['axis']
-            self.faults.set_data(data=faults, grid=self.grid, axis=axis)
+            self.faults.set_data(data=faults, axis=axis)
             costs = self.model_parameters['faults']['costs']
             self.faults._set_costs(costs)
             self.faults._compute_statistics(self.grid)
@@ -459,21 +481,11 @@ class SKS():
             geology=self.geology,
             geologic_ids=self.model_parameters[kind]['geology']
         )
-
-        ### Gets existing points
-
-        # Loads points if needed
-        logical_test_1 = isinstance(self.model_parameters[kind]['data'], (str))
-        logical_test_2 = not (self.model_parameters[kind]['data'] == '')
-        if logical_test_1 and logical_test_2:
-            path = self.model_parameters[kind]['data']
-            data = np.genfromtxt(path)
-            if len(data.shape) == 1:
-                data = np.array([data])
-            self.model_parameters[kind]['data'] = data
         
         ### Inspects validity of points
         points = self.model_parameters[kind]['data']
+        
+        ################### TODO
         
         # 2D points # TODO - logging ?
         points_2D = [point for point in points if len(point) == 2]
@@ -544,7 +556,8 @@ class SKS():
         test_a = isinstance(fractures, (str))
         test_b = ('settings' in self.model_parameters['fractures'])
         if (not (test_a and (fractures == ''))) or test_b:
-            self.fractures = Fractures(rng=self.rng['fractures'])
+            self.fractures = Fractures(rng=self.rng['fractures'],
+                                       grid=self.grid)
             
             # Generate fractures families
             if 'settings' in self.model_parameters['fractures']:
@@ -559,7 +572,7 @@ class SKS():
             # Load data
             else:
                 axis = self.model_parameters['fractures']['axis']
-                self.fractures.set_data(fractures, self.grid, axis)
+                self.fractures.set_data(fractures, axis)
                 costs = self.model_parameters['fractures']['costs']
                 self.fractures._set_costs(costs)
             
@@ -703,7 +716,6 @@ class SKS():
         })
         self.iterations.index.name = 'iteration'
         
-        # print(self.iterations)
         return None
     
     def _repartition_points(self, nbr_points, importance):
@@ -772,13 +784,11 @@ class SKS():
 
     def _compute(self) -> None:
         """
-        Computes the karst network according to the parameters. Must be called
-        after ``build()`` method. This method will :
-        1. Computes conduits for each generation and stores nodes & edges for
-        network.
-        2. Stores all the relevant data for this network in specific
+        Compute the karst conduit network according to the parameters. It will:
+        1. Compute conduits for each generation and store the nodes & edges.
+        2. Store all the relevant data for this network in specific
         dictionaries.
-        3. Exports the state of the project, this file could be read by the
+        3. Export the state of the project, this file could be read by the
         'analysis' and 'visualization' sub-packages.
         """
         self._compute_karst_network()
@@ -786,46 +796,57 @@ class SKS():
         self.project._export_project_file()
         return None
     
-    def _compute_karst_network(self):
+    def _compute_karst_network(self) -> None:
+        """
+        TODO
+        """
+        # Logging operations
         self.logger = logging.getLogger("fmm.modelisation")
-        self.logger.info("Computing karst network")
+        self.logger.info("Computing karst conduit network...")
         
+        # Initialize the iteration counter
         self.iteration = 0
         
+        # Start the conduit generation loop
         for self.iteration in range(self.nbr_iteration):
         
-            # Compute travel time maps and conduit network
+            # Conduits generation with isotropic fast marching
             if self.fmm['algorithm'] == 'Isotropic3':
-                self._compute_cost_map()        # 2.1.1
-                self._compute_time_map()        # 2.1.2
+                self._compute_cost_map()
+                self._compute_time_map()
 
+            # Conduits generation with anisotropic fast marching
             elif self.fmm['algorithm'] == 'Riemann3':
-                self._compute_cost_map()        # 2.1.1
-                self._compute_alpha_map()       # 2.1.4
-                self._compute_beta_map()        # 2.1.5
-                self._compute_riemann_metric()  # 2.1.6
-                self._compute_time_map()        # 2.1.7
+                self._compute_cost_map()
+                self._compute_alpha_map()
+                self._compute_beta_map()
+                self._compute_gradient()
+                self._compute_riemann_metric()
+                self._compute_time_map()
             
+            # Transform results from fast marching into karst conduit network
             self._compute_karst_map()
+            
+            # Voxelize the karst conduit network
             self._voxelize_karst_network()
 
+            # Log the current iteration
             msg = "iteration : {}/{}".format(self.iteration + 1,
                                              self.nbr_iteration)
             self.logger.info(msg)
         return None
 
-    ### 2.1.1 Iso- and anisotropic case
     @wp._logging()
-    def _compute_cost_map(self):
+    def _compute_cost_map(self) -> None:
         """
-        Computes the cost map (how difficult it is to traverse each cell).
-
+        Compute the cost map (how difficult it is to traverse each cell).
+        
         TODO
         """
-        # During the first iteration, iniatializes the cost map according to
-        # the conceptual model.
+        # If first iteration, iniatialize the cost map according to the
+        # conceptual model.
         if self.iteration == 0:
-            zeros_array = np.zeros((self.grid.nx, self.grid.ny, self.grid.nz))
+            zeros_array = np.zeros(self.grid.shape)
             self.maps['cost'].append(zeros_array)
             for (i, row) in self.conceptual_model_table.iterrows():
                 logical_test = self.conceptual_model == row.name
@@ -835,134 +856,149 @@ class SKS():
                 
         # During the rest of the iterations
         else:
+            # Append a copy of the cost map from the previous iteration
             self.maps['cost'].append(self.maps['cost'][self.iteration - 1])
             
+            # Update the array with the cost of the karstic conduits computed
+            # during the previous iteration
             self.maps['cost'][self.iteration] = (
                 np.where(self.maps['karst'][self.iteration - 1] > 0,
                          self.model_parameters['sks']['costs']['conduits'],
                          self.maps['cost'][self.iteration])
             )
-            
         return None
     
-    ### 2.1.4 Anisotropic case
     @wp._logging()
     def _compute_alpha_map(self) -> None:
         """
-        Computes the alpha map: travel cost in the same direction as the
+        Compute the alpha map: travel cost in the same direction as the
         gradient.
         """
-       
+        # Retrieve the cost map from the current iteration
         cost_map = self.maps['cost'][self.iteration].copy()
         
-        ### Option A
-        if self.model_parameters['sks']['mode'] == 'A':
-            # Vadose zone = Phreatic zone = Bedrock zone
-            alpha_map = self._set_alpha_from_elevation(cost_map)
+        # Select the appropriate method to set the alpha map
+        if self.project.dimension == '2D':
+            alpha_map = self._compute_alpha_2D_map(cost_map)
             
-            # Bedrock
-            if (self.grid.nz > 1) and (self.domain.bedrock is not None):
-                alpha_map = transform_array_where(
-                    alpha_map,
-                    alpha_map.max(),
-                    self.domain.bedrock.data_volume)
+        elif self.project.dimension == '3D':
+            alpha_map = self._compute_alpha_3D_map(cost_map)
         
-        ### Option B
-        if self.model_parameters['sks']['mode'] == 'B':
-            # Vadose zone = Bedrock zone
-            alpha_map = self._set_alpha_from_elevation(cost_map)
-            # Bedrock
-            if (self.grid.nz > 1) and (self.domain.bedrock is not None):
-                alpha_map = transform_array_where(
-                    alpha_map,
-                    alpha_map.max(),
-                    self.domain.bedrock.data_volume)
-            # Phreatic zone
-            if (self.grid.nz > 1) and (self.domain.water_level is not None):
-                alpha_map = transform_array_where(
-                    alpha_map,
-                    cost_map,
-                    self.domain.get_subdomain('phreatic_zone'))
-            
-        ### Option C
-        if self.model_parameters['sks']['mode'] == 'C':
-            # Vadose zone = Bedrock zone
-            factor = self.model_parameters['sks']['factors']['F']
-            alpha_map = transform_array_where(
-                cost_map,
-                cost_map * factor,
-                self.domain.get_subdomain('vadose_zone'))
-            # Bedrock
-            if self.domain.bedrock is not None:
-                alpha_map = transform_array_where(
-                    alpha_map,
-                    alpha_map.max() * 10,
-                    self.domain.bedrock.data_volume)
-            # Phreatic zone
-            if self.domain.water_level is not None:
-                alpha_map = transform_array_where(
-                    alpha_map,
-                    cost_map,
-                    self.domain.get_subdomain('phreatic_zone'))
-        
-        ### Option D
-        if self.model_parameters['sks']['mode'] == 'D':
-            # Vadose zone
-            domain = np.logical_and(
-                np.logical_not(self.domain.get_subdomain('bedrock_vadose')),
-                self.domain.get_subdomain('vadose_zone')
-            )
-            factor_01 = self.model_parameters['sks']['factors']['F1']
-            alpha_map = transform_array_where(
-                cost_map,
-                cost_map * factor_01,
-                domain)
-            
-            if self.domain.bedrock is not None:
-                # Bedrock vadose zone
-                factor_02 = self.model_parameters['sks']['factors']['F2']
-                alpha_map = transform_array_where(
-                    alpha_map,
-                    cost_map * factor_02,
-                    self.domain.get_subdomain('bedrock_vadose'))
-                
-                # Bedrock
-                alpha_map = transform_array_where(
-                    alpha_map,
-                    alpha_map.max() * 10,
-                    self.domain.bedrock.data_volume)
-                
-            # Phreatic zone
-            if self.domain.water_level is not None:
-                alpha_map = transform_array_where(
-                    alpha_map,
-                    cost_map,
-                    self.domain.get_subdomain('phreatic_zone'))
-            
-        # Out of domain
-        if self.domain.topography is not None:
-            domain = np.logical_not(self.domain.topography.data_volume)
-            alpha_map = transform_array_where(
-                alpha_map,
-                alpha_map.max() * 10,
-                domain)
-        
+        # Increase cost from cells outside the domain. Retrieve the maximum
+        # cost value from the domain and set it outside the domain.
+        logical_test = self.domain.data_volume.astype('bool')
+        max_value = np.where(logical_test, alpha_map, 0).max()
+        logical_test = np.invert(logical_test)
+        alpha_map = np.where(logical_test, max_value * 10, alpha_map)
+
+        # Append the alpha map from the current iteration to the list
         self.maps['alpha'].append(alpha_map)
         return None
+
+    def _compute_alpha_3D_map(self, cost_map: np.ndarray) -> np.ndarray:
+        """
+        Compute the alpha map: travel cost in the same direction as the
+        gradient.
+        """
+        ### Option A
+        # Vadose, bedrock, and phreatic zones are equivalent
+        if self.model_parameters['sks']['mode'] == 'A':
+            
+            # The cost is depending from the elevation
+            alpha_map = self._set_alpha_3D_from_elevation(cost_map)
+        
+        ### Option B
+        # Vadose, and bedrock zones are equivalent. Phreatic zone is isotropic.
+        if self.model_parameters['sks']['mode'] == 'B':
+
+            # The cost is depending from the elevation
+            alpha_map = self._set_alpha_3D_from_elevation(cost_map)
+            
+            # Phreatic zone: isotropic cost
+            if (self.grid.nz > 1) and (self.domain.water_level is not None):
+                logical_test = self.domain.get_subdomain('phreatic_zone')
+                alpha_map = np.where(logical_test, cost_map, alpha_map)
+            
+        ### Option C
+        # Vadose, and bedrock zones are multiplied by a F cost factor.
+        # Phreatic zone is isotropic.
+        if self.model_parameters['sks']['mode'] == 'C':
+            
+            # Vadose and bedrock zones: multiplied by a cost factor
+            F = self.model_parameters['sks']['factors']['F']
+            logical_test = self.domain.get_subdomain('vadose_zone')
+            alpha_map = np.where(logical_test, cost_map * F, cost_map)
+            
+            # Phreatic zone: isotropic cost
+            if self.domain.water_level is not None:
+                logical_test = self.domain.get_subdomain('phreatic_zone')
+                alpha_map = np.where(logical_test, cost_map, alpha_map)
+        
+        ### Option D
+        # Vadose zone is multiplied by a F1 cost factor.
+        # Bedrock vadose zone is multiplied by a F2 cost factor.
+        # Phreatic zone is isotropic.
+        if self.model_parameters['sks']['mode'] == 'D':
+            F1 = self.model_parameters['sks']['factors']['F1']
+            F2 = self.model_parameters['sks']['factors']['F2']
+            
+            # Vadose zone without bedrock vadose zone:
+            # multiplied by a f1 cost factor
+            bedrock_vadose = self.domain.get_subdomain('bedrock_vadose')
+            logical_test = np.logical_not(bedrock_vadose)
+            alpha_map = np.where(logical_test, cost_map * F1, cost_map)
+            
+            # Bedrock vadose zone: multiplied by a f2 cost factor
+            if self.domain.bedrock is not None:
+                logical_test = self.domain.get_subdomain('bedrock_vadose')
+                alpha_map = np.where(logical_test, cost_map * F2, alpha_map)
+                
+            # Phreatic zone: isotropic cost
+            if self.domain.water_level is not None:
+                logical_test = self.domain.get_subdomain('phreatic_zone')
+                alpha_map = np.where(logical_test, cost_map, alpha_map)
+            
+        return alpha_map
     
-    def _set_alpha_from_elevation(self, cost_map: np.ndarray) -> np.ndarray:
-        if (self.grid.nz == 1) and (self.domain.bedrock is not None):
-            # print('flag')
-            bedrock = self.domain.bedrock.data_surface.reshape(self.grid.shape)
+    def _set_alpha_3D_from_elevation(self, cost_map: np.ndarray) -> np.ndarray:
+        """"""
+        X, Y, Z = self.grid.get_meshgrids()
+        normalized_z = normalize_array(Z) + 1
+        cost_map = cost_map * normalized_z
+        return cost_map
+    
+    def _compute_alpha_2D_map(self, cost_map: np.ndarray) -> np.ndarray:
+        """
+        Compute the alpha map: travel cost in the same direction as the
+        gradient.
+        """
+        ### Option X  # TODO
+        # Conduits follow the bedrock gradient
+        if self.domain._is_defined['bedrock']:
+            alpha_map = self._set_alpha_2D_from_bedrock(cost_map)
+         
+        ### Option Y  # TODO
+        # TODO
+        
+        ### Default option
+        else:
+            alpha_map = cost_map
+        
+        return alpha_map
+    
+    def _set_alpha_2D_from_bedrock(self, cost_map: np.ndarray) -> np.ndarray:
+        """"""
+        if (self.grid.nz == 1):
+            bedrock = self.domain.bedrock.data_surface
+            bedrock = bedrock.reshape(self.grid.shape)
             normalized_bedrock = normalize_array(bedrock) + 1
-            cost_map = cost_map * normalized_bedrock
+            alpha_map = cost_map * normalized_bedrock
         else:
             X, Y, Z = self.grid.get_meshgrids()
             normalized_z = normalize_array(Z) + 1
-            cost_map = cost_map * normalized_z
-        return cost_map
+            alpha_map = cost_map * normalized_z
+        return alpha_map
     
-    ### 2.1.5 Anisotropic case
     @wp._logging()
     def _compute_beta_map(self) -> None:
         """
@@ -970,28 +1006,248 @@ class SKS():
         beta is higher than alpha, conduits will follow the steepest gradient.
         If beta is lower than alpha, conduits will follow contours.
         """
+        # Retrieve the costs maps from the current iteration
         ratio = self.model_parameters['sks']['costs']['ratio']
         cost_map = self.maps['cost'][self.iteration].copy()
         alpha_map = self.maps['alpha'][self.iteration].copy()
         
-        ### Option A & default situation
-        # Vadose zone = Phreatic zone = Bedrock zone
+        # Calculate the default beta map
         beta_map = alpha_map / ratio
-            
-        ### Options B / C / D
-        if self.model_parameters['sks']['mode'] in ['B', 'C', 'D']:
-            # Phreatic zone
-            if self.domain.water_level is not None:
-                beta_map = transform_array_where(
-                    beta_map,
-                    cost_map,
-                    self.domain.get_subdomain('phreatic_zone'))
         
+        # Select the appropriate method to alter the beta map
+        if self.project.dimension == '2D':
+            beta_map = self._compute_beta_2D_map(cost_map,
+                                                 alpha_map,
+                                                 beta_map)
+            
+        elif self.project.dimension == '3D':
+            beta_map = self._compute_beta_3D_map(cost_map,
+                                                 alpha_map,
+                                                 beta_map)
+        
+        # Append the beta map from the current iteration to the list
         self.maps['beta'].append(beta_map)
         return None
 
-    ### 2.1.6 Anisotropic case
+    def _compute_beta_2D_map(self,
+                             cost_map: np.ndarray,
+                             alpha_map: np.ndarray,
+                             beta_map: np.ndarray,
+                             ) -> np.ndarray:
+        """"""
+        return beta_map
+
+    def _compute_beta_3D_map(self,
+                             cost_map: np.ndarray,
+                             alpha_map: np.ndarray,
+                             beta_map: np.ndarray,
+                             ) -> np.ndarray:
+        """"""
+        ### Option A
+        # Vadose zone = Bedrock zone = Phreatic zone
+        pass
+            
+        ### Options B / C / D
+        # Vadose zone = Bedrock zone ≠ Phreatic zone
+        # Isotropic fast marching in phreatic zone
+        if self.model_parameters['sks']['mode'] in ['B', 'C', 'D']:
+            if self.domain._is_defined['water_level']:
+                test = self.domain.get_subdomain('phreatic_zone')
+                beta_map = np.where(test, cost_map, beta_map)
+        return beta_map
+
+    #########################
+    ##### GRADIENT MAPS #####
+    #########################
+    
     @wp._logging()
+    def _compute_gradient(self) -> None:
+        """Compute the gradient in the x, y and z-axis."""
+        
+        ### Default situation
+        grad_x = np.full(self.grid.shape, 0, dtype=np.float32)
+        grad_y = np.full(self.grid.shape, 0, dtype=np.float32)
+        grad_z = np.full(self.grid.shape, 1, dtype=np.float32)
+        grad = [grad_x, grad_y, grad_z]
+        
+        # Select the appropriate method to alter the gradient maps
+        if self.project.dimension == '2D':
+            grad = self._compute_gradient_2D(*grad)
+            
+        elif self.project.dimension == '3D':
+            grad = self._compute_gradient_3D(*grad)
+            
+        # Append the gradient maps from the current iteration to the list
+        self.maps['gradient'].append(grad)
+        return None
+    
+    def _compute_gradient_2D(self,
+                             grad_x: np.ndarray,
+                             grad_y: np.ndarray,
+                             grad_z: np.ndarray
+                             ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Compute gradient maps in the case of a 2D project."""
+        
+        grad = (grad_x, grad_y, grad_z)
+        
+        ### Option ?
+        if self.domain._is_defined['bedrock']:
+            grad = self._set_gradient_2D_from_bedrock(*grad)
+        
+        return grad
+        
+    def _compute_gradient_3D(self,
+                             grad_x: np.ndarray,
+                             grad_y: np.ndarray,
+                             grad_z: np.ndarray
+                             ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Compute gradient maps in the case of a 3D project."""
+        ### Option A
+        # Vadose zone = Bedrock zone = Phreatic zone
+        if self.model_parameters['sks']['mode'] in ['A']:
+            pass
+    
+        ### Options B / C / D
+        elif self.model_parameters['sks']['mode'] in ['B', 'C', 'D']:
+            
+            if self.domain._is_defined['water_level']:
+                subdomain = self.domain.get_subdomain('phreatic_zone')
+                test_subdomain = (subdomain == 1)
+                grad_x = np.where(test_subdomain, 1, grad_x)
+                grad_y = np.where(test_subdomain, 1, grad_y)
+                grad_z = np.where(test_subdomain, 1, grad_z)
+        
+            if self.domain._is_defined['bedrock']:
+                grad_x, grad_y, grad_z = (
+                    self._set_gradient_3D_from_bedrock(grad_x,
+                                                       grad_y,
+                                                       grad_z)
+                )
+        grad = (grad_x, grad_y, grad_z)
+        return grad
+    
+    def _set_gradient_2D_from_bedrock(self,
+                                      grad_x: np.ndarray,
+                                      grad_y: np.ndarray,
+                                      grad_z: np.ndarray
+                                      ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Calculate the gradient from the bedrock for a 2D project."""
+        
+        # Test which dimension equals 1
+        test_grid_nx = (self.grid.nx == 1)
+        test_grid_ny = (self.grid.ny == 1)
+        test_grid_nz = (self.grid.nz == 1)
+        
+        # X-axis
+        if test_grid_nx:
+            bedrock = np.roll(self.domain.bedrock.data_volume, 1, axis=2)
+            bedrock[:, :, 0] = 1
+            gradient_y, gradient_z = np.gradient(bedrock,
+                                                 self.grid.dy,
+                                                 self.grid.dz,
+                                                 axis=(1, 2))
+            gradient_x = np.full_like(gradient_y, 0)
+        
+        # Y-axis
+        elif test_grid_ny:
+            bedrock = np.roll(self.domain.bedrock.data_volume, 1, axis=2)
+            bedrock[:, :, 0] = 1
+            gradient_x, gradient_z = np.gradient(bedrock,
+                                                 self.grid.dx,
+                                                 self.grid.dz,
+                                                 axis=(0, 2))
+            gradient_y = np.full_like(gradient_x, 0)
+        
+        # Z-axis
+        elif test_grid_nz:
+            bedrock = self.domain.bedrock.data_surface
+            gradient_x, gradient_y = np.gradient(bedrock,
+                                                 self.grid.dx,
+                                                 self.grid.dy,
+                                                 axis=(0, 1))
+            # Correct shape from N2 to N3
+            gradient_x = gradient_x.reshape(self.grid.shape)
+            gradient_y = gradient_y.reshape(self.grid.shape)
+            gradient_z = np.full_like(gradient_x, 0)
+        
+        # Apply the new gradient only in domain
+        test_domain = (self.domain.get_subdomain('domain') == 1)
+        grad_x = np.where(test_domain, gradient_x, grad_x)
+        grad_y = np.where(test_domain, gradient_y, grad_y)
+        grad_z = np.where(test_domain, gradient_z, grad_z)
+        grad = (grad_x, grad_y, grad_z)
+        return grad
+    
+    def _set_gradient_3D_from_bedrock(self,
+                                      grad_x: np.ndarray,
+                                      grad_y: np.ndarray,
+                                      grad_z: np.ndarray
+                                      ) -> np.ndarray:
+        """Calculate the gradient from the bedrock for a 3D project."""
+        # On commence par calculer le gradient en faisant gaffe
+        # à l'intervertion x y
+        bedrock = self.domain.bedrock.data_surface
+        gradient_x, gradient_y = np.gradient(bedrock,
+                                             self.grid.dx,
+                                             self.grid.dy)
+        
+        # Calcule du vecteur avec ses trois composantes (vx, vy, vz)
+
+        # On créé les matrices de composantes vx, vy, vz vides
+        vx = np.zeros(gradient_x.shape)
+        vy = np.zeros(gradient_x.shape)
+        vz = np.zeros(gradient_x.shape)
+        
+        # positions ou le gradient en x est non nul
+        idx_grad_x_not0 = (gradient_x != 0)
+        
+        # vx = +/- 1 dans la direction oposée au gradient
+        vx[idx_grad_x_not0] = - np.sign(gradient_x[idx_grad_x_not0])
+        
+        # Calcul de vy (pour respecter la direction horizontale)
+        vy[idx_grad_x_not0] = (vx[idx_grad_x_not0]
+                               * gradient_y[idx_grad_x_not0]
+                               / gradient_x[idx_grad_x_not0])
+
+        # On traite le cas particulier pour lequel gx = 0 et gy != 0
+        idx_gx_is0 = ((gradient_x == 0) & (gradient_y != 0))
+
+        # Dans ce cas la on normalise vy
+        vy[idx_gx_is0] = - np.sign(gradient_y[idx_gx_is0])
+
+        # Calcul de vz partout
+        vz = gradient_x * vx + gradient_y * vy
+
+        ### Dernier cas particulier problématique: la surface horizontale
+        # Chercher les occurences
+        idx_gxgy_are0 = ((gradient_x == 0) & (gradient_y == 0))
+
+        # Par convention
+        vx[idx_gxgy_are0] = 1
+        vy[idx_gxgy_are0] = 0
+        vz[idx_gxgy_are0] = 0
+
+        ### Finalement on normalise le vecteur
+        norm = np.sqrt(vx**2 + vy**2 + vz**2)
+        vx /= norm
+        vy /= norm
+        vz /= norm
+        
+        test_domain = self.domain.get_subdomain('bedrock_vadose')
+        test_domain = test_domain.astype('bool')
+        args = np.argwhere(test_domain)
+        
+        if len(args) != 0:
+            
+            i, j, k = zip(*args)
+
+            grad_x[i, j, k] = -vx[i, j]
+            grad_y[i, j, k] = -vy[i, j]
+            grad_z[i, j, k] = -vz[i, j]
+        
+        out = (grad_x, grad_y, grad_z)
+        return out
+            
     def _compute_riemann_metric(self) -> None:
         """
         Compute the riemann metric: Define the Riemannian metric needed as
@@ -999,150 +1255,24 @@ class SKS():
 
         TODO : à terminer
         """
-        ### Option A & default situation
-        grad_x = np.zeros_like(self.grid.data_volume)
-        grad_y = np.zeros_like(self.grid.data_volume)
-        grad_z = np.ones_like(self.grid.data_volume)
-        
-        ### Options B / C / D
-        if self.model_parameters['sks']['mode'] in ['B', 'C', 'D']:
-            
-            if self.domain.water_level is not None:
-                subdomain = self.domain.get_subdomain('phreatic_zone')
-                test_subdomain = (subdomain == 1)
-                grad_x = np.where(test_subdomain, 1, grad_x)
-                grad_y = np.where(test_subdomain, 1, grad_y)
-                grad_z = np.where(test_subdomain, 1, grad_z)
-        
-            if self.domain.bedrock is not None:
-                grad_x, grad_y, grad_z = (
-                    self._set_gradient_from_bedrock(grad_x,
-                                                    grad_y,
-                                                    grad_z)
-                )
-        
-        # Saves the gradient
-        self.maps['gradient'].append((grad_x, grad_y, grad_z))
-        
-        # Sets the needle
+        # Give the parameters for the fast marching algorithm
         alpha = self.maps['alpha'][self.iteration]
         beta = self.maps['beta'][self.iteration]
+        grad_x, grad_y, grad_z = self.maps['gradient'][self.iteration]
         
-        print(self.model_parameters['sks']['mode'])
-        # from pykasso.visualisation.visualiser import Visualiser
-        # Visualiser.show_array(grad_x)
-        # Visualiser.show_array(grad_y)
-        # Visualiser.show_array(grad_z)
-        # Visualiser.show_array(alpha)
-        # Visualiser.show_array(beta)
-        
+        # from pykasso.visualization import Visualizer
+        # Visualizer.pv_plot_array(grad_x)
+        # Visualizer.pv_plot_array(grad_y)
+        # Visualizer.pv_plot_array(grad_z)
+        # Visualizer.pv_plot_array(alpha)
+        # Visualizer.pv_plot_array(beta)
+
         self.fmm['riemannMetric'] = agd.Metrics.Riemann.needle(
             [grad_x, grad_y, grad_z],
             alpha,
             beta
         )
         return None
-    
-    def _set_gradient_from_bedrock(self, grad_x, grad_y, grad_z) -> None:
-        """"""
-        test_grid_nx = (self.grid.nx == 1)
-        test_grid_ny = (self.grid.ny == 1)
-        test_grid_nz = (self.grid.nz == 1)
-        test_domain = (self.domain.get_subdomain('bedrock_vadose') == 1)
-        
-        if test_grid_nx or test_grid_ny or test_grid_nz:
-            
-            if test_grid_nx:
-                bedrock = np.roll(self.domain.bedrock.data_volume, 1, axis=2)
-                bedrock[:, :, 0] = 1
-                gradient_y, gradient_z = np.gradient(bedrock, self.grid.dy,
-                                                     self.grid.dz, axis=(1, 2))
-                gradient_x = np.full_like(gradient_y, 0)
-                
-            elif test_grid_ny:
-                bedrock = np.roll(self.domain.bedrock.data_volume, 1, axis=2)
-                bedrock[:, :, 0] = 1
-                gradient_x, gradient_z = np.gradient(bedrock, self.grid.dx,
-                                                     self.grid.dz, axis=(0, 2))
-                gradient_y = np.full_like(gradient_x, 0)
-                
-            elif test_grid_nz:
-                bedrock = self.domain.bedrock.data_surface
-                
-                gradient_x, gradient_y = np.gradient(bedrock, self.grid.dx,
-                                                     self.grid.dy, axis=(0, 1))
-                # Corrects shape from N2 to N3
-                gradient_x = gradient_x.reshape(self.grid.shape)
-                gradient_y = gradient_y.reshape(self.grid.shape)
-                gradient_z = np.full_like(gradient_x, 0)
-                
-            test_domain = (self.domain.get_subdomain('domain') == 1)
-            grad_x = np.where(test_domain, gradient_x, grad_x)
-            grad_y = np.where(test_domain, gradient_y, grad_y)
-            grad_z = np.where(test_domain, gradient_z, grad_z)
-            
-        else:
-            # On commence par calculer le gradient en faisant gaffe
-            # à l'intervertion x y
-            bedrock = self.domain.bedrock.data_surface
-            gradient_x, gradient_y = np.gradient(bedrock,
-                                                 self.grid.dx,
-                                                 self.grid.dy)
-            
-            # Calcule du vecteur avec ses trois composantes (vx, vy, vz)
-
-            # On créé les matrices de composantes vx, vy, vz vides
-            vx = np.zeros(gradient_x.shape)
-            vy = np.zeros(gradient_x.shape)
-            vz = np.zeros(gradient_x.shape)
-            
-            # positions ou le gradient en x est non nul
-            idx_grad_x_not0 = (gradient_x != 0)
-            
-            # vx = +/- 1 dans la direction oposée au gradient
-            vx[idx_grad_x_not0] = - np.sign(gradient_x[idx_grad_x_not0])
-            
-            # Calcul de vy (pour respecter la direction horizontale)
-            vy[idx_grad_x_not0] = (vx[idx_grad_x_not0]
-                                   * gradient_y[idx_grad_x_not0]
-                                   / gradient_x[idx_grad_x_not0])
-
-            # On traite le cas particulier pour lequel gx = 0 et gy != 0
-            idx_gx_is0 = ((gradient_x == 0) & (gradient_y != 0))
-
-            # Dans ce cas la on normalise vy
-            vy[idx_gx_is0] = - np.sign(gradient_y[idx_gx_is0])
-
-            # Calcul de vz partout
-            vz = gradient_x * vx + gradient_y * vy
-
-            ### Dernier cas particulier problématique: la surface horizontale
-            # Chercher les occurences
-            idx_gxgy_are0 = ((gradient_x == 0) & (gradient_y == 0))
-
-            # Par convention
-            vx[idx_gxgy_are0] = 1
-            vy[idx_gxgy_are0] = 0
-            vz[idx_gxgy_are0] = 0
-
-            ### Finalement on normalise le vecteur
-            norm = np.sqrt(vx**2 + vy**2 + vz**2)
-            vx /= norm
-            vy /= norm
-            vz /= norm
-            
-            args = np.argwhere(test_domain)
-            
-            if len(args) != 0:
-                
-                i, j, k = zip(*args)
-
-                grad_x[i, j, k] = -vx[i, j]
-                grad_y[i, j, k] = -vy[i, j]
-                grad_z[i, j, k] = -vz[i, j]
-        
-        out = (grad_x, grad_y, grad_z)
-        return out
 
     ### 2.1.2
     @wp._logging()

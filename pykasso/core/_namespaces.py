@@ -2,17 +2,26 @@
 Module defining some constants in pyKasso.
 """
 
-# GRID_PARAMETERS = [
-#     'x0',
-#     'y0',
-#     'z0',
-#     'nx',
-#     'ny',
-#     'nz',
-#     'dx',
-#     'dy',
-#     'dz'
-# ]
+### Internal dependencies
+from PIL import Image
+
+
+MISC_DIR_PATH = '/../_misc/'
+DEFAULT_PARAMETERS_FILENAME = 'parameters.yaml'
+DEFAULT_PROJECT_FILENAME = 'project.yaml'
+DEFAULT_LOG_FILENAME = 'project.log'
+
+GRID_PARAMETERS = [
+    'x0',
+    'y0',
+    'z0',
+    'nx',
+    'ny',
+    'nz',
+    'dx',
+    'dy',
+    'dz'
+]
 
 GEOLOGICAL_FEATURES = [
     'domain',
@@ -56,3 +65,23 @@ features = [
 ]
 
 AUTHORIZED_FEATURES = [f for list_ in features for f in list_]
+
+VALID_EXTENSIONS_DATAFRAME = [
+    'gslib',
+    'vox',
+    # 'grd',  # TODO
+]
+
+VALID_EXTENSIONS_IMAGE = [key.strip('.') for key in Image.EXTENSION.keys()]
+
+VALID_EXTENSIONS_DATA = [
+    'gslib',
+    'vox',
+    'csv',
+    'txt',
+    'npy',
+    'tif',  # TODO - rasterio
+    'tiff',  # TODO - rasterio
+    'asc',  # TODO - rasterio
+]
+VALID_EXTENSIONS_DATA.extend(VALID_EXTENSIONS_IMAGE)

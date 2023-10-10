@@ -6,8 +6,8 @@
  ♠                              | INFO     | | .__/ \__, |_|\_\__,_|___/___/\___/  
  ♠                              | INFO     | | |     __/ |                         
  ♠                              | INFO     | |_|    |___/                          
- ☼                              | INFO     | Directory location : c:\Users\franc\OneDrive\Desktop\pykasso\pykasso\notebooks\paper\example_01\
- ☼                              | INFO     | Date log creation  : 2023-09-05 16:24:24
+ ☼                              | INFO     | Directory location : c:\Users\franc\OneDrive\Desktop\pykasso\pykasso\notebooks\paper/example_01/
+ ☼                              | INFO     | Date log creation  : 2023-10-10 16:25:48
  ☼                              | INFO     | pyKasso version    : v.0.1.2
  ☼                              | INFO     | 
  ☼                              | INFO     | Dependencies versions:
@@ -22,8 +22,8 @@
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 1 ***
  ►                              | INFO     | ****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_1\
- ►                              | INFO     | Date          : 2023-09-05 16:24:24
+ ►                              | INFO     | Path          : example_01/outputs/simulation_1/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:48
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -67,13 +67,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 2 ***
  ►                              | INFO     | ****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_2\
- ►                              | INFO     | Date          : 2023-09-05 16:24:25
+ ►                              | INFO     | Path          : example_01/outputs/simulation_2/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:48
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -117,13 +117,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 3 ***
  ►                              | INFO     | ****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_3\
- ►                              | INFO     | Date          : 2023-09-05 16:24:25
+ ►                              | INFO     | Path          : example_01/outputs/simulation_3/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:48
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -167,13 +167,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 4 ***
  ►                              | INFO     | ****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_4\
- ►                              | INFO     | Date          : 2023-09-05 16:24:26
+ ►                              | INFO     | Path          : example_01/outputs/simulation_4/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:49
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -217,13 +217,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 5 ***
  ►                              | INFO     | ****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_5\
- ►                              | INFO     | Date          : 2023-09-05 16:24:27
+ ►                              | INFO     | Path          : example_01/outputs/simulation_5/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:49
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -267,13 +267,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 6 ***
  ►                              | INFO     | ****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_6\
- ►                              | INFO     | Date          : 2023-09-05 16:24:28
+ ►                              | INFO     | Path          : example_01/outputs/simulation_6/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:49
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -317,13 +317,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 7 ***
  ►                              | INFO     | ****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_7\
- ►                              | INFO     | Date          : 2023-09-05 16:24:28
+ ►                              | INFO     | Path          : example_01/outputs/simulation_7/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:49
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -367,13 +367,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 8 ***
  ►                              | INFO     | ****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_8\
- ►                              | INFO     | Date          : 2023-09-05 16:24:29
+ ►                              | INFO     | Path          : example_01/outputs/simulation_8/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:50
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -417,13 +417,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | ****************************
  ►                              | INFO     | *** pyKasso simulation 9 ***
  ►                              | INFO     | ****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_9\
- ►                              | INFO     | Date          : 2023-09-05 16:24:30
+ ►                              | INFO     | Path          : example_01/outputs/simulation_9/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:50
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -467,13 +467,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 10 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_10\
- ►                              | INFO     | Date          : 2023-09-05 16:24:31
+ ►                              | INFO     | Path          : example_01/outputs/simulation_10/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:50
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -517,13 +517,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 11 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_11\
- ►                              | INFO     | Date          : 2023-09-05 16:24:31
+ ►                              | INFO     | Path          : example_01/outputs/simulation_11/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:50
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -567,13 +567,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 12 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_12\
- ►                              | INFO     | Date          : 2023-09-05 16:24:32
+ ►                              | INFO     | Path          : example_01/outputs/simulation_12/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:51
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -617,13 +617,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 13 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_13\
- ►                              | INFO     | Date          : 2023-09-05 16:24:33
+ ►                              | INFO     | Path          : example_01/outputs/simulation_13/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:51
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -667,13 +667,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 14 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_14\
- ►                              | INFO     | Date          : 2023-09-05 16:24:34
+ ►                              | INFO     | Path          : example_01/outputs/simulation_14/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:51
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -717,13 +717,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 15 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_15\
- ►                              | INFO     | Date          : 2023-09-05 16:24:34
+ ►                              | INFO     | Path          : example_01/outputs/simulation_15/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:51
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -767,13 +767,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 16 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_16\
- ►                              | INFO     | Date          : 2023-09-05 16:24:35
+ ►                              | INFO     | Path          : example_01/outputs/simulation_16/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:52
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -817,13 +817,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 17 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_17\
- ►                              | INFO     | Date          : 2023-09-05 16:24:36
+ ►                              | INFO     | Path          : example_01/outputs/simulation_17/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:52
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -867,13 +867,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 18 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_18\
- ►                              | INFO     | Date          : 2023-09-05 16:24:37
+ ►                              | INFO     | Path          : example_01/outputs/simulation_18/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:52
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -917,13 +917,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 19 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_19\
- ►                              | INFO     | Date          : 2023-09-05 16:24:37
+ ►                              | INFO     | Path          : example_01/outputs/simulation_19/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:52
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -967,13 +967,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 20 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_20\
- ►                              | INFO     | Date          : 2023-09-05 16:24:38
+ ►                              | INFO     | Path          : example_01/outputs/simulation_20/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:53
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1017,13 +1017,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 21 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_21\
- ►                              | INFO     | Date          : 2023-09-05 16:24:39
+ ►                              | INFO     | Path          : example_01/outputs/simulation_21/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:53
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1067,13 +1067,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 22 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_22\
- ►                              | INFO     | Date          : 2023-09-05 16:24:40
+ ►                              | INFO     | Path          : example_01/outputs/simulation_22/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:53
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1117,13 +1117,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 23 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_23\
- ►                              | INFO     | Date          : 2023-09-05 16:24:40
+ ►                              | INFO     | Path          : example_01/outputs/simulation_23/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:53
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1167,13 +1167,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 24 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_24\
- ►                              | INFO     | Date          : 2023-09-05 16:24:41
+ ►                              | INFO     | Path          : example_01/outputs/simulation_24/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:54
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1217,13 +1217,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 25 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_25\
- ►                              | INFO     | Date          : 2023-09-05 16:24:42
+ ►                              | INFO     | Path          : example_01/outputs/simulation_25/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:54
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1267,13 +1267,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 26 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_26\
- ►                              | INFO     | Date          : 2023-09-05 16:24:42
+ ►                              | INFO     | Path          : example_01/outputs/simulation_26/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:54
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1317,13 +1317,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 27 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_27\
- ►                              | INFO     | Date          : 2023-09-05 16:24:43
+ ►                              | INFO     | Path          : example_01/outputs/simulation_27/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:54
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1367,13 +1367,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 28 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_28\
- ►                              | INFO     | Date          : 2023-09-05 16:24:44
+ ►                              | INFO     | Path          : example_01/outputs/simulation_28/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:55
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1417,13 +1417,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 29 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_29\
- ►                              | INFO     | Date          : 2023-09-05 16:24:45
+ ►                              | INFO     | Path          : example_01/outputs/simulation_29/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:55
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1467,13 +1467,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 30 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_30\
- ►                              | INFO     | Date          : 2023-09-05 16:24:45
+ ►                              | INFO     | Path          : example_01/outputs/simulation_30/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:55
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1517,13 +1517,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 31 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_31\
- ►                              | INFO     | Date          : 2023-09-05 16:24:46
+ ►                              | INFO     | Path          : example_01/outputs/simulation_31/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:55
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1567,13 +1567,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 32 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_32\
- ►                              | INFO     | Date          : 2023-09-05 16:24:47
+ ►                              | INFO     | Path          : example_01/outputs/simulation_32/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:56
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1617,13 +1617,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 33 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_33\
- ►                              | INFO     | Date          : 2023-09-05 16:24:48
+ ►                              | INFO     | Path          : example_01/outputs/simulation_33/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:56
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1667,13 +1667,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 34 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_34\
- ►                              | INFO     | Date          : 2023-09-05 16:24:48
+ ►                              | INFO     | Path          : example_01/outputs/simulation_34/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:56
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1717,13 +1717,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 35 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_35\
- ►                              | INFO     | Date          : 2023-09-05 16:24:49
+ ►                              | INFO     | Path          : example_01/outputs/simulation_35/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:56
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1767,13 +1767,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 36 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_36\
- ►                              | INFO     | Date          : 2023-09-05 16:24:50
+ ►                              | INFO     | Path          : example_01/outputs/simulation_36/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:57
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1817,13 +1817,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 37 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_37\
- ►                              | INFO     | Date          : 2023-09-05 16:24:51
+ ►                              | INFO     | Path          : example_01/outputs/simulation_37/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:57
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1867,13 +1867,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 38 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_38\
- ►                              | INFO     | Date          : 2023-09-05 16:24:51
+ ►                              | INFO     | Path          : example_01/outputs/simulation_38/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:57
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1917,13 +1917,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 39 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_39\
- ►                              | INFO     | Date          : 2023-09-05 16:24:52
+ ►                              | INFO     | Path          : example_01/outputs/simulation_39/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:57
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -1967,13 +1967,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 40 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_40\
- ►                              | INFO     | Date          : 2023-09-05 16:24:53
+ ►                              | INFO     | Path          : example_01/outputs/simulation_40/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:58
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2017,13 +2017,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 41 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_41\
- ►                              | INFO     | Date          : 2023-09-05 16:24:54
+ ►                              | INFO     | Path          : example_01/outputs/simulation_41/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:58
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2067,13 +2067,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 42 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_42\
- ►                              | INFO     | Date          : 2023-09-05 16:24:54
+ ►                              | INFO     | Path          : example_01/outputs/simulation_42/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:58
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2117,13 +2117,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 43 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_43\
- ►                              | INFO     | Date          : 2023-09-05 16:24:55
+ ►                              | INFO     | Path          : example_01/outputs/simulation_43/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:58
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2167,13 +2167,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 44 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_44\
- ►                              | INFO     | Date          : 2023-09-05 16:24:56
+ ►                              | INFO     | Path          : example_01/outputs/simulation_44/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:59
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2217,13 +2217,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 45 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_45\
- ►                              | INFO     | Date          : 2023-09-05 16:24:57
+ ►                              | INFO     | Path          : example_01/outputs/simulation_45/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:59
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2267,13 +2267,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 46 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_46\
- ►                              | INFO     | Date          : 2023-09-05 16:24:57
+ ►                              | INFO     | Path          : example_01/outputs/simulation_46/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:59
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2317,13 +2317,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 47 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_47\
- ►                              | INFO     | Date          : 2023-09-05 16:24:58
+ ►                              | INFO     | Path          : example_01/outputs/simulation_47/
+ ►                              | INFO     | Date          : 2023-10-10 16:25:59
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2367,13 +2367,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 48 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_48\
- ►                              | INFO     | Date          : 2023-09-05 16:24:59
+ ►                              | INFO     | Path          : example_01/outputs/simulation_48/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:00
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2417,13 +2417,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 49 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_49\
- ►                              | INFO     | Date          : 2023-09-05 16:25:00
+ ►                              | INFO     | Path          : example_01/outputs/simulation_49/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:00
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2467,13 +2467,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 50 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_50\
- ►                              | INFO     | Date          : 2023-09-05 16:25:00
+ ►                              | INFO     | Path          : example_01/outputs/simulation_50/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:00
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2517,13 +2517,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 51 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_51\
- ►                              | INFO     | Date          : 2023-09-05 16:25:01
+ ►                              | INFO     | Path          : example_01/outputs/simulation_51/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:00
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2567,13 +2567,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 52 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_52\
- ►                              | INFO     | Date          : 2023-09-05 16:25:02
+ ►                              | INFO     | Path          : example_01/outputs/simulation_52/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:01
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2617,13 +2617,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 53 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_53\
- ►                              | INFO     | Date          : 2023-09-05 16:25:02
+ ►                              | INFO     | Path          : example_01/outputs/simulation_53/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:01
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2667,13 +2667,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 54 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_54\
- ►                              | INFO     | Date          : 2023-09-05 16:25:03
+ ►                              | INFO     | Path          : example_01/outputs/simulation_54/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:01
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2717,13 +2717,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 55 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_55\
- ►                              | INFO     | Date          : 2023-09-05 16:25:04
+ ►                              | INFO     | Path          : example_01/outputs/simulation_55/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:02
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2767,13 +2767,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 56 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_56\
- ►                              | INFO     | Date          : 2023-09-05 16:25:05
+ ►                              | INFO     | Path          : example_01/outputs/simulation_56/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:02
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2817,13 +2817,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 57 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_57\
- ►                              | INFO     | Date          : 2023-09-05 16:25:05
+ ►                              | INFO     | Path          : example_01/outputs/simulation_57/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:02
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2867,13 +2867,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 58 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_58\
- ►                              | INFO     | Date          : 2023-09-05 16:25:06
+ ►                              | INFO     | Path          : example_01/outputs/simulation_58/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:02
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2917,13 +2917,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 59 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_59\
- ►                              | INFO     | Date          : 2023-09-05 16:25:07
+ ►                              | INFO     | Path          : example_01/outputs/simulation_59/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:03
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -2967,13 +2967,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 60 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_60\
- ►                              | INFO     | Date          : 2023-09-05 16:25:08
+ ►                              | INFO     | Path          : example_01/outputs/simulation_60/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:03
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3017,13 +3017,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 61 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_61\
- ►                              | INFO     | Date          : 2023-09-05 16:25:08
+ ►                              | INFO     | Path          : example_01/outputs/simulation_61/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:03
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3067,13 +3067,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 62 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_62\
- ►                              | INFO     | Date          : 2023-09-05 16:25:09
+ ►                              | INFO     | Path          : example_01/outputs/simulation_62/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:03
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3117,13 +3117,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 63 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_63\
- ►                              | INFO     | Date          : 2023-09-05 16:25:10
+ ►                              | INFO     | Path          : example_01/outputs/simulation_63/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:04
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3167,13 +3167,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 64 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_64\
- ►                              | INFO     | Date          : 2023-09-05 16:25:11
+ ►                              | INFO     | Path          : example_01/outputs/simulation_64/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:04
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3217,13 +3217,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 65 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_65\
- ►                              | INFO     | Date          : 2023-09-05 16:25:11
+ ►                              | INFO     | Path          : example_01/outputs/simulation_65/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:04
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3267,13 +3267,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 66 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_66\
- ►                              | INFO     | Date          : 2023-09-05 16:25:12
+ ►                              | INFO     | Path          : example_01/outputs/simulation_66/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:04
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3317,13 +3317,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 67 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_67\
- ►                              | INFO     | Date          : 2023-09-05 16:25:13
+ ►                              | INFO     | Path          : example_01/outputs/simulation_67/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:05
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3367,13 +3367,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 68 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_68\
- ►                              | INFO     | Date          : 2023-09-05 16:25:14
+ ►                              | INFO     | Path          : example_01/outputs/simulation_68/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:05
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3417,13 +3417,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 69 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_69\
- ►                              | INFO     | Date          : 2023-09-05 16:25:14
+ ►                              | INFO     | Path          : example_01/outputs/simulation_69/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:05
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3467,13 +3467,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 70 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_70\
- ►                              | INFO     | Date          : 2023-09-05 16:25:15
+ ►                              | INFO     | Path          : example_01/outputs/simulation_70/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:05
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3517,13 +3517,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 71 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_71\
- ►                              | INFO     | Date          : 2023-09-05 16:25:16
+ ►                              | INFO     | Path          : example_01/outputs/simulation_71/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:06
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3567,13 +3567,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 72 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_72\
- ►                              | INFO     | Date          : 2023-09-05 16:25:17
+ ►                              | INFO     | Path          : example_01/outputs/simulation_72/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:06
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3617,13 +3617,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 73 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_73\
- ►                              | INFO     | Date          : 2023-09-05 16:25:18
+ ►                              | INFO     | Path          : example_01/outputs/simulation_73/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:06
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3667,13 +3667,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 74 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_74\
- ►                              | INFO     | Date          : 2023-09-05 16:25:18
+ ►                              | INFO     | Path          : example_01/outputs/simulation_74/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:06
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3717,13 +3717,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 75 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_75\
- ►                              | INFO     | Date          : 2023-09-05 16:25:19
+ ►                              | INFO     | Path          : example_01/outputs/simulation_75/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:07
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3767,13 +3767,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 76 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_76\
- ►                              | INFO     | Date          : 2023-09-05 16:25:20
+ ►                              | INFO     | Path          : example_01/outputs/simulation_76/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:07
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3817,13 +3817,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 77 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_77\
- ►                              | INFO     | Date          : 2023-09-05 16:25:21
+ ►                              | INFO     | Path          : example_01/outputs/simulation_77/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:07
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3867,13 +3867,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 78 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_78\
- ►                              | INFO     | Date          : 2023-09-05 16:25:21
+ ►                              | INFO     | Path          : example_01/outputs/simulation_78/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:07
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3917,13 +3917,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 79 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_79\
- ►                              | INFO     | Date          : 2023-09-05 16:25:22
+ ►                              | INFO     | Path          : example_01/outputs/simulation_79/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:08
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -3967,13 +3967,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 80 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_80\
- ►                              | INFO     | Date          : 2023-09-05 16:25:23
+ ►                              | INFO     | Path          : example_01/outputs/simulation_80/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:08
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4017,13 +4017,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 81 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_81\
- ►                              | INFO     | Date          : 2023-09-05 16:25:24
+ ►                              | INFO     | Path          : example_01/outputs/simulation_81/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:08
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4067,13 +4067,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 82 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_82\
- ►                              | INFO     | Date          : 2023-09-05 16:25:24
+ ►                              | INFO     | Path          : example_01/outputs/simulation_82/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:08
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4117,13 +4117,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 83 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_83\
- ►                              | INFO     | Date          : 2023-09-05 16:25:25
+ ►                              | INFO     | Path          : example_01/outputs/simulation_83/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:08
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4167,13 +4167,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 84 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_84\
- ►                              | INFO     | Date          : 2023-09-05 16:25:26
+ ►                              | INFO     | Path          : example_01/outputs/simulation_84/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:09
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4217,13 +4217,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 85 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_85\
- ►                              | INFO     | Date          : 2023-09-05 16:25:27
+ ►                              | INFO     | Path          : example_01/outputs/simulation_85/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:09
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4267,13 +4267,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 86 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_86\
- ►                              | INFO     | Date          : 2023-09-05 16:25:27
+ ►                              | INFO     | Path          : example_01/outputs/simulation_86/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:09
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4317,13 +4317,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 87 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_87\
- ►                              | INFO     | Date          : 2023-09-05 16:25:28
+ ►                              | INFO     | Path          : example_01/outputs/simulation_87/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:09
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4367,13 +4367,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 88 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_88\
- ►                              | INFO     | Date          : 2023-09-05 16:25:29
+ ►                              | INFO     | Path          : example_01/outputs/simulation_88/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:10
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4417,13 +4417,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 89 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_89\
- ►                              | INFO     | Date          : 2023-09-05 16:25:30
+ ►                              | INFO     | Path          : example_01/outputs/simulation_89/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:10
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4467,13 +4467,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 90 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_90\
- ►                              | INFO     | Date          : 2023-09-05 16:25:30
+ ►                              | INFO     | Path          : example_01/outputs/simulation_90/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:10
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4517,13 +4517,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 91 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_91\
- ►                              | INFO     | Date          : 2023-09-05 16:25:31
+ ►                              | INFO     | Path          : example_01/outputs/simulation_91/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:10
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4567,13 +4567,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 92 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_92\
- ►                              | INFO     | Date          : 2023-09-05 16:25:32
+ ►                              | INFO     | Path          : example_01/outputs/simulation_92/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:11
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4617,13 +4617,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 93 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_93\
- ►                              | INFO     | Date          : 2023-09-05 16:25:33
+ ►                              | INFO     | Path          : example_01/outputs/simulation_93/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:11
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4667,13 +4667,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 94 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_94\
- ►                              | INFO     | Date          : 2023-09-05 16:25:33
+ ►                              | INFO     | Path          : example_01/outputs/simulation_94/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:11
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4717,13 +4717,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 95 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_95\
- ►                              | INFO     | Date          : 2023-09-05 16:25:34
+ ►                              | INFO     | Path          : example_01/outputs/simulation_95/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:11
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4767,13 +4767,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 96 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_96\
- ►                              | INFO     | Date          : 2023-09-05 16:25:35
+ ►                              | INFO     | Path          : example_01/outputs/simulation_96/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:12
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4817,13 +4817,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 97 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_97\
- ►                              | INFO     | Date          : 2023-09-05 16:25:36
+ ►                              | INFO     | Path          : example_01/outputs/simulation_97/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:12
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4867,13 +4867,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 98 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_98\
- ►                              | INFO     | Date          : 2023-09-05 16:25:36
+ ►                              | INFO     | Path          : example_01/outputs/simulation_98/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:12
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4917,13 +4917,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | *****************************
  ►                              | INFO     | *** pyKasso simulation 99 ***
  ►                              | INFO     | *****************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_99\
- ►                              | INFO     | Date          : 2023-09-05 16:25:37
+ ►                              | INFO     | Path          : example_01/outputs/simulation_99/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:12
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -4967,13 +4967,13 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1
  ►                              | INFO     | ******************************
  ►                              | INFO     | *** pyKasso simulation 100 ***
  ►                              | INFO     | ******************************
- ►                              | INFO     | Path          : example_01\outputs\simulation_100\
- ►                              | INFO     | Date          : 2023-09-05 16:25:38
+ ►                              | INFO     | Path          : example_01/outputs/simulation_100/
+ ►                              | INFO     | Date          : 2023-10-10 16:26:13
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  domain.validation              | WARNING  | The 'domain' attribute is missing (optional).
@@ -5017,5 +5017,5 @@
  fractures.validation           | WARNING  | The 'cost' attribute is missing (optional) and has been set with default value(s).
  fractures.validation           | INFO     | 'fractures' settings have been validated
  fractures.construction         | INFO     | 'fractures' has been constructed
- fmm.modelisation               | INFO     | Computing karst network
+ fmm.modelisation               | INFO     | Computing karst conduit network...
  fmm.modelisation               | INFO     | iteration : 1/1

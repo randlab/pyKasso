@@ -36,7 +36,7 @@ class Analyzer():
         More details here : https://github.com/karstnet/karstnet
         """
         package_location = self.project._pckg_paths['package_location']
-        statistics_file_path = "\\..\\_misc\\statistics.xlsx"
+        statistics_file_path = "/../_misc/statistics.xlsx"
         statistics_file_location = package_location + statistics_file_path
         self.statistics = pd.read_excel(statistics_file_location).describe()
         return None
@@ -94,7 +94,8 @@ class Analyzer():
             # format {nodeindex: [x,y]}
             self.edges = karstnet_edges  # TODO - remove self
             self.nodes = karstnet_nodes  # TODO - remove self
-            self.k = kn.KGraph(karstnet_edges, karstnet_nodes)  # TODO - remove 'self' ?
+            # TODO - remove 'self' ?
+            self.k = kn.KGraph(karstnet_edges, karstnet_nodes)
             verbosity = 0
             metrics = self.k.characterize_graph(verbosity)
 
@@ -157,7 +158,8 @@ class Analyzer():
 
         return df_metrics
 
-    def compute_stats_on_networks(self, algorithm: str = 'mean') -> np.ndarray:
+    def compute_stats_on_networks(self, algorithm: str = 'mean',
+                                  np_options: dict = {}) -> np.ndarray:
         """
         TODO
         
@@ -175,9 +177,9 @@ class Analyzer():
         >>> karst_mean = analysis.compute_average_karstic_network()
         """
         # Initialization
-        nx = self.project.grid.nx
-        ny = self.project.grid.ny
-        nz = self.project.grid.nz
+        # nx = self.project.grid.nx
+        # ny = self.project.grid.ny
+        # nz = self.project.grid.nz
         karst_map = []
         # karst_map = np.zeros((nx, ny, nz))
         
@@ -191,8 +193,9 @@ class Analyzer():
         try:
             numpy_func = getattr(np, algorithm)
         except:
-            pass # TODO
+            msg = "Asked algorithm is not valid."
+            raise ValueError(msg)
         
-        out = numpy_func(karst_map, axis=0)
-        # out = karst_map / self.project.n_simulations
+        np_options.pop('axis', None)
+        out = numpy_func(karst_map, axis=0, **np_options)
         return out
