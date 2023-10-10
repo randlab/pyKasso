@@ -735,8 +735,7 @@ class Visualizer():
                 features: list,
                 settings: list = [],
                 cpos: str = 'xz',
-                # savefig: str = None,  # TODO
-                # link_views ???
+                savefig: bool = False,
                 ) -> None:
         """
         TODO
@@ -805,9 +804,10 @@ class Visualizer():
             
         shape = (rows, columns)
         border = True
-        off_screen = False
-        # if savefig is not None:
-        #     off_screen = True
+        if savefig:
+            off_screen = True
+        else:
+            off_screen = False
         plotter = pv.Plotter(shape=shape, border=border, off_screen=off_screen)
         
         ###############
@@ -852,15 +852,16 @@ class Visualizer():
                     
         plotter.link_views()
         
-        # TODO
-        # if savefig is not None:  # TODO
+        if savefig:
+            outputs_dir = self.project.core['paths']['outputs_dir']
+            filename = outputs_dir + 'pv_plot'
         #     path = self.project_directory + '/outputs/' + savefig
-        #     plotter.show(cpos=cpos, screenshot=path)
-        # else:
-        #     plotter.show(cpos=cpos)
+            # plotter.show(cpos=cpos, screenshot=filename)
+            plotter.show(cpos=cpos, auto_close=False)
+            plotter.show(cpos=cpos, screenshot=filename)
+        else:
+            plotter.show(cpos=cpos)
             
-        plotter.show(cpos=cpos)
-
         return None
     
     @staticmethod
