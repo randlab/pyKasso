@@ -737,6 +737,7 @@ class Visualizer():
                 settings: list = [],
                 cpos: Union[str, list] = 'xz',
                 savefig: bool = False,
+                filename: str = None,
                 ) -> None:
         """
         TODO
@@ -856,25 +857,13 @@ class Visualizer():
         if savefig:
             outputs_dir = self.project.core['paths']['outputs_dir']
             date = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-            filename = outputs_dir + 'pv_plot_' + date
-        #     path = self.project_directory + '/outputs/' + savefig
-            # plotter.show(cpos=cpos, screenshot=filename)
-            # plotter.show(cpos=cpos, auto_close=False, jupyter_backend=None)
-            # array = plotter.screenshot(filename=filename, return_img=True)
-            # 
-            # self.notebook = False
-            array = plotter.show(cpos=cpos,)
-            # plotter.screenshot(filename=filename)
-                                #  screenshot=True,
-                                #  jupyter_backend="none",
-            # )
-            # print(array)
-            # print(type(array))
-                        #  auto_close=False,
-                        # 
-                        #  return_img=True)
-            # Visualizer.mpl_plot_array_2D(array)
-            # self.notebook = True
+            
+            if filename is None:
+                filename = outputs_dir + 'pv_plot_' + date
+
+            plotter.show(cpos=cpos,
+                         screenshot=filename,
+                         jupyter_backend='none',)
         else:
             plotter.show(cpos=cpos)
             
