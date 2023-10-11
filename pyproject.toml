@@ -59,7 +59,8 @@ numpydoc = "^1.5.0"
 
 [tool.poetry.extras]
 analysis = ["karstnet", "networkx", "mplstereonet"]
-visualization = ["pyvista", "imageio", "trame", "trame-vuetify", "trame-vtk"]
+visualization = ["pyvista", "imageio"]
+trame = ["trame", "trame-vuetify", "trame-vtk"]
 
 [build-system]
 requires = ["poetry-core"]
