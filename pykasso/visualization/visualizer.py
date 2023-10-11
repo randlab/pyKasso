@@ -470,7 +470,7 @@ class Visualizer():
     
     @staticmethod
     def _create_empty_mesh(shape: tuple[int, int, int]
-                           ) -> pyvista.core.pointset.UnstructuredGrid:
+                           ):  # pyvista.core.pointset.UnstructuredGrid
         """
         Create an empty pyvista mesh according to the `shape` tuple.
 
@@ -491,10 +491,10 @@ class Visualizer():
     
     # TODO - should be rewritten
     @staticmethod
-    def _ghost_values(mesh: pyvista.core.pointset.UnstructuredGrid,
+    def _ghost_values(mesh,  # pyvista.core.pointset.UnstructuredGrid
                       ghost_values: list,
                       ghost_subdomains: list
-                      ) -> pyvista.core.pointset.UnstructuredGrid:
+                      ):  # pyvista.core.pointset.UnstructuredGrid
         """
         DOC
         """
@@ -1178,7 +1178,7 @@ class Visualizer():
     
     @staticmethod
     @requires_pyvista()
-    def _df_to_cloud(points: pd.DataFrame) -> pv.PolyData:
+    def _df_to_cloud(points: pd.DataFrame):  # pv.PolyData
         """
         Transform a pandas ``DataFrame`` storing points into a pyvista
         ``PolyData``
@@ -1205,7 +1205,7 @@ class Visualizer():
     def _get_surface(meshgrids: tuple[np.ndarray, np.ndarray, np.ndarray],
                      simulation_data: dict,
                      surface_name: str
-                     ) -> Union[pv.StructuredGrid, None]:
+                     ):  # -> Union[pv.StructuredGrid, None]
         """
         Plot a surface feature. If the surface name is invalid, or if the
         surface feature is absent from the current simulation, print a warning
@@ -1283,7 +1283,7 @@ class Visualizer():
         
     @staticmethod
     @requires_pyvista()
-    def _fractures_to_polygons(fractures: list) -> list[pv.PolyData]:
+    def _fractures_to_polygons(fractures: list):  # -> list[pv.PolyData]
         """
         Transform a list of fractures in a list of pyvista polygons.
 
@@ -1317,9 +1317,6 @@ class Visualizer():
                    zoom: float = 1,
                    fps: int = 10,
                    n_points: int = 24,
-                #    ghosts: list = [],
-                #    colormap: str = 'viridis',
-   
                    ) -> None:
         """
         TODO
