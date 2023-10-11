@@ -104,6 +104,7 @@ class Visualizer():
     def __init__(self,
                  project: Project,
                  notebook: bool = False,
+                 jupyter_backend: str = 'static',
                  ) -> None:
         """
         Initialize the class.
@@ -118,6 +119,7 @@ class Visualizer():
         """
         self.project = project
         self._notebook = notebook
+        self._jupyter_backend = jupyter_backend
         
         # Set notebook value
         self._set_notebook_value(notebook)
@@ -125,6 +127,10 @@ class Visualizer():
         # Set the pyvista grid
         if _has_pyvista:
             self._set_pyvista_grid()
+            
+        # Set the jupyter backend
+        if _has_pyvista:
+            self._set_pyvista_jupyter_backend(jupyter_backend)
         
     @property
     def notebook(self) -> bool:
@@ -141,12 +147,15 @@ class Visualizer():
         """
         When `notebook` is set, modify the way the figures are rendered.
         """
+        if not isinstance(boolean, bool):
+            msg = "Input must be a boolean."
+            raise TypeError(msg)
+        
         self._notebook = boolean
         self._set_notebook_value(boolean)
-        
-    def _set_notebook_value(self,
-                            boolean: bool,
-                            ) -> None:
+    
+    @staticmethod
+    def _set_notebook_value(boolean: bool) -> None:
         """
         Render plots within python notebooks if `boolean` is `True`.
         """
@@ -160,6 +169,22 @@ class Visualizer():
         if _has_pyvista:
             pv.global_theme.notebook = boolean
         
+        return None
+    
+    @property
+    def jupyter_backend(self) -> bool:
+        return self._jupyter_backend
+
+    @jupyter_backend.setter
+    def jupyter_backend(self,
+                        mode: str,
+                        ) -> None:
+        self._set_pyvista_jupyter_backend(mode)
+        self._jupyter_backend = mode
+        
+    @staticmethod
+    def _set_pyvista_jupyter_backend(mode: str) -> None:
+        pv.set_jupyter_backend(mode)
         return None
     
     # ************************************************************* #
@@ -458,7 +483,8 @@ class Visualizer():
         -------
         UnstructuredGrid
         """
-        mesh = pv.UniformGrid()
+        # mesh = pv.UniformGrid()
+        mesh = pv.ImageData()
         mesh.dimensions = np.array(shape) + 1
         mesh = mesh.cast_to_unstructured_grid()
         return mesh
@@ -721,7 +747,8 @@ class Visualizer():
         x0, y0, z0 = grid['x0'], grid['y0'], grid['z0']
         nx, ny, nz = grid['nx'], grid['ny'], grid['nz']
         dx, dy, dz = grid['dx'], grid['dy'], grid['dz']
-        pv_grid = pv.UniformGrid()
+        # pv_grid = pv.UniformGrid()
+        pv_grid = pv.ImageData()
         
         # Construct grid
         pv_grid.origin = (x0 - dx / 2, y0 - dy / 2, z0 - dz / 2)
