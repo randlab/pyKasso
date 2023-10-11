@@ -175,6 +175,8 @@ class Project(Sequence):
             # Copy the default parameters.yaml file from the misc directory
             # to the project directory
             source = misc_dir_loc + self.core['filenames']['parameters']
+            print(source)
+            print(self.core['paths']['inputs_dir'])
             shutil.copy2(source, self.core['paths']['inputs_dir'])
         
         ### Construct the dictionary used for settings comparison between

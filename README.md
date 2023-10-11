@@ -36,9 +36,14 @@ pip install -e pykasso[analysis, visualization]
 
 ### Using pip
 
-In local, from source::
+In local, from source:
 ```
-pip install -e ".[analysis, visualization]"
+pip install -e ".[analysis,visualization,trame]"
+```
+
+With git:
+```
+pip install -e git+https://github.com/randlab/pyKasso.git@dev#egg=pykasso[analysis,visualization,trame]
 ```
 
 <!-- 
