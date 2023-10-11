@@ -913,11 +913,11 @@ class Visualizer():
         return settings
     
     def _fill_plotter(self,
-                      plotter: pv.Plotter,
+                      plotter,  # pv.Plotter
                       simulation_data: dict,
                       feature: str,
                       settings: dict
-                      ) -> pv.Plotter:
+                      ):  # -> pv.Plotter
         """_summary_
 
         Parameters
@@ -993,7 +993,7 @@ class Visualizer():
                     show_slice: bool = False,
                     fractures_options: dict = None,
                     show_colorbar: bool = True,
-                    ) -> list[pv.Actor]:
+                    ):  #  -> list[pv.Actor]
         """
         DOC
         """
