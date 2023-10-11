@@ -810,7 +810,11 @@ class Visualizer():
             off_screen = True
         else:
             off_screen = False
-        plotter = pv.Plotter(shape=shape, border=border, off_screen=off_screen)
+        plotter = pv.Plotter(shape=shape,
+                             border=border,
+                            #  off_screen=off_screen,
+                            #  notebook=self.notebook,
+                             )
         
         ###############
         ### Ploting ###
@@ -863,7 +867,7 @@ class Visualizer():
 
             plotter.show(cpos=cpos,
                          screenshot=filename,
-                         jupyter_backend='none',)
+                         )
         else:
             plotter.show(cpos=cpos)
             

@@ -14,6 +14,7 @@ import rasterio
 from pykasso.core._namespaces import (VALID_EXTENSIONS_DATA,
                                       VALID_EXTENSIONS_DATAFRAME,
                                       VALID_EXTENSIONS_IMAGE)
+from pykasso.core.grid import Grid
 
 ### Typing
 from typing import Union
@@ -304,4 +305,46 @@ class DataReader():
         pil_image = pil_image.convert('L')
         pil_image = pil_image.transpose(Image.FLIP_TOP_BOTTOM)
         data = np.asarray(pil_image).T
+        return data
+    
+    #########################
+    ### Only Read Methods ###
+    #########################
+    
+    @staticmethod
+    def read_vox(filename: str,
+                 usecol: Union[int, str] = None,
+                 ) -> np.ndarray:
+        """TODO"""
+        
+        # Read file
+        df = DataReader._get_dataframe_from_vox(filename)
+        
+        # Retrieve axis
+        x = df['X'].unique()
+        y = df['Y'].unique()
+        z = df['Z'].unique()
+        
+        # Retrieve grid parameters
+        nx, ny, nz = len(x), len(y), len(z)
+        x0, y0, z0 = x.min(), y.min(), z.min()
+        dx, dy, dz = (x[1] - x[0]), (y[1] - y[0]), (z[1] - z[0])
+        
+        # Create a grid
+        grid = Grid(x0, y0, z0, nx, ny, nz, dx, dy, dz)
+        
+        # Retrieve corresponding grid indices
+        xyz = df.iloc[:, [0, 1, 2]]
+        if usecol is None:
+            usecol = 3
+        if isinstance(usecol, int):
+            d = df.iloc[:, usecol]
+        elif isinstance(usecol, str):
+            d = df[usecol]
+        i, j, k = grid.get_indices(xyz)
+        
+        # Construct the array
+        data = np.zeros_like(grid.data_volume)
+        data[i, j, k] = d
+        
         return data
