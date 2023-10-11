@@ -9,11 +9,34 @@ import copy
 ### External dependencies
 import numpy as np
 import pandas as pd
-import karstnet as kn   # TODO à mettre en optionnel
+
+### Optional dependencies
+try:
+    import karstnet as kn
+except ImportError:
+    _has_karstnet = False
+else:
+    _has_karstnet = True
 
 ### Typing
 from typing import Union
 from pykasso._typing import Project, Series, DataFrame, Styler
+
+
+def requires_karstnet():
+    """
+    If 'karstnet' package is not installed, return `ImportError` exception
+    when a method requiring 'karstnet' is called.
+    """
+    def _(function):
+        def _wrapper(*args, **kwargs):
+            if not _has_karstnet:
+                msg = ("karstnet is required to do this.")
+                raise ImportError(msg)
+            result = function(*args, **kwargs)
+            return result
+        return _wrapper
+    return _
 
 
 class Analyzer():
@@ -40,7 +63,8 @@ class Analyzer():
         statistics_file_location = package_location + statistics_file_path
         self.statistics = pd.read_excel(statistics_file_location).describe()
         return None
-        
+    
+    @requires_karstnet()
     def compute_metrics(self) -> DataFrame:
         """
         Computes the statistical metrics for each simulated karst network
@@ -192,8 +216,8 @@ class Analyzer():
         # Calculates
         try:
             numpy_func = getattr(np, algorithm)
-        except:
-            msg = "Asked algorithm is not valid."
+        except ValueError:
+            msg = "Asked algorithm is not valid."  # TODO
             raise ValueError(msg)
         
         np_options.pop('axis', None)

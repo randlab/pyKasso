@@ -175,6 +175,7 @@ class DataReader():
                 df = df.iloc[:, [0, 1, 2, usecol]]
             elif isinstance(usecol, str):
                 df = df[['X', 'Y', 'Z', usecol]]
+                
             # Transform dataframe into array
             data = self._get_data_from_vox_df(df)
                         
@@ -247,9 +248,10 @@ class DataReader():
                               ) -> np.ndarray:
         """TODO"""
         self._requires_grid()
-
+        
         # Filter values out of grid
-        df['is_inbox'] = self.grid.is_inbox(df[['X', 'Y', 'Z']])  # TODO
+        xyz = df.iloc[:, [0, 1, 2]]
+        df['is_inbox'] = self.grid.is_inbox(xyz)
         df = df[df['is_inbox']]
 
         # Retrieve valid coordinates and data

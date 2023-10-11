@@ -765,6 +765,7 @@ class Visualizer():
                 cpos: Union[str, list] = 'xz',
                 savefig: bool = False,
                 filename: str = None,
+                return_plotter: bool = False,
                 ) -> None:
         """
         TODO
@@ -833,15 +834,13 @@ class Visualizer():
             
         shape = (rows, columns)
         border = True
-        if savefig:
-            off_screen = True
-        else:
-            off_screen = False
-        plotter = pv.Plotter(shape=shape,
-                             border=border,
-                            #  off_screen=off_screen,
-                            #  notebook=self.notebook,
-                             )
+        # if savefig:
+        #     off_screen = True
+        # else:
+        #     off_screen = False
+        
+        plotter = pv.Plotter(shape=shape, border=border)
+        # off_screen=off_screen,#  notebook=self.notebook,
         
         ###############
         ### Ploting ###
@@ -885,20 +884,24 @@ class Visualizer():
                     
         plotter.link_views()
         
-        if savefig:
-            outputs_dir = self.project.core['paths']['outputs_dir']
-            date = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        # if savefig:
+        #     outputs_dir = self.project.core['paths']['outputs_dir']
+        #     date = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
             
-            if filename is None:
-                filename = outputs_dir + 'pv_plot_' + date
+        #     if filename is None:
+        #         filename = outputs_dir + 'pv_plot_' + date
 
-            plotter.show(cpos=cpos,
-                         screenshot=filename,
-                         )
+        #     plotter.show(cpos=cpos,
+        #                  screenshot=filename,
+        #                  )
+        # else:
+        #     plotter.show(cpos=cpos)
+        
+        if return_plotter:
+            return plotter
         else:
             plotter.show(cpos=cpos)
-            
-        return None
+            return None
     
     @staticmethod
     def _set_default_pv_settings(settings: dict) -> dict:
@@ -938,7 +941,7 @@ class Visualizer():
         e
             _description_
         """
-        text_options = settings.pop('text_options')
+        text_options = settings.pop('text_options', None)
         
         # Test if asked feature is valid
         if feature not in AUTHORIZED_FEATURES:
@@ -970,7 +973,8 @@ class Visualizer():
                     plotter.add_actor(actor, reset_camera=True)
            
         # Print figure caption
-        plotter.add_text(**text_options)
+        if text_options is not None:
+            plotter.add_text(**text_options)
             
         return plotter
     
@@ -1300,12 +1304,81 @@ class Visualizer():
             polygons.append(poly)
     
         return polygons
-
-
-
-
-
-
+    
+    @requires_pyvista()
+    def create_gif(self,
+                   filename: str,
+                   n_sim: int = -1,
+                   feature: str = 'karst',
+                   settings: dict = {},
+                   window_size: list[int] = [1024, 768],
+                   background_color: str = 'white',
+                   background_color_top: str = None,
+                   zoom: float = 1,
+                   fps: int = 10,
+                   n_points: int = 24,
+                #    ghosts: list = [],
+                #    colormap: str = 'viridis',
+   
+                   ) -> None:
+        """
+        TODO
+        
+        colormap: str
+            https://matplotlib.org/stable/tutorials/colors/colormaps.html
+        """
+        
+        ### Method based on those examples:
+        # https://docs.pyvista.org/examples/02-plot/orbit.html#orbiting
+        
+        ### Get the simulation data
+        simulation_data = self.project._get_simulation_data(n_sim)
+        
+        ### Create the plotter
+        plotter = pv.Plotter(off_screen=True, window_size=window_size)
+        
+        ### Fill the plotter
+        plotter = self._fill_plotter(plotter=plotter,
+                                     simulation_data=simulation_data,
+                                     feature=feature,
+                                     settings=settings)
+        
+        # Set background color
+        if background_color_top is None:
+            background_color_top = background_color
+        plotter.set_background(background_color)
+        
+        ### Set the initial camera position
+        plotter.camera.zoom(zoom)
+        # plotter.camera.roll = 0
+        plotter.camera.elevation = 0
+        plotter.camera.azimuth = 0
+        
+        ### Generate the GIF
+        
+        # Open a gif
+        plotter.open_gif(filename, fps=fps)
+        
+        # Create the camera positions
+        azimuth_step = 360 / n_points
+        
+        # Loops
+        for _ in range(n_points):
+            
+            # Update camera position
+            # plotter.camera.roll
+            # plotter.camera.elevation
+            plotter.camera.azimuth += azimuth_step
+            
+            # Update the background
+            
+            # Write the frame in the gif
+            plotter.write_frame()
+        
+        # Close and finalize movie
+        plotter.close()
+        return None
+    
 # ????
 #     @requires_pyvista()
 #     def pv_plot(self, n_sim, feature, settings={}, show=True,
@@ -1346,126 +1419,4 @@ class Visualizer():
 #         else:
 #             return None
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-#     #     def create_gif(self, simulation: int, feature: str, location: str,
-# #                    zoom: float = 1, ghosts: list = [], n_points: int = 24,
-# #                    fps: int = 10, window_size=[1024, 768],
-# #                    colormap: str = 'viridis',
-# #                    background_color: str = 'white',
-# #                    background_color_top: str = None) -> None:
-# #         """
-# #         TODO
-        
-# #         colormap: str
-# #             https://matplotlib.org/stable/tutorials/colors/colormaps.html
-# #         """
-        
-# #         ### Method based on those examples:
-# #         # https://docs.pyvista.org/examples/02-plot/orbit.html#orbiting
-        
-# #         ### Gets the simulation data
-# #         simulation_data = self._get_simulation_data(simulation)
-        
-# #         ### Gets the mesh
-# #         mesh = self._get_data_from_feature(simulation_data, feature)
-# #         # mesh_ = mesh.copy()
-# #         if len(ghosts) > 0:
-# #             mesh = self._ghost_data(mesh, ghosts)
-        
-# #         ### Constructs the plotter
-# #         plotter = pv.Plotter(off_screen=True, window_size=window_size)
-# #         plotter.store_image = True
-        
-# #         # Plots the data
-# #         kwargs = {
-# #             'cmap': colormap,
-# #             'scalar_bar_args': {'title': 'Vol1'},
-# #             'scalars': 'data',
-# #             'lighting': True,
-# #         }
-# #         plotter.add_mesh(mesh, **kwargs)
-# #         plotter.remove_scalar_bar()
-        
-# #         # Sets background color
-# #         if background_color_top is None:
-# #             background_color_top = background_color
-# #         plotter.set_background(background_color)
-        
-# #         ### Sets the initial camera position
-# #         plotter.camera.zoom(zoom)
-# #         # plotter.camera.roll = 0
-# #         plotter.camera.elevation = 0
-# #         plotter.camera.azimuth = 0
-        
-# #         ### Generates the GIF
-        
-# #         # Open a gif
-# #         plotter.open_gif(location, fps=fps)
-        
-# #         # Creates the camera positions
-# #         azimuth_step = 360 / n_points
-        
-# #         # Loops
-# #         for i in range(n_points):
-            
-# #             # Updates camera position
-# #             # plotter.camera.roll
-# #             # plotter.camera.elevation
-# #             plotter.camera.azimuth += azimuth_step
-            
-# #             # Updates the background
-            
-# #             # Writes the frame in the gif
-# #             plotter.write_frame()
-        
-# #         # Closes and finalizes movie
-# #         plotter.close()
-# #         return None
 
-
-
-
-# ??????????????????????????????????
-# def show_simulation(self):
-#         """
-#         TODO
-#         """
-#         def _show_data(environment, feature, settings):
-        
-#             # Gets the domain
-#             if hasattr(environment, 'domain') and (getattr(environment, 'domain') is not None):
-#                 grid = _get_data_from_attribute(grid, getattr(environment, 'domain'), 'data_volume', 'domain')
-
-#             # Ghost the data
-#             if 'ghost' in settings:
-#                 if settings['domain'] == True:
-#                     ghosts = np.argwhere(np.logical_or(np.isin(grid["data"], settings['ghost']), (grid["domain"] == 0)))
-#                 else:
-#                     ghosts = np.argwhere(np.isin(grid["data"], settings['ghost']))
-#             else:
-#                 if settings['domain'] == True:
-#                     ghosts = np.argwhere(grid["domain"] == 0)
-#                 else:
-#                     ghosts = None
-            
-#             if ghosts is not None:
-#                 grid = grid.remove_cells(ghosts)
-
-#         return None
