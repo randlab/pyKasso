@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 
 ### Local dependencies
-from pykasso.model.geologic_features import Volume
-
+from pykasso.model.geologic_features import GeologicFeature
+from pykasso.core._namespaces import DEFAULT_FMM_COSTS
 ### Typing
 from pykasso._typing import Grid, RandomNumberGenerator
 
@@ -20,66 +20,79 @@ from pykasso._typing import Grid, RandomNumberGenerator
 # (https://numpy.org/doc/stable/reference/random/generated/numpy.random.normal.html)
 
 
-class Fractures(Volume):
+class Fractures(GeologicFeature):
     """Class modeling the fracturation model."""
     
     def __init__(self, rng: RandomNumberGenerator, *args, **kwargs):
         label = 'fractures'
-        super().__init__(label, *args, **kwargs)
+        dim = 3
+        super().__init__(label, dim, *args, **kwargs)
         
         self.rng = rng
-        self.i = 0
+        self.i = self.stats.index.max()
         self.families = pd.DataFrame()
         self.fractures = pd.DataFrame()
         self.fractures_voxelized = {}
-        self.model = 'superposition'
-        self.models = {}
         
-    def generate_fracture_family(self, name, grid, **settings):
+    def generate_fracture_family(self,
+                                 name: str,
+                                 **settings,  # TODO - to describe
+                                 ) -> None:
+        """TODO"""
+        
+        # Update fractures iterator
         self.i = self.i + 1
         
-        # Creates family
+        # Create a dataframe storing the new family settings
         frac_family = {
-            'id': [self.i],
             'name': [name],
             'alpha': settings['alpha'],
             'density': settings['density'],
             'cost': settings['cost'],
-            # 'geology': pass # TODO - add geology
+            # 'geology': [0,1,2] # TODO - add geology
         }
+        frac_family = pd.DataFrame(data=frac_family, index=[self.i])
         
-        frac_family = pd.DataFrame(data=frac_family)
-            
-        # Generates fractures
+        # Generate fractures
         settings.pop('cost', None)
-        fractures = self.generate_fractures(grid, **settings)
+        fractures = self.generate_fractures(**settings)
         fractures.insert(0, 'family_id', self.i)
         
-        # Updates tables
+        # Update tables
         self.fractures = pd.concat([self.fractures, fractures])
         self.families = pd.concat([self.families, frac_family])
         
+        # Update dicts
+        self.names |= self.families['name'].to_dict()
+        self.costs |= self.families['cost'].to_dict()
+        index = self.families.index.to_list()
+        self.model |= {i: True for i in index}
+        
         return None
      
-    def generate_model(self, model: str, grid) -> None:
+    def generate_model(self,
+                       model: str,
+                       ) -> None:
         """Constructs the model for fracturation according to selection."""
-        frac_model = np.zeros_like(grid, dtype=np.float64)
+        
+        frac_model = np.zeros_like(self.grid, dtype=np.float64)
         
         ### Voxelizes the fractures
         fractures_voxelized = {}
-        for i in self.families['id']:
+        for i in self.families.index:
             fractures = self.fractures[self.fractures['family_id'] == i]
             if fractures.empty:
-                fractures_voxelized[i] = np.zeros_like(grid.data_volume)
+                fractures_voxelized[i] = np.zeros_like(self.grid.data_volume)
             else:
-                fractures_voxelized[i] = voxelize_fractures(grid, fractures)
+                fractures_voxelized[i] = voxelize_fractures(self.grid,
+                                                            fractures)
             
         ### 1 - Superposition of families
         if model == 'superposition':
             
             # Sorts fracture families by cost
-            self.families = self.families.sort_values(['cost', 'id'])
-            fractures_family_ids = self.families['id'].values
+            self.families = self.families.sort_values(['cost'])
+            fractures_family_ids = self.families.index
             
             # Updates the final array
             for family_id in fractures_family_ids:
@@ -89,17 +102,19 @@ class Fractures(Volume):
                     frac_model
                 )
         
-        ### 2 - Sums of families
-        elif model == 'sum':
-            frac_model = sum([d for d in fractures_voxelized.values()])
+        ### 2 - Sums of families - TODO
+        # elif model == 'sum':
+        #     frac_model = sum([d for d in fractures_voxelized.values()])
         
         ### 3 - Binary grid giving presence/absence of fractures
-        elif model == 'binary':
+        # elif model == 'binary':
+        elif model == 'superposition':
             frac_model = sum([d for d in fractures_voxelized.values()])
             frac_model = np.where(frac_model > 0, 1, 0)
         
-        ### Selects final model
+        ### Selects final model TODO
         self.data_volume = frac_model.copy()
+        self.fractures_voxelized = fractures_voxelized
         
         ######### TODO #########
         # # Constraints model with geology if provided
@@ -116,19 +131,23 @@ class Fractures(Volume):
         # data = self.fractures_families['model']
         ######### TODO #########
         
-        # Sets the costs
-        costs = pd.Series(self.families['cost'].values,
-                          index=self.families['id']).to_dict()
-        self._set_costs(costs)
+        # # Sets the costs
+        # costs = pd.Series(self.families['cost'].values,
+        #                   index=self.families['id']).to_dict()
+        # self.set_costs(costs)
         
         return None
                 
-    def generate_fractures(self, grid, density: float, alpha: float,
-                           orientation: float, dip: float,
+    def generate_fractures(self,
+                           density: float,
+                           alpha: float,
+                           orientation: float,
+                           dip: float,
                            length: float,
                            orientation_distribution: str = 'vonmises',
                            dip_distribution: str = 'vonmises',
-                           length_distribution: str = 'power'):
+                           length_distribution: str = 'power',
+                           ) -> pd.DataFrame:
         """
         TODO
         """
@@ -160,9 +179,9 @@ class Fractures(Volume):
             length_max = length
 
         ### Redefine fracturation domain
-        Lx = grid.xmax - grid.xmin
-        Ly = grid.ymax - grid.ymin
-        Lz = grid.zmax - grid.zmin
+        Lx = self.grid.xmax - self.grid.xmin
+        Ly = self.grid.ymax - self.grid.ymin
+        Lz = self.grid.zmax - self.grid.zmin
 
         shift_x = min(Lx / 2, length_max / 2)
         shift_y = min(Ly / 2, length_max / 2)
@@ -173,9 +192,9 @@ class Fractures(Volume):
         Lez = 2 * shift_z + Lz
 
         area = Lex * Ley
-        xmin = grid.xmin - shift_x
-        ymin = grid.ymin - shift_y
-        zmin = grid.zmin - shift_z
+        xmin = self.grid.xmin - shift_x
+        ymin = self.grid.ymin - shift_y
+        zmin = self.grid.zmin - shift_z
 
         ### Total numbers of fractures
         fractures_numbers = np.array(density) * area
@@ -307,9 +326,14 @@ class Fractures(Volume):
     
     def _solve_kappa(self, std_value):
         """ """
-        func = lambda kappa: (std_value**2 - 1
-                              + mpmath.besseli(1, kappa)
-                              / mpmath.besseli(0, kappa))
+        # func = lambda kappa: (std_value**2 - 1
+        #                       + mpmath.besseli(1, kappa)
+        #                       / mpmath.besseli(0, kappa))
+        def func(kappa):
+            a = std_value**2 - 1
+            b = mpmath.besseli(1, kappa) / mpmath.besseli(0, kappa)
+            return a + b
+        
         kappa = mpmath.findroot(func, 1)
         return kappa
     
@@ -642,7 +666,9 @@ def _rst2d(m: np.ndarray, xs: int, xe: int, ys: int, ye: int):
     return
 
 
-def voxelize_fractures(grid, fractures):
+def voxelize_fractures(grid,
+                       fractures: pd.DataFrame,
+                       ) -> np.ndarray:
     """Rasterizes a set of fractures on a 3D grid.
     
     Parameters

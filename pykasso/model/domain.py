@@ -25,33 +25,37 @@ class Domain():
     
     ### List of available subdomains
     subdomains = [
-        # domain
+        ### domain
         "domain",
         "domain_surface",
         "domain_bottom",
         "domain_out",
-        # borders
+        ### borders
         "domain_borders",
         "domain_borders_sides",
         "domain_borders_surface",
         "domain_borders_bottom",
-        # vadose
+        ### vadose
         "vadose_zone",
         "vadose_borders",
-        # phreatic
+        ### phreatic
         "phreatic_zone",
         "phreatic_surface",
         "phreatic_borders_surface",
-        # bedrock
+        ### bedrock
         "bedrock",
         "bedrock_",
         "bedrock_vadose",
         "bedrock_phreatic",
     ]
     
-    def __init__(self, grid: Grid, delimitation: Delimitation = None,
-                 topography: Topography = None, bedrock: Bedrock = None,
-                 water_level: WaterLevel = None) -> None:
+    def __init__(self,
+                 grid: Grid,
+                 delimitation: Delimitation = None,
+                 topography: Topography = None,
+                 bedrock: Bedrock = None,
+                 water_level: WaterLevel = None,
+                 ) -> None:
         """
         Constructs an array modeling the valid spatial extension for karst
         networks calculation.
@@ -464,7 +468,7 @@ class Bedrock(Surface):
     """
     
     def __init__(self, *args, **kwargs) -> None:
-        label = 'bedrock_elevation'
+        label = 'bedrock'
         super().__init__(label, *args, **kwargs)
         
         

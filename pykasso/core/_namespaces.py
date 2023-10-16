@@ -85,3 +85,36 @@ VALID_EXTENSIONS_DATA = [
     'asc',  # TODO - rasterio
 ]
 VALID_EXTENSIONS_DATA.extend(VALID_EXTENSIONS_IMAGE)
+
+# Define default fast-marching costs
+DEFAULT_FMM_COSTS = {
+    # 'out': 0.999,
+    'out': 10,  # TODO
+    'geology': 0.4,
+    # 'aquifer': 0.4,
+    # 'aquiclude': 0.8,
+    'beddings': 0.35,  # TODO
+    'faults': 0.2,
+    'fractures': 0.2,
+    'karst': 0.1,
+    'conduits': 0.1,
+    'ratio': 0.5,
+}
+
+DEFAULT_FEATURE_PARAMETERS = {
+    'geology': {
+        'nodata': 1,
+        'name': 'unit {}',
+        'model': True,
+    },
+    'faults': {
+        'nodata': 0,
+        'name': 'fault {}',
+        'model': True,
+    },
+    'fractures': {
+        'nodata': 0,
+        'name': 'family {}',
+        'model': True,
+    },
+}

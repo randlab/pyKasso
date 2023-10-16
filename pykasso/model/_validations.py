@@ -11,6 +11,8 @@ import numpy as np
 from shapely.geometry import Point
 
 from pykasso._utils import datareader
+from pykasso.core._namespaces import DEFAULT_FMM_COSTS
+
 
 ############
 ### TODO ###
@@ -315,12 +317,12 @@ def validate_sks_settings(settings: dict) -> dict:
      
     # Update the default fmm cost dictionary
     for parameter, cost in settings['costs'].items():
-        sks.default_fmm_costs[parameter] = cost
+        DEFAULT_FMM_COSTS[parameter] = cost
     
     # Complete the settings dictionary
-    for parameter, cost in sks.default_fmm_costs.items():
+    for parameter, cost in DEFAULT_FMM_COSTS.items():
         if parameter not in settings['costs']:
-            settings['costs'][parameter] = sks.default_fmm_costs[parameter]
+            settings['costs'][parameter] = DEFAULT_FMM_COSTS[parameter]
             
     return settings
 
@@ -529,19 +531,20 @@ def validate_geologic_feature_settings(settings: dict, attribute: str,
     # Checks if provided 'costs' are valid
     ids_data = np.unique(data)
     if 'costs' in settings:
-        is_costs_dictionnary_valid(settings['costs'], ids_data)
+        pass
+        # is_costs_dictionnary_valid(settings['costs'], ids_data)
     else:
         settings['costs'] = {}
         if attribute == 'geology':
             for i in range(len(ids_data)):
-                settings['costs'][i + 1] = sks.default_fmm_costs['aquifer']
+                settings['costs'][i + 1] = DEFAULT_FMM_COSTS['aquifer']
         # elif attribute == 'fractures':  # TODO
         #     for i in ids:
         #         if i == 0:
         #             continue
         #         settings['costs'][i] = this.default_fmm_costs[self.label] + ((i - 1) * (1/100))
         else:
-            settings['costs'][1] = sks.default_fmm_costs[attribute]
+            settings['costs'][1] = DEFAULT_FMM_COSTS[attribute]
         msg = "'costs' dictionary has been set automatically."
         this.logger.warning(msg)
         
@@ -750,7 +753,7 @@ def validate_fractures_settings(settings: dict, grid) -> dict:
                 if 'cost' not in settings['settings'][frac_family]:
                     msg = "The 'cost' attribute is missing (optional) and has been set with default value(s)."
                     this.logger.warning(msg)
-                    settings['settings'][frac_family]['cost'] = sks.default_fmm_costs['fractures']
+                    settings['settings'][frac_family]['cost'] = DEFAULT_FMM_COSTS['fractures']
                 costs[i+1] = settings['settings'][frac_family]['cost']
             settings['costs'] = costs
         

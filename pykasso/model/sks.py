@@ -2,12 +2,8 @@
 This module contains a class modeling the karstic network generator tool.
 """
 
-# TODO
-# inputs subdir merge within input paths ?
-
 ### Internal dependencies
 import os
-import sys
 import copy
 import pickle
 import logging
@@ -30,29 +26,11 @@ from .geologic_features import Geology, Faults
 from .fracturation import Fractures
 from .points import PointGenerator
 from pykasso._utils.array import normalize_array
+from pykasso.core._namespaces import DEFAULT_FMM_COSTS
 
 ### Typing
 from pykasso._typing import Project
 
-### Access 'Application' instance memory
-# app = sys.modules['pykasso.core.application']
-
-##### Module variables ########################################
-this = sys.modules[__name__]
-
-# Define default fast-marching costs
-this.default_fmm_costs = {
-    # 'out': 0.999,
-    'out': 10,  # TODO
-    'aquifer': 0.4,
-    'aquiclude': 0.8,
-    'beddings': 0.35,  # TODO
-    'faults': 0.2,
-    'fractures': 0.2,
-    'karst': 0.1,
-    'conduits': 0.1,
-    'ratio': 0.5,
-}
 
 #################
 ### SKS Class ###
@@ -86,7 +64,9 @@ class SKS():
     .. note:: ``faults`` or ``fractures`` will return None when not defined.
     """
     
-    def __init__(self, project: Project) -> None:
+    def __init__(self,
+                 project: Project,
+                 ) -> None:
         """_summary_
 
         Returns
@@ -98,8 +78,10 @@ class SKS():
         self.project = project
         self.grid = project.grid
 
-    def generate(self, model_parameters: dict = {},
-                 export_settings: dict = {}) -> None:
+    def generate(self,
+                 model_parameters: dict = {},
+                 export_settings: dict = {},
+                 ) -> None:
         """_summary_
 
         Parameters
@@ -311,9 +293,7 @@ class SKS():
         topography = self.model_parameters['domain']['topography']
         test_a = isinstance(topography, (str))
         if not (test_a and (topography == '')):
-            instance = Topography(grid=self.grid)
-            data = topography
-            instance.set_data(data=data)
+            instance = Topography(grid=self.grid, data=topography)
             instance._surface_to_volume('<=', self.grid)
             return instance
         else:
@@ -327,8 +307,7 @@ class SKS():
         bedrock = self.model_parameters['domain']['bedrock']
         test_a = isinstance(bedrock, (str))
         if not (test_a and (bedrock == '')):
-            instance = Bedrock(grid=self.grid)
-            instance.set_data(data=bedrock)
+            instance = Bedrock(grid=self.grid, data=bedrock)
             instance._surface_to_volume('<=', self.grid)
             return instance
         else:
@@ -342,8 +321,7 @@ class SKS():
         water_level = self.model_parameters['domain']['water_level']
         test_a = isinstance(water_level, (str))
         if not (test_a and (water_level == '')):
-            instance = WaterLevel(grid=self.grid)
-            instance.set_data(data=water_level)
+            instance = WaterLevel(grid=self.grid, data=water_level)
             instance._surface_to_volume('<=', self.grid)
             return instance
         else:
@@ -401,19 +379,21 @@ class SKS():
         """
         Build the geology.
         """
-        geology = self.model_parameters['geology']['data']
-        test_a = isinstance(geology, (str))
-        self.geology = Geology(grid=self.grid)
-        if not (test_a and (geology == '')):
-            axis = self.model_parameters['geology']['axis']
-            self.geology.set_data(data=geology, axis=axis)
-        else:
-            self.geology.data_volume = (
-                self.geology._get_data_full_3D(value=1)
-            )
-        costs = self.model_parameters['geology']['costs']
-        self.geology._set_costs(costs)
-        self.geology._compute_statistics(self.grid)
+        # Retrieve geology parameters and set default parameters
+        geology_settings = self.model_parameters['geology']
+        geology_settings.setdefault('data', None)
+        geology_settings.setdefault('axis', 'z')
+        geology_settings.setdefault('names', {})
+        geology_settings.setdefault('costs', {})
+        geology_settings.setdefault('model', {})
+        
+        # Test value of 'data'
+        if not isinstance(geology_settings['data'], np.ndarray):
+            if geology_settings['data'] == '':
+                geology_settings['data'] = None
+        
+        # Create the geology
+        self.geology = Geology(grid=self.grid, **geology_settings)
         return None
     
     @wp._parameters_validation('faults', 'optional')
@@ -423,15 +403,21 @@ class SKS():
         """
         Build the faults.
         """
-        faults = self.model_parameters['faults']['data']
-        test_a = isinstance(faults, (str))
-        if not (test_a and (faults == '')):
-            self.faults = Faults(grid=self.grid)
-            axis = self.model_parameters['faults']['axis']
-            self.faults.set_data(data=faults, axis=axis)
-            costs = self.model_parameters['faults']['costs']
-            self.faults._set_costs(costs)
-            self.faults._compute_statistics(self.grid)
+        # Retrieve geology parameters and set default parameters
+        faults_settings = self.model_parameters['faults']
+        faults_settings.setdefault('data', None)
+        faults_settings.setdefault('axis', 'z')
+        faults_settings.setdefault('names', {})
+        faults_settings.setdefault('costs', {})
+        faults_settings.setdefault('model', {})
+        
+        # Test value of 'data'
+        if not isinstance(faults_settings['data'], np.ndarray):
+            if faults_settings['data'] == '':
+                faults_settings['data'] = None
+                
+        # Create the faults
+        self.faults = Faults(grid=self.grid, **faults_settings)
         return None
 
     @wp._parameters_validation('outlets', 'required')
@@ -551,32 +537,39 @@ class SKS():
         """
         Build the fractures.
         """
+        # Retrieve fractures parameters and set default parameters
+        fractures_settings = self.model_parameters['fractures']
+        fractures_settings.setdefault('data', None)
+        fractures_settings.setdefault('axis', 'z')
+        fractures_settings.setdefault('names', {})
+        fractures_settings.setdefault('costs', {})
+        fractures_settings.setdefault('model', {})
+        
+        # Test value of 'data'
+        if not isinstance(fractures_settings['data'], np.ndarray):
+            if fractures_settings['data'] == '':
+                fractures_settings['data'] = None
+        
+        # Set the random seed for the fracturation
         self._set_rng('fractures')
-        fractures = self.model_parameters['fractures']['data']
-        test_a = isinstance(fractures, (str))
-        test_b = ('settings' in self.model_parameters['fractures'])
-        if (not (test_a and (fractures == ''))) or test_b:
-            self.fractures = Fractures(rng=self.rng['fractures'],
-                                       grid=self.grid)
+        
+        # Create the fractures
+        self.fractures = Fractures(grid=self.grid,
+                                   rng=self.rng['fractures'],
+                                   **fractures_settings)
             
-            # Generate fractures families
-            if 'settings' in self.model_parameters['fractures']:
-                
-                frac_settings = self.model_parameters['fractures']['settings']
-                for frac_name, frac_settings in frac_settings.items():
-                    self.fractures.generate_fracture_family(frac_name,
-                                                            self.grid,
-                                                            **frac_settings)
-                # TODO - 'superposition' -> into a parameter
-                self.fractures.generate_model('superposition', self.grid)
-            # Load data
-            else:
-                axis = self.model_parameters['fractures']['axis']
-                self.fractures.set_data(fractures, axis)
-                costs = self.model_parameters['fractures']['costs']
-                self.fractures._set_costs(costs)
-            
-            self.fractures._compute_statistics(self.grid)
+        # Generate fractures families
+        frac_model = self.model_parameters['sks'].get('fracturation_model',
+                                                      'superposition')
+        if 'generate' in fractures_settings:
+            frac_settings = fractures_settings['generate']
+            for frac_name, frac_settings in frac_settings.items():
+                default_cost = DEFAULT_FMM_COSTS['fractures']
+                frac_settings.setdefault('cost', default_cost)
+                self.fractures.generate_fracture_family(frac_name,
+                                                        **frac_settings)
+            self.fractures.generate_model(frac_model)
+            self.fractures.compute_statistics()
         return None
     
     @wp._logging()
@@ -589,51 +582,79 @@ class SKS():
          - 300 - 399 : Faults
          - 0 - Out
         """
-        # Initialization
+        ### Initialization
         conceptual_model = np.zeros_like(self.grid.data_volume)
-        conceptual_model_table = []
+        items = []
         
-        # 100 - Geology
-        geology_items = [(100 + i, 'Geology', id, cost) for (i, (id, cost))
-                         in enumerate(self.geology.costs.items())]
-        for (id, feature, id_, cost) in geology_items:
-            conceptual_model = np.where(self.geology.data_volume == id_,
-                                        id,
+        ### 100 - Geology
+        df_geology = self.geology.overview
+        df_geology = df_geology[df_geology['model'].isin([True, 1])]
+        df_geology = df_geology[['names', 'costs']]
+        dt_geology = df_geology.to_dict(orient='index')
+        
+        geology_items = [(100 + i, 'Geology', id,
+                          dict_['names'], dict_['costs'])
+                         for (i, (id, dict_))
+                         in enumerate(dt_geology.items())]
+        
+        for (model_id, feature, data_id, name, cost) in geology_items:
+            conceptual_model = np.where(self.geology.data_volume == data_id,
+                                        model_id,
                                         conceptual_model)
-        conceptual_model_table += geology_items
         
-        # 200 - Fractures
-        if self.fractures is not None:
-            fractures_items = [(200 + i, 'Fractures', id, cost)
-                               for (i, (id, cost))
-                               in enumerate(self.fractures.costs.items())]
-            for (id, feature, id_, cost) in fractures_items:
-                conceptual_model = np.where(self.fractures.data_volume == id_,
-                                            id,
-                                            conceptual_model)
-            conceptual_model_table += fractures_items
+        items += geology_items
+        
+        ### 200 - Fractures
+        df_fractures = self.fractures.overview
+        df_fractures = df_fractures[df_fractures['model'].isin([True, 1])]
+        df_fractures = df_fractures[['names', 'costs']]
+        dt_fractures = df_fractures.to_dict(orient='index')
+        
+        fractures_items = [(200 + i, 'Fractures', id,
+                            dict_['names'], dict_['costs'])
+                           for (i, (id, dict_))
+                           in enumerate(dt_fractures.items())]
+        
+        for (model_id, feature, data_id, name, cost) in fractures_items:
+            conceptual_model = np.where(self.fractures.data_volume == data_id,
+                                        model_id,
+                                        conceptual_model)
+        
+        items += fractures_items
             
-        # 300 - Faults
-        if self.faults is not None:
-            faults_items = [(300 + i, 'Faults', id, cost) for (i, (id, cost))
-                            in enumerate(self.faults.costs.items())]
-            for (id, feature, id_, cost) in faults_items:
-                conceptual_model = np.where(self.faults.data_volume == id_,
-                                            id,
-                                            conceptual_model)
-            conceptual_model_table += faults_items
+        ### 300 - Faults
+        df_faults = self.faults.overview
+        df_faults = df_faults[df_faults['model'].isin([True, 1])]
+        df_faults = df_faults[['names', 'costs']]
+        dt_faults = df_faults.to_dict(orient='index')
         
-        # 0 - Out
+        faults_items = [(300 + i, 'Faults', id,
+                         dict_['names'], dict_['costs'])
+                        for (i, (id, dict_))
+                        in enumerate(dt_faults.items())]
+        
+        for (model_id, feature, data_id, name, cost) in faults_items:
+            conceptual_model = np.where(self.faults.data_volume == data_id,
+                                        model_id,
+                                        conceptual_model)
+        
+        items += faults_items
+        
+        ### 0 - Out
         cost_out = self.model_parameters['sks']['costs']['out']
-        out_item = [(0, 'Out', np.nan, cost_out)]
+        out_item = [(0, 'Out', np.nan, np.nan, cost_out)]
         conceptual_model = np.where(self.domain.data_volume == 0,
                                     0,
                                     conceptual_model)
-        conceptual_model_table += out_item
-        conceptual_model_table = pd.DataFrame(conceptual_model_table, columns=['id', 'feature', 'id-feature', 'cost']).set_index('id').sort_values('id')
+        items += out_item
+        
+        ### Create data
+        columns = ['model_id', 'feature', 'data_id', 'name', 'cost']
+        table = pd.DataFrame(items, columns=columns)
+        table = table.set_index('model_id').sort_values('model_id')
 
         self.conceptual_model = conceptual_model
-        self.conceptual_model_table = conceptual_model_table
+        self.conceptual_model_table = table
         return None
     
     ##### 4 - FMM #########################

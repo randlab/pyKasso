@@ -190,7 +190,7 @@ class DataReader():
             
         # NPY
         elif extension == 'npy':
-            data = np.load(data)
+            data = np.load(filename)
             
         # # RASTER # TODO ???
         # # elif extension == 'asc':
@@ -250,8 +250,8 @@ class DataReader():
         self._requires_grid()
         
         # Filter values out of grid
-        xyz = df.iloc[:, [0, 1, 2]]
-        df['is_inbox'] = self.grid.is_inbox(xyz)
+        xyz = df.iloc[:, [0, 1, 2]].to_numpy()
+        df = df.assign(is_inbox=self.grid.is_inbox(xyz))
         df = df[df['is_inbox']]
 
         # Retrieve valid coordinates and data

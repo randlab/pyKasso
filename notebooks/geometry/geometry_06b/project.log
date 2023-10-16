@@ -1,0 +1,117 @@
+ ♠                              | INFO     |              _                        
+ ♠                              | INFO     |             | |                       
+ ♠                              | INFO     |  _ __  _   _| | ____ _ ___ ___  ___   
+ ♠                              | INFO     | | `_ \| | | | |/ / _` / __/ __|/ _ \  
+ ♠                              | INFO     | | |_) | |_| |   < (_| \__ \__ \ (_) | 
+ ♠                              | INFO     | | .__/ \__, |_|\_\__,_|___/___/\___/  
+ ♠                              | INFO     | | |     __/ |                         
+ ♠                              | INFO     | |_|    |___/                          
+ ☼                              | INFO     | Directory location : c:\Users\franc\OneDrive\Desktop\pykasso\pykasso\notebooks\geometry/geometry_06b/
+ ☼                              | INFO     | Date log creation  : 2023-10-17 00:38:59
+ ☼                              | INFO     | pyKasso version    : v.0.1.2
+ ☼                              | INFO     | 
+ ☼                              | INFO     | Dependencies versions:
+ ☼                              | INFO     |  - numpy : 1.24.1
+ ☼                              | INFO     |  - pandas : 1.5.3
+ ☼                              | INFO     |  - agd : 0.1.31
+ ☼                              | INFO     |  - matplotlib : 3.6.3
+ ☼                              | INFO     |  - pyvista : 0.42.3
+ ☼                              | INFO     |  - karstnet : 1.2.0
+ ☼                              | INFO     |  - networkx : 3.1
+ ☼                              | INFO     | 
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | *** pyKasso simulation 1 ***
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | Path          : geometry_06b/outputs/simulation_1/
+ ►                              | INFO     | Date          : 2023-10-17 00:38:59
+ ►                              | INFO     | Logging level : 10
+ ►                              | INFO     | ---
+ domain.validation              | WARNING  | The 'delimitation' attribute is missing (optional).
+ domain.validation              | WARNING  | The 'topography' attribute is missing (optional).
+ domain.validation              | INFO     | 'domain' settings have been validated
+ domain.construction            | INFO     | 'domain' has been constructed
+ sks.validation                 | WARNING  | The 'costs' attribute is missing (optional).
+ sks.validation                 | WARNING  | The 'mode' attribute is missing (optional).
+ sks.validation                 | WARNING  | The 'factors' attribute is missing (optional).
+ sks.validation                 | INFO     | 'sks' settings have been validated
+ geology.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ geology.validation             | WARNING  | The 'data' attribute is missing (optional).
+ geology.validation             | WARNING  | The 'axis' attribute is missing (optional).
+ geology.validation             | INFO     | 'geology' settings have been validated
+ geology.construction           | INFO     | 'geology' has been constructed
+ faults.validation              | WARNING  | The 'faults' attribute is missing (optional).
+ faults.validation              | WARNING  | The 'data' attribute is missing (optional).
+ faults.validation              | WARNING  | The 'axis' attribute is missing (optional).
+ faults.validation              | INFO     | 'faults' settings have been validated
+ faults.construction            | INFO     | 'faults' has been constructed
+ outlets.validation             | WARNING  | The 'shuffle' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'subdomain' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'seed' attribute is missing (optional).
+ outlets.validation             | INFO     | 'outlets' settings have been validated
+ outlets.construction           | INFO     | 'outlets' has been constructed
+ inlets.validation              | WARNING  | The 'data' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'shuffle' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'subdomain' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'geology' attribute is missing (optional).
+ inlets.validation              | INFO     | 'inlets' settings have been validated
+ ►                              | WARNING  | 1/1 inlets have been discarded because out of domain.
+ inlets.construction            | INFO     | 'inlets' has been constructed
+ fractures.validation           | WARNING  | The 'fractures' attribute is missing (optional).
+ fractures.validation           | WARNING  | The 'data' attribute is missing (optional).
+ fractures.validation           | WARNING  | The 'axis' attribute is missing (optional).
+ fractures.validation           | WARNING  | The 'seed' attribute is missing (optional).
+ fractures.validation           | INFO     | 'fractures' settings have been validated
+ fractures.construction         | INFO     | 'fractures' has been constructed
+ fmm.modelisation               | INFO     | Computing karst conduit network...
+ fmm.modelisation               | INFO     | iteration : 1/3
+ fmm.modelisation               | INFO     | iteration : 2/3
+ fmm.modelisation               | INFO     | iteration : 3/3
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | *** pyKasso simulation 2 ***
+ ►                              | INFO     | ****************************
+ ►                              | INFO     | Path          : geometry_06b/outputs/simulation_2/
+ ►                              | INFO     | Date          : 2023-10-17 00:38:59
+ ►                              | INFO     | Logging level : 10
+ ►                              | INFO     | ---
+ domain.validation              | WARNING  | The 'delimitation' attribute is missing (optional).
+ domain.validation              | WARNING  | The 'topography' attribute is missing (optional).
+ domain.validation              | INFO     | 'domain' settings have been validated
+ domain.construction            | INFO     | 'domain' has been constructed
+ sks.validation                 | WARNING  | The 'costs' attribute is missing (optional).
+ sks.validation                 | WARNING  | The 'mode' attribute is missing (optional).
+ sks.validation                 | WARNING  | The 'factors' attribute is missing (optional).
+ sks.validation                 | INFO     | 'sks' settings have been validated
+ geology.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ geology.validation             | WARNING  | The 'data' attribute is missing (optional).
+ geology.validation             | WARNING  | The 'axis' attribute is missing (optional).
+ geology.validation             | INFO     | 'geology' settings have been validated
+ geology.construction           | INFO     | 'geology' has been constructed
+ faults.validation              | WARNING  | The 'faults' attribute is missing (optional).
+ faults.validation              | WARNING  | The 'data' attribute is missing (optional).
+ faults.validation              | WARNING  | The 'axis' attribute is missing (optional).
+ faults.validation              | INFO     | 'faults' settings have been validated
+ faults.construction            | INFO     | 'faults' has been constructed
+ outlets.validation             | WARNING  | The 'shuffle' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'subdomain' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'geology' attribute is missing (optional).
+ outlets.validation             | WARNING  | The 'seed' attribute is missing (optional).
+ outlets.validation             | INFO     | 'outlets' settings have been validated
+ outlets.construction           | INFO     | 'outlets' has been constructed
+ inlets.validation              | WARNING  | The 'data' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'shuffle' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'subdomain' attribute is missing (optional).
+ inlets.validation              | WARNING  | The 'geology' attribute is missing (optional).
+ inlets.validation              | INFO     | 'inlets' settings have been validated
+ ►                              | WARNING  | 1/1 inlets have been discarded because out of domain.
+ inlets.construction            | INFO     | 'inlets' has been constructed
+ fractures.validation           | WARNING  | The 'fractures' attribute is missing (optional).
+ fractures.validation           | WARNING  | The 'data' attribute is missing (optional).
+ fractures.validation           | WARNING  | The 'axis' attribute is missing (optional).
+ fractures.validation           | WARNING  | The 'seed' attribute is missing (optional).
+ fractures.validation           | INFO     | 'fractures' settings have been validated
+ fractures.construction         | INFO     | 'fractures' has been constructed
+ fmm.modelisation               | INFO     | Computing karst conduit network...
+ fmm.modelisation               | INFO     | iteration : 1/3
+ fmm.modelisation               | INFO     | iteration : 2/3
+ fmm.modelisation               | INFO     | iteration : 3/3
