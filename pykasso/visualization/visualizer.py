@@ -6,6 +6,7 @@ Module defining a tool for pyKasso results visulization.
 import datetime
 import copy
 import warnings
+import platform
 
 ### External dependencies
 import numpy as np
@@ -159,12 +160,18 @@ class Visualizer():
         """
         Render plots within python notebooks if `boolean` is `True`.
         """
+        
         # *** MATPLOTLIB *** #
-        if boolean:
+        
+        # First test system
+        if platform.system() == 'Linux':
             get_ipython().run_line_magic('matplotlib', 'inline')
         else:
-            get_ipython().run_line_magic('matplotlib', 'qt')
-        
+            if boolean:
+                get_ipython().run_line_magic('matplotlib', 'inline')
+            else:
+                get_ipython().run_line_magic('matplotlib', 'qt')
+            
         # *** PYVISTA *** #
         if _has_pyvista:
             pv.global_theme.notebook = boolean
