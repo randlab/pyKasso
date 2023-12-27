@@ -186,7 +186,8 @@ class DataReader():
         
         # TXT
         elif extension == 'txt':
-            data = np.genfromtxt(filename, **kwargs).T
+            data = np.genfromtxt(filename, **kwargs)
+            # data = np.genfromtxt(filename, **kwargs).T
             
         # NPY
         elif extension == 'npy':

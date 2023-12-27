@@ -11,42 +11,123 @@ from shapely.geometry import Point, Polygon
 from scipy.ndimage import binary_dilation
 
 ### Typing
-from pykasso._typing import Grid, Delimitation, Topography, Bedrock, WaterLevel
+from pykasso.core.grid import Grid
 
 ### TODO
-# Describe each subdomain
+# - Short description of the subdomains
+# -
+
+    
+class Delimitation():
+    """
+    Class modeling the vertical limits of the study site.
+    """
+    
+    def __init__(self,
+                 vertices: list,
+                 grid: Grid,
+                 ) -> None:
+        """
+        Construct the delimitation, the vertical limits of the study site.
+
+        Parameters
+        ----------
+        vertices : list
+            List of coordinates representing the vertices of the boundary
+            polygon : [[x0,y0], ..., [xn, yn]]. The list must contain at least
+            3 vertices.
+        grid : Grid
+            Grid of the model.
+        """
+        self.label = 'delimitation'
+        self.vertices = vertices
+        
+        ### Set the polygon with shapely
+        path_vertices = self.vertices.copy()
+        self.polygon = Polygon(path_vertices)
+        
+        ### Sets the mask array with a numpy-array
+        row, col = np.indices((grid.nx, grid.ny))
+        X, Y, Z = grid.get_meshgrids()
+        pts = np.column_stack((X[row, col, 0].flatten(),
+                               Y[row, col, 0].flatten()))
+        msk = [self.polygon.contains(Point(x, y)) for (x, y) in pts]
+        msk = np.array(msk).reshape((grid.nx, grid.ny)).astype(int)
+        self.data_volume = np.repeat(msk[:, :, np.newaxis], grid.nz, axis=2)
+        
+
+class Topography(Surface):
+    """
+    Class modeling the upper horizontal limit of the study site.
+    """
+    
+    def __init__(self,
+                 grid: Grid,
+                 *args,
+                 **kwargs,
+                 ) -> None:
+        feature = 'topography'
+        super().__init__(grid, feature, *args, **kwargs)
+        
+        
+class Bedrock(Surface):
+    """
+    Class modeling the lower horizontal limit of the study site.
+    """
+    
+    def __init__(self,
+                 grid: Grid,
+                 *args,
+                 **kwargs,
+                 ) -> None:
+        feature = 'bedrock'
+        super().__init__(grid, feature, *args, **kwargs)
+        
+        
+class WaterTable(Surface):
+    """
+    Class modeling the water level elevation, the phreatic/vadose limit of the
+    study site.
+    """
+    
+    def __init__(self,
+                 grid: Grid,
+                 *args,
+                 **kwargs,
+                 ) -> None:
+        feature = 'water_table'
+        super().__init__(grid, feature, *args, **kwargs)
 
 
 class Domain():
     """
     Class modeling the spatial extension of the domain within the study site
-    grid locating where karstic network generation is allowed.
+    grid and locating where karstic network generation is allowed.
     """
     
     ### List of available subdomains
     subdomains = [
-        ### domain
-        "domain",
-        "domain_surface",
-        "domain_bottom",
-        "domain_out",
-        ### borders
-        "domain_borders",
-        "domain_borders_sides",
-        "domain_borders_surface",
-        "domain_borders_bottom",
-        ### vadose
-        "vadose_zone",
-        "vadose_borders",
-        ### phreatic
-        "phreatic_zone",
-        "phreatic_surface",
-        "phreatic_borders_surface",
-        ### bedrock
-        "bedrock",
-        "bedrock_",
-        "bedrock_vadose",
-        "bedrock_phreatic",
+        "domain",                       #
+        "domain_surface",               #
+        "domain_bottom",                #
+        "domain_out",                   #
+
+        "domain_borders",               #
+        "domain_borders_sides",         #
+        "domain_borders_surface",       #
+        "domain_borders_bottom",        #
+
+        "vadose_zone",                  #
+        "vadose_borders",               #
+
+        "phreatic_zone",                #
+        "phreatic_surface",             #
+        "phreatic_borders_surface",     #
+
+        "bedrock",                      #
+        "bedrock_",                     #
+        "bedrock_vadose",               #
+        "bedrock_phreatic",             #
     ]
     
     def __init__(self,
@@ -54,11 +135,12 @@ class Domain():
                  delimitation: Delimitation = None,
                  topography: Topography = None,
                  bedrock: Bedrock = None,
-                 water_level: WaterLevel = None,
+                 water_table: WaterTable = None,
+                 geology: np.ndarray = None,
                  ) -> None:
         """
-        Constructs an array modeling the valid spatial extension for karst
-        networks calculation.
+        Construct an array modeling the valid spatial extension for karst
+        conduit network generation.
 
         Parameters
         ----------
@@ -70,12 +152,10 @@ class Domain():
             Horizontal upper limits of the model, by default None.
         bedrock : Bedrock, optional
             Horizontal lower limits of the model, by default None.
-        water_level : WaterLevel, optional
+        water_table : WaterTable, optional
             Phreatic/vadose limit of the model, by default None.
-            
-        Notes
-        -----
-        - TODO : Work in progress
+        geology : np.ndarray, optional
+            Geologic model, by default None.
         """
         ### Initialization
         self.grid = grid
@@ -83,19 +163,19 @@ class Domain():
         self.delimitation = delimitation
         self.topography = topography
         self.bedrock = bedrock
-        self.water_level = water_level
+        self.water_table = water_table
         self._is_defined = {}
         
-        ### Tests if values are defined
-        features = ['delimitation', 'topography', 'bedrock', 'water_level']
+        ### Test if values are defined
+        features = ['delimitation', 'topography', 'bedrock', 'water_table']
         for feature in features:
             if eval(feature) is None:
                 self._is_defined[feature] = False
             else:
                 self._is_defined[feature] = True
   
-        ### Computes domain extension
-        # Computes volumetric domain extension
+        ### Compute domain extension
+        # Compute volumetric domain extension
         if delimitation is not None:
             self.data_volume += delimitation.data_volume
         
@@ -120,11 +200,11 @@ class Domain():
             bedrock_vol = np.logical_not(bedrock.data_volume).astype(int)
             self.data_volume += bedrock_vol
             
-        # only keeps cells where all the classes join
+        # Only keep cells where all the classes join
         test = self.data_volume == self.data_volume.max()
         self.data_volume = np.where(test, 1, 0)
             
-        # Computes apparent surface from domain according to axis
+        # Compute apparent surface from domain according to axis
         self.data_surfaces = {
             'x': self.data_volume.max(axis=0),
             'y': self.data_volume.max(axis=1),
@@ -132,8 +212,15 @@ class Domain():
         }
         self.surface = self.data_surfaces['x'].sum() * self.grid.node_area
         
+        # Union with declared geological model
+        if geology is not None:
+            test = np.logical_and(geology > 0, self.data_volume)
+            test = test.astype(int)
+            self.data_volume = np.where(test, 1, 0)
+        
     def get_subdomain(self, subdomain: str) -> np.ndarray:
-        """Returns the array modeling the requested subdomain.
+        """
+        Return the array modeling the requested subdomain.
 
         Parameters
         ----------
@@ -184,11 +271,13 @@ class Domain():
             out = np.logical_and(borders, phreatic_zone)
         elif subdomain == 'phreatic_surface':
             out = self._get_phreatic_subdomain('phreatic_surface')
-        elif subdomain == 'phreatic_surface_borders':
+        elif subdomain == 'phreatic_borders_surface':
             # 'Domain borders' x 'Phreatic surface'
             borders = self._get_bordered_subdomain('domain_borders_sides')
             phreatic_surface = self._get_phreatic_subdomain('phreatic_surface')
-            out = np.logical_and(borders, phreatic_surface)
+            out = np.logical_and(borders.astype(bool),
+                                 phreatic_surface.astype(bool))
+            out = out.astype(int)
         ### BEDROCK ###
         elif subdomain == 'bedrock':
             if self.bedrock is None:
@@ -208,7 +297,7 @@ class Domain():
                 bedrock_r = np.invert(self.bedrock.data_volume.astype(bool))
                 bedrock_vadose = self._get_bedrock_subdomain()
                 bedrock = np.logical_and(bedrock_r, bedrock_vadose)
-                if self._is_defined['water_level']:
+                if self._is_defined['water_table']:
                     vadose_zone = self._get_phreatic_subdomain('vadose_zone')
                 else:
                     vadose_zone = np.ones_like(bedrock)
@@ -219,12 +308,14 @@ class Domain():
             phreatic_zone = self._get_phreatic_subdomain('phreatic_zone')
             out = np.logical_and(bedrock, phreatic_zone)
         else:
-            # TODO - error
-            print('TODO - ERROR domain name')
+            print("ERROR: subdomain '{}' does not exist.".format(subdomain))
+            out = None
         return out
     
     def _get_surface_subdomain(self, face_name: str) -> np.ndarray:
-        """Computes the selected surfaces from the volumetric domain."""
+        """
+        Compute the selected surfaces from the volumetric domain.
+        """
         
         # retrieves grid indices
         domain = self.data_volume.astype('bool')
@@ -261,7 +352,9 @@ class Domain():
         return volume
     
     def _get_bordered_subdomain(self, subdomain: str) -> np.ndarray:
-        """Computes the required border subdomain."""
+        """
+        Compute the required border subdomain.
+        """
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.binary_dilation.html
         
         # Computes the full borders extent
@@ -287,35 +380,45 @@ class Domain():
         return volume
         
     def _get_phreatic_subdomain(self, subdomain: str) -> np.ndarray:
-        
-        # returns empty array if water level is not defined
-        if self.water_level is None:
+        """
+        TODO
+        """
+        # return empty array if water level is not defined
+        if self.water_table is None:
             volume = np.zeros_like(self.grid.data_volume)
             return volume
         
-        # defines bedrock
+        # get bedrock
         if self.bedrock is not None:
             bedrock = self.bedrock.data_volume
         else:
             bedrock = np.zeros_like(self.grid.data_volume)
             
-        # defines water level
-        water_level = self.water_level.data_volume
+        # get water table
+        water_table = self.water_table.data_volume
         
-        # computes subdomain
+        # compute subdomain
         if subdomain == 'vadose_zone':
-            elems = (self.data_volume, np.logical_not(bedrock),
-                     np.logical_not(water_level))
-            volume = np.logical_and.reduce(elems)
+            elems = (self.data_volume.astype(bool),
+                     np.logical_not(bedrock.astype(bool)),
+                     np.logical_not(water_table.astype(bool)))
         elif subdomain == 'phreatic_zone':
-            elems = (self.data_volume, np.logical_not(bedrock), water_level)
-            volume = np.logical_and.reduce(elems)
+            elems = (self.data_volume.astype(bool),
+                     np.logical_not(bedrock.astype(bool)),
+                     water_table.astype(bool))
         elif subdomain == 'phreatic_surface':
-            water_surface = self.water_level._surface_to_volume('=', self.grid)
-            volume = np.logical_and(self.data_volume, water_surface)
+            water_surface = self.water_table._surface_to_volume('=', self.grid)
+            elems = (self.data_volume.astype(bool),
+                     water_surface.astype(bool))
+            
+        volume = np.logical_and.reduce(elems)
+        volume = volume.astype(int)
         return volume
     
     def _get_bedrock_subdomain(self) -> np.ndarray:
+        """
+        TODO
+        """
         # define bedrock
         roll_value = 2
         volume = np.roll(self.bedrock.data_volume, roll_value, axis=2)
@@ -411,77 +514,7 @@ class Domain():
         else:
             out = False
         return out
-        
     
-#################################
-### Domain's embedded classes ###
-#################################
-    
-class Delimitation():
-    """
-    Class modeling the delimitation, the vertical limits of the study site.
-    """
-    
-    def __init__(self, vertices: list, grid: Grid) -> None:
-        """
-        Constructs the delimitation, the vertical limits of the study site.
-
-        Parameters
-        ----------
-        vertices : list
-            List of vertices.
-        grid : Grid
-            Grid of the model.
-        """
-        self.label = 'delimitation'
-        self.vertices = vertices
-        
-        ### Sets the polygon with shapely
-        path_vertices = self.vertices.copy()
-        self.polygon = Polygon(path_vertices)
-        
-        ### Sets the mask array with a numpy-array
-        row, col = np.indices((grid.nx, grid.ny))
-        X, Y, Z = grid.get_meshgrids()
-        pts = np.column_stack((X[row, col, 0].flatten(),
-                               Y[row, col, 0].flatten()))
-        msk = [self.polygon.contains(Point(x, y)) for (x, y) in pts]
-        msk = np.array(msk).reshape((grid.nx, grid.ny)).astype(int)
-        self.data_volume = np.repeat(msk[:, :, np.newaxis], grid.nz, axis=2)
-        
-
-class Topography(Surface):
-    """
-    Class modeling the topography, the horizontal upper limit of the study
-    site.
-    """
-    
-    def __init__(self, *args, **kwargs) -> None:
-        label = 'topography'
-        super().__init__(label, *args, **kwargs)
-        
-        
-class Bedrock(Surface):
-    """
-    Class modeling the bedrock elevation, the horizontal lower limit of the
-    study site.
-    """
-    
-    def __init__(self, *args, **kwargs) -> None:
-        label = 'bedrock'
-        super().__init__(label, *args, **kwargs)
-        
-        
-class WaterLevel(Surface):
-    """
-    Class modeling the water level elevation, the phreatic/vadose limit of the
-    study site.
-    """
-    
-    def __init__(self, *args, **kwargs) -> None:
-        label = 'water_level'
-        super().__init__(label, *args, **kwargs)
-
 
 #####################
 ### Documentation ###
@@ -492,7 +525,7 @@ for subdomain in Domain.subdomains:
     txt_elem = """\n\t\t\t- "{}" """.format(subdomain)
     subdomains_list += txt_elem
 
-# Updates documentation
+# Update documentation
 Domain.get_subdomain.__doc__ = (Domain.get_subdomain.__doc__
                                 .format(subdomains_list))
 # Domain.is_coordinate_in_subdomain.__doc__ = (

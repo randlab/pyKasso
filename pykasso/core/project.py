@@ -202,17 +202,17 @@ class Project(Sequence):
             'model': {}
         }
         
-        ### Create the project log file
-        self._create_log_file()
-        
         ### Create the grid
         self.__grid = Grid(**grid_parameters)
+        
+        ### Create the project log file
+        self._create_log_file()
         
         ### Create the project YAML file
         self._export_project_file()
         
         ### Determine if it's a 2D or 3D project
-        self._define_project_dimension()  # TODO
+        self._define_project_dimension()
         
         return None
     
@@ -286,7 +286,7 @@ class Project(Sequence):
         self.logger.info("pyKasso version    : v." + __version__)
         self.logger.info("")
         
-        # Output dependencies versions
+        # Print dependencies versions
         packages = [
             ('numpy', 'mandatory'),
             ('pandas', 'mandatory'),
@@ -304,6 +304,13 @@ class Project(Sequence):
             else:
                 msg = ' - ' + package + ' : not installed'
             self.logger.info(msg)
+        self.logger.info("")
+        
+        # Print grid parameters
+        params = self.grid.get_grid_parameters()
+        self.logger.info("Grid parameters:")
+        for (key, value) in params.items():
+            self.logger.info(" - {} : {}".format(key, value))
         self.logger.info("")
             
         return None

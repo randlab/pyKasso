@@ -7,60 +7,132 @@ import logging
 
 ### Local dependencies
 import pykasso.model._validations as val
-
-### Modules variables
-# TODO - save time exec somewhere and remove the 'this' var
-this = sys.modules[__name__]
-this.time_functions = {}
+from pykasso.core._namespaces import DEFAULT_FMM_COSTS
 
 
-# def _debug_level(level: float, iteration_mode: bool = False):
-#     """Debugging system.
-
-#     Parameters
-#     ----------
-#     level : float
-#         Debug level.
-#     iteration_mode : bool, optional
-#         _description_, by default False
-#     """
-#     def _(function):
-#         def _wrapper(*args, **kwargs):
-#             model = args[0] # retrieves the model
-#             result = ''
-#             if not model.debug_mode:
-#                 result = function(*args, **kwargs)
-#             else:
-#                 if not iteration_mode:
-#                     if model.debug_level['model'] >= level:
-#                         result = function(*args, **kwargs)
-#                 else:
-#                     if (model.debug_level['simulation'] >= level) and (model.iteration <= model.debug_level['iteration']):
-#                         result = function(*args, **kwargs)
-#             if result == '':
-#                 msg = "DEBUG MODE : {}".format(level)  # TODO
-#                 sks.logger.critical(msg)
-#                 sys.exit(msg)
-#             else:
-#                 return result
-#         return _wrapper
-#     return _
+DEFAULT_VALUES = {
+    'sks': {
+        'seed': 0,
+        'algorithm': 'Isotropic3',
+        'costs': DEFAULT_FMM_COSTS,
+        'mode': 'A',
+        'factors': {'F': 100, 'F1': 100, 'F2': 50}
+    },
+    'geology': {
+        'data': None,
+        'axis': 'z',
+        'names': {},
+        'costs': {},
+        'model': {}
+    },
+    'faults': {
+        'data': None,
+        'axis': 'z',
+        'names': {},
+        'costs': {},
+        'model': {}
+    },
+    'fractures': {
+        'data': None,
+        'axis': 'z',
+        'names': {},
+        'costs': {},
+        'model': {},
+        'seed': 0,
+    },
+    'domain': {
+        'delimitation': None,
+        'topography': None,
+        'bedrock': None,
+        'water_table': None,
+    },
+    'outlets': {
+        # 'number': ['required', ''],
+        'data': [],
+        'shuffle': False,
+        # 'importance': ['required', []],
+        'subdomain': 'domain_surface',
+        'geology': None,
+        'seed': 0,
+    },
+    'inlets': {
+        # 'number': ['required', ''],
+        'data': [],
+        'shuffle': False,
+        # 'importance': ['required', []],
+        # 'per_outlet': ['required', []],
+        'subdomain': 'domain_surface',
+        'geology': None,
+        'seed': 0,
+    },
+}
 
 
 def _parameters_validation(feature, kind):
     def _(function):
         def _wrapper(*args, **kwargs):
-            logger = logging.getLogger("{}.validation".format(feature))
+            logger = logging.getLogger("validation.{}".format(feature))
             model = args[0]
-            model.model_parameters = val.validate_attribute_presence(
-                model.model_parameters, feature, kind, default_value={})
-            if feature in ['sks', 'grid']:
-                model.model_parameters[feature] = val.validate_settings(
-                    feature, model.model_parameters[feature])
-            else:
-                model.model_parameters[feature] = val.validate_settings(
-                    feature, model.model_parameters[feature], model.grid)
-            msg = "'{}' settings have been validated".format(feature)
+            
+            # Add feature dictionary if value is missing
+            if feature not in model.model_parameters:
+                if kind == 'required':
+                    msg = "The '{}' key is missing.".format(feature)
+                    logger.error(msg)
+                    raise KeyError(msg)
+                else:
+                    model.model_parameters[feature] = {}
+            
+            # Add default feature values
+            user_params = model.model_parameters[feature].copy()
+            default_params = DEFAULT_VALUES[feature].copy()
+            for (key, value) in default_params.items():
+                if key not in user_params:
+                    msg = ("The '{}' attribute is missing. Set to default"
+                           " value.").format(key)
+                    logger.warning(msg)
+            default_params.update(user_params)
+            
+            # Test special key presences
+            if feature == 'sks':
+                costs = default_params['costs'].copy()
+                default_costs = DEFAULT_FMM_COSTS.copy()
+                default_costs.update(costs)
+                default_params['costs'] = default_costs
+            if feature == 'outlets':
+                for key in ['number', 'importance']:
+                    if key not in default_params:
+                        msg = ("The mandatory '{}' attribute is missing."
+                               ).format(key)
+                        logger.error(msg)
+                        raise KeyError(msg)
+            if feature == 'inlets':
+                for key in ['number', 'importance', 'per_outlet']:
+                    if key not in default_params:
+                        msg = ("The mandatory '{}' attribute is missing."
+                               ).format(key)
+                        logger.error(msg)
+                        raise KeyError(msg)
+            
+            # Control values
+            # TODO : finish the validating functions
+            if feature == 'sks':
+                val.validate_settings_sks(default_params)
+            elif feature in ['geology', 'faults', 'fractures']:
+                pass
+            elif feature == 'domain':
+                # val.validate_settings_domain(default_params)
+                pass
+            elif feature in ['inlets', 'outlets']:
+                val.validate_settings_points(default_params, feature)
+                # if isinstance(default_params['data'], str)
+                
+                # val.validate_settings_io(default_params)
+                pass
+            
+            # Update dictionary
+            model.model_parameters[feature] = default_params
+            msg = "'{}' parameters have been validated.".format(feature)
             logger.info(msg)
             result = function(*args, **kwargs)
             return model
@@ -74,7 +146,7 @@ def _memoize(feature):
     """
     def _(function):
         def _wrapper(*args, **kwargs):
-            logger = logging.getLogger("{}.construction".format(feature))
+            logger = logging.getLogger("construction.{}".format(feature))
             model = args[0]
             memoization = model.project._memoization
             if model.model_parameters[feature] is not memoization['settings'][feature]:
@@ -103,16 +175,13 @@ def _logging(feature=None, step=None):
             else:
                 logger = logging.getLogger(".")
             try:
-                t0 = time.perf_counter()
                 result = function(*args, **kwargs)
-                t1 = time.perf_counter()
             except Exception as err:
                 msg = "Critical error during '{}'".format(function.__name__)
                 logger.critical(msg)
                 raise err
             else:
                 logger.debug("'{}' went well".format(function.__name__))
-                this.time_functions[function.__name__] = t1 - t0
                 return result
         return _wrapper
     return _

@@ -20,7 +20,9 @@ else:
 
 ### Typing
 from typing import Union
-from pykasso._typing import Project, Series, DataFrame, Styler
+from pykasso.core.project import Project
+from pandas import (DataFrame, Series)
+from pandas.io.formats.style import Styler
 
 
 def requires_karstnet():
@@ -31,7 +33,8 @@ def requires_karstnet():
     def _(function):
         def _wrapper(*args, **kwargs):
             if not _has_karstnet:
-                msg = ("karstnet is required to do this.")
+                msg = ("karstnet package is required to do this."
+                       " 'pip install -e pykasso[analysis]' to install it.")
                 raise ImportError(msg)
             result = function(*args, **kwargs)
             return result
@@ -44,13 +47,18 @@ class Analyzer():
     This class manages pyKasso's project and provides methods to compute
     statistical analysis.
     """
-    def __init__(self, project: Project) -> None:
+    def __init__(self,
+                 project: Project
+                 ) -> None:
         """
         Initialize the class.
         """
-        # Load reference metrics for statistical karstic network analysis
+        
+        # Intialization
         self.project = project
-        self.k = None  # TODO : to remove ?
+        self.stats = None
+        
+        # Load reference metrics for statistical karstic network analysis
         self._load_statistics()
         
     def _load_statistics(self) -> None:
@@ -61,18 +69,25 @@ class Analyzer():
         package_location = self.project._pckg_paths['package_location']
         statistics_file_path = "/../_misc/statistics.xlsx"
         statistics_file_location = package_location + statistics_file_path
-        self.statistics = pd.read_excel(statistics_file_location).describe()
+        self.stats = pd.read_excel(statistics_file_location).describe()
         return None
     
     @requires_karstnet()
-    def compute_metrics(self) -> DataFrame:
+    def compute_metrics(self,
+                        verbose: bool = False,
+                        ) -> DataFrame:
         """
-        Computes the statistical metrics for each simulated karst network
+        Compute the statistical metrics for each simulated karst network
         using the karstnet package.
+        
+        Parameters
+        ----------
+        verbosity : int, optional
+            Verbosity of karstnet results, by default 0
 
         Returns
         -------
-        df_metrics : pd.DataFrame
+        df_metrics : pandas.DataFrame
             Dataframe of karstnet metrics.
 
         Notes
@@ -96,69 +111,74 @@ class Analyzer():
 
         Examples
         --------
-        >>> import pykasso.analysis as pka
-        >>> analysis = pka.Analysis('examples/betteraz/')
-        >>> metrics = analysis.compute_karstnet_metrics()
+        >>> app = pk.pykasso()
+        >>> TODO
+        >>> df_metrics = app.analyzer.compute_metrics()
         """
         df_metrics = pd.DataFrame()
 
-        # For each simulation, retrieves data and computes metrics
-        for i, path in enumerate(self.project.simulations):
-            # Retrieves data
-            results = self.project._read_pickle(path + "results.pickle")
-            karstnet_edges = list(results["vectors"]["edges"].values())
-            karstnet_nodes = copy.deepcopy(results["vectors"]["nodes"])
+        # For each simulation, retrieve data and compute metrics
+        for i, data in enumerate(self.project):
             
-            # Drops last item in list (the node type) for each dictionary entry
-            for key, value in karstnet_nodes.items():
-                value.pop()
+            # Retrieve data
+            karstnet_edges = list(data["vectors"]["edges"].values())
+            karstnet_nodes = copy.deepcopy(data["vectors"]["nodes"])
+            
+            # Drop last item in list (the node type) for each dictionary entry
+            karstnet_nodes = pd.DataFrame.from_dict(karstnet_nodes,
+                                                    orient='index')
+            karstnet_nodes = karstnet_nodes.drop(columns=3)
+            index = karstnet_nodes.index
+            values = karstnet_nodes.iloc[:, [0, 1, 2]].to_numpy().tolist()
+            karstnet_nodes = {i: value for i, value in zip(index, values)}
 
-            # Computes karstnet metrics
-            # Makes graph - edges must be a list, and nodes must be a dic of
+            # Compute karstnet metrics
+            # Make graph - edges must be a list, and nodes must be a dic of
             # format {nodeindex: [x,y]}
-            self.edges = karstnet_edges  # TODO - remove self
-            self.nodes = karstnet_nodes  # TODO - remove self
-            # TODO - remove 'self' ?
-            self.k = kn.KGraph(karstnet_edges, karstnet_nodes)
-            verbosity = 0
-            metrics = self.k.characterize_graph(verbosity)
+            k = kn.KGraph(karstnet_edges, karstnet_nodes, verbose=False)
+            metrics = k.characterize_graph(verbose)
 
-            # Concatenates dataframes
+            # Concatenate dataframes
             df_ = pd.DataFrame(metrics, index=[i])
             df_metrics = pd.concat([df_metrics, df_])
 
         return df_metrics
 
-    def compare_metrics(self, data: Union[Styler, DataFrame]) -> Styler:
-        """_summary_
+    @requires_karstnet()
+    def compare_metrics(self,
+                        dataframe: Union[DataFrame, Series, Styler],
+                        ) -> Styler:
+        """
+        TODO
 
         Parameters
         ----------
-        data : Series, DataFrame
-            _description_
+        dataframe : Union[DataFrame, Series, Styler]
+            Data to compare with karstnet metrics.
 
         Returns
         -------
-        df_metrics :
-            _description_
+        df_metrics : Styler
             
         Examples
         --------
-        >>> import pykasso.analysis as pka
-        >>> analysis = pka.Analysis('examples/betteraz/')
-        >>> metrics = analysis.compute_karstnet_metrics()
-        >>> analysis.compute_karstnet_metrics(metrics.mean())
+        >>> app = pk.pykasso()
+        >>> TODO
+        >>> df_metrics = app.analyzer.compute_metrics()
+        >>> app.analyzer.compare_metrics(df_metrics)
         """
-        # Converts pandas Series in DataFrame
-        if isinstance(data, (pd.Series)):
-            data = data.to_frame().T
+        ### Convert pandas Series in DataFrame
+        if isinstance(dataframe, Series):
+            dataframe = dataframe.to_frame().T
 
-        # Defines the text coloring function
-        # Red if
-        # Bright red if
-        # Green if
+        ### Define the text coloring function
+        # Red if TODO
+        # Bright red if TODO
+        # Green if TODO
         def _bg_color(x, min_val, max_val, mean_val, std_val):
-            if (x < min_val) or (x > max_val):
+            if pd.isnull(x):
+                return 'color: grey'
+            elif (x < min_val) or (x > max_val):
                 return 'color: red'
             else:
                 inf = mean_val - std_val
@@ -168,58 +188,62 @@ class Analyzer():
                 else:
                     return 'color: #00FF00'
 
-        # Iterates in the dataframe columns
-        df_metrics = data.style
-        for column_name in data:
+        # Iterate in the dataframe columns
+        df_metrics = dataframe.style
+        for column_name in dataframe:
             kwargs = {
-                'min_val': self.statistics[column_name]['min'],
-                'max_val': self.statistics[column_name]['max'],
-                'mean_val': self.statistics[column_name]['mean'],
-                'std_val': self.statistics[column_name]['std'],
+                'min_val': self.stats[column_name]['min'],
+                'max_val': self.stats[column_name]['max'],
+                'mean_val': self.stats[column_name]['mean'],
+                'std_val': self.stats[column_name]['std'],
                 'subset': [column_name]
             }
             df_metrics = df_metrics.applymap(_bg_color, **kwargs)
 
         return df_metrics
 
-    def compute_stats_on_networks(self, algorithm: str = 'mean',
-                                  np_options: dict = {}) -> np.ndarray:
+    def compute_stats_on_networks(self,
+                                  numpy_algorithm: str = 'mean',
+                                  numpy_parameters: dict = {},
+                                  ) -> np.ndarray:
         """
-        TODO
+        Compute selected algorithm on the whole set of computed karst conduit
+        networks.
         
-        Computes the mean of all the simulations.
+        Parameters
+        ----------
+        numpy_algorithm : str, optional
+            numpy algorithm, 'mean' by default.
+            More details : https://numpy.org/doc/stable/reference/routines.statistics.html
+        numpy_parameters : dict, optional
+            Parameters of the selected algorithm, ``{}`` by default.
         
         Returns
         -------
         out : np.ndarray
-            __doc__
         
         Examples
         --------
-        >>> import pykasso.analysis as pka
-        >>> analysis = pka.Analysis('examples/betteraz/')
-        >>> karst_mean = analysis.compute_average_karstic_network()
+        >>> app = pk.pykasso()
+        >>> TODO
+        >>> df_metrics = app.analyzer.compute_metrics()
+        >>> karst_std = app.analyzer.compute_stats_on_networks('std')
         """
-        # Initialization
-        # nx = self.project.grid.nx
-        # ny = self.project.grid.ny
-        # nz = self.project.grid.nz
+        
+        # For each simulation, retrieve data and store it
         karst_map = []
-        # karst_map = np.zeros((nx, ny, nz))
+        for data in self.project:
+            karst_map.append(data['maps']['karst'][-1].copy())
         
-        # For each simulation, retrieves data and sums it # TODO
-        for path in self.project.simulations:
-            results = self.project._read_pickle(path + 'results.pickle')
-            # karst_map = np.add(karst_map, results['maps']['karst'][-1]).copy()
-            karst_map.append(results['maps']['karst'][-1].copy())
-        
-        # Calculates
+        # Retrieve algorithm
         try:
-            numpy_func = getattr(np, algorithm)
+            numpy_func = getattr(np, numpy_algorithm)
         except ValueError:
-            msg = "Asked algorithm is not valid."  # TODO
+            msg = "Asked algorithm is not valid."
             raise ValueError(msg)
         
-        np_options.pop('axis', None)
-        out = numpy_func(karst_map, axis=0, **np_options)
+        # Compute
+        numpy_parameters.pop('axis', None)
+        out = numpy_func(karst_map, axis=0, **numpy_parameters)
+        
         return out

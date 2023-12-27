@@ -21,7 +21,7 @@ from agd.Metrics import Riemann
 
 ### Local dependencies
 import pykasso.model._wrappers as wp
-from .domain import Domain, Delimitation, Topography, Bedrock, WaterLevel
+from .domain import Domain, Delimitation, Topography, Bedrock, WaterTable
 from .geologic_features import Geology, Faults
 from .fracturation import Fractures
 from .points import PointGenerator
@@ -108,8 +108,9 @@ class SKS():
     
     def _initialize(self) -> None:
         """
-        Initialize and configure the basic settings
+        Initialize and configure the basic settings.
         """
+        # Initialize class attributes
         self.domain = None
         self.geology = None
         self.faults = None
@@ -120,23 +121,23 @@ class SKS():
         self.conceptual_model_table = None
         self.rng = {}
         
-        ### Load model parameters
+        # Load model parameters
         self._load_model_parameters()
         
-        ### Create simulation directory
+        # Create simulation directory
         self._create_sim_dir()
         
-        ### Check verbosity levels
+        # Check verbosity levels
         self._check_verbosity()
         
-        ### Update log
+        # Update the log
         self._update_log()
     
         return None
     
     def _load_model_parameters(self) -> None:
         """
-        Load the model parameters
+        Load the model parameters.
         """
         model_parameters = copy.deepcopy(self.model_parameters)
         model_parameters_f = self.project.core['filenames']['parameters']
@@ -200,11 +201,9 @@ class SKS():
         
     def _update_log(self) -> None:
         """
-        Update log
+        Print information about the current simulation in the log.
         """
-        ### LOGGING ###
-        
-        # Sets logging level
+        # Set logging level
         level = self.model_parameters['verbosity']['logging']
         if level > 4:
             level = 4
@@ -213,7 +212,7 @@ class SKS():
         logging_level = self.project._logging_levels[level]
         self.logger = logging.getLogger('♠').setLevel(logging_level)
         
-        # Prints current simulation number
+        # Print current simulation number
         n_sim = self.project.n_simulations
         l_sim = len(str(n_sim))
         date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -236,140 +235,64 @@ class SKS():
         Build the geological model.
         
         Model building procedure:
-         1. Define the model extension : ``self.domain`` ;
-         2. Build the geological features : ``self.geology``, ``self.faults``,
-         ``self.inlets``, ``self.outlets``, ``self.fractures``,
-         ``self.conceptual_model``, ``self.conceptual_model_table``;
-         3. Prepare the fast-marching method variables.
+         1. Define the main model parameters: ``self.rng``;
+         2. Build the geological features: ``self.geology``, ``self.faults``,
+         ``self.fractures``;
+         3. Build the model extension: ``self.domain``;
+         4. Build the point features: ``self.outlets``, ``self.inlets``;
+         5. Construct the conceptual model: ``self.conceptual_model``,
+         ``self.conceptual_model_table``;
+         6. Prepare the fast-marching method variables.
          
         If a geological feature has not been defined in the settings, calling
         its attribute will return ``None``.
         """
-        self._build_domain()             # 1 - Constructs the domain
-        self._build_model()              # 2 - Constructs the model
-        self._construct_fmm_variables()  # 3 - Constructs fmm features
+        self._build_model_parameters()     # Set the main parameters
+        self._build_geological_features()  # Construct the geological features
+        self._build_domain()               # Construct the domain
+        self._build_point_features()       # Construct the points features
+        self._build_conceptual_model()     # Construct the conceptual model
+        self._construct_fmm_variables()    # Construct fmm features
         return None
     
-    ##### 1 - DOMAIN #########################
-    @wp._parameters_validation('domain', 'optional')
-    @wp._memoize('domain')
-    @wp._logging()
-    def _build_domain(self) -> None:
+    ##### MODEL PARAMETERS #########################
+    @wp._parameters_validation('sks', 'optional')
+    def _build_model_parameters(self) -> None:
         """
-        Build the domain.
+        Build main model parameters:
+         - Random Number Generator
         """
-        delimitation = self._build_domain_delimitation()
-        topography = self._build_domain_topography()
-        bedrock = self._build_domain_bedrock()
-        water_level = self._build_domain_water_level()
-        self.domain = Domain(self.grid,
-                             delimitation=delimitation,
-                             topography=topography,
-                             bedrock=bedrock,
-                             water_level=water_level)
+        # Define the main seed
+        self._set_rng('sks')
         return None
     
-    @wp._logging()
-    def _build_domain_delimitation(self):
+    def _set_rng(self, attribute: str) -> None:
         """
-        Build the delimitation.
+        Generate a random seed for the specified attribute. Automatically
+        populate the random seed dictionary. If the seed is already set and
+        equals 0, a new seed is drawn.
         """
-        delimitation = self.model_parameters['domain']['delimitation']
-        test_a = isinstance(delimitation, (str))
-        if not (test_a and (delimitation == '')):
-            if isinstance(delimitation, (str)):
-                delimitation = np.genfromtxt(delimitation).tolist()
-                self.model_parameters['domain']['delimitation'] = delimitation
-            instance = Delimitation(vertices=delimitation, grid=self.grid)
-            return instance
-        else:
-            return None
-
-    @wp._logging()
-    def _build_domain_topography(self):
-        """
-        Build the topography.
-        """
-        topography = self.model_parameters['domain']['topography']
-        test_a = isinstance(topography, (str))
-        if not (test_a and (topography == '')):
-            instance = Topography(grid=self.grid, data=topography)
-            instance._surface_to_volume('<=', self.grid)
-            return instance
-        else:
-            return None
-        
-    @wp._logging()
-    def _build_domain_bedrock(self):
-        """
-        Build the bedrock elevation.
-        """
-        bedrock = self.model_parameters['domain']['bedrock']
-        test_a = isinstance(bedrock, (str))
-        if not (test_a and (bedrock == '')):
-            instance = Bedrock(grid=self.grid, data=bedrock)
-            instance._surface_to_volume('<=', self.grid)
-            return instance
-        else:
-            return None
-        
-    @wp._logging()
-    def _build_domain_water_level(self):
-        """
-        Build the water level elevation.
-        """
-        water_level = self.model_parameters['domain']['water_level']
-        test_a = isinstance(water_level, (str))
-        if not (test_a and (water_level == '')):
-            instance = WaterLevel(grid=self.grid, data=water_level)
-            instance._surface_to_volume('<=', self.grid)
-            return instance
-        else:
-            return None
-
-    ##### 2 - MODEL #########################
-    @wp._logging()
-    def _build_model(self) -> None:
-        """Builds the geological features."""
-        
-        ### Sets the main parameters
-        self._build_model_parameters()
-        
-        ### Constructs the deterministic geological features
-        self._build_model_geology()
-        self._build_model_faults()
-
-        ### Constructs the stochastic geological features
-        self._build_model_outlets()
-        self._build_model_inlets()
-        self._build_model_fractures()
-        
-        ### Constructs the conceptual model
-        self._build_conceptual_model()
-        return None
-    
-    def _set_rng(self, attribute):
-        """
-        Populates the rng seeds dictionary with the defined seed attribute.
-        """
-        
-        # Generates a random seed when the seed equals 0 (default setting)
+        # Generate a new random seed if the actual seed value equals 0
         if self.model_parameters[attribute]['seed'] == 0:
             seed = np.random.default_rng().integers(low=0, high=10**6)
             self.model_parameters[attribute]['seed'] = seed
             
-        # Sets the seed
+        # Set the seed in the dictionary
         seed = self.model_parameters[attribute]['seed']
         self.rng[attribute] = np.random.default_rng(seed)
         return None
     
-    @wp._parameters_validation('sks', 'optional')
-    def _build_model_parameters(self) -> None:
+    ##### GEOLOGICAL FEATURES #########################
+    def _build_geological_features(self) -> None:
         """
-        Build characteristic model parameters.
+        Build the geological features:
+         - Geology model
+         - Faults model
+         - Fracturation model
         """
-        # Define the main seed
-        self._set_rng('sks')
+        self._build_model_geology()
+        self._build_model_faults()
+        self._build_model_fractures()
         return None
     
     @wp._parameters_validation('geology', 'optional')
@@ -379,14 +302,9 @@ class SKS():
         """
         Build the geology.
         """
-        # Retrieve geology parameters and set default parameters
+        # Retrieve geology parameters
         geology_settings = self.model_parameters['geology']
-        geology_settings.setdefault('data', None)
-        geology_settings.setdefault('axis', 'z')
-        geology_settings.setdefault('names', {})
-        geology_settings.setdefault('costs', {})
-        geology_settings.setdefault('model', {})
-        
+
         # Test value of 'data'
         if not isinstance(geology_settings['data'], np.ndarray):
             if geology_settings['data'] == '':
@@ -403,13 +321,8 @@ class SKS():
         """
         Build the faults.
         """
-        # Retrieve geology parameters and set default parameters
+        # Retrieve geology parameters
         faults_settings = self.model_parameters['faults']
-        faults_settings.setdefault('data', None)
-        faults_settings.setdefault('axis', 'z')
-        faults_settings.setdefault('names', {})
-        faults_settings.setdefault('costs', {})
-        faults_settings.setdefault('model', {})
         
         # Test value of 'data'
         if not isinstance(faults_settings['data'], np.ndarray):
@@ -419,7 +332,131 @@ class SKS():
         # Create the faults
         self.faults = Faults(grid=self.grid, **faults_settings)
         return None
+    
+    @wp._parameters_validation('fractures', 'optional')
+    @wp._memoize('fractures')
+    @wp._logging()
+    def _build_model_fractures(self) -> None:
+        """
+        Build the fractures.
+        """
+        # Retrieve fractures parameters
+        fractures_settings = self.model_parameters['fractures']
+        
+        # Test value of 'data'
+        if not isinstance(fractures_settings['data'], np.ndarray):
+            if fractures_settings['data'] == '':
+                fractures_settings['data'] = None
+        
+        # Set the random seed for the fracturation
+        self._set_rng('fractures')
+        
+        # Create the fractures
+        self.fractures = Fractures(grid=self.grid,
+                                   rng=self.rng['fractures'],
+                                   **fractures_settings)
+            
+        # Generate fractures families
+        # TODO : where should we define the mode for fracturation modelisation
+        frac_model = self.model_parameters['sks'].get('fracturation_model',
+                                                      'superposition')
+        if 'generate' in fractures_settings:
+            frac_settings = fractures_settings['generate']
+            for frac_name, frac_settings in frac_settings.items():
+                default_cost = DEFAULT_FMM_COSTS['fractures']
+                frac_settings.setdefault('cost', default_cost)
+                self.fractures.generate_fracture_family(frac_name,
+                                                        **frac_settings)
+            self.fractures.generate_model(frac_model)
+            self.fractures.compute_statistics()
+        return None
+    
+    ##### DOMAIN #########################
+    @wp._parameters_validation('domain', 'optional')
+    @wp._memoize('domain')
+    @wp._logging()
+    def _build_domain(self) -> None:
+        """
+        Build the domain.
+        """
+        # Define each limit and build the final domain
+        delimitation = self._build_domain_delimitation()
+        topography = self._build_domain_topography()
+        bedrock = self._build_domain_bedrock()
+        water_table = self._build_domain_water_table()
+        self.domain = Domain(self.grid,
+                             delimitation=delimitation,
+                             topography=topography,
+                             bedrock=bedrock,
+                             water_table=water_table,
+                             geology=self.geology.get_data_model())
+        return None
+    
+    @wp._logging()
+    def _build_domain_delimitation(self) -> None:
+        """
+        Build the delimitation.
+        """
+        delimitation = self.model_parameters['domain']['delimitation']
+        if delimitation is not None:
+            if isinstance(delimitation, (str)):
+                delimitation = np.genfromtxt(delimitation).tolist()
+                self.model_parameters['domain']['delimitation'] = delimitation
+            instance = Delimitation(vertices=delimitation, grid=self.grid)
+            return instance
+        else:
+            return None
 
+    @wp._logging()
+    def _build_domain_topography(self) -> None:
+        """
+        Build the topography.
+        """
+        topography = self.model_parameters['domain']['topography']
+        if topography is not None:
+            instance = Topography(grid=self.grid, data=topography)
+            instance._surface_to_volume('<=', self.grid)
+            return instance
+        else:
+            return None
+        
+    @wp._logging()
+    def _build_domain_bedrock(self) -> None:
+        """
+        Build the bedrock elevation.
+        """
+        bedrock = self.model_parameters['domain']['bedrock']
+        if bedrock is not None:
+            instance = Bedrock(grid=self.grid, data=bedrock)
+            instance._surface_to_volume('<=', self.grid)
+            return instance
+        else:
+            return None
+        
+    @wp._logging()
+    def _build_domain_water_table(self) -> None:
+        """
+        Build the water table.
+        """
+        water_table = self.model_parameters['domain']['water_table']
+        if water_table is not None:
+            instance = WaterTable(grid=self.grid, data=water_table)
+            instance._surface_to_volume('<=', self.grid)
+            return instance
+        else:
+            return None
+
+    ##### POINT FEATURES #########################
+    def _build_point_features(self) -> None:
+        """
+        Build the point features:
+        - Outlet locations
+        - Inlet locations
+        """
+        self._build_model_outlets()
+        self._build_model_inlets()
+        return None
+    
     @wp._parameters_validation('outlets', 'required')
     @wp._memoize('outlets')
     @wp._logging()
@@ -448,8 +485,9 @@ class SKS():
             self.inlets = pts.reset_index(drop=True)
         return None
     
-    def _construct_feature_points(self, kind):
-        """Constructs the inlets / outlets.
+    def _construct_feature_points(self, kind: str) -> pd.DataFrame:
+        """
+        Construct a set of points.
 
         Four cases possible:
          1. No points declared
@@ -458,8 +496,20 @@ class SKS():
          3. Less points required than provided : Pick random points among
          provided ones
          4. Points required equals points declared
+         
+         Parameters
+         ----------
+         kind : str
+         
+         Returns
+         -------
+         pd.DataFrame
         """
-        ### Creates a point generator instance
+        ### TODO
+        # Geology as constraint
+        
+        ### Create a point generator instance
+        logger = logging.getLogger("construction.{}".format(kind))
         point_manager = PointGenerator(
             rng=self.rng[kind],
             subdomain=self.model_parameters[kind]['subdomain'],
@@ -468,48 +518,48 @@ class SKS():
             geologic_ids=self.model_parameters[kind]['geology']
         )
         
-        ### Inspects validity of points
+        ### Inspect validity of declared points
         points = self.model_parameters[kind]['data']
-        
-        ################### TODO
-        
-        # 2D points # TODO - logging ?
-        points_2D = [point for point in points if len(point) == 2]
-        validated_points_2D = [point for point in points_2D
-                               if point_manager._is_point_valid(point)]
-        validated_points_3D = [
-            point_manager._generate_3D_point_from_2D_point(point)
-            for point in validated_points_2D
-        ]
-        
-        # 3D points # TODO - logging ?
-        points_3D = [point for point in points if len(point) == 3]
-        validated_points_3D += (
-            [point for point in points_3D
-             if point_manager._is_point_valid(point)]
-        )
-
-        diff = len(points) - len(validated_points_3D)
-        if diff > 0:
-            # TODO - LOG - VERBOSITY
-            # TODO - log name is not correct
-            msg = ('{}/{} {} have been discarded because out of domain.'
-                   .format(diff,
-                           len(self.model_parameters[kind]['data']), kind))
-            self.logger.warning(msg)
-        self.model_parameters[kind]['data'] = validated_points_3D
+        subdomain = self.model_parameters[kind]['subdomain']
+        validated_points = []
+        if len(points) != 0:
+            for point in points:
+                if len(point) == 2:
+                    if point_manager._is_point_valid(point):
+                        point = point_manager._3D_point_from_2D_point(point)
+                        validated_points.append(point)
+                    else:
+                        msg = ("Point with coordinates {} is invalid in"
+                               " subdomain '{}'.").format(point, subdomain)
+                        logger.error(msg)
+                        raise ValueError(msg)
+                elif len(point) == 3:
+                    if point_manager._is_point_valid(point):
+                        validated_points.append(point)
+                    else:
+                        msg = ("Point with coordinates {} is invalid in"
+                               " subdomain '{}'.").format(point, subdomain)
+                        logger.error(msg)
+                        raise ValueError(msg)
+                else:
+                    msg = "Point with coordinates {} is invalid.".format(point)
+                    logger.error(msg)
+                    raise ValueError(msg)
+            self.model_parameters[kind]['data'] = validated_points
 
         ### Get new points according to the right case
         n = self.model_parameters[kind]['number']
         data = self.model_parameters[kind]['data']
+        
         # Case 1 - No points declared
         if (data == '') or (data == []):
             points = point_manager._generate_points(size=n)
         # Case 2 - More points required than provided
         elif (n > len(data)):
             n_points = n - len(data)
-            points = np.append(np.array(data), point_manager
-                               ._generate_points(n_points), axis=0)
+            points = np.append(np.array(data),
+                               point_manager._generate_points(n_points),
+                               axis=0)
         # Case 3 - Less points required than provided
         elif (n < len(data)):
             points = self.rng['sks'].choice(data, n, replace=False)
@@ -530,64 +580,23 @@ class SKS():
 
         return pd.DataFrame(data=data)
     
-    @wp._parameters_validation('fractures', 'optional')
-    @wp._memoize('fractures')
-    @wp._logging()
-    def _build_model_fractures(self) -> None:
-        """
-        Build the fractures.
-        """
-        # Retrieve fractures parameters and set default parameters
-        fractures_settings = self.model_parameters['fractures']
-        fractures_settings.setdefault('data', None)
-        fractures_settings.setdefault('axis', 'z')
-        fractures_settings.setdefault('names', {})
-        fractures_settings.setdefault('costs', {})
-        fractures_settings.setdefault('model', {})
-        
-        # Test value of 'data'
-        if not isinstance(fractures_settings['data'], np.ndarray):
-            if fractures_settings['data'] == '':
-                fractures_settings['data'] = None
-        
-        # Set the random seed for the fracturation
-        self._set_rng('fractures')
-        
-        # Create the fractures
-        self.fractures = Fractures(grid=self.grid,
-                                   rng=self.rng['fractures'],
-                                   **fractures_settings)
-            
-        # Generate fractures families
-        frac_model = self.model_parameters['sks'].get('fracturation_model',
-                                                      'superposition')
-        if 'generate' in fractures_settings:
-            frac_settings = fractures_settings['generate']
-            for frac_name, frac_settings in frac_settings.items():
-                default_cost = DEFAULT_FMM_COSTS['fractures']
-                frac_settings.setdefault('cost', default_cost)
-                self.fractures.generate_fracture_family(frac_name,
-                                                        **frac_settings)
-            self.fractures.generate_model(frac_model)
-            self.fractures.compute_statistics()
-        return None
-    
     @wp._logging()
     def _build_conceptual_model(self) -> None:
-        """Build the conceptual model.
+        """
+        Build the conceptual model.
         
-        Data range attributions :
-         - 100 - 199 : Geology
-         - 200 - 299 : Fractures
-         - 300 - 399 : Faults
-         - 0 - Out
+        Data range attributions:
+         - 100 - 199: Geology
+         - 200 - 299: Fractures
+         - 300 - 399: Faults
+         - 0 - Out of domain
         """
         ### Initialization
         conceptual_model = np.zeros_like(self.grid.data_volume)
         items = []
         
-        ### 100 - Geology
-        df_geology = self.geology.overview
+        ### 100-199: Geology
+        df_geology = self.geology.overview()
         df_geology = df_geology[df_geology['model'].isin([True, 1])]
         df_geology = df_geology[['names', 'costs']]
         dt_geology = df_geology.to_dict(orient='index')
@@ -604,8 +613,8 @@ class SKS():
         
         items += geology_items
         
-        ### 200 - Fractures
-        df_fractures = self.fractures.overview
+        ### 200-299: Fractures
+        df_fractures = self.fractures.overview()
         df_fractures = df_fractures[df_fractures['model'].isin([True, 1])]
         df_fractures = df_fractures[['names', 'costs']]
         dt_fractures = df_fractures.to_dict(orient='index')
@@ -622,8 +631,8 @@ class SKS():
         
         items += fractures_items
             
-        ### 300 - Faults
-        df_faults = self.faults.overview
+        ### 300-399: Faults
+        df_faults = self.faults.overview()
         df_faults = df_faults[df_faults['model'].isin([True, 1])]
         df_faults = df_faults[['names', 'costs']]
         dt_faults = df_faults.to_dict(orient='index')
@@ -640,7 +649,7 @@ class SKS():
         
         items += faults_items
         
-        ### 0 - Out
+        ### 0 - Out of domain
         cost_out = self.model_parameters['sks']['costs']['out']
         out_item = [(0, 'Out', np.nan, np.nan, cost_out)]
         conceptual_model = np.where(self.domain.data_volume == 0,
@@ -678,11 +687,20 @@ class SKS():
         self.outlets_importance = self.model_parameters['outlets']['importance']
         self.inlets_importance = self.model_parameters['inlets']['importance']
         inlets_per_outlet = self.model_parameters['inlets']['per_outlet']
+        outlets_importance_len = len(self.outlets_importance)
+        inlets_importance_len = len(self.inlets_importance)
 
-        # Calculating inlets and outlets repartitions
-        self.nbr_iteration = len(self.outlets_importance) * len(self.inlets_importance)        # total number of iterations that will occur
-        outlets_repartition = self._repartition_points(outlets_nbr, self.outlets_importance)    # correct for outlets_importance not summing to correct number of actual outlets
-        inlets_repartition = self._repartition_points(inlets_nbr, inlets_per_outlet)          # correct for inlets_per_outlet not summing to correct number of actual inlets
+        ### Calculating inlets and outlets repartitions
+        # Total number of iterations that will occur
+        self.nbr_iteration = outlets_importance_len * inlets_importance_len
+        # correct for outlets_importance not summing to correct number of
+        # actual outlets
+        outlets_repartition = self._repartition_points(outlets_nbr,
+                                                       self.outlets_importance)
+        # correct for inlets_per_outlet not summing to correct number of
+        # actual inlets
+        inlets_repartition = self._repartition_points(inlets_nbr,
+                                                      inlets_per_outlet)
 
         # Distributing inlets and outlets iterations
         outlets_distribution = pd.Series([k for (k, n) in enumerate(outlets_repartition) for j in range(n)], name='outlet_iteration')
@@ -692,7 +710,7 @@ class SKS():
 
         # Distributing iterations for each inlet
         for (outlet_key, row) in self._outlets.iterrows():
-            inlets_test = self._inlets['outlet_key']==outlet_key
+            inlets_test = self._inlets['outlet_key'] == outlet_key
             inlets_current = self._inlets[inlets_test]
             inlets_nbr = len(inlets_current)
             repartition = self._repartition_points(inlets_nbr, self.inlets_importance)
@@ -756,12 +774,12 @@ class SKS():
         self.maps = {
             'outlets': np.full(self.grid.shape, np.nan),  # map of null values where each cell with an outlet will have the index of that outlet
             'nodes': np.full(self.grid.shape, np.nan),  # map of null values where each cell that has a node will be updated with that node index
-            'cost': [],   # cost of travel through each cell
-            'alpha': [],  # cost of travel along gradient through each cell
-            'beta': [],   # cost of travel perpendicular to gradient through each cell
-            'gradient': [], # bebdrock gradient
-            'time': [],   # travel time to outlet from each cell
-            'karst': [],  # presence/absence of karst conduit in each cell
+            'cost': [],         # cost of travel through each cell
+            'alpha': [],        # cost of travel along gradient through each cell
+            'beta': [],         # cost of travel perpendicular to gradient through each cell
+            'gradient': [],     # bebdrock gradient
+            'time': [],         # travel time to outlet from each cell
+            'karst': [],        # presence/absence of karst conduit in each cell
         }
         
         ### Defines outlets map according to outlets emplacements
@@ -822,7 +840,7 @@ class SKS():
         TODO
         """
         # Logging operations
-        self.logger = logging.getLogger("fmm.modelisation")
+        self.logger = logging.getLogger("modelisation.karst")
         self.logger.info("Computing karst conduit network...")
         
         # Initialize the iteration counter
@@ -936,7 +954,7 @@ class SKS():
             alpha_map = self._set_alpha_3D_from_elevation(cost_map)
             
             # Phreatic zone: isotropic cost
-            if (self.grid.nz > 1) and (self.domain.water_level is not None):
+            if (self.grid.nz > 1) and (self.domain.water_table is not None):
                 logical_test = self.domain.get_subdomain('phreatic_zone')
                 alpha_map = np.where(logical_test, cost_map, alpha_map)
             
@@ -951,7 +969,7 @@ class SKS():
             alpha_map = np.where(logical_test, cost_map * F, cost_map)
             
             # Phreatic zone: isotropic cost
-            if self.domain.water_level is not None:
+            if self.domain.water_table is not None:
                 logical_test = self.domain.get_subdomain('phreatic_zone')
                 alpha_map = np.where(logical_test, cost_map, alpha_map)
         
@@ -975,7 +993,7 @@ class SKS():
                 alpha_map = np.where(logical_test, cost_map * F2, alpha_map)
                 
             # Phreatic zone: isotropic cost
-            if self.domain.water_level is not None:
+            if self.domain.water_table is not None:
                 logical_test = self.domain.get_subdomain('phreatic_zone')
                 alpha_map = np.where(logical_test, cost_map, alpha_map)
             
@@ -1072,7 +1090,7 @@ class SKS():
         # Vadose zone = Bedrock zone ≠ Phreatic zone
         # Isotropic fast marching in phreatic zone
         if self.model_parameters['sks']['mode'] in ['B', 'C', 'D']:
-            if self.domain._is_defined['water_level']:
+            if self.domain._is_defined['water_table']:
                 test = self.domain.get_subdomain('phreatic_zone')
                 beta_map = np.where(test, cost_map, beta_map)
         return beta_map
@@ -1131,7 +1149,7 @@ class SKS():
         ### Options B / C / D
         elif self.model_parameters['sks']['mode'] in ['B', 'C', 'D']:
             
-            if self.domain._is_defined['water_level']:
+            if self.domain._is_defined['water_table']:
                 subdomain = self.domain.get_subdomain('phreatic_zone')
                 test_subdomain = (subdomain == 1)
                 grad_x = np.where(test_subdomain, 1, grad_x)
@@ -1150,7 +1168,7 @@ class SKS():
     def _set_gradient_2D_from_bedrock(self,
                                       grad_x: np.ndarray,
                                       grad_y: np.ndarray,
-                                      grad_z: np.ndarray
+                                      grad_z: np.ndarray,
                                       ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Calculate the gradient from the bedrock for a 2D project."""
         
@@ -1480,17 +1498,23 @@ class SKS():
         """
         TODO
         """
+        if self.export_settings == {}:
+            # TODO
+            pass
+        
         path = self.simulation_path + 'results.pickle'
+        
+        results = {
+            'maps': self.maps.copy(),
+            'vectors': self.vectors.copy(),
+            'inlets': self.inlets.copy(),
+            'outlets': self.outlets.copy(),
+            'domain': self.domain,
+            'geology': self.geology,
+            'faults': self.faults,
+            'fractures': self.fractures,
+        }
+        
         with open(path, 'wb') as handle:
-            results = {
-                'maps': self.maps.copy(),
-                'vectors': self.vectors.copy(),
-                'inlets': self.inlets.copy(),
-                'outlets': self.outlets.copy(),
-                'domain': self.domain,
-                'geology': self.geology,
-                'faults': self.faults,
-                'fractures': self.fractures,
-            }
             pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
         return None

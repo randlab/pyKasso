@@ -93,8 +93,11 @@ class Visualizer():
         'inlets_options': None,
         'outlets_options': None,
         'show_slice': False,
-        'show_colorbar': True,
         'fractures_options': None,
+        'show_scalar_bar': True,
+        'discrete_scalar_bar': False,
+        'scalar_bar_args': {},
+        'cmap': 'viridis',
         # 'cpos': 'xz',
     }
     
@@ -401,7 +404,13 @@ class Visualizer():
                       show_grid: bool = True,
                       show_outline: bool = False,
                       threshold_options: dict = {},
+                      text_options: dict = None,
+                      show_scalar_bar: bool = True,
+                      scalar_bar_args: dict = {},
+                      discrete_scalar_bar: bool = False,
+                      cmap: str = 'viridis',
                       cpos: Union[str, list[float, float, float]] = 'xy',
+                      savefig: Union[str, None] = None,
                       **kwargs
                       ) -> None:
         """
@@ -425,10 +434,22 @@ class Visualizer():
             function, by default ``{}``.
             More details here:
             https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.DataSetFilters.threshold.html
-        cpos : Union[str, list[float, float, float]]
+        text_options: dict, optional
+            __doc__ , by default ``None``.
+        show_scalar_bar: bool, optional
+            __doc__ , by default ``True``.
+        scalar_bar_args: dict, optional
+            __doc__ , by default ``{}``.
+        discrete_scalar_bar: bool, optional
+            __doc__ , by default ``False``.
+        cmap: str, optional
+            __doc__ , by default ``viridis``.
+        cpos : Union[str, list[float, float, float]], optional
             Initial camera position.
             More details here:
             https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.camera_position.html
+        savefig : Union[str, None], optional
+            __doc__, by default ``None``.
         Returns
         -------
         None
@@ -468,11 +489,31 @@ class Visualizer():
         kwargs['scalars'] = Visualizer.PV_SCALAR_KEYWORD
         threshold_options.setdefault('scalars', Visualizer.PV_SCALAR_KEYWORD)
         mesh = mesh.threshold(**threshold_options)
-        plotter.add_mesh(mesh, **kwargs)
         
+        if discrete_scalar_bar:
+            n = len(np.unique(mesh.cell_data[kwargs['scalars']]))
+            cmap = plt.cm.get_cmap(cmap, n)
+            
+        plotter.add_mesh(mesh,
+                         show_scalar_bar=show_scalar_bar,
+                         scalar_bar_args=scalar_bar_args,
+                         cmap=cmap,
+                         **kwargs)
+        
+        # Plot the text
+        if text_options is not None:
+            plotter.add_text(**text_options)
+                
         # Show the plotter
-        plotter.show(cpos=cpos)
-
+        if savefig is not None:
+            # date = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+            
+            plotter.show(cpos=cpos,
+                         screenshot=savefig,
+                         )
+        else:
+            plotter.show(cpos=cpos)
+        
         return None
     
     @staticmethod
@@ -841,13 +882,7 @@ class Visualizer():
             
         shape = (rows, columns)
         border = True
-        # if savefig:
-        #     off_screen = True
-        # else:
-        #     off_screen = False
-        
         plotter = pv.Plotter(shape=shape, border=border)
-        # off_screen=off_screen,#  notebook=self.notebook,
         
         ###############
         ### Ploting ###
@@ -891,24 +926,22 @@ class Visualizer():
                     
         plotter.link_views()
         
-        # if savefig:
-        #     outputs_dir = self.project.core['paths']['outputs_dir']
-        #     date = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        if savefig:
+            outputs_dir = self.project.core['paths']['outputs_dir']
+            date = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
             
-        #     if filename is None:
-        #         filename = outputs_dir + 'pv_plot_' + date
+            if filename is None:
+                filename = outputs_dir + 'pv_plot_' + date
 
-        #     plotter.show(cpos=cpos,
-        #                  screenshot=filename,
-        #                  )
-        # else:
-        #     plotter.show(cpos=cpos)
-        
-        if return_plotter:
-            return plotter
+            plotter.show(cpos=cpos,
+                         screenshot=filename,
+                         )
         else:
-            plotter.show(cpos=cpos)
-            return None
+            if return_plotter:
+                return plotter
+            else:
+                plotter.show(cpos=cpos)
+                return None
     
     @staticmethod
     def _set_default_pv_settings(settings: dict) -> dict:
@@ -999,7 +1032,10 @@ class Visualizer():
                     outlets_options: dict = None,
                     show_slice: bool = False,
                     fractures_options: dict = None,
-                    show_colorbar: bool = True,
+                    show_scalar_bar: bool = True,
+                    scalar_bar_args: dict = {},
+                    discrete_scalar_bar: bool = False,
+                    cmap: str = 'viridis',
                     ):  #  -> list[pv.Actor]
         """
         DOC
@@ -1094,7 +1130,7 @@ class Visualizer():
             fid = f['family_id'].unique().tolist()
             fractures_options.setdefault('family_id', fid)
             fractures_options.setdefault('sort', ['radius'])
-            fractures_options.setdefault('n', 250)
+            fractures_options.setdefault('max_number', 250)
             
             if len(fractures_options['fractures']) > 0:
                 # Sort fractures
@@ -1110,26 +1146,41 @@ class Visualizer():
                 for polygon in polygons:
                     _ = plotter.add_mesh(polygon, **options_polygons)
                     actors.append(_)
+       
         
-        # Plot the data
-        data_options.setdefault('scalar_bar_args', {'title': 'Vol1'})
-        data_options.setdefault('scalars', 'data')
+        
+        ### Plot the data
+        scalar_keyword = Visualizer.PV_SCALAR_KEYWORD
+        data_options.setdefault('scalars', scalar_keyword)
+        
+        # Set the scalar bar
+        if discrete_scalar_bar:
+            n = len(np.unique(mesh.cell_data[scalar_keyword]))
+            cmap = plt.cm.get_cmap(cmap, n)
+        
+        # Plot the sliced data
         if show_slice:
-            _ = plotter.add_mesh_slice_orthogonal(mesh=mesh,
-                                                  generate_triangles=False,
-                                                  widget_color=None,
-                                                  tubing=False,
-                                                  interaction_event=45,
-                                                  **data_options)
+            _ = plotter.add_mesh_slice_orthogonal(
+                mesh=mesh,
+                generate_triangles=False,
+                widget_color=None,
+                tubing=False,
+                interaction_event=45,
+                cmap=cmap,
+                **data_options
+            )
             actors.extend(_)
             
         else:
-            _ = plotter.add_mesh(mesh.copy(), **data_options)
+            _ = plotter.add_mesh(mesh.copy(),
+                                 cmap=cmap,
+                                 **data_options)
             actors.append(_)
-        
-        # Plot the scalar bar
-        if show_colorbar:
-            _ = plotter.add_scalar_bar()
+           
+        # Set the colorbar
+        if show_scalar_bar:
+            # scalar_bar_args.setdefault('title', 'Vol1')
+            _ = plotter.add_scalar_bar(**scalar_bar_args)
             actors.append(_)
 
         return actors
@@ -1226,7 +1277,7 @@ class Visualizer():
             Data of the simulation.
         surface_name : str
             Name of the surface to plot. Valid names : 'topography',
-            'water_level', 'bedrock'.
+            'water_table', 'bedrock'.
 
         Returns
         -------

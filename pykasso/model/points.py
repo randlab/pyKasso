@@ -38,19 +38,18 @@ class PointGenerator():
         geologic_ids : list
             _description_
         """
-        
-        # TODO
-        logging.getLogger('points.')
+        # Todo
+        # logging.getLogger('points.')
         
         ### Initialization
         self.rng = rng
         self.grid = domain.grid
         
-        ### Computes domain validity
-        # Retrieves subdomain
+        ### Compute domain validity
+        # Retrieve subdomain
         self.data_volume = domain.get_subdomain(subdomain)
         
-        # Crosses with geological constraints
+        # Cross with geological constraints
         if geologic_ids is not None:
             geologic_ids = self._controls_geologic_ids(geology, geologic_ids)
             if len(geologic_ids) > 0:
@@ -62,10 +61,10 @@ class PointGenerator():
                 )
                 self.data_volume = np.logical_and(self.data_volume, dom_geol)
         
-        # Calculates domain surface validity
+        # Calculate domain surface validity
         self.data_surface = (np.sum(self.data_volume, axis=2) > 0)
         
-        # Retrieves the indices where point generation is allowed
+        # Retrieve the indices where point generation is allowed
         self.valid_cells = self._get_valid_cells(self.data_volume)
         
     def _controls_geologic_ids(self, geology, geologic_ids: list) -> list:
@@ -120,24 +119,19 @@ class PointGenerator():
         z = (self.grid.zmin + (k + self.rng.random()) * self.grid.dz)
         return np.dstack((x, y, z))[0]
         
-    def _generate_3D_point_from_2D_point(self, point: tuple) -> tuple:
+    def _3D_point_from_2D_point(self, point: tuple) -> tuple:
         """"""
         x, y = point
         i, j = self.grid.get_indices(point)
         i, j = int(i), int(j) 
         new_valid_cells = self.valid_cells[(self.valid_cells['i'] == i)
                                            & (self.valid_cells['j'] == j)]
-        # print(11)
-        # print(new_valid_cells.to_numpy())
-        # new_valid_cells = ([(i_, j_, k_) for (i_, j_, k_) in self.valid_cells
-                            # if ((i_ == i) and (j_ == j))])
-        # if len(new_probability_map) == 0 # TODO = erreur
         i_, j_, k_ = self.rng.choice(new_valid_cells)
         z = (self.grid.zmin + (k_ + self.rng.random()) * self.grid.dz)
         return (x, y, z)
     
     def _is_point_valid(self, point: tuple) -> bool:
-        """Checks if 2D/3D point is valid."""
+        """Check if 2D or 3D point is valid."""
         if self.grid.is_inbox(point):
             if len(point) == 2:
                 i, j = self.grid.get_indices(point)

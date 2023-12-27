@@ -4,6 +4,7 @@ Module containing the application class.
 
 ### Internal dependencies
 import warnings
+import logging
 
 ### External dependencies
 
@@ -14,9 +15,9 @@ from pykasso.analysis.analysis import Analyzer
 from pykasso.visualization.visualizer import Visualizer
 
 ### Validation
-from pykasso._utils.validation import (is_parameter_type_valid,
+from pykasso._utils.validation import (is_variable_type_valid,
                                        is_key_in_dict,
-                                       is_parameter_value_valid)
+                                       is_parameter_comparison_valid)
 
 ### Variables
 from pykasso.core._namespaces import (GRID_PARAMETERS)
@@ -96,20 +97,60 @@ class Application():
         ### Input validation
         
         # Test 'project_name' type
-        is_parameter_type_valid(parameter_name='project_name',
-                                parameter_value=project_name,
-                                valid_types=(str))
+        try:
+            is_variable_type_valid(variable_name='project_name',
+                                   variable_value=project_name,
+                                   valid_types=(str))
+        except TypeError:
+            raise
         
         # Test 'grid_parameters' type
-        is_parameter_type_valid(parameter_name='grid_parameters',
-                                parameter_value=grid_parameters,
-                                valid_types=(dict))
+        try:
+            is_variable_type_valid(variable_name='grid_parameters',
+                                   variable_value=grid_parameters,
+                                   valid_types=(dict))
+        except TypeError:
+            raise
 
         # Test 'Grid' parameters presence
         for parameter in GRID_PARAMETERS:
-            is_key_in_dict(dictionary=grid_parameters,
-                           dictionary_name='grid_parameters',
-                           key_to_test=parameter)
+            try:
+                is_key_in_dict(dictionary=grid_parameters,
+                               dictionary_name='grid_parameters',
+                               key_to_test=parameter)
+            except KeyError:
+                raise
+            
+        # Test if the values of attributes are of type int or float
+        for parameter_name in ['x0', 'y0', 'z0', 'dx', 'dy', 'dz']:
+            try:
+                parameter_value = grid_parameters[parameter_name]
+                is_variable_type_valid(variable_name=parameter_name,
+                                       variable_value=parameter_value,
+                                       valid_types=(int, float))
+            except TypeError:
+                raise
+
+        # Test if the values of attributes are of type int
+        for parameter_name in ['nx', 'ny', 'nz']:
+            try:
+                parameter_value = grid_parameters[parameter_name]
+                is_variable_type_valid(variable_name=parameter_name,
+                                       variable_value=parameter_value,
+                                       valid_types=(int))
+            except TypeError:
+                raise
+
+        # Test if the values of attributes are well upper 0
+        for parameter_name in ['nx', 'ny', 'nz']:
+            try:
+                parameter_value = grid_parameters[parameter_name]
+                is_parameter_comparison_valid(parameter_name=parameter_name,
+                                              parameter_value=parameter_value,
+                                              logical_test='>',
+                                              compared_to=0)
+            except ValueError:
+                raise
             
         ### Initialization of the application
         

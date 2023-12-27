@@ -33,14 +33,14 @@ GEOLOGICAL_FEATURES = [
 SURFACE_FEATURES = [
     'topography',
     'bedrock',
-    'water_level',
+    'water_table',
 ]
 
 DOMAIN_FEATURES = [
     'delimitation',
     'topography',
     'bedrock',
-    'water_level',
+    'water_table',
 ]
 
 ISOTROPIC_FEATURES = [
@@ -116,5 +116,5 @@ DEFAULT_FEATURE_PARAMETERS = {
         'nodata': 0,
         'name': 'family {}',
         'model': True,
-    },
+    }
 }

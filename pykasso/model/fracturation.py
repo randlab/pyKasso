@@ -23,16 +23,39 @@ from pykasso._typing import Grid, RandomNumberGenerator
 class Fractures(GeologicFeature):
     """Class modeling the fracturation model."""
     
-    def __init__(self, rng: RandomNumberGenerator, *args, **kwargs):
+    def __init__(self,
+                 grid: Grid,
+                 rng: RandomNumberGenerator,
+                 *args,
+                 **kwargs):
         label = 'fractures'
         dim = 3
-        super().__init__(label, dim, *args, **kwargs)
+        super().__init__(grid, label, dim, *args, **kwargs)
         
         self.rng = rng
         self.i = self.stats.index.max()
         self.families = pd.DataFrame()
         self.fractures = pd.DataFrame()
         self.fractures_voxelized = {}
+        
+    def set_names(self,
+                  names: dict[int, str],
+                  default_name: str = 'family {}',
+                  ) -> None:
+        return super().set_names(names, default_name)
+
+    def set_costs(self,
+                  costs: dict[int, str],
+                  default_cost: float = DEFAULT_FMM_COSTS['fractures'],
+                  ) -> None:
+        return super().set_costs(costs, default_cost)
+    
+    def set_model(self,
+                  model: dict[int, str],
+                  default_model: bool = True,
+                  ) -> None:
+        model.setdefault(0, False)
+        return super().set_model(model, default_model)
         
     def generate_fracture_family(self,
                                  name: str,
