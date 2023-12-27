@@ -584,28 +584,17 @@ def validate_settings_points(settings: dict,
     
     # If 'data' type is np.ndarray, transform it to list
     if isinstance(settings['data'], np.ndarray):
+        
+        # If the list of points contains only one element
+        if len(settings['data'].shape) == 1:
+            settings['data'] = np.array([settings['data']])
+        
         settings['data'] = settings['data'].tolist()
-    
-    # # Transform 'data' type into np.ndarray type
-    # try:
-    #     settings['data'] = np.array(settings['data'], dtype=np.float_)
-    # except Exception as e:
-    #     logging.error(e)
-    #     raise
-    
-    # # If the list of points contains only one element
-    # if len(settings['data'].shape) == 1:
-    #     settings['data'] = np.array([settings['data']])
-    
+            
     # # Control array size
     # if settings['data'].shape[1] not in [2, 3]:
     #     # TODO
     #     pass
-
-
-
-
-
 
     # # ### Checks validity of data
 
