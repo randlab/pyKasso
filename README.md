@@ -70,8 +70,8 @@ Work in progress.
 
 ## Examples
 
-Some basic examples are avaible here : [notebooks/geometry/](https://github.com/randlab/pyKasso/tree/dev/notebooks/geometry)
-Other examps : [notebooks/paper/](https://github.com/randlab/pyKasso/tree/dev/notebooks/paper)
+- Some basic examples illustrating pyKasso's functionalities: [notebooks/geometry/](https://github.com/randlab/pyKasso/tree/dev/notebooks/geometry)
+- Examples developped for the paper: [notebooks/paper/](https://github.com/randlab/pyKasso/tree/dev/notebooks/paper)
 
 ## Contact
 
