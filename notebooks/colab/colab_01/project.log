@@ -7,7 +7,7 @@
  ♠                              | INFO     | | |     __/ |                         
  ♠                              | INFO     | |_|    |___/                          
  ☼                              | INFO     | Directory location : c:\Users\franc\OneDrive\Desktop\pykasso\pykasso\notebooks\colab/colab_01/
- ☼                              | INFO     | Date log creation  : 2024-03-14 21:02:47
+ ☼                              | INFO     | Date log creation  : 2024-03-14 21:07:05
  ☼                              | INFO     | pyKasso version    : v.0.1.2
  ☼                              | INFO     | 
  ☼                              | INFO     | Dependencies versions:
@@ -34,7 +34,7 @@
  ►                              | INFO     | *** pyKasso simulation 1 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Path          : colab_01/outputs/simulation_1/
- ►                              | INFO     | Date          : 2024-03-14 21:02:47
+ ►                              | INFO     | Date          : 2024-03-14 21:07:05
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  validation.sks                 | WARNING  | The 'costs' attribute is missing. Set to default value.
@@ -86,7 +86,7 @@
  ►                              | INFO     | *** pyKasso simulation 2 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Path          : colab_01/outputs/simulation_2/
- ►                              | INFO     | Date          : 2024-03-14 21:02:48
+ ►                              | INFO     | Date          : 2024-03-14 21:07:05
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  validation.sks                 | WARNING  | The 'costs' attribute is missing. Set to default value.
