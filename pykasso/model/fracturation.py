@@ -12,12 +12,8 @@ import pandas as pd
 from pykasso.model.geologic_features import GeologicFeature
 from pykasso.core._namespaces import DEFAULT_FMM_COSTS
 ### Typing
-from pykasso._typing import Grid, RandomNumberGenerator
-
-## TODO
-# equation _solve_kappa, -1 ???
-# distribution vonmises arguments : mean, std / loc, scale
-# (https://numpy.org/doc/stable/reference/random/generated/numpy.random.normal.html)
+from pykasso.core.grid import Grid
+from numpy.random import Generator
 
 
 class Fractures(GeologicFeature):
@@ -25,13 +21,25 @@ class Fractures(GeologicFeature):
     
     def __init__(self,
                  grid: Grid,
-                 rng: RandomNumberGenerator,
+                 rng: Generator,
                  *args,
                  **kwargs):
+        """
+        Class modeling the fracturation model.
+
+        Parameters
+        ----------
+        grid : Grid
+            pyKasso's ``Grid`` of the model.
+        rng : Generator
+            Random Generator Number of numpy.
+        """
+        # Set super constructor parameters
         label = 'fractures'
         dim = 3
         super().__init__(grid, label, dim, *args, **kwargs)
         
+        # Set class attributes
         self.rng = rng
         self.i = self.stats.index.max()
         self.families = pd.DataFrame()
@@ -59,25 +67,36 @@ class Fractures(GeologicFeature):
         
     def generate_fracture_family(self,
                                  name: str,
-                                 **settings,  # TODO - to describe
+                                 settings: dict,
+                                 cost: float = DEFAULT_FMM_COSTS['fractures'],
                                  ) -> None:
-        """TODO"""
-        
-        # Update fractures iterator
+        """
+        Create a new fracture family.
+        Populate the `self.families` and `self.fractures` dataframe attributes.
+
+        Parameters
+        ----------
+        name : str
+            Name of the fracture family.
+        settings : dict
+            Parameters for the fracture generation.
+        cost : float, optional
+            Travel cost of the fracture family. By default the default travel
+            cost value for fractures.
+        """
+        # Update fracture families counter
         self.i = self.i + 1
         
         # Create a dataframe storing the new family settings
         frac_family = {
             'name': [name],
-            'alpha': settings['alpha'],
             'density': settings['density'],
-            'cost': settings['cost'],
+            'cost': cost,
             # 'geology': [0,1,2] # TODO - add geology
         }
         frac_family = pd.DataFrame(data=frac_family, index=[self.i])
         
         # Generate fractures
-        settings.pop('cost', None)
         fractures = self.generate_fractures(**settings)
         fractures.insert(0, 'family_id', self.i)
         
@@ -90,17 +109,18 @@ class Fractures(GeologicFeature):
         self.costs |= self.families['cost'].to_dict()
         index = self.families.index.to_list()
         self.model |= {i: True for i in index}
-        
         return None
      
-    def generate_model(self,
-                       model: str,
-                       ) -> None:
-        """Constructs the model for fracturation according to selection."""
+    def compute_model(self) -> None:
+        """
+        Construct the array for the fracturation model by voxelizing the
+        fractures.
         
-        frac_model = np.zeros_like(self.grid, dtype=np.float64)
-        
-        ### Voxelizes the fractures
+        Voxelize each fracture family and populate the `fractures_voxelized`
+        dictionary attribute. Sort fracture families by travel cost and
+        combine all the voxels according to their ranking.
+        """
+        # Voxelize the fractures
         fractures_voxelized = {}
         for i in self.families.index:
             fractures = self.fractures[self.fractures['family_id'] == i]
@@ -109,35 +129,26 @@ class Fractures(GeologicFeature):
             else:
                 fractures_voxelized[i] = voxelize_fractures(self.grid,
                                                             fractures)
-            
-        ### 1 - Superposition of families
-        if model == 'superposition':
-            
-            # Sorts fracture families by cost
-            self.families = self.families.sort_values(['cost'])
-            fractures_family_ids = self.families.index
-            
-            # Updates the final array
-            for family_id in fractures_family_ids:
-                frac_model = np.where(
-                    fractures_voxelized[family_id] == 1,
-                    family_id,
-                    frac_model
-                )
+                
+        # Sort fracture families by cost
+        self.families = self.families.sort_values(['cost'])
+        fractures_family_ids = self.families.index
         
-        ### 2 - Sums of families - TODO
-        # elif model == 'sum':
-        #     frac_model = sum([d for d in fractures_voxelized.values()])
-        
-        ### 3 - Binary grid giving presence/absence of fractures
-        # elif model == 'binary':
-        elif model == 'superposition':
-            frac_model = sum([d for d in fractures_voxelized.values()])
-            frac_model = np.where(frac_model > 0, 1, 0)
-        
-        ### Selects final model TODO
+        # Construct the fracturation array
+        frac_model = np.zeros_like(self.grid, dtype=np.float64)
+        for family_id in fractures_family_ids:
+            frac_model = np.where(
+                fractures_voxelized[family_id] == 1,
+                family_id,
+                frac_model
+            )
+    
+        # Update the attributes
         self.data_volume = frac_model.copy()
         self.fractures_voxelized = fractures_voxelized
+        
+        # frac_model = sum([d for d in fractures_voxelized.values()])
+        # frac_model = np.where(frac_model > 0, 1, 0)
         
         ######### TODO #########
         # # Constraints model with geology if provided
@@ -163,28 +174,30 @@ class Fractures(GeologicFeature):
                 
     def generate_fractures(self,
                            density: float,
-                           alpha: float,
                            orientation: float,
                            dip: float,
                            length: float,
                            orientation_distribution: str = 'vonmises',
                            dip_distribution: str = 'vonmises',
                            length_distribution: str = 'power',
+                           **kwargs: dict,
                            ) -> pd.DataFrame:
-        """
-        TODO
-        """
+        """TODO"""
         
         ######################
         ### INITIALIZATION ###
         ######################
         
+        ### Set optional parameters
+        alpha = kwargs.get('alpha', 2)  # TODO : Default value ??
+        
+        ### Set angle parameters
         orientation_min = 0
         orientation_max = 360
         dip_min = 0
         dip_max = 360
         
-        ### Defines if parameter is a range or an unique value
+        ### Define if parameter is a range or an unique value
         if isinstance(orientation, (list)):
             orientation_min, orientation_max = orientation
         else:
@@ -231,45 +244,33 @@ class Fractures(GeologicFeature):
 
         ##### FRACTURE CENTER LOCATION
 
-        # from triple uniform distribution
-        xm = self._random_random(Lex, xmin, real_frac_number)
-        ym = self._random_random(Ley, ymin, real_frac_number)
-        zm = self._random_random(Lez, zmin, real_frac_number)
+        # Get fracture position from triple uniform distribution
+        xm = Lex * self.rng.random(size=real_frac_number) + xmin
+        ym = Ley * self.rng.random(size=real_frac_number) + ymin
+        zm = Lez * self.rng.random(size=real_frac_number) + zmin
 
         ##### FRACTURE ORIENTATION
         
         if orientation_min > orientation_max:
             orientation_min = orientation_min - 360
-
+        
         # No distribution case
         if orientation_distribution == 'unique':
             orientation_fractures = [orientation] * real_frac_number
         
         # Uniform distribution case
         elif orientation_distribution == 'uniform':
-            orientation_fractures = self._random_uniform(orientation_min,
-                                                         orientation_max,
-                                                         real_frac_number)
+            orientation_fractures = self._uniform(orientation_min,
+                                                  orientation_max,
+                                                  real_frac_number)
         
         # Von Mises distribution case
         elif orientation_distribution == 'vonmises':
-            # Computes ...
-            orient_mean_angle = (orientation_max + orientation_min) / 2
-            orient_std_angle = (orientation_max - orient_mean_angle) / 3
-            orient_mean_angle_rad = np.radians(orient_mean_angle)
-            orient_std_angle_rad = np.radians(orient_std_angle)
-
-            # Computes the kappa value for the Von Mises orient. distribution
-            orient_kappa = self._solve_kappa(orient_std_angle_rad)
-            orientation_fractures = (
-                self._random_vonmises(orient_mean_angle_rad,
-                                      orient_kappa,
-                                      real_frac_number)
-            )
-            orientation_fractures = np.degrees(orientation_fractures)
-            
-        ##### FRACTURE DIP
+            orientation_fractures = self._vonmises(orientation_min,
+                                                   orientation_max,
+                                                   real_frac_number)
         
+        ##### FRACTURE DIP
         if dip_min > dip_max:
             dip_min = dip_min - 360
 
@@ -279,25 +280,15 @@ class Fractures(GeologicFeature):
         
         # Uniform distribution case
         elif dip_distribution == 'uniform':
-            dip_fractures = self._random_uniform(dip_min,
-                                                 dip_max,
-                                                 real_frac_number)
+            dip_fractures = self._uniform(dip_min,
+                                          dip_max,
+                                          real_frac_number)
             
         # Von Mises distribution case
         elif dip_distribution == 'vonmises':
-            dip_mean_angle = (dip_max + dip_min) / 2
-            dip_std_angle = (dip_max - dip_mean_angle) / 3
-            dip_mean_angle_rad = np.radians(dip_mean_angle)
-            dip_std_angle_rad = np.radians(dip_std_angle)
-            
-            # Computes the kappa value for the Von Mises orient. distribution
-            dip_kappa = self._solve_kappa(dip_std_angle_rad)
-            dip_fractures = (
-                self._random_vonmises(dip_mean_angle_rad,
-                                      dip_kappa,
-                                      real_frac_number)
-            )
-            dip_fractures = np.degrees(dip_fractures)
+            dip_fractures = self._vonmises(dip_min,
+                                           dip_max,
+                                           real_frac_number)
 
         ##### FRACTURE LENGHT
 
@@ -307,14 +298,14 @@ class Fractures(GeologicFeature):
 
         # Uniform distribution case
         elif length_distribution == 'uniform':
-            radius = self._random_uniform(length_min,
-                                          length_max,
-                                          real_frac_number)
+            radius = self._uniform(length_min,
+                                   length_max,
+                                   real_frac_number)
 
         # Trucated power law distribution case
         elif length_distribution == 'power':
-            frac_length = self._random_power(length_min, length_max,
-                                             alpha, real_frac_number)
+            frac_length = self._power(length_min, length_max,
+                                      alpha, real_frac_number)
             radius = frac_length / 2
             
         ##### FRACTURE NORMAL VECTOR
@@ -336,46 +327,84 @@ class Fractures(GeologicFeature):
         fractures = pd.DataFrame(data=data)
 
         return fractures
+    
+    def _uniform(self,
+                 value_min: float,
+                 value_max: float,
+                 n: int,
+                 ) -> np.ndarray:
+        """TODO"""
+        out = self.rng.uniform(low=value_min, high=value_max, size=n)
+        return out
+    
+    @staticmethod
+    def _vonmises_calculate_mu(theta_min: float,
+                               theta_max: float,
+                               ) -> float:
+        """
+        Calculate the mu parameter from the von Mises distribution.
+        """
+        mu = (theta_min + theta_max) / 2
+        return mu
+    
+    @staticmethod
+    def _vonmises_calculate_kappa(theta_max: float,
+                                  mu: float,
+                                  ) -> float:
+        """
+        Calculate the kappa parameter from the von Mises distribution.
+        """
+        std = (theta_max - mu) / 3
+        kappa = Fractures._vonmises_solve_kappa(std)
+        return kappa
 
-    def _random_random(self, a, b, n):
-        """ """
-        out = a * self.rng.random(size=n) + b
-        return out
-    
-    def _random_uniform(self, min_value, max_value, n):
-        """ """
-        out = self.rng.uniform(min_value, max_value, size=n)
-        return out
-    
-    def _solve_kappa(self, std_value):
-        """ """
-        # func = lambda kappa: (std_value**2 - 1
-        #                       + mpmath.besseli(1, kappa)
-        #                       / mpmath.besseli(0, kappa))
+    @staticmethod
+    def _vonmises_solve_kappa(std: float):
+        """
+        Solve the variance equation for von Mises distribution by finding the
+        corresponding kappa.
+        """
         def func(kappa):
-            a = std_value**2 - 1
+            a = std**2 - 1
             b = mpmath.besseli(1, kappa) / mpmath.besseli(0, kappa)
             return a + b
-        
-        kappa = mpmath.findroot(func, 1)
+        kappa = mpmath.findroot(func, 0)
         return kappa
     
-    def _random_vonmises(self, mean_value, kappa, n):
-        """ """
-        out = self.rng.vonmises(mean_value, kappa, size=n)
+    def _vonmises(self,
+                  theta_min: float,
+                  theta_max: float,
+                  n: int,
+                  ) -> np.ndarray:
+        """
+        https://en.wikipedia.org/wiki/Von_Mises_distribution
+        """
+        theta_min_rad = np.radians(theta_min)
+        theta_max_rad = np.radians(theta_max)
+        mu = Fractures._vonmises_calculate_mu(theta_min_rad, theta_max_rad)
+        kappa = Fractures._vonmises_calculate_kappa(theta_max_rad, mu)
+        out = self.rng.vonmises(mu, kappa, size=n)
+        out = np.degrees(out)
         return out
     
-    def _random_power(self, min_val, max_val, alpha, n):
-        """ """
+    def _power(self,
+               value_min: float,
+               value_max: float,
+               alpha: float,
+               n: int,
+               ) -> np.ndarray:
+        """
+        TODO
+        """
         palpha = (1 - alpha)
         invpalpha = 1 / palpha
-        fmina = min_val**palpha
-        frangea = max_val**palpha - fmina
+        fmina = value_min**palpha
+        frangea = value_max**palpha - fmina
         u = self.rng.random(size=n)
         out = (fmina + u * frangea)**invpalpha
         return out
 
- 
+ # TODO static ??
 def calculate_normal(dip, orientation):
     """"""
     orientation = np.radians(orientation)

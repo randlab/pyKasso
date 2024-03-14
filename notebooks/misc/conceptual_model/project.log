@@ -1,0 +1,32 @@
+ ♠                              | INFO     |              _                        
+ ♠                              | INFO     |             | |                       
+ ♠                              | INFO     |  _ __  _   _| | ____ _ ___ ___  ___   
+ ♠                              | INFO     | | `_ \| | | | |/ / _` / __/ __|/ _ \  
+ ♠                              | INFO     | | |_) | |_| |   < (_| \__ \__ \ (_) | 
+ ♠                              | INFO     | | .__/ \__, |_|\_\__,_|___/___/\___/  
+ ♠                              | INFO     | | |     __/ |                         
+ ♠                              | INFO     | |_|    |___/                          
+ ☼                              | INFO     | Directory location : c:\Users\franc\OneDrive\Desktop\pykasso\pykasso\notebooks\misc/conceptual_model/
+ ☼                              | INFO     | Date log creation  : 2024-02-28 18:41:06
+ ☼                              | INFO     | pyKasso version    : v.0.1.2
+ ☼                              | INFO     | 
+ ☼                              | INFO     | Dependencies versions:
+ ☼                              | INFO     |  - numpy : 1.24.1
+ ☼                              | INFO     |  - pandas : 1.5.3
+ ☼                              | INFO     |  - agd : 0.1.31
+ ☼                              | INFO     |  - matplotlib : 3.6.3
+ ☼                              | INFO     |  - pyvista : 0.42.3
+ ☼                              | INFO     |  - karstnet : 1.2.1
+ ☼                              | INFO     |  - networkx : 3.1
+ ☼                              | INFO     | 
+ ☼                              | INFO     | Grid parameters:
+ ☼                              | INFO     |  - x0 : 0
+ ☼                              | INFO     |  - y0 : 0
+ ☼                              | INFO     |  - z0 : 0
+ ☼                              | INFO     |  - nx : 100
+ ☼                              | INFO     |  - ny : 100
+ ☼                              | INFO     |  - nz : 30
+ ☼                              | INFO     |  - dx : 10
+ ☼                              | INFO     |  - dy : 10
+ ☼                              | INFO     |  - dz : 10
+ ☼                              | INFO     | 

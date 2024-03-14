@@ -1,0 +1,85 @@
+ ######################
+### PYKASSO SETTINGS ###
+ ######################
+
+---
+sks:
+  seed : 0
+  algorithm : 'Isotropic3'
+
+##############
+### Domain ###
+##############
+
+domain:
+  delimitation : ''
+  topography   : ''
+  bedrock      : ''
+  water_level  : ''
+
+###############
+### Geology ###
+###############
+
+geology:
+  data  : ''
+  costs : {}
+
+faults:
+  data : ''
+  costs : {}
+
+##############
+### Points ###
+##############
+
+### Outlets
+outlets:
+  number     : 1
+  data       : ''
+  shuffle    : False
+  importance : [1]
+  seed       : 1
+  subdomain  : 'domain_bottom'
+
+### Inlets
+inlets:
+  number     : 30
+  data       : ''
+  shuffle    : False
+  per_outlet : [1]
+  importance : [1,1,1]
+  seed       : 2
+  subdomain  : 'domain_surface'
+
+####################
+### Fracturation ###
+####################
+
+fractures:
+  data : ''
+  seed : 12
+  settings :
+    family_01:
+      alpha        : 2
+      density      : 0.00001
+      orientation  : [340, 20]
+      dip          : [80, 90]
+      length       : [1000, 2000]
+    family_02:
+      alpha        : 2
+      density      : 0.00001
+      orientation  : [340, 20]
+      dip          : [0, 10]
+      length       : [1000, 2000]
+
+##############
+### OTHERS ###
+##############
+
+verbosity:
+  logging : 0
+  agd : 0
+  karstnet : 0
+  
+...

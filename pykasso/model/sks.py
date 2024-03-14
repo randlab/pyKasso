@@ -353,21 +353,18 @@ class SKS():
         
         # Create the fractures
         self.fractures = Fractures(grid=self.grid,
-                                   rng=self.rng['fractures'],
-                                   **fractures_settings)
+                                   rng=self.rng['fractures'])
             
         # Generate fractures families
-        # TODO : where should we define the mode for fracturation modelisation
-        frac_model = self.model_parameters['sks'].get('fracturation_model',
-                                                      'superposition')
         if 'generate' in fractures_settings:
             frac_settings = fractures_settings['generate']
             for frac_name, frac_settings in frac_settings.items():
                 default_cost = DEFAULT_FMM_COSTS['fractures']
-                frac_settings.setdefault('cost', default_cost)
+                cost = frac_settings.pop('cost', default_cost)
                 self.fractures.generate_fracture_family(frac_name,
-                                                        **frac_settings)
-            self.fractures.generate_model(frac_model)
+                                                        frac_settings,
+                                                        cost)
+            self.fractures.compute_model()
             self.fractures.compute_statistics()
         return None
     
@@ -415,7 +412,7 @@ class SKS():
         topography = self.model_parameters['domain']['topography']
         if topography is not None:
             instance = Topography(grid=self.grid, data=topography)
-            instance._surface_to_volume('<=', self.grid)
+            instance.data_volume = instance._surface_to_volume('<=', self.grid)
             return instance
         else:
             return None
@@ -428,7 +425,7 @@ class SKS():
         bedrock = self.model_parameters['domain']['bedrock']
         if bedrock is not None:
             instance = Bedrock(grid=self.grid, data=bedrock)
-            instance._surface_to_volume('<=', self.grid)
+            instance.data_volume = instance._surface_to_volume('<=', self.grid)
             return instance
         else:
             return None
@@ -441,7 +438,7 @@ class SKS():
         water_table = self.model_parameters['domain']['water_table']
         if water_table is not None:
             instance = WaterTable(grid=self.grid, data=water_table)
-            instance._surface_to_volume('<=', self.grid)
+            instance.data_volume = instance._surface_to_volume('<=', self.grid)
             return instance
         else:
             return None
@@ -686,35 +683,42 @@ class SKS():
         inlets_nbr = len(self.inlets)
         self.outlets_importance = self.model_parameters['outlets']['importance']
         self.inlets_importance = self.model_parameters['inlets']['importance']
-        inlets_per_outlet = self.model_parameters['inlets']['per_outlet']
+        
+        # Calculate the total number of iterations that will occur
         outlets_importance_len = len(self.outlets_importance)
         inlets_importance_len = len(self.inlets_importance)
-
-        ### Calculating inlets and outlets repartitions
-        # Total number of iterations that will occur
         self.nbr_iteration = outlets_importance_len * inlets_importance_len
-        # correct for outlets_importance not summing to correct number of
-        # actual outlets
-        outlets_repartition = self._repartition_points(outlets_nbr,
-                                                       self.outlets_importance)
-        # correct for inlets_per_outlet not summing to correct number of
-        # actual inlets
-        inlets_repartition = self._repartition_points(inlets_nbr,
-                                                      inlets_per_outlet)
+        
+        # Compute outlets partition
+        outlets_partition = self._partition_points(outlets_nbr,
+                                                   self.outlets_importance)
+        
+        # Compute inlets partition
+        inlets_partition = self._partition_points(inlets_nbr,
+                                                  outlets_partition)
+        
+        # TODO - per_outlet optional
+        # per_outlets = [1] * outlets_nbr
+        # self.model_parameters['inlets'].setdefault('per_outlet', per_outlets)
+        # inlets_per_outlet = self.model_parameters['inlets']['per_outlet']
+        # inlets_repartition = self._partition_points(inlets_nbr,
+        #                                             inlets_per_outlet)
+        
+        # Distribute outlets iterations
+        outlets_distribution = pd.Series([k for (k, n) in enumerate(outlets_partition) for j in range(n)], name='outlet_iteration')
+        self._outlets = pd.concat([self.outlets, outlets_distribution], axis=1)
+        
+        # Distribute inlets iterations
+        inlets_distribution = pd.Series([k for (k, n) in enumerate(inlets_partition) for j in range(n)], name='outlet_key')
+        self._inlets = pd.concat([self.inlets, inlets_distribution], axis=1)
 
-        # Distributing inlets and outlets iterations
-        outlets_distribution = pd.Series([k for (k, n) in enumerate(outlets_repartition) for j in range(n)], name='outlet_iteration')
-        inlets_distribution = pd.Series([k for (k, n) in enumerate(inlets_repartition)  for j in range(n)], name='outlet_key')
-        self._outlets = pd.concat([self.outlets, outlets_distribution], axis=1)  # store as a semi-private variable for internal use only
-        self._inlets = pd.concat([self.inlets, inlets_distribution], axis=1)  # store as a semi-private variable for internal use only
-
-        # Distributing iterations for each inlet
+        # Distribute iterations in inlets
         for (outlet_key, row) in self._outlets.iterrows():
             inlets_test = self._inlets['outlet_key'] == outlet_key
             inlets_current = self._inlets[inlets_test]
             inlets_nbr = len(inlets_current)
-            repartition = self._repartition_points(inlets_nbr, self.inlets_importance)
-            distribution = pd.Series([k for (k, n) in enumerate(repartition) for j in range(n)], name='inlet_iteration', index=inlets_current.index, dtype='object')
+            partition = self._partition_points(inlets_nbr, self.inlets_importance)
+            distribution = pd.Series([k for (k, n) in enumerate(partition) for j in range(n)], name='inlet_iteration', index=inlets_current.index, dtype='object')
             self._inlets.loc[inlets_test, 'inlet_iteration'] = distribution
 
         return None
@@ -725,39 +729,48 @@ class SKS():
         inlets = []
         outlets = []
 
-        # Loops over outlet iterations
+        # Loop over outlet iterations
         for outlet_iteration in range(len(self.outlets_importance)):
 
-            # Loops over inlet iterations
+            # Loop over inlet iterations
             for inlet_iteration in range(len(self.inlets_importance)):
                 
-                # Gets the outlets assigned to the current outlet iteration
+                # Retrieve the outlets assigned to the current outlet iteration
                 test = self._outlets['outlet_iteration'] == outlet_iteration
                 outlets_current = self._outlets[test]
 
-                # Gets the inlets assigned to the current inlet iteration
+                # test = self._inlets['inlet_iteration'] == inlet_iteration
+                # inlets_current = self._inlets[test]
+                # TODO - per_outlet
+                # Retrieve the inlets assigned to the current inlet iteration
                 test = self._inlets['outlet_key'] == outlet_iteration
                 inlets_current = self._inlets[test]
                 test = inlets_current['inlet_iteration'] == inlet_iteration
                 inlets_current_iteration = inlets_current[test]
                 
-                # Appends the list
+                # Append the list
                 outlets.append(outlets_current.index.to_list())
+                # inlets.append(inlets_current.index.to_list())
                 inlets.append(inlets_current_iteration.index.to_list())
 
-                # Increments total iteration number by 1
+                # Increment iteration counter
                 iteration = iteration + 1
         
-        # Creates iterations dataframe
+        # Create iterations dataframe
         self.iterations = pd.DataFrame({
             'outlets': outlets,
             'inlets': inlets,
         })
         self.iterations.index.name = 'iteration'
         
+        # Shuffle
+        # self.iterations = self.iterations.sample(frac=1, ignore_index=True)
+        
+        #, random_state=self.rng['sks'])
+        
         return None
     
-    def _repartition_points(self, nbr_points, importance):
+    def _partition_points(self, nbr_points, importance):
         """
         Corrects for integers in importance factors list not summing correctly
         to total number of points.
@@ -978,25 +991,27 @@ class SKS():
         # Bedrock vadose zone is multiplied by a F2 cost factor.
         # Phreatic zone is isotropic.
         if self.model_parameters['sks']['mode'] == 'D':
+            
+            # Retrieve factor values
             F1 = self.model_parameters['sks']['factors']['F1']
             F2 = self.model_parameters['sks']['factors']['F2']
             
             # Vadose zone without bedrock vadose zone:
             # multiplied by a f1 cost factor
             bedrock_vadose = self.domain.get_subdomain('bedrock_vadose')
-            logical_test = np.logical_not(bedrock_vadose)
+            logical_test = np.logical_not(bedrock_vadose.astype(bool))
             alpha_map = np.where(logical_test, cost_map * F1, cost_map)
             
             # Bedrock vadose zone: multiplied by a f2 cost factor
             if self.domain.bedrock is not None:
                 logical_test = self.domain.get_subdomain('bedrock_vadose')
                 alpha_map = np.where(logical_test, cost_map * F2, alpha_map)
-                
+            
             # Phreatic zone: isotropic cost
             if self.domain.water_table is not None:
                 logical_test = self.domain.get_subdomain('phreatic_zone')
                 alpha_map = np.where(logical_test, cost_map, alpha_map)
-            
+                
         return alpha_map
     
     def _set_alpha_3D_from_elevation(self, cost_map: np.ndarray) -> np.ndarray:
@@ -1298,13 +1313,6 @@ class SKS():
         alpha = self.maps['alpha'][self.iteration]
         beta = self.maps['beta'][self.iteration]
         grad_x, grad_y, grad_z = self.maps['gradient'][self.iteration]
-        
-        # from pykasso.visualization import Visualizer
-        # Visualizer.pv_plot_array(grad_x)
-        # Visualizer.pv_plot_array(grad_y)
-        # Visualizer.pv_plot_array(grad_z)
-        # Visualizer.pv_plot_array(alpha)
-        # Visualizer.pv_plot_array(beta)
 
         self.fmm['riemannMetric'] = agd.Metrics.Riemann.needle(
             [grad_x, grad_y, grad_z],
@@ -1385,7 +1393,7 @@ class SKS():
                 if np.isnan(self.maps['nodes'][ix, iy, iz]):                                    #if there is no existing conduit node here
                     if ~np.isnan(self.maps['outlets'][ix, iy, iz]):                              #if there is an outlet here (cell value is not nan)
                         outlet = self._outlets.iloc[int(self.maps['outlets'][ix, iy, iz])]         #get the outlet coordinates using the ID in the outlets map
-                        self.vectors['nodes'][self.vectors['n']] = [outlet.x, outlet.y, outlet.z, 'outfall']           #add a node at the outlet coordinates (with the node type for SWMM)
+                        self.vectors['nodes'][self.vectors['n']] = [outlet.x, outlet.y, outlet.z, 'outlet']           #add a node at the outlet coordinates (with the node type for SWMM)
                         self.maps['nodes'][ix, iy, iz] = self.vectors['n']                                   #update node map with node index
                         if p > 0:                                                           #if this is not the first point (i.e. the inlet) in the current path
                             if merge == False:                                               #if this conduit has not merged with an existing conduit
@@ -1449,23 +1457,23 @@ class SKS():
             karst_map_copy = self.maps['karst'][self.iteration - 1].copy()
             self.maps['karst'].append(karst_map_copy)
 
-        # Cleans edges and nodes
+        # Clean edges and nodes
         edges = list(self.vectors['edges'].values())
         nodes = {}
         for i_node in self.vectors['nodes']:
             nodes[i_node] = self.vectors['nodes'][i_node][:3]
 
-        ### Retrieves the points
+        ### Retrieve the points
         points = []
         for (i1, i2) in edges:
             
-            # Retrieves point coordinates
+            # Retrieve point coordinates
             point1 = nodes[i1]
             point2 = nodes[i2]
             x1, y1, z1 = point1
             x2, y2, z2 = point2
             
-            # Calculates the number of segments to create
+            # Calculate the number of segments to create
             ndx = np.ceil(np.abs(x2 - x1) / self.grid.dx).astype('int')
             ndy = np.ceil(np.abs(y2 - y1) / self.grid.dy).astype('int')
             ndz = np.ceil(np.abs(z2 - z1) / self.grid.dz).astype('int')
@@ -1473,24 +1481,30 @@ class SKS():
             if n == 1:
                 n = 2
 
-            # Calculates coordinates of points
+            # Calculate coordinates of points
             x = np.linspace(x1, x2, n)
             y = np.linspace(y1, y2, n)
             z = np.linspace(z1, z2, n)
             
-            # Saves points
+            # Save points
             points.extend(list(zip(x, y, z)))
 
-        # Gets the indices
-        i, j, k = self.grid.get_indices(points)
-
-        # Calculates the new karst array
-        new_karst = np.zeros_like(self.grid.data_volume)
-        new_karst[i, j, k] = 1
         
-        # import pykasso.visualization as pkv
-        # pkv.show_array(new_karst, ghost=True)
-        self.maps['karst'][self.iteration] = new_karst
+        # TODO
+        try:
+            # Get the indices
+            i, j, k = self.grid.get_indices(points)
+
+            # Calculate the new karst array
+            new_karst = np.zeros_like(self.grid.data_volume)
+            new_karst[i, j, k] = 1
+        
+            # import pykasso.visualization as pkv
+            # pkv.show_array(new_karst, ghost=True)
+            self.maps['karst'][self.iteration] = new_karst
+        except Exception:
+            print('error')
+            pass
         
         return None
     
@@ -1513,6 +1527,7 @@ class SKS():
             'geology': self.geology,
             'faults': self.faults,
             'fractures': self.fractures,
+            'parameters': self.model_parameters.copy()
         }
         
         with open(path, 'wb') as handle:

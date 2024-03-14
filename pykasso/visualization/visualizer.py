@@ -82,23 +82,24 @@ class Visualizer():
     """
     
     DEFAULT_PV_SETTINGS = {
-        'n_iteration': -1,
         'text_options': {},
-        'ghost_values': [],
-        'ghost_subdomains': [],
+        'n_iteration': -1,
+        'mask_values': [],
+        'mask_subdomains': [],
         'show_grid': True,
         'show_outline': False,
-        'data_options': {},
-        'surfaces_options': {},
+        'threshold_options': {},
         'inlets_options': None,
         'outlets_options': None,
-        'show_slice': False,
+        'surfaces_options': {},
         'fractures_options': None,
+        'data_options': {},
+        'show_slice': False,
         'show_scalar_bar': True,
-        'discrete_scalar_bar': False,
         'scalar_bar_args': {},
+        'discrete_scalar_bar': False,
+        'background_color': 'white',
         'cmap': 'viridis',
-        # 'cpos': 'xz',
     }
     
     DEFAULT_MPL_IMSHOW_ORIGIN = 'lower'
@@ -120,6 +121,8 @@ class Visualizer():
         notebook : bool, optional
             If `True`, figures are rendered within python notebooks,
             by default `False`
+        jupyter_backend : str, optional
+            TODO
         """
         self.project = project
         self._notebook = notebook
@@ -130,7 +133,7 @@ class Visualizer():
         
         # Set the pyvista grid
         if _has_pyvista:
-            self._set_pyvista_grid()
+            self.pv_grid = self._get_pyvista_grid_from_project()
             
         # Set the jupyter backend
         if _has_pyvista:
@@ -209,7 +212,9 @@ class Visualizer():
                           n_slice: int = -1,
                           imshow_options: dict = {},
                           contour_options: dict = None,
-                          show_colorbar: bool = True,
+                          show_colorbar: bool = False,
+                          show_grid: bool = False,
+                          show_axis: bool = True,
                           ) -> Figure:
         """
         Plot a slice of a 3D array with the matplotlib library.
@@ -236,7 +241,11 @@ class Visualizer():
             If `False`, remove the colorbar, by default `True`.
             More details here:
             https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.colorbar.html
-
+        show_grid : bool, optional
+            If `False`, remove the grid, by default `False`.
+        show_axis : bool, optional
+            If `False`, remove the axis, by default `True`.
+            
         Returns
         -------
         Figure
@@ -260,6 +269,7 @@ class Visualizer():
             
         # Create the figure
         fig, ax = Visualizer._create_figure_2D(axis)
+        ax.grid(show_grid)
         
         # Plot the array
         options = imshow_options.copy()
@@ -271,6 +281,22 @@ class Visualizer():
         if contour_options is not None:
             cs = ax.contour(array, origin=origin, extent=extent,
                             **contour_options)
+            
+        # Set the axis
+        if show_axis is False:
+            # plt.axis('off')
+            ax.set_xlabel(None)
+            ax.set_ylabel(None)
+            ax.set_xticklabels([])
+            ax.set_yticklabels([])
+                
+            ticks_ = [ax.xaxis.get_major_ticks(), ax.yaxis.get_major_ticks()]
+            for ticks in ticks_:
+                for tick in ticks:
+                    tick.tick1line.set_visible(False)
+                    tick.tick2line.set_visible(False)
+                    tick.label1.set_visible(False)
+                    tick.label2.set_visible(False)
         
         # Set the colorbar
         if show_colorbar:
@@ -282,18 +308,6 @@ class Visualizer():
         
         return Figure(fig, ax, cbar)
         
-    @staticmethod
-    def _test_array_dimension(array: np.ndarray,
-                              ) -> Union[ValueError, None]:
-        """
-        Test if the array is well a (2,) or (3,) dimensional array.
-        """
-        if array.ndim not in [2, 3]:
-            msg = "Array dimension is not valid."
-            raise ValueError(msg)
-        else:
-            return None
-    
     @staticmethod
     def _slice_array(array: np.ndarray,
                      axis: str,
@@ -399,165 +413,389 @@ class Visualizer():
     @staticmethod
     @requires_pyvista()
     def pv_plot_array(array: np.ndarray,
-                      mask_values: list = [],
-                      mask_subdomain: list = [],
-                      show_grid: bool = True,
-                      show_outline: bool = False,
-                      threshold_options: dict = {},
-                      text_options: dict = None,
-                      show_scalar_bar: bool = True,
-                      scalar_bar_args: dict = {},
-                      discrete_scalar_bar: bool = False,
-                      cmap: str = 'viridis',
+                      settings: dict = {},
+                      grid_origin: tuple = (0, 0, 0),
+                      grid_spacing: tuple = (1, 1, 1),
                       cpos: Union[str, list[float, float, float]] = 'xy',
-                      savefig: Union[str, None] = None,
-                      **kwargs
+                      window_size: tuple = None,
+                      savefig: bool = False,
+                      filename: str = None,
+                      return_plotter: bool = False,
                       ) -> None:
-        """
-        Plot a 3D ``array`` with the pyvista library.
-
-        Parameters
-        ----------
-        array : np.ndarray
-            3D array to plot.
-        mask_values : list, optional
-            List of values to mask, by default ``[]``.
-        mask_subdomain : list, optional
-            List of pykasso subdomains to mask, by default ``[]``.
-        show_grid : bool, optional
-            If ``True``, plot the axis ans its values, by default ``True``.
-        show_outline : bool, optional
-            If ``True``, plot the full delimitation of the array regardless
-            the values masked or filtered, by default ``False``.
-        threshold_options : dict, optional
-            Dictionary containing the arguments for the threshold() matplotlib
-            function, by default ``{}``.
-            More details here:
-            https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.DataSetFilters.threshold.html
-        text_options: dict, optional
-            __doc__ , by default ``None``.
-        show_scalar_bar: bool, optional
-            __doc__ , by default ``True``.
-        scalar_bar_args: dict, optional
-            __doc__ , by default ``{}``.
-        discrete_scalar_bar: bool, optional
-            __doc__ , by default ``False``.
-        cmap: str, optional
-            __doc__ , by default ``viridis``.
-        cpos : Union[str, list[float, float, float]], optional
-            Initial camera position.
-            More details here:
-            https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.camera_position.html
-        savefig : Union[str, None], optional
-            __doc__, by default ``None``.
-        Returns
-        -------
-        None
-        """
-
+        """ DOC """
+        
         # Control array dimension
         Visualizer._test_array_dimension(array)
         
+        # Construct the pyvista grid and the 'simulation_data' dict
+        simulation_data = {}
+        mesh = Visualizer._get_pyvista_grid_from_array(array,
+                                                       grid_origin,
+                                                       grid_spacing)
+        simulation_data['mesh'] = mesh
+        simulation_data['data'] = array
+        
+        # Construct the plotter
+        plotter = Visualizer._construct_plotter(shape=(1, 1),
+                                                border=True)
+        
+        # Fill the plotter
+        plotter = Visualizer._fill_plotter(plotter,
+                                           simulation_data,
+                                           settings)
+        plotter.link_views()
+        
+        # Show the plotter
+        result = Visualizer._show_plotter(plotter, cpos, window_size,
+                                          savefig, filename, return_plotter)
+        return result
+    
+    @staticmethod
+    def _test_array_dimension(array: np.ndarray,
+                              ) -> Union[ValueError, None]:
+        """
+        Test if the array is well a (2,) or (3,) dimensional array.
+        """
+        if array.ndim not in [2, 3]:
+            msg = "Array dimensions are not valid."
+            raise ValueError(msg)
+        else:
+            return None
+        
+    @staticmethod
+    @requires_pyvista()
+    def _get_pyvista_grid_from_array(array: np.array,
+                                     origin: tuple,
+                                     spacing: tuple,
+                                     ):  # pv.ImageData
+        """ DOC """
         # Get array shape
         if array.ndim == 2:
             nx, ny = array.shape
             nz = 1
         elif array.ndim == 3:
             nx, ny, nz = array.shape
-
-        # Create the mesh
-        mesh = Visualizer._create_empty_mesh((nx, ny, nz))
+        x0, y0, z0 = origin
+        dx, dy, dz = spacing
+        grid = [x0, y0, z0, nx, ny, nz, dx, dy, dz]
+        pv_grid = Visualizer._construct_pyvista_grid(*grid)
+        return pv_grid
+    
+    @staticmethod
+    @requires_pyvista()
+    def _construct_pyvista_grid(x0, y0, z0, nx, ny, nz, dx, dy, dz):
+        """ DOC """
+        pv_grid = pv.ImageData()
+        pv_grid.origin = (x0 - dx / 2, y0 - dy / 2, z0 - dz / 2)
+        pv_grid.dimensions = np.array((nx, ny, nz)) + 1
+        pv_grid.spacing = (dx, dy, dz)
+        pv_grid = pv_grid.cast_to_unstructured_grid()
+        return pv_grid
+                      
+    @staticmethod
+    @requires_pyvista()
+    def _construct_plotter(shape: tuple,
+                           border: bool = True,
+                           ):  # -> pv.Plotter
+        """ DOC """
+        plotter = pv.Plotter(shape=shape, border=border)
+        return plotter
+    
+    @staticmethod
+    @requires_pyvista()
+    def _fill_plotter(plotter,  # pv.Plotter
+                      simulation_data: dict,
+                      settings: dict,
+                      ):  # -> pv.Plotter
+        """ DOC """
         
-        # Fill the mesh
-        mesh.cell_data[Visualizer.PV_SCALAR_KEYWORD] = array.flatten(order="F")
+        # Retrieve text options
+        text_options = settings.pop('text_options', None)
         
-        # Ghost values
-        mesh = Visualizer._ghost_values(mesh, mask_values, mask_subdomain)
+        # Retrieve data
+        actors = Visualizer._get_actors(simulation_data,
+                                        **settings)
         
-        # Create the plotter
-        plotter = pv.Plotter()
-        
-        # Plot the grid
-        if show_grid:
-            plotter.show_grid()
+        # Generate and plot actors
+        for actor in actors:
+            plotter.add_actor(actor, reset_camera=True)
+           
+        # Print figure caption
+        if text_options is not None:
+            plotter.add_text(**text_options)
             
-        # Plot the outline
-        if show_outline:
-            plotter.add_mesh(mesh.outline(), color="k")
+        return plotter
+    
+    @staticmethod
+    def _get_actors(simulation_data: dict,
+                    mask_values: list = [],
+                    mask_subdomains: list = [],
+                    show_grid: bool = True,
+                    show_outline: bool = False,
+                    threshold_options: dict = {},
+                    inlets_options: dict = None,
+                    outlets_options: dict = None,
+                    surfaces_options: dict = {},
+                    fractures_options: dict = None,
+                    data_options: dict = {},
+                    show_slice: bool = False,
+                    show_scalar_bar: bool = True,
+                    scalar_bar_args: dict = {},
+                    discrete_scalar_bar: bool = False,
+                    background_color: str = 'white',
+                    cmap: str = 'viridis',  # TODO Union
+                    ):  # -> list[pv.Actor]
+        """
+        DOC
+        """
+    #     """
+    #     Plot a 3D ``array`` with the pyvista library.
+
+    #     Parameters
+    #     ----------
+    #     array : np.ndarray
+    #         3D array to plot.
+    #     mask_values : list, optional
+    #         List of values to mask, by default ``[]``.
+    #     mask_subdomain : list, optional
+    #         List of pykasso subdomains to mask, by default ``[]``.
+    #     show_grid : bool, optional
+    #         If ``True``, plot the axis ans its values, by default ``True``.
+    #     show_outline : bool, optional
+    #         If ``True``, plot the full delimitation of the array regardless
+    #         the values masked or filtered, by default ``False``.
+    #     threshold_options : dict, optional
+    #         Dictionary containing the arguments for the threshold() matplotlib
+    #         function, by default ``{}``.
+    #         More details here:
+    #         https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.DataSetFilters.threshold.html
+    #     text_options: dict, optional
+    #         __doc__ , by default ``None``.
+    #         More details here:
+    #         https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.add_text.html#pyvista.Plotter.add_text.html
+    #     show_scalar_bar: bool, optional
+    #         __doc__ , by default ``True``.
+    #     scalar_bar_args: dict, optional
+    #         __doc__ , by default ``{}``.
+    #     discrete_scalar_bar: bool, optional
+    #         __doc__ , by default ``False``.
+    #     cmap: str, optional
+    #         __doc__ , by default ``viridis``.
+    #     cpos : Union[str, list[float, float, float]], optional
+    #         Initial camera position.
+    #         More details here:
+    #         https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.camera_position.html
+    #     background_color : str, optional
+    #         __doc__, by default ``'white'``.
+    #     savefig : bool, optional
+    #         __doc__, by default ``False``.
+    #     filename : str, optional
+    #         __doc__, by default ``None``.
+            
+    #     """
+    
+        # Retrieve the mesh
+        mesh = simulation_data['mesh']
+        mesh0 = mesh.copy()
         
-        # Filter then plot the data
-        kwargs['scalars'] = Visualizer.PV_SCALAR_KEYWORD
+        # Retrieve the data and fill the mesh
+        data = simulation_data[Visualizer.PV_SCALAR_KEYWORD]
+        mesh.cell_data[Visualizer.PV_SCALAR_KEYWORD] = data.flatten(order="F")
+            
+        # Ghost the data
+        test_ghost_values = (len(mask_values) > 0)
+        test_ghost_subdomains = (len(mask_subdomains) > 0)
+        if test_ghost_values or test_ghost_subdomains:
+            
+            if 'domain' in simulation_data:
+                domain = simulation_data['domain']
+            else:
+                domain = data.copy()
+            # If necessery, retrieves the subdomains
+            if test_ghost_subdomains > 0:
+                subdomains = []
+                for subdomain in mask_subdomains:
+                    if subdomain[-2:] == '_r':
+                        subdomain = subdomain[:-2]
+                        data_domain = domain.get_subdomain(subdomain)
+                        data_domain = np.logical_not(data_domain).astype(int)
+                    else:
+                        data_domain = domain.get_subdomain(subdomain)
+                    subdomains.append(data_domain)
+            else:
+                subdomains = []
+            
+            mesh = Visualizer._mask_values(mesh, mask_values, subdomains)
+        
+        ### Create the plot and the list of actors
+        plotter = pv.Plotter()
+        plotter.background_color = background_color
+        actors = []
+        
+        # Plot the grid of the domain
+        if show_grid:
+            _ = plotter.show_grid()
+            actors.append(_)
+        
+        # Plot the outline of the domain
+        if show_outline:
+            _ = plotter.add_mesh(mesh0.outline(), color="k")
+            actors.append(_)
+           
+        # Filter the data
         threshold_options.setdefault('scalars', Visualizer.PV_SCALAR_KEYWORD)
         mesh = mesh.threshold(**threshold_options)
         
         if discrete_scalar_bar:
-            n = len(np.unique(mesh.cell_data[kwargs['scalars']]))
+            n = len(np.unique(mesh.cell_data[Visualizer.PV_SCALAR_KEYWORD]))
             cmap = plt.cm.get_cmap(cmap, n)
-            
-        plotter.add_mesh(mesh,
-                         show_scalar_bar=show_scalar_bar,
-                         scalar_bar_args=scalar_bar_args,
-                         cmap=cmap,
-                         **kwargs)
         
-        # Plot the text
-        if text_options is not None:
-            plotter.add_text(**text_options)
-                
-        # Show the plotter
-        if savefig is not None:
-            # date = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        # Plot the inlets
+        if (inlets_options is not None) and ('inlets' in simulation_data):
+            inlets_options.setdefault('render_points_as_spheres', False)
+            inlets_options.setdefault('point_size', 20)
+            inlets_options.setdefault('color', 'r')
+
+            inlets = Visualizer._df_to_cloud(simulation_data['inlets'])
+            _ = plotter.add_points(inlets, **inlets_options)
+            actors.append(_)
+        
+        # Plot the outlets
+        if (outlets_options is not None) and ('outlets' in simulation_data):
+            outlets_options.setdefault('render_points_as_spheres', False)
+            outlets_options.setdefault('point_size', 20)
+            outlets_options.setdefault('color', 'b')
             
+            outlets = Visualizer._df_to_cloud(simulation_data['outlets'])
+            _ = plotter.add_points(outlets, **outlets_options)
+            actors.append(_)
+            
+        # Plot the surfaces
+        if surfaces_options is not None:
+            for surface_name, options in surfaces_options.items():
+                options.setdefault('smooth_shading', True)
+                options.setdefault('opacity', 0.66)
+                # options.setdefault('scalars', 'data')
+                surface = Visualizer._get_surface(simulation_data,  # TODO
+                                                  surface_name)
+                if surface is not None:
+                    _ = plotter.add_mesh(surface, **options)
+                    actors.append(_)
+            
+        # Plot the fractures
+        if (fractures_options is not None) and ('fractures' in simulation_data):
+            # Set default parameters
+            f = simulation_data['fractures'].fractures
+            fractures_options.setdefault('fractures', f)
+            fid = f['family_id'].unique().tolist()
+            fractures_options.setdefault('family_id', fid)
+            fractures_options.setdefault('sort', ['radius'])
+            fractures_options.setdefault('max_number', 250)
+            
+            if len(fractures_options['fractures']) > 0:
+                # Sort fractures
+                fractures = Visualizer._sort_fractures(**fractures_options)
+                
+                # Get polygons
+                polygons = Visualizer._fractures_to_polygons(fractures)
+                
+                # Plot polygons
+                options_polygons = {}
+                options_polygons.setdefault('smooth_shading', True)
+                options_polygons.setdefault('opacity', 0.66)
+                for polygon in polygons:
+                    _ = plotter.add_mesh(polygon, **options_polygons)
+                    actors.append(_)
+       
+        ### Plot the data
+        scalar_keyword = Visualizer.PV_SCALAR_KEYWORD
+        data_options.setdefault('scalars', scalar_keyword)
+        
+        # Set the scalar bar
+        if discrete_scalar_bar:
+            n = len(np.unique(mesh.cell_data[scalar_keyword]))
+            cmap = plt.cm.get_cmap(cmap, n)
+        
+        # Plot the sliced data
+        if show_slice:
+            _ = plotter.add_mesh_slice_orthogonal(
+                mesh=mesh,
+                generate_triangles=False,
+                widget_color=None,
+                tubing=False,
+                interaction_event=45,
+                cmap=cmap,
+                **data_options
+            )
+            actors.extend(_)
+            
+        else:
+            _ = plotter.add_mesh(mesh.copy(),
+                                 show_scalar_bar=show_scalar_bar,
+                                 scalar_bar_args=scalar_bar_args,
+                                 cmap=cmap,
+                                 **data_options)
+            actors.append(_)
+           
+        # Set the colorbar
+        if show_scalar_bar:
+            # scalar_bar_args.setdefault('title', 'Vol1')
+            _ = plotter.add_scalar_bar(**scalar_bar_args)
+            actors.append(_)
+
+        return actors
+    
+    @staticmethod
+    @requires_pyvista()
+    def _show_plotter(plotter,
+                      cpos: Union[str, list[float, float, float]] = 'xy',
+                      window_size: tuple = None,
+                      savefig: bool = False,
+                      filename: str = None,
+                      return_plotter: bool = False,
+                      ):
+        """ DOC """
+        if savefig:
+            # outputs_dir = self.project.core['paths']['outputs_dir']
+            date = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+            
+            if filename is None:
+                filename = 'pv_plot_' + date
+                # filename = outputs_dir + 'pv_plot_' + date
+
             plotter.show(cpos=cpos,
-                         screenshot=savefig,
+                         window_size=window_size,
+                         screenshot=filename,
                          )
         else:
-            plotter.show(cpos=cpos)
-        
+            if return_plotter:
+                return plotter
+            else:
+                plotter.show(cpos=cpos,
+                             window_size=window_size)
         return None
-    
-    @staticmethod
-    def _create_empty_mesh(shape: tuple[int, int, int]
-                           ):  # pyvista.core.pointset.UnstructuredGrid
-        """
-        Create an empty pyvista mesh according to the `shape` tuple.
 
-        Parameters
-        ----------
-        shape : tuple[int, int, int]
-            Tuple of the shape of the mesh: (nx, ny, nz).
-
-        Returns
-        -------
-        UnstructuredGrid
-        """
-        # mesh = pv.UniformGrid()
-        mesh = pv.ImageData()
-        mesh.dimensions = np.array(shape) + 1
-        mesh = mesh.cast_to_unstructured_grid()
-        return mesh
-    
     # TODO - should be rewritten
     @staticmethod
-    def _ghost_values(mesh,  # pyvista.core.pointset.UnstructuredGrid
-                      ghost_values: list,
-                      ghost_subdomains: list
-                      ):  # pyvista.core.pointset.UnstructuredGrid
+    def _mask_values(mesh,  # pyvista.core.pointset.UnstructuredGrid
+                     mask_values: list,
+                     mask_subdomains: list,
+                     ):  # pyvista.core.pointset.UnstructuredGrid
         """
         DOC
         """
         ghosted_cells = []
         
         # Ghost cells according to data value
-        if len(ghost_values) > 0:
-            test = np.isin(mesh["data"], ghost_values)
+        if len(mask_values) > 0:
+            test = np.isin(mesh["data"], mask_values)
             ghosted_cells.extend(np.argwhere(test))
         
         # TODO ??? improve the readability of the code
         # Ghost cells according to subdomain
-        if len(ghost_subdomains) > 0:
+        if len(mask_subdomains) > 0:
             tests = []
-            for subdomain in ghost_subdomains:
+            for subdomain in mask_subdomains:
                 tests.append(subdomain == 1)
             test_subdomains = np.logical_or.reduce(tests)
             data_domain = test_subdomains.flatten(order="F")
@@ -580,6 +818,8 @@ class Visualizer():
                     imshow_options: dict = {},
                     contour_options: dict = None,
                     show_colorbar: bool = True,
+                    show_grid: bool = False,
+                    show_axis: bool = True,
                     scatter_inlets_options: dict = None,
                     scatter_outlets_options: dict = None,
                     ) -> Figure:
@@ -613,6 +853,10 @@ class Visualizer():
             If `False`, remove the colorbar, by default `True`.
             More details here:
             https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.colorbar.html
+        show_grid : bool, optional
+            If `True`, print the grid, by default `False`.
+        show_axis : bool, optional
+            If `False`, remove the axis, by default `True`.
         scatter_inlets_options : dict, optional
             _description_, by default None
         scatter_outlets_options : dict, optional
@@ -646,7 +890,9 @@ class Visualizer():
                                          n_slice=n_slice,
                                          imshow_options=imshow_options,
                                          contour_options=contour_options,
-                                         show_colorbar=show_colorbar)
+                                         show_colorbar=show_colorbar,
+                                         show_grid=show_grid,
+                                         show_axis=show_axis)
         
         # Plot the inlets
         if scatter_inlets_options is not None:
@@ -785,25 +1031,16 @@ class Visualizer():
     # ****          PYVISTA             *************************** #
     # ************************************************************* #
     
-    def _set_pyvista_grid(self) -> None:
-        """
-        Create an empty mesh representing the grid of the simulations for
-        future pyvista plot.
-        """
-        # Get grid parameters
+    @requires_pyvista()
+    def _get_pyvista_grid_from_project(self):
+        """ DOC """
         grid = self.project.grid.get_grid_parameters()
         x0, y0, z0 = grid['x0'], grid['y0'], grid['z0']
         nx, ny, nz = grid['nx'], grid['ny'], grid['nz']
         dx, dy, dz = grid['dx'], grid['dy'], grid['dz']
-        # pv_grid = pv.UniformGrid()
-        pv_grid = pv.ImageData()
-        
-        # Construct grid
-        pv_grid.origin = (x0 - dx / 2, y0 - dy / 2, z0 - dz / 2)
-        pv_grid.dimensions = np.array((nx, ny, nz)) + 1
-        pv_grid.spacing = (dx, dy, dz)
-        self.pv_grid = pv_grid.cast_to_unstructured_grid()
-        return None
+        grid = [x0, y0, z0, nx, ny, nz, dx, dy, dz]
+        pv_grid = Visualizer._construct_pyvista_grid(*grid)
+        return pv_grid
     
     @requires_pyvista()
     def pv_show(self,
@@ -811,6 +1048,7 @@ class Visualizer():
                 features: list,
                 settings: list = [],
                 cpos: Union[str, list] = 'xz',
+                window_size: tuple = None,
                 savefig: bool = False,
                 filename: str = None,
                 return_plotter: bool = False,
@@ -849,11 +1087,6 @@ class Visualizer():
         if isinstance(settings, dict):
             settings = [settings] * len(simulations)
         
-        # TODO - to remove
-        # # Check type of 'settings' parameter
-        # if not isinstance(settings, (list)):
-        #     settings = [settings] * len(simulations)
-        
         ######################
         ### Initialization ###
         ######################
@@ -864,7 +1097,7 @@ class Visualizer():
             settings_dict = Visualizer._set_default_pv_settings(settings_dict)
             pv_settings.append(copy.deepcopy(settings_dict))
         
-        ### Create plotter
+        ### Construct the plotter
         if len(features) == 1:
             if len(simulations) <= 3:
                 rows = 1
@@ -879,10 +1112,9 @@ class Visualizer():
         else:
             rows = len(simulations)
             columns = len(features)
-            
-        shape = (rows, columns)
-        border = True
-        plotter = pv.Plotter(shape=shape, border=border)
+        
+        plotter = Visualizer._construct_plotter(shape=(rows, columns),
+                                                border=True)
         
         ###############
         ### Ploting ###
@@ -897,51 +1129,104 @@ class Visualizer():
                 settings = pv_settings[i]
                 feature = features[0]
                 
-                text = 'Simulation {} - {}'.format(n_sim, feature)
-                settings.setdefault('text_options', {})
-                settings['text_options'].setdefault('text', text)
-                
-                data = self.project._get_simulation_data(n_sim)
-                plotter.subplot(row, column)
-                plotter = self._fill_plotter(plotter,
-                                             data,
-                                             feature,
-                                             settings)
+                plotter = self._prepare_plotter(plotter,
+                                                feature,
+                                                n_sim,
+                                                settings,
+                                                (row, column))
         else:
             for (row, (n_sim, settings)) in enumerate(zip(simulations,
                                                           pv_settings)
                                                       ):
                 for (column, feature) in enumerate(features):
                     
-                    text = 'Simulation {} - {}'.format(n_sim, feature)
-                    settings.setdefault('text_options', {})
-                    settings['text_options'].setdefault('text', text)
-                    
-                    data = self.project._get_simulation_data(n_sim)
-                    plotter.subplot(row, column)
-                    plotter = self._fill_plotter(plotter,
-                                                 data,
-                                                 feature,
-                                                 settings)
-                    
+                    plotter = self._prepare_plotter(plotter,
+                                                    feature,
+                                                    n_sim,
+                                                    settings,
+                                                    (row, column))
+
         plotter.link_views()
         
-        if savefig:
-            outputs_dir = self.project.core['paths']['outputs_dir']
-            date = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-            
-            if filename is None:
-                filename = outputs_dir + 'pv_plot_' + date
-
-            plotter.show(cpos=cpos,
-                         screenshot=filename,
-                         )
+        # Show the plotter
+        result = Visualizer._show_plotter(plotter,
+                                          cpos,
+                                          window_size,
+                                          savefig,
+                                          filename,
+                                          return_plotter)
+        return result
+    
+    def _prepare_plotter(self,
+                         plotter,
+                         feature: str,
+                         n_sim: int,
+                         settings: dict,
+                         position: tuple,
+                         ):
+        """ DOC """
+        text_options = settings.pop('text_options', {})
+        
+        # Test feature validity
+        if Visualizer._test_feature_validity(feature):
+            text = 'Simulation {} - {}'.format(n_sim, feature)
         else:
-            if return_plotter:
-                return plotter
-            else:
-                plotter.show(cpos=cpos)
-                return None
+            text = 'Simulation {} - {} : Invalid feature'.format(n_sim,
+                                                                 feature)
+        
+        # Retrieve simulation data
+        n_iteration = settings.pop('n_iteration', -1)
+        simulation_data = self._retrieve_simulation_data(feature,
+                                                         n_sim,
+                                                         n_iteration)
+        
+        # Fill the plotter
+        row, column = position
+        plotter.subplot(row, column)
+        plotter = Visualizer._fill_plotter(plotter,
+                                           simulation_data,
+                                           settings)
+        
+        # Print text
+        text_options.setdefault('text', text)
+        if text_options['text'] is not None:
+            plotter.add_text(**text_options)
+            
+        return plotter
+    
+    @staticmethod
+    def _test_feature_validity(feature: str) -> bool:
+        """ DOC """
+        # Test if asked feature is valid
+        if feature not in AUTHORIZED_FEATURES:
+            msg = "Asked feature '{}' is invalid. Authorized features: {}."
+            msg = msg.format(feature, AUTHORIZED_FEATURES)
+            warnings.warn(msg)
+            return False
+        else:
+            return True
+            
+    def _retrieve_simulation_data(self,
+                                  feature: str,
+                                  n_sim: int,
+                                  n_iteration: int,
+                                  ) -> dict:
+        """ DOC """
+        # Retrieve the simulation data
+        simulation_data = self.project._get_simulation_data(n_sim)
+        
+        # Get the pyvista grid
+        simulation_data['grid'] = self.project.grid.data_volume
+        simulation_data['mesh'] = self.pv_grid.copy()
+        
+        # Get data from feature
+        feature_data = Visualizer._get_data_from_dict(simulation_data,
+                                                      feature,
+                                                      n_iteration)
+        simulation_data['data'] = feature_data
+        simulation_data['meshgrids'] = self.project.grid.get_meshgrids()
+        
+        return simulation_data
     
     @staticmethod
     def _set_default_pv_settings(settings: dict) -> dict:
@@ -951,241 +1236,7 @@ class Visualizer():
         for (parameter, value) in Visualizer.DEFAULT_PV_SETTINGS.items():
             settings.setdefault(parameter, value)
         return settings
-    
-    def _fill_plotter(self,
-                      plotter,  # pv.Plotter
-                      simulation_data: dict,
-                      feature: str,
-                      settings: dict
-                      ):  # -> pv.Plotter
-        """_summary_
 
-        Parameters
-        ----------
-        plotter : pv.Plotter
-            _description_
-        simulation_data : dict
-            _description_
-        feature : str
-            _description_
-        settings : dict
-            _description_
-
-        Returns
-        -------
-        pv.Plotter
-            _description_
-
-        Raises
-        ------
-        e
-            _description_
-        """
-        text_options = settings.pop('text_options', None)
-        
-        # Test if asked feature is valid
-        if feature not in AUTHORIZED_FEATURES:
-            msg = "Asked feature '{}' is invalid. Authorized features: {}."
-            msg = msg.format(feature, AUTHORIZED_FEATURES)
-            warnings.warn(msg)
-            text_options['text'] = '{} : Invalid feature'.format(feature)
-        
-        # Otherwise retrieve data
-        else:
-            try:
-                actors = self._get_actors(simulation_data=simulation_data,
-                                          feature=feature,
-                                          **settings)
-            
-            # If  ?  # TODO
-            except IndexError:
-                msg = "Asked feature '{}' has no data.".format(feature)
-                warnings.warn(msg)
-                text_options['text'] = '{} : No data'.format(feature)
-            
-            # If ?  # TODO
-            except Exception as e:
-                raise e
-            
-            # Generate and plot actors
-            else:
-                for actor in actors:
-                    plotter.add_actor(actor, reset_camera=True)
-           
-        # Print figure caption
-        if text_options is not None:
-            plotter.add_text(**text_options)
-            
-        return plotter
-    
-    def _get_actors(self,
-                    simulation_data: dict,
-                    feature: str,
-                    n_iteration: int = -1,
-                    ghost_values: list = [],
-                    ghost_subdomains: list = [],
-                    show_grid: bool = True,
-                    show_outline: bool = False,
-                    data_options: dict = {},
-                    surfaces_options: dict = {},
-                    inlets_options: dict = None,
-                    outlets_options: dict = None,
-                    show_slice: bool = False,
-                    fractures_options: dict = None,
-                    show_scalar_bar: bool = True,
-                    scalar_bar_args: dict = {},
-                    discrete_scalar_bar: bool = False,
-                    cmap: str = 'viridis',
-                    ):  #  -> list[pv.Actor]
-        """
-        DOC
-        """
-        # Get data from feature
-        feature_data = Visualizer._get_data_from_dict(simulation_data,
-                                                      feature,
-                                                      n_iteration)
-        
-        # Create the mesh
-        mesh = self.pv_grid.copy()
-
-        # Fill the mesh
-        mesh.cell_data['data'] = feature_data.flatten(order="F")
-            
-        # Ghost the data
-        test_ghost_values = (len(ghost_values) > 0)
-        test_ghost_subdomains = (len(ghost_subdomains) > 0)
-        if test_ghost_values or test_ghost_subdomains:
-            
-            domain = simulation_data['domain']
-            # If necessery, retrieves the subdomains
-            if test_ghost_subdomains > 0:
-                subdomains = []
-                for subdomain in ghost_subdomains:
-                    if subdomain[-2:] == '_r':
-                        subdomain = subdomain[:-2]
-                        data_domain = domain.get_subdomain(subdomain)
-                        data_domain = np.logical_not(data_domain).astype(int)
-                    else:
-                        data_domain = domain.get_subdomain(subdomain)
-                    subdomains.append(data_domain)
-            else:
-                subdomains = []
-            
-            mesh = Visualizer._ghost_values(mesh, ghost_values, subdomains)
-        
-        ### Create the plot
-        plotter = pv.Plotter()
-        actors = []
-        
-        # Plot the grid of the domain
-        if show_grid:
-            _ = plotter.show_grid()
-            actors.append(_)
-        
-        # Plot the outline of the domain
-        if show_outline:
-            _ = plotter.add_mesh(self.pv_grid.outline(), color="k")
-            actors.append(_)
-            
-        # Plot the inlets
-        if inlets_options is not None:
-            inlets_options.setdefault('render_points_as_spheres', False)
-            inlets_options.setdefault('point_size', 20)
-            inlets_options.setdefault('color', 'r')
-
-            inlets = Visualizer._df_to_cloud(simulation_data['inlets'])
-            _ = plotter.add_points(inlets, **inlets_options)
-            actors.append(_)
-        
-        # Plot the outlets
-        if outlets_options is not None:
-            outlets_options.setdefault('render_points_as_spheres', False)
-            outlets_options.setdefault('point_size', 20)
-            outlets_options.setdefault('color', 'b')
-            
-            outlets = Visualizer._df_to_cloud(simulation_data['outlets'])
-            _ = plotter.add_points(outlets, **outlets_options)
-            actors.append(_)
-            
-        # Plot the surfaces
-        if surfaces_options is not None:
-            meshgrids = self.project.grid.get_meshgrids()
-            
-            for surface_name, options in surfaces_options.items():
-                options.setdefault('smooth_shading', True)
-                options.setdefault('opacity', 0.66)
-                # options.setdefault('scalars', 'data')
-                surface = Visualizer._get_surface(meshgrids,
-                                                  simulation_data,
-                                                  surface_name)
-                if surface is not None:
-                    _ = plotter.add_mesh(surface, **options)
-                    actors.append(_)
-            
-        # Plot the fractures
-        if fractures_options is not None:
-            # Set default parameters
-            f = simulation_data['fractures'].fractures
-            fractures_options.setdefault('fractures', f)
-            fid = f['family_id'].unique().tolist()
-            fractures_options.setdefault('family_id', fid)
-            fractures_options.setdefault('sort', ['radius'])
-            fractures_options.setdefault('max_number', 250)
-            
-            if len(fractures_options['fractures']) > 0:
-                # Sort fractures
-                fractures = Visualizer._sort_fractures(**fractures_options)
-                
-                # Get polygons
-                polygons = Visualizer._fractures_to_polygons(fractures)
-                
-                # Plot polygons
-                options_polygons = {}
-                options_polygons.setdefault('smooth_shading', True)
-                options_polygons.setdefault('opacity', 0.66)
-                for polygon in polygons:
-                    _ = plotter.add_mesh(polygon, **options_polygons)
-                    actors.append(_)
-       
-        
-        
-        ### Plot the data
-        scalar_keyword = Visualizer.PV_SCALAR_KEYWORD
-        data_options.setdefault('scalars', scalar_keyword)
-        
-        # Set the scalar bar
-        if discrete_scalar_bar:
-            n = len(np.unique(mesh.cell_data[scalar_keyword]))
-            cmap = plt.cm.get_cmap(cmap, n)
-        
-        # Plot the sliced data
-        if show_slice:
-            _ = plotter.add_mesh_slice_orthogonal(
-                mesh=mesh,
-                generate_triangles=False,
-                widget_color=None,
-                tubing=False,
-                interaction_event=45,
-                cmap=cmap,
-                **data_options
-            )
-            actors.extend(_)
-            
-        else:
-            _ = plotter.add_mesh(mesh.copy(),
-                                 cmap=cmap,
-                                 **data_options)
-            actors.append(_)
-           
-        # Set the colorbar
-        if show_scalar_bar:
-            # scalar_bar_args.setdefault('title', 'Vol1')
-            _ = plotter.add_scalar_bar(**scalar_bar_args)
-            actors.append(_)
-
-        return actors
-    
-    ### TODO - to rewrite
     @staticmethod
     def _get_data_from_dict(simulation_data: dict,
                             feature: str,
@@ -1216,21 +1267,25 @@ class Visualizer():
         AttributeError
             If the geologic feature required is empty.
         """
-        # Select the adequate way to retrieve data
-        if feature in GEOLOGICAL_FEATURES:
-            featured_data = simulation_data[feature].data_volume
-        elif feature in DOMAIN_FEATURES:
-            featured_data = getattr(simulation_data['domain'], feature)
-            featured_data = featured_data.data_volume
-        elif feature in ANISOTROPIC_FEATURES:
-            featured_data = simulation_data['maps'][feature][n_iteration]
-            # else:  # TODO
-                # msg = 'feature keyword error'
-                # raise ValueError(msg)
+        try:
+            # Select the adequate way to retrieve data
+            if feature in GEOLOGICAL_FEATURES:
+                featured_data = simulation_data[feature].data_volume
+            elif feature in DOMAIN_FEATURES:
+                featured_data = getattr(simulation_data['domain'], feature)
+                featured_data = featured_data.data_volume
+            elif feature in ANISOTROPIC_FEATURES:
+                featured_data = simulation_data['maps'][feature][n_iteration]
+
         # except AttributeError:
-            
+        #     pass
+                
         # except IndexError:
-            # msg = "Warning. A simulation computed with "
+        #     pass
+            
+        except Exception:
+            print('error')
+            featured_data = simulation_data['grid'].copy()
             
         return featured_data
     
@@ -1260,8 +1315,7 @@ class Visualizer():
     
     @staticmethod
     @requires_pyvista()
-    def _get_surface(meshgrids: tuple[np.ndarray, np.ndarray, np.ndarray],
-                     simulation_data: dict,
+    def _get_surface(simulation_data: dict,
                      surface_name: str
                      ):  # -> Union[pv.StructuredGrid, None]
         """
@@ -1284,7 +1338,7 @@ class Visualizer():
         Union[pv.StructuredGrid, None]
             The pyvista surface object. ``None`` if the surface does not exist.
         """
-        X, Y, Z = meshgrids
+        X, Y, Z = simulation_data['meshgrids']
         x = X[:, :, 0]
         y = Y[:, :, 0]
         # Control validity of the surface name
@@ -1433,45 +1487,3 @@ class Visualizer():
         # Close and finalize movie
         plotter.close()
         return None
-    
-# ????
-#     @requires_pyvista()
-#     def pv_plot(self, n_sim, feature, settings={}, show=True,
-#                 return_plotter=False):
-#         """
-#         DOC
-#         """
-#         ######################
-#         ### Initialisation ###
-#         ######################
-        
-#         # Create plotter
-#         plotter = pv.Plotter()
-        
-#         # Check 'settings' parameter
-#         settings = self._check_pv_settings(settings)
-#         if 'text' not in settings:
-#             text = 'Simulation {} - {}'.format(n_sim, feature)
-#             settings['text'] = text
-            
-#         # Get simulation data
-#         simulation_data = self.project._get_simulation_data(n_sim)
-        
-#         ###############
-#         ### Ploting ###
-#         ###############
-        
-#         # Plot actors
-#         plotter = self._fill_plotter(plotter, simulation_data,
-#                                      feature, settings)
-        
-#         # Plot figure
-#         if show:
-#             plotter.show()
-        
-#         if return_plotter:
-#             return plotter
-#         else:
-#             return None
-    
-

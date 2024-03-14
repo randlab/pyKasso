@@ -565,6 +565,28 @@ def validate_settings_points(settings: dict,
         logger.error(error)
         raise
     
+    ### 'importance' ###
+    
+    # Test if 'importance' is of type list
+    try:
+        val.is_variable_type_valid(variable_name='importance',
+                                   variable_value=settings['importance'],
+                                   valid_types=(list))
+    except TypeError as error:
+        logger.error(error)
+        raise
+    
+    # Test if length of the list is adequate with declared number of points
+    try:
+        if len(settings['importance']) > settings['number']:
+            # TODO - write error msg
+            msg = ""
+            raise Exception(msg)
+    # TODO - custom exception ?
+    except Exception as error:
+        logger.error(error)
+        raise
+    
     ### 'data'
     
     # Test if data is empty
@@ -612,12 +634,6 @@ def validate_settings_points(settings: dict,
     # #             msg = "The values of the 'data' attribute contains at least one invalid point. Coordinates must be of type int or float."
     # #             this.logger.critical(msg)
     # #             raise TypeError(msg)
-
-    # # Checks if 'shuffle' is of type bool
-    # is_attribute_type_valid('shuffle', settings['shuffle'], (bool))
-
-    # # Checks if 'importance' is of type list
-    # is_attribute_type_valid('importance', settings['importance'], (list))
 
     # # Checks if there is enough points to associate
     # if settings['number'] < len(settings['importance']):

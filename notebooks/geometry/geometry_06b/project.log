@@ -7,7 +7,7 @@
  ♠                              | INFO     | | |     __/ |                         
  ♠                              | INFO     | |_|    |___/                          
  ☼                              | INFO     | Directory location : c:\Users\franc\OneDrive\Desktop\pykasso\pykasso\notebooks\geometry/geometry_06b/
- ☼                              | INFO     | Date log creation  : 2023-12-27 07:39:33
+ ☼                              | INFO     | Date log creation  : 2024-02-28 17:02:41
  ☼                              | INFO     | pyKasso version    : v.0.1.2
  ☼                              | INFO     | 
  ☼                              | INFO     | Dependencies versions:
@@ -34,11 +34,10 @@
  ►                              | INFO     | *** pyKasso simulation 1 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Path          : geometry_06b/outputs/simulation_1/
- ►                              | INFO     | Date          : 2023-12-27 07:39:33
+ ►                              | INFO     | Date          : 2024-02-28 17:02:41
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  validation.sks                 | WARNING  | The 'costs' attribute is missing. Set to default value.
- validation.sks                 | WARNING  | The 'mode' attribute is missing. Set to default value.
  validation.sks                 | WARNING  | The 'factors' attribute is missing. Set to default value.
  validation.sks                 | INFO     | 'sks' parameters have been validated.
  validation.geology             | WARNING  | The 'data' attribute is missing. Set to default value.
@@ -68,6 +67,7 @@
  validation.domain              | INFO     | 'domain' parameters have been validated.
  construction.domain            | INFO     | 'domain' has been constructed
  validation.outlets             | WARNING  | The 'shuffle' attribute is missing. Set to default value.
+ validation.outlets             | WARNING  | The 'importance' attribute is missing. Set to default value.
  validation.outlets             | WARNING  | The 'geology' attribute is missing. Set to default value.
  validation.outlets             | WARNING  | The 'seed' attribute is missing. Set to default value.
  validation.outlets             | INFO     | 'outlets' parameters have been validated.
@@ -85,11 +85,10 @@
  ►                              | INFO     | *** pyKasso simulation 2 ***
  ►                              | INFO     | ****************************
  ►                              | INFO     | Path          : geometry_06b/outputs/simulation_2/
- ►                              | INFO     | Date          : 2023-12-27 07:39:34
+ ►                              | INFO     | Date          : 2024-02-28 17:02:41
  ►                              | INFO     | Logging level : 10
  ►                              | INFO     | ---
  validation.sks                 | WARNING  | The 'costs' attribute is missing. Set to default value.
- validation.sks                 | WARNING  | The 'mode' attribute is missing. Set to default value.
  validation.sks                 | WARNING  | The 'factors' attribute is missing. Set to default value.
  validation.sks                 | INFO     | 'sks' parameters have been validated.
  validation.geology             | WARNING  | The 'data' attribute is missing. Set to default value.
@@ -119,6 +118,7 @@
  validation.domain              | INFO     | 'domain' parameters have been validated.
  construction.domain            | INFO     | 'domain' has been constructed
  validation.outlets             | WARNING  | The 'shuffle' attribute is missing. Set to default value.
+ validation.outlets             | WARNING  | The 'importance' attribute is missing. Set to default value.
  validation.outlets             | WARNING  | The 'geology' attribute is missing. Set to default value.
  validation.outlets             | WARNING  | The 'seed' attribute is missing. Set to default value.
  validation.outlets             | INFO     | 'outlets' parameters have been validated.

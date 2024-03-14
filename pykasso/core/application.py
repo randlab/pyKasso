@@ -63,7 +63,7 @@ class Application():
     ######################
         
     def new_project(self,
-                    project_name: str,
+                    name: str,
                     grid_parameters: dict,
                     force: bool = True
                     ) -> None:
@@ -75,13 +75,13 @@ class Application():
 
         Parameters
         ----------
-        project_name : str
+        name : str
             The name of the project. A new directory is created if the
             argument points to a non-existant folder.
         grid_parameters : dict
             The dictionary containing the grid parameters.
         force : bool, optional
-            If True, overwrite files in case of conflict when ``project_name``
+            If True, overwrite files in case of conflict when ``name``
             points to an already existing directory.
             Default is True.
 
@@ -89,17 +89,17 @@ class Application():
         --------
         >>> import pykasso as pk
         >>> app = pk.pykasso()
-        >>> project_name = TODO
+        >>> name = TODO
         >>> grid_parameters = {TODO}
         >>> app.new_project(TODO)
         """
         
         ### Input validation
         
-        # Test 'project_name' type
+        # Test 'name' type
         try:
-            is_variable_type_valid(variable_name='project_name',
-                                   variable_value=project_name,
+            is_variable_type_valid(variable_name='name',
+                                   variable_value=name,
                                    valid_types=(str))
         except TypeError:
             raise
@@ -156,7 +156,7 @@ class Application():
         
         # Set a project instance
         self.__project = Project(grid_parameters=grid_parameters,
-                                 project_location=project_name,
+                                 project_location=name,
                                  force=force)
         
         # Initialize the 'model' module

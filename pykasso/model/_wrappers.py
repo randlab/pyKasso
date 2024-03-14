@@ -15,7 +15,6 @@ DEFAULT_VALUES = {
         'seed': 0,
         'algorithm': 'Isotropic3',
         'costs': DEFAULT_FMM_COSTS,
-        'mode': 'A',
         'factors': {'F': 100, 'F1': 100, 'F2': 50}
     },
     'geology': {
@@ -50,7 +49,7 @@ DEFAULT_VALUES = {
         # 'number': ['required', ''],
         'data': [],
         'shuffle': False,
-        # 'importance': ['required', []],
+        'importance': [1],
         'subdomain': 'domain_surface',
         'geology': None,
         'seed': 0,
@@ -59,8 +58,8 @@ DEFAULT_VALUES = {
         # 'number': ['required', ''],
         'data': [],
         'shuffle': False,
-        # 'importance': ['required', []],
-        # 'per_outlet': ['required', []],
+        'importance': [1],
+        # 'per_outlet': [1],
         'subdomain': 'domain_surface',
         'geology': None,
         'seed': 0,
@@ -95,19 +94,18 @@ def _parameters_validation(feature, kind):
             
             # Test special key presences
             if feature == 'sks':
+                # Travel cost
                 costs = default_params['costs'].copy()
                 default_costs = DEFAULT_FMM_COSTS.copy()
                 default_costs.update(costs)
                 default_params['costs'] = default_costs
-            if feature == 'outlets':
-                for key in ['number', 'importance']:
-                    if key not in default_params:
-                        msg = ("The mandatory '{}' attribute is missing."
-                               ).format(key)
-                        logger.error(msg)
-                        raise KeyError(msg)
-            if feature == 'inlets':
-                for key in ['number', 'importance', 'per_outlet']:
+                # Mode
+                if default_params['algorithm'] == 'Isotropic3':
+                    default_params['mode'] = 'A'
+                else:
+                    default_params.setdefault('mode', 'D')
+            if feature in ['outlets', 'inlets']:
+                for key in ['number']:
                     if key not in default_params:
                         msg = ("The mandatory '{}' attribute is missing."
                                ).format(key)

@@ -234,7 +234,6 @@ class Surface(GeologicFeature):
             elif condition == '<=':
                 test = data_volume[:, :, z] <= k
                 data_volume[:, :, z] = np.where(test, 1, 0)
-        self.data_volume = data_volume
         return data_volume
     
     def compute_statistics(self) -> None:

@@ -110,7 +110,7 @@ class Domain():
         "domain",                       #
         "domain_surface",               #
         "domain_bottom",                #
-        "domain_out",                   #
+        # "domain_out",                   #
 
         "domain_borders",               #
         "domain_borders_sides",         #
@@ -247,12 +247,14 @@ class Domain():
             # 'Domain borders' x 'Face up'
             borders = self._get_bordered_subdomain('domain_borders_sides')
             surf_up = self._get_surface_subdomain('up')
-            out = np.logical_and(borders, surf_up)
+            out = np.logical_and(borders.astype(bool), surf_up.astype(bool))
+            out = out.astype(int)
         elif subdomain == 'domain_borders_bottom':
             # 'Domain borders' x 'Face down'
             borders = self._get_bordered_subdomain('domain_borders_sides')
             surf_dw = self._get_surface_subdomain('down')
-            out = np.logical_and(borders, surf_dw)
+            out = np.logical_and(borders.astype(bool), surf_dw.astype(bool))
+            out = out.astype(int)
         ### VADOSE ###
         elif subdomain == 'vadose_zone':
             out = self._get_phreatic_subdomain('vadose_zone')
@@ -260,7 +262,8 @@ class Domain():
             # 'Domain borders' x 'Vadose zone'
             borders = self._get_bordered_subdomain('domain_borders_sides')
             vadose_zone = self._get_phreatic_subdomain('vadose_zone')
-            out = np.logical_and(borders, vadose_zone)
+            out = np.logical_and(borders.astype(bool), vadose_zone.astype(bool))
+            out = out.astype(int)
         ### PHREATIC ###
         elif subdomain == 'phreatic_zone':
             out = self._get_phreatic_subdomain('phreatic_zone')
@@ -268,7 +271,8 @@ class Domain():
             # 'Domain borders' x 'Phreatic zone'
             borders = self._get_bordered_subdomain('domain_borders_sides')
             phreatic_zone = self._get_phreatic_subdomain('phreatic_zone')
-            out = np.logical_and(borders, phreatic_zone)
+            out = np.logical_and(borders.astype(bool), phreatic_zone.astype(bool))
+            out = out.astype(int)
         elif subdomain == 'phreatic_surface':
             out = self._get_phreatic_subdomain('phreatic_surface')
         elif subdomain == 'phreatic_borders_surface':
@@ -292,21 +296,27 @@ class Domain():
         elif subdomain == 'bedrock_vadose':
             if self.bedrock is None:
                 out = np.zeros_like(self.grid.data_volume)
+                # out = np.ones_like(self.grid.data_volume) ??
             else:
                 # 'Bedrock' x 'Vadose zone'
                 bedrock_r = np.invert(self.bedrock.data_volume.astype(bool))
                 bedrock_vadose = self._get_bedrock_subdomain()
-                bedrock = np.logical_and(bedrock_r, bedrock_vadose)
+                bedrock = np.logical_and(bedrock_r.astype(bool),
+                                         bedrock_vadose.astype(bool))
                 if self._is_defined['water_table']:
                     vadose_zone = self._get_phreatic_subdomain('vadose_zone')
                 else:
                     vadose_zone = np.ones_like(bedrock)
-                out = np.logical_and(bedrock, vadose_zone)
+                out = np.logical_and(bedrock.astype(bool),
+                                     vadose_zone.astype(bool))
+                out = out.astype(int)
         elif subdomain == 'bedrock_phreatic':
             # 'Bedrock' x 'Phreatic zone'
             bedrock = self._get_bedrock_subdomain()
             phreatic_zone = self._get_phreatic_subdomain('phreatic_zone')
-            out = np.logical_and(bedrock, phreatic_zone)
+            out = np.logical_and(bedrock.astype(bool),
+                                 phreatic_zone.astype(bool))
+            out = out.astype(int)
         else:
             print("ERROR: subdomain '{}' does not exist.".format(subdomain))
             out = None
