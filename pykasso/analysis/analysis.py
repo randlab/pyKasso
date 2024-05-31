@@ -121,13 +121,11 @@ class Analyzer():
         for i, data in enumerate(self.project):
             
             # Retrieve data
-            karstnet_edges = list(data["vectors"]["edges"].values())
-            karstnet_nodes = copy.deepcopy(data["vectors"]["nodes"])
+            karstnet_edges = data["vectors"]["edges_"].to_numpy().tolist()
+            karstnet_nodes = copy.deepcopy(data["vectors"]["nodes_"])
             
             # Drop last item in list (the node type) for each dictionary entry
-            karstnet_nodes = pd.DataFrame.from_dict(karstnet_nodes,
-                                                    orient='index')
-            karstnet_nodes = karstnet_nodes.drop(columns=3)
+            karstnet_nodes = karstnet_nodes.drop(columns=['type', 'vadose'])
             index = karstnet_nodes.index
             values = karstnet_nodes.iloc[:, [0, 1, 2]].to_numpy().tolist()
             karstnet_nodes = {i: value for i, value in zip(index, values)}
@@ -172,21 +170,15 @@ class Analyzer():
             dataframe = dataframe.to_frame().T
 
         ### Define the text coloring function
-        # Red if TODO
-        # Bright red if TODO
-        # Green if TODO
-        def _bg_color(x, min_val, max_val, mean_val, std_val):
+        # Green if inside [V_min, V_max]
+        # Red if outside
+        def _bg_color(x, min_val, max_val):
             if pd.isnull(x):
                 return 'color: grey'
             elif (x < min_val) or (x > max_val):
                 return 'color: red'
             else:
-                inf = mean_val - std_val
-                sup = mean_val + std_val
-                if (x < inf) or (x > sup):
-                    return 'color: #FFFF00'
-                else:
-                    return 'color: #00FF00'
+                return 'color: #00FF00'
 
         # Iterate in the dataframe columns
         df_metrics = dataframe.style
@@ -194,8 +186,6 @@ class Analyzer():
             kwargs = {
                 'min_val': self.stats[column_name]['min'],
                 'max_val': self.stats[column_name]['max'],
-                'mean_val': self.stats[column_name]['mean'],
-                'std_val': self.stats[column_name]['std'],
                 'subset': [column_name]
             }
             df_metrics = df_metrics.applymap(_bg_color, **kwargs)

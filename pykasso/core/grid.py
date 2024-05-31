@@ -482,6 +482,7 @@ class Grid():
             z = coordinates[:, 2]
             out = self.get_i(x), self.get_j(y), self.get_k(z)
         else:
+            print(coordinates.shape)
             msg = ("Shape of the `coordinates` parameter is invalid. Only (2, "
                    "n) and (3, n) array like are valid.")
             raise TypeError(msg)

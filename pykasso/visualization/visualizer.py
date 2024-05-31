@@ -417,6 +417,7 @@ class Visualizer():
                       grid_origin: tuple = (0, 0, 0),
                       grid_spacing: tuple = (1, 1, 1),
                       cpos: Union[str, list[float, float, float]] = 'xy',
+                      zoom: float = None,
                       window_size: tuple = None,
                       savefig: bool = False,
                       filename: str = None,
@@ -446,7 +447,7 @@ class Visualizer():
         plotter.link_views()
         
         # Show the plotter
-        result = Visualizer._show_plotter(plotter, cpos, window_size,
+        result = Visualizer._show_plotter(plotter, cpos, window_size, zoom,
                                           savefig, filename, return_plotter)
         return result
     
@@ -750,11 +751,18 @@ class Visualizer():
     def _show_plotter(plotter,
                       cpos: Union[str, list[float, float, float]] = 'xy',
                       window_size: tuple = None,
+                      zoom: float = None,
                       savefig: bool = False,
                       filename: str = None,
                       return_plotter: bool = False,
                       ):
         """ DOC """
+        
+        # Set camera position
+        plotter.camera_position = cpos
+        if zoom is not None:
+            plotter.camera.zoom(zoom)
+            
         if savefig:
             # outputs_dir = self.project.core['paths']['outputs_dir']
             date = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
@@ -762,17 +770,16 @@ class Visualizer():
             if filename is None:
                 filename = 'pv_plot_' + date
                 # filename = outputs_dir + 'pv_plot_' + date
-
-            plotter.show(cpos=cpos,
-                         window_size=window_size,
-                         screenshot=filename,
-                         )
+        
+            plotter.show(
+                window_size=window_size,
+                screenshot=filename,
+            )
         else:
             if return_plotter:
                 return plotter
             else:
-                plotter.show(cpos=cpos,
-                             window_size=window_size)
+                plotter.show(window_size=window_size)
         return None
 
     # TODO - should be rewritten
@@ -1049,6 +1056,7 @@ class Visualizer():
                 settings: list = [],
                 cpos: Union[str, list] = 'xz',
                 window_size: tuple = None,
+                zoom: float = None,
                 savefig: bool = False,
                 filename: str = None,
                 return_plotter: bool = False,
@@ -1152,6 +1160,7 @@ class Visualizer():
         result = Visualizer._show_plotter(plotter,
                                           cpos,
                                           window_size,
+                                          zoom,
                                           savefig,
                                           filename,
                                           return_plotter)
