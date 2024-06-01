@@ -20,13 +20,17 @@ pyKasso is a python3 open-source package intended to simulate easily and quickly
 
 ## Installation
 
-Currently, pyKasso is only working with Python 3.9.
+Currently, pyKasso is only working with Python 3.9. The best way to install it is by using miniforge: https://github.com/conda-forge/miniforge.
 
-### Using conda
-
-Download *environment.yml*. From source:
+From source:
 ```
-conda env create --name pykasso --file=environment.yml
+mamba env create -f environment.yml
+```
+
+Then:
+```
+mamba activate pykasso
+pip install git+https://github.com/karstnet/karstnet.git
 ```
 
 <!-- Then:
@@ -34,7 +38,7 @@ conda env create --name pykasso --file=environment.yml
 pip install -e pykasso[analysis, visualization]
 ``` -->
 
-### Using pip
+<!-- ### Using pip
 
 In local, from source:
 ```
@@ -44,7 +48,7 @@ pip install -e ".[analysis,visualization,trame]"
 With git:
 ```
 pip install -e git+https://github.com/randlab/pyKasso.git@dev#egg=pykasso[analysis,visualization,trame]
-```
+``` -->
 
 <!-- 
 ### Check installation
