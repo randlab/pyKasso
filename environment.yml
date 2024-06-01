@@ -1,12 +1,36 @@
-name: python 3.9
+name: pyKasso
 channels:
   - conda-forge
   - agd-lbr
 dependencies:
-  - python=3.9,<4.0
+  - python=3.9
+  - numpy
+  - pandas
+  - matplotlib
+  - pyqt
+  - openpyxl
+  - mpmath
+  - pyyaml
+  - scipy
+  - plotly
+  - shapely
+  - rasterio
   - agd
   - hfm
+  - networkx
+  - mplstereonet
+  - pyvista
+  - imageio
+  - trame
+  - trame-vuetify
+  - trame-vtk
+  - ipykernel
   - jupyter
-  - pip 
+  - jupyterlab
+  - ipyvtklink
+  - snakeviz
+  - sphinx
+  - numpydoc
+  - pip
   - pip:
-    - pykasso
+    - -e .
