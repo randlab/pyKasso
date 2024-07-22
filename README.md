@@ -33,39 +33,18 @@ mamba activate pykasso
 pip install git+https://github.com/karstnet/karstnet.git
 ```
 
-<!-- Then:
+It also works with conda but may take more time to install all the dependencies :
 ```
-pip install -e pykasso[analysis, visualization]
-``` -->
-
-<!-- ### Using pip
-
-In local, from source:
+conda env create -f environment.yml
+conda activate pykasso
+pip install git+https://github.com/karstnet/karstnet.git
 ```
-pip install -e ".[analysis,visualization,trame]"
-```
-
-With git:
-```
-pip install -e git+https://github.com/randlab/pyKasso.git@dev#egg=pykasso[analysis,visualization,trame]
-``` -->
 
 <!-- 
 ### Check installation
 
 Work in progress.
 
-```
-poetry run pytest tests/
-```
-
-
-### Dependencies
-
-pyKasso requires the following python packages to function properly:
-- [agd](https://github.com/Mirebeau/AdaptiveGridDiscretizations)
-- [karstnet](https://github.com/UniNE-CHYN/karstnet)
-- [pyvista](https://github.com/pyvista/pyvista)
 -->
 
 ## Documentation
@@ -74,16 +53,11 @@ Work in progress.
 
 ## Examples
 
-- Some basic examples illustrating pyKasso's functionalities: [notebooks/geometry/](https://github.com/randlab/pyKasso/tree/dev/notebooks/geometry)
 - Examples developped for the paper: [notebooks/paper/](https://github.com/randlab/pyKasso/tree/dev/notebooks/paper)
-
-## Contact
-
-- F. Miville
-- Prof. C. Fandel
-- Prof. P. Renard
+- Some basic examples illustrating pyKasso's functionalities: [notebooks/geometry/](https://github.com/randlab/pyKasso/tree/dev/notebooks/geometry)
 
 ## Publications
 
+<!-- - TODO : add the new publication -->
 - Fandel, C., Miville, F., Ferré, T. et al. 2022: The stochastic simulation of karst conduit network structure using anisotropic fast marching, and its application to a geologically complex alpine karst system. Hydrogeol J 30, 927–946, https://doi.org/10.1007/s10040-022-02464-x
 - Borghi, A., Renard, P., Jenni, S. 2012: A pseudo-genetic stochastic model to generate karstic networks, Journal of Hydrology, 414–415, https://doi.org/10.1016/j.jhydrol.2011.11.032.

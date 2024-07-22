@@ -35,9 +35,9 @@ DEFAULT_VALUES = {
         'data': None,
         'axis': 'z',
         'names': {},
-        'costs': {},
+        # 'costs': {},
         'model': {},
-        'seed': 0,
+        'seed': None,
     },
     'domain': {
         'delimitation': None,
@@ -52,7 +52,7 @@ DEFAULT_VALUES = {
         'importance': [1],
         'subdomain': 'domain_surface',
         'geology': None,
-        'seed': 0,
+        'seed': None,
     },
     'inlets': {
         # 'number': ['required', ''],
@@ -62,7 +62,7 @@ DEFAULT_VALUES = {
         # 'per_outlet': [1],
         'subdomain': 'domain_surface',
         'geology': None,
-        'seed': 0,
+        'seed': None,
     },
 }
 

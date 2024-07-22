@@ -12,26 +12,6 @@ import numpy as np
 ### Typing
 from typing import Union
 
-# class InvalidTypeError(Exception):
-#     pass
-
-# class variable(object):
-#     def __init__(self, value=0):
-#         self.__x = value
-
-#     def __set__(self, obj, value):
-#         if value < 0:
-#             raise InvalidTypeError('x is less than zero')
-
-#         self.__x  = value
-
-#     def __get__(self, obj, objType):
-#         return self.__x
-
-# class MyClass(object):
-#     x = variable()
-
-
 # def is_list_length_valid(list_to_test: list, value: int, attribute: str) -> bool:
 #     if len(data) < value:
 #         msg = ("'{}' data length is too short ({} elements minimum)."

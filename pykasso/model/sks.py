@@ -263,7 +263,12 @@ class SKS():
          - Random Number Generator
         """
         # Define the main seed
-        self._set_rng('sks')
+        if self.model_parameters['sks']['seed'] == 0:
+            main_seed = np.random.default_rng().integers(low=0, high=10**9)
+            self.model_parameters['sks']['seed'] = main_seed
+        else:
+            main_seed = self.model_parameters['sks']['seed']
+        self.rng['sks'] = np.random.default_rng(main_seed)
         return None
     
     def _set_rng(self, attribute: str) -> None:
@@ -273,12 +278,13 @@ class SKS():
         equals 0, a new seed is drawn.
         """
         # Generate a new random seed if the actual seed value equals 0
-        if self.model_parameters[attribute]['seed'] == 0:
-            seed = np.random.default_rng().integers(low=0, high=10**6)
-            self.model_parameters[attribute]['seed'] = seed
+        if self.model_parameters[attribute]['seed'] is None:
+            seed = self.rng['sks'].integers(low=0, high=10**9)
+        elif self.model_parameters[attribute]['seed'] == 0:
+            seed = np.random.default_rng().integers(low=0, high=10**9)
             
         # Set the seed in the dictionary
-        seed = self.model_parameters[attribute]['seed']
+        self.model_parameters[attribute]['seed'] = seed
         self.rng[attribute] = np.random.default_rng(seed)
         return None
     

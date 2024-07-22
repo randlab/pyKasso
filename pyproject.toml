@@ -1,6 +1,6 @@
 [project]
 name = "pykasso"
-version = "0.1.3"
+version = "1.0.0"
 requires-python = "<3.10"
 description = "Python project intended to simulate stochastic karst network"
 authors = [

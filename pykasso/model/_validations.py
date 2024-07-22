@@ -513,11 +513,12 @@ def validate_settings_points(settings: dict,
     
     ### 'seed' ###
     
-    # Test if 'seed' is of type int
+    # Test if 'seed' is of type int or None
     try:
-        val.is_variable_type_valid(variable_name='seed',
-                                   variable_value=settings['seed'],
-                                   valid_types=(int))
+        if settings['seed'] is not None:
+            val.is_variable_type_valid(variable_name='seed',
+                                       variable_value=settings['seed'],
+                                       valid_types=(int))
     except TypeError as error:
         logger.error(error)
         raise
