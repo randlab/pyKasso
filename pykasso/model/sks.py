@@ -559,7 +559,8 @@ class SKS():
                                axis=0)
         # Case 3 - Less points required than provided
         elif (n < len(data)):
-            points = self.rng['sks'].choice(data, n, replace=False)
+            # points = self.rng['sks'].choice(data, n, replace=False)
+            points = data[:n]
         # Case 4 - Points required equals points declared
         else:
             points = data
