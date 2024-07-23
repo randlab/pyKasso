@@ -11,7 +11,6 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/randlab/pyKasso/dev)
 
 ## pyKasso: a stochastic karst network simulation tool
-<!-- ![pyKasso's logo](/docs/source/_static/pykasso_logo.png) -->
 
 pyKasso is a python3 open-source package intended to simulate easily and quickly karst networks using a geological model, hydrogeological, and structural data. It relies on a pseudo-genetic methodology where stochastic data and fast-marching methods are combined to perform thousands of simulations rapidly. The method is based on the stochastic karst simulator developed by Borghi et al (2012). It has been extended to account for anisotropy allowing to simplify the algorithm while accounting better for the geological structure following the method presented in Fandel et al. (2022). Statistical geometrical and topological metrics are computed on the simulated networks and compared with the same statistics computed on real karst network to evaluate the plausibility of the simulations.
 
@@ -40,17 +39,6 @@ conda activate pykasso
 pip install git+https://github.com/karstnet/karstnet.git
 ```
 
-<!-- 
-### Check installation
-
-Work in progress.
-
--->
-
-## Documentation
-
-Work in progress.
-
 ## Examples
 
 - Examples developped for the paper: [notebooks/paper/](https://github.com/randlab/pyKasso/tree/dev/notebooks/paper)
@@ -58,6 +46,5 @@ Work in progress.
 
 ## Publications
 
-<!-- - TODO : add the new publication -->
 - Fandel, C., Miville, F., Ferré, T. et al. 2022: The stochastic simulation of karst conduit network structure using anisotropic fast marching, and its application to a geologically complex alpine karst system. Hydrogeol J 30, 927–946, https://doi.org/10.1007/s10040-022-02464-x
 - Borghi, A., Renard, P., Jenni, S. 2012: A pseudo-genetic stochastic model to generate karstic networks, Journal of Hydrology, 414–415, https://doi.org/10.1016/j.jhydrol.2011.11.032.
