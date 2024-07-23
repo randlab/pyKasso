@@ -469,7 +469,7 @@ def _unit_intersect(n: np.ndarray, d: float):
     -------
     result : numpy.ndarray with 4 floating point values [X1, X2, Y1, Y2]
         The coordinates of the two points of intersection when it exists.
-        Returns 4 np.NaN if there is no intersection.
+        Returns 4 np.nan if there is no intersection.
     """
     nx, ny = n[0], n[1]  # For readibility
 
@@ -477,7 +477,7 @@ def _unit_intersect(n: np.ndarray, d: float):
         print("WARNING - unitcintl function : norm of n must be equal to 1")
 
     if np.abs(d) > 1:  # Case with no intersection
-        return np.array([np.NaN, np.NaN, np.NaN, np.NaN])
+        return np.array([np.nan, np.nan, np.nan, np.nan])
 
     sd = np.sqrt(1 - d**2)
 
@@ -516,7 +516,7 @@ def _disk_zplane_intersect(center: np.ndarray, n: np.ndarray,
     -------
     result : np.ndarray with 4 floating point values [x1, y1, x2, y2]
         The coordinates of the two extremities of the intersection between the
-        plane and disk if there is an intersection. Returns 4 np.NaN if there
+        plane and disk if there is an intersection. Returns 4 np.nan if there
         is no intersection.
     """
 
@@ -526,7 +526,7 @@ def _disk_zplane_intersect(center: np.ndarray, n: np.ndarray,
 
     if tau <= 0:  # Avoid computing square root of negative number
         # print("The plane does not touch the sphere")
-        x1, y1, x2, y2 = np.NaN, np.NaN, np.NaN, np.NaN
+        x1, y1, x2, y2 = np.nan, np.nan, np.nan, np.nan
 
     else:
         tau = np.sqrt(tau)
@@ -534,7 +534,7 @@ def _disk_zplane_intersect(center: np.ndarray, n: np.ndarray,
 
         if b > 1:
             # print("The plane does not touch the disk")
-            x1, y1, x2, y2 = np.NaN, np.NaN, np.NaN, np.NaN
+            x1, y1, x2, y2 = np.nan, np.nan, np.nan, np.nan
 
         else:
             n2 = n.copy()[0:2]  # Projection on horizontal plane
@@ -571,7 +571,7 @@ def _disk_xplane_intersect(center: np.ndarray, n: np.ndarray,
     -------
     result : np.ndarray with 4 floating point values [y1, z1, y2, z2]
         The coordinates of the two extremities of the intersection between the
-        plane and disk if there is an intersection. Returns 4 np.NaN if there
+        plane and disk if there is an intersection. Returns 4 np.nan if there
         is no intersection.
     """
 
@@ -581,7 +581,7 @@ def _disk_xplane_intersect(center: np.ndarray, n: np.ndarray,
 
     if tau <= 0:  # Avoid computing square root of negative number
         # print("The plane does not touch the sphere")
-        y1, z1, y2, z2 = np.NaN, np.NaN, np.NaN, np.NaN
+        y1, z1, y2, z2 = np.nan, np.nan, np.nan, np.nan
 
     else:
         tau = np.sqrt(tau)
@@ -589,7 +589,7 @@ def _disk_xplane_intersect(center: np.ndarray, n: np.ndarray,
 
         if b > 1:
             # print("The plane does not touch the disk")
-            y1, z1, y2, z2 = np.NaN, np.NaN, np.NaN, np.NaN
+            y1, z1, y2, z2 = np.nan, np.nan, np.nan, np.nan
 
         else:
             n2 = np.array([n[1], n[2]])  # Projection on vertical x plane
@@ -626,7 +626,7 @@ def _disk_yplane_intersect(center: np.ndarray, n: np.ndarray,
     -------
     result : np.ndarray with 4 floating point values [x1, z1, x2, z2]
         The coordinates of the two extremities of the intersection between the
-        plane and disk if there is an intersection. Returns 4 np.NaN if there
+        plane and disk if there is an intersection. Returns 4 np.nan if there
         is no intersection.
     """
 
@@ -635,7 +635,7 @@ def _disk_yplane_intersect(center: np.ndarray, n: np.ndarray,
     tau = R**2 - (yi - yc)**2
     if tau <= 0:  # Avoid computing square root of negative number
         # print("The plane does not touch the sphere")
-        x1, z1, x2, z2 = np.NaN, np.NaN, np.NaN, np.NaN
+        x1, z1, x2, z2 = np.nan, np.nan, np.nan, np.nan
 
     else:
         tau = np.sqrt(tau)
@@ -643,7 +643,7 @@ def _disk_yplane_intersect(center: np.ndarray, n: np.ndarray,
 
         if b > 1:
             # print("The plane does not touch the disk")
-            x1, z1, x2, z2 = np.NaN, np.NaN, np.NaN, np.NaN
+            x1, z1, x2, z2 = np.nan, np.nan, np.nan, np.nan
 
         else:
             n2 = np.array([n[0], n[2]])  # Projection on vertical x plane

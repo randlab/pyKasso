@@ -171,12 +171,12 @@ class Analyzer():
 
         ### Define the text coloring function
         # Green if inside [V_min, V_max]
-        # Red if outside
+        # Orange if outside
         def _bg_color(x, min_val, max_val):
             if pd.isnull(x):
                 return 'color: grey'
             elif (x < min_val) or (x > max_val):
-                return 'color: red'
+                return 'color: #FF8C00'
             else:
                 return 'color: #00FF00'
 

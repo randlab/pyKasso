@@ -273,18 +273,25 @@ class SKS():
     
     def _set_rng(self, attribute: str) -> None:
         """
-        Generate a random seed for the specified attribute. Automatically
-        populate the random seed dictionary. If the seed is already set and
-        equals 0, a new seed is drawn.
+        Assign the seed for the specified attribute. If the seed has
+        been set by the user, then assign that value, otherwise either 
+        generate a random seed triggered by the global 'sks' seed if the 
+        seed is None, or generate a completely independent random seed  
+        if the seed is 0.
         """
-        # Generate a new random seed if the actual seed value equals 0
+        
+        # If the actual seed is None, derive a seed from 'sks' seed.
         if self.model_parameters[attribute]['seed'] is None:
             seed = self.rng['sks'].integers(low=0, high=10**9)
+
+        # If the seed is 0, generate an independent random seed 
         elif self.model_parameters[attribute]['seed'] == 0:
             seed = np.random.default_rng().integers(low=0, high=10**9)
-            
-        # Set the seed in the dictionary
-        self.model_parameters[attribute]['seed'] = seed
+
+        # Otherwise, get the seed from the dictionary if it exists
+        else:
+            seed = self.model_parameters[attribute]['seed']
+        
         self.rng[attribute] = np.random.default_rng(seed)
         return None
     
