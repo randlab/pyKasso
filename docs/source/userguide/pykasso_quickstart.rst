@@ -1,4 +1,0 @@
-Quickstart
-==========
-
-Work in progress

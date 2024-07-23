@@ -1,4 +1,0 @@
-Bibliography
-============
-
-Work in progress

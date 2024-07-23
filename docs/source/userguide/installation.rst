@@ -1,4 +1,0 @@
-Installation
-============
-
-Work in progress
