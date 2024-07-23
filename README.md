@@ -1,9 +1,9 @@
 ![pyKasso's banner](/img/pykasso_banner_logo.png)
 
 <!-- ![]() -->
-[![PyPI Version](https://img.shields.io/pypi/v/pykasso.png)](https://pypi.python.org/pypi/pykasso)
-[![PyPI Status](https://img.shields.io/pypi/status/pykasso.png)](https://pypi.python.org/pypi/pykasso)
-[![PyPI Versions](https://img.shields.io/pypi/pyversions/pykasso.png)](https://pypi.python.org/pypi/pykasso)
+<!-- [![PyPI Version](https://img.shields.io/pypi/v/pykasso.png)](https://pypi.python.org/pypi/pykasso) -->
+<!-- [![PyPI Status](https://img.shields.io/pypi/status/pykasso.png)](https://pypi.python.org/pypi/pykasso) -->
+<!-- [![PyPI Versions](https://img.shields.io/pypi/pyversions/pykasso.png)](https://pypi.python.org/pypi/pykasso) -->
 
 ![license](https://img.shields.io/github/license/randlab/pyKasso)
 ![last-commit](https://img.shields.io/github/last-commit/randlab/pyKasso/dev)
