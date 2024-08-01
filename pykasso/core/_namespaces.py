@@ -69,7 +69,6 @@ AUTHORIZED_FEATURES = [f for list_ in features for f in list_]
 VALID_EXTENSIONS_DATAFRAME = [
     'gslib',
     'vox',
-    # 'grd',  # TODO
 ]
 
 VALID_EXTENSIONS_IMAGE = [key.strip('.') for key in Image.EXTENSION.keys()]
@@ -80,20 +79,17 @@ VALID_EXTENSIONS_DATA = [
     'csv',
     'txt',
     'npy',
-    'tif',  # TODO - rasterio
-    'tiff',  # TODO - rasterio
-    'asc',  # TODO - rasterio
+    'tif',
+    'tiff',
+    'asc',
 ]
 VALID_EXTENSIONS_DATA.extend(VALID_EXTENSIONS_IMAGE)
 
 # Define default fast-marching costs
 DEFAULT_FMM_COSTS = {
-    # 'out': 0.999,
-    'out': 10,  # TODO
+    'out': 10,
     'geology': 0.4,
-    # 'aquifer': 0.4,
-    # 'aquiclude': 0.8,
-    'beddings': 0.35,  # TODO
+    'beddings': 0.35,
     'faults': 0.2,
     'fractures': 0.2,
     'karst': 0.1,

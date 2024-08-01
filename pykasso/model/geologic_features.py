@@ -19,17 +19,6 @@ from pykasso.core.grid import Grid
 ### Main class ###
 ##################
 
-####################### TODO ##########################
-# # Processes the image
-# if self.label in ['faults', 'fractures']:
-#     npy_image = (npy_image[:, :] == 0) * 1
-# else:
-#     npy_image = npy_image + 1000
-#     n_colors = np.unique(npy_image)
-#     for i, color in enumerate(np.flip(n_colors)):
-#         npy_image = np.where(npy_image == color, i + 1, npy_image)
-####################### TODO ##########################
-
 
 class GeologicFeature(DataReader):
     """
@@ -220,7 +209,8 @@ class Surface(GeologicFeature):
         super().__init__(grid, feature, dim, *args, **kwargs)
     
     def _surface_to_volume(self, condition, grid) -> np.ndarray:
-        """Convert a two dimensional array in a three dimensional array."""
+        """
+        Convert a two dimensional array in a three dimensional array."""
         k = grid.get_k(self.data_surface)
         data_volume = np.zeros((grid.nx, grid.ny, grid.nz))
         for z in range(grid.nz):

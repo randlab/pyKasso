@@ -11,9 +11,11 @@ import pandas as pd
 import rasterio
 
 ### Local dependencies
-from pykasso.core._namespaces import (VALID_EXTENSIONS_DATA,
-                                      VALID_EXTENSIONS_DATAFRAME,
-                                      VALID_EXTENSIONS_IMAGE)
+from pykasso.core._namespaces import (
+    VALID_EXTENSIONS_DATA,
+    VALID_EXTENSIONS_DATAFRAME,
+    VALID_EXTENSIONS_IMAGE,
+)
 from pykasso.core.grid import Grid
 
 ### Typing
@@ -25,7 +27,7 @@ class DataReader():
     Multiple format data reader class.
     
     Supported formats:
-        - gslib, vox, 
+        - gslib, vox,
         - csv :
         - txt :
         - npy :
@@ -49,7 +51,7 @@ class DataReader():
             
     def _requires_grid(self):
         """
-        TODO
+        Check that a grid is declared in order to use the method correctly.
         """
         if self.has_grid is not True:
             msg = 'To be used, this method requires a declared grid.'
@@ -59,7 +61,9 @@ class DataReader():
     def _get_extension_file(filename: str,
                             valid_extensions: list[str]
                             ) -> str:
-        """TODO"""
+        """
+        Get the extension of a filename and check its validity.
+        """
         # Retrieve file extension
         extension = filename.split('.')[-1]
         
@@ -82,7 +86,9 @@ class DataReader():
     def get_dataframe_from_file(filename: str,
                                 **kwargs: dict,
                                 ) -> pd.DataFrame:
-        """TODO"""
+        """
+        Convert data from a file into a pandas dataframe.
+        """
         # Get extension file
         valid_extensions = VALID_EXTENSIONS_DATAFRAME
         extension = DataReader._get_extension_file(filename, valid_extensions)
@@ -103,7 +109,9 @@ class DataReader():
     def _get_dataframe_from_gslib(filename: str,
                                   **kwargs: dict,
                                   ) -> pd.DataFrame:
-        """TODO"""
+        """
+        Convert data from a gslib file into a pandas dataframe.
+        """
         # Retrieve the number of variables in the gslib file
         n_var = int(lc.getline(filename, 2).strip())
         
@@ -122,7 +130,9 @@ class DataReader():
     def _get_dataframe_from_vox(filename: str,
                                 **kwargs: dict,
                                 ) -> pd.DataFrame:
-        """TODO"""
+        """
+        Convert data from a vox file into a pandas dataframe.
+        """
         # Read the file
         kwargs.setdefault('sep', ' ')
         kwargs.setdefault('header', 1)
@@ -142,7 +152,24 @@ class DataReader():
                            **kwargs
                            ) -> np.ndarray:
         """
-        TODO
+        Get data from a file.
+
+        Parameters
+        ----------
+        filename : str
+            The path to the file that needs to be processed. This should
+            include the file name and its extension.
+        extend : bool, optional
+            TODO, by default False.
+        axis : str, optional
+            TODO, by default 'z'.
+        usecol : Union[int, str], optional
+            TODO, by default None.
+
+        Returns
+        -------
+        np.ndarray
+            Numpy array containing the file data.
         """
         # Get extension file
         valid_extensions = VALID_EXTENSIONS_DATA
@@ -187,17 +214,12 @@ class DataReader():
         # TXT
         elif extension == 'txt':
             data = np.genfromtxt(filename, **kwargs)
-            # data = np.genfromtxt(filename, **kwargs).T
             
         # NPY
         elif extension == 'npy':
             data = np.load(filename)
-            
-        # # RASTER # TODO ???
-        # # elif extension == 'asc':
-        #     # data = np.genfromtxt(fname, skip_header=6)
-        # # elif extension == 'grd':
-        #     # data = np.genfromtxt(fname, skip_header=2)
+        
+        # RASTER
         elif extension in ['tif', 'tiff', 'asc']:
             data = rasterio.open(filename).read(1)
             data = np.rot90(data, k=3)
@@ -229,7 +251,9 @@ class DataReader():
     def _get_data_from_gslib_df(self,
                                 df: pd.DataFrame,
                                 ) -> np.ndarray:
-        """TODO"""
+        """
+        Transform a pandas dataframe to a numpy array.
+        """
         self._requires_grid()
         
         # Transform dataframe into array
@@ -247,7 +271,9 @@ class DataReader():
     def _get_data_from_vox_df(self,
                               df: pd.DataFrame,
                               ) -> np.ndarray:
-        """TODO"""
+        """
+        Transform a pandas dataframe to a numpy array.
+        """
         self._requires_grid()
         
         # Filter values out of grid
@@ -269,7 +295,9 @@ class DataReader():
         return data
     
     def _get_data_full_2D(self, value: float) -> np.ndarray:
-        """Set data to a 2D-matrice full of the provided value."""
+        """
+        Set data to a 2D-matrice full of the provided value.
+        """
         self._requires_grid()
         
         dtype = np.int8
@@ -277,7 +305,9 @@ class DataReader():
         return out
     
     def _get_data_full_3D(self, value: float) -> np.ndarray:
-        """Set data to a 3D-matrice full of the provided value."""
+        """
+        Set data to a 3D-matrice full of the provided value.
+        """
         self._requires_grid()
         
         dtype = np.int8
@@ -292,7 +322,7 @@ class DataReader():
     @staticmethod
     def _get_data_from_image(filename: str) -> np.ndarray:
         """
-        Sets data from an image file. The size of the image must be the
+        Set data from an image file. The size of the image must be the
         same as the size of the grid. If nz > 1, the layer is horizontally
         repeated.
         
@@ -318,7 +348,22 @@ class DataReader():
     def read_vox(filename: str,
                  usecol: Union[int, str] = None,
                  ) -> np.ndarray:
-        """TODO"""
+        """
+        Read a vox file.
+
+        Parameters
+        ----------
+        filename : str
+            The path to the file that needs to be processed. This should
+            include the file name and its extension.
+        usecol : Union[int, str], optional
+            The rank of the column to consider, by default None. 
+
+        Returns
+        -------
+        np.ndarray
+            Numpy array of the collected data.
+        """
         
         # Read file
         df = DataReader._get_dataframe_from_vox(filename)

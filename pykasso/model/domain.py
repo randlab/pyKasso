@@ -13,10 +13,6 @@ from scipy.ndimage import binary_dilation
 ### Typing
 from pykasso.core.grid import Grid
 
-### TODO
-# - Short description of the subdomains
-# -
-
     
 class Delimitation():
     """
@@ -262,7 +258,8 @@ class Domain():
             # 'Domain borders' x 'Vadose zone'
             borders = self._get_bordered_subdomain('domain_borders_sides')
             vadose_zone = self._get_phreatic_subdomain('vadose_zone')
-            out = np.logical_and(borders.astype(bool), vadose_zone.astype(bool))
+            out = np.logical_and(borders.astype(bool),
+                                 vadose_zone.astype(bool))
             out = out.astype(int)
         ### PHREATIC ###
         elif subdomain == 'phreatic_zone':
@@ -271,7 +268,8 @@ class Domain():
             # 'Domain borders' x 'Phreatic zone'
             borders = self._get_bordered_subdomain('domain_borders_sides')
             phreatic_zone = self._get_phreatic_subdomain('phreatic_zone')
-            out = np.logical_and(borders.astype(bool), phreatic_zone.astype(bool))
+            out = np.logical_and(borders.astype(bool),
+                                 phreatic_zone.astype(bool))
             out = out.astype(int)
         elif subdomain == 'phreatic_surface':
             out = self._get_phreatic_subdomain('phreatic_surface')
@@ -296,7 +294,6 @@ class Domain():
         elif subdomain == 'bedrock_vadose':
             if self.bedrock is None:
                 out = np.zeros_like(self.grid.data_volume)
-                # out = np.ones_like(self.grid.data_volume) ??
             else:
                 # 'Bedrock' x 'Vadose zone'
                 bedrock_r = np.invert(self.bedrock.data_volume.astype(bool))
@@ -327,11 +324,11 @@ class Domain():
         Compute the selected surfaces from the volumetric domain.
         """
         
-        # retrieves grid indices
+        # retrieve grid indices
         domain = self.data_volume.astype('bool')
         I, J, K = np.indices(domain.shape)
         
-        # retrieves z-surface grid indices
+        # retrieve z-surface grid indices
         if face_name in ['up', 'down']:
             i_, j_ = np.indices(self.data_surfaces['z'].shape)
             range_ = list(range(self.grid.nz))
@@ -340,12 +337,12 @@ class Domain():
             elif face_name == 'down':
                 face = K.min(axis=2, initial=self.grid.nz, where=domain)
         
-        # flattens the indices
+        # flatten the indices
         i_ = i_.flatten()
         j_ = j_.flatten()
         k = face.flatten()
         
-        # retrieves the valid i,j,k indices
+        # retrieve the valid i,j,k indices
         test = np.isin(k, range_)
         i = i_[test]
         j = j_[test]
@@ -391,7 +388,7 @@ class Domain():
         
     def _get_phreatic_subdomain(self, subdomain: str) -> np.ndarray:
         """
-        TODO
+        Compute the phreatic subdomain.
         """
         # return empty array if water level is not defined
         if self.water_table is None:
@@ -427,7 +424,7 @@ class Domain():
     
     def _get_bedrock_subdomain(self) -> np.ndarray:
         """
-        TODO
+        Compute the bedrock subdomain.
         """
         # define bedrock
         roll_value = 2
@@ -462,38 +459,6 @@ class Domain():
             out = False
             return out
      
-    # TODO ******************///////////////////******************************
-    # def is_coordinate_in_subdomain(self, subdomain: str, x: float, y: float,
-    #                                z: float) -> bool:
-    #     """
-    #     Returns true if a (x, y, z)-coordinate point is inside the subdomain,
-    #     otherwise false.
-
-    #     Parameters
-    #     ----------
-    #     subdomain : str
-    #         Name of the subdomain to test: {}
-    #     x : float
-    #         x-coordinate.
-    #     y : float
-    #         y-coordinate.
-    #     z : float
-    #         z-coordinate.
-
-    #     Returns
-    #     -------
-    #     out : bool
-    #     """
-    #     subdomain = self.get_subdomain(subdomain)
-    #     if self.grid.is_inbox(x, y, z):
-    #         i, j, k = self.grid.get_indices(x, y, z)
-    #         out = bool(subdomain[i, j, k])
-    #         return out
-    #     else:
-    #         out = False
-    #         return out
-    # TODO ******************///////////////////******************************
-        
     def is_2D_point_valid(self, point: tuple) -> bool:
         """
         Return true if a z-coordinate exists for a (x, y)-point projected

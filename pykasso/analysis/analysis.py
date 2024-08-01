@@ -77,8 +77,8 @@ class Analyzer():
                         verbose: bool = False,
                         ) -> DataFrame:
         """
-        Compute the statistical metrics for each simulated karst network
-        using the karstnet package.
+        Compute the statistical metrics for each simulated discret karst
+        conduit network using the karstnet package.
         
         Parameters
         ----------
@@ -112,7 +112,7 @@ class Analyzer():
         Examples
         --------
         >>> app = pk.pykasso()
-        >>> TODO
+        >>> ...
         >>> df_metrics = app.analyzer.compute_metrics()
         """
         df_metrics = pd.DataFrame()
@@ -147,7 +147,7 @@ class Analyzer():
                         dataframe: Union[DataFrame, Series, Styler],
                         ) -> Styler:
         """
-        TODO
+        Compare the calculated statistical metrics with the reference.
 
         Parameters
         ----------
@@ -157,11 +157,24 @@ class Analyzer():
         Returns
         -------
         df_metrics : Styler
+        
+        References
+        ----------
+        .. [1] Collon, P., Bernasconi D., Vuilleumier C., and Renard P., 2017,
+               Statistical metrics for the characterization of karst network
+               geometry and topology. Geomorphology. 283: 122-142 doi:10.1016/
+               j.geomorph.2017.01.034
+               http://dx.doi.org/doi:10.1016/j.geomorph.2017.01.034
+
+        .. warning::
+            A corrigendum has been published in Geomorphology journal:
+            Geomorphology 389, 107848,
+            http://dx.doi.org/doi:10.1016/j.geomorph.2021.107848.
             
         Examples
         --------
         >>> app = pk.pykasso()
-        >>> TODO
+        >>> ...
         >>> df_metrics = app.analyzer.compute_metrics()
         >>> app.analyzer.compare_metrics(df_metrics)
         """
@@ -197,8 +210,8 @@ class Analyzer():
                                   numpy_parameters: dict = {},
                                   ) -> np.ndarray:
         """
-        Compute selected algorithm on the whole set of computed karst conduit
-        networks.
+        Compute selected algorithm on the whole set of computed discrete karst
+        conduit networks.
         
         Parameters
         ----------
@@ -215,7 +228,7 @@ class Analyzer():
         Examples
         --------
         >>> app = pk.pykasso()
-        >>> TODO
+        >>> ...
         >>> df_metrics = app.analyzer.compute_metrics()
         >>> karst_std = app.analyzer.compute_stats_on_networks('std')
         """

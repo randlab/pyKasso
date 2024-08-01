@@ -11,12 +11,9 @@ def pykasso() -> Application:
     """
     Create and return an ``Application``.
     
-    TODO
-    
     Returns
     -------
     Application
-        TODO
         
     See Also
     --------
@@ -34,13 +31,10 @@ def pykasso() -> Application:
 def create_datareader() -> DataReader:
     """
     Create and return a ``DataReader``.
-    
-    TODO
 
     Returns
     -------
     DataReader
-        TODO
         
     See Also
     --------

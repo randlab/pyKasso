@@ -61,50 +61,25 @@ class Grid():
         Parameters
         ----------
         x0 : Union[int, float]
-            x-coordinate of centerpoint of bottom left cell. TODO
+            x-coordinate of centerpoint of bottom left cell. 
         y0 : Union[int, float]
-            y-coordinate of centerpoint of bottom left cell. TODO
+            y-coordinate of centerpoint of bottom left cell.
         z0 : Union[int, float]
-            z-coordinate of centerpoint of bottom left cell. TODO
+            z-coordinate of centerpoint of bottom left cell.
         nx : int
-            Number of cells in the x-axis. TODO
+            Number of cells in the x-axis.
         ny : int
-            Number of cells in the y-axis. TODO
+            Number of cells in the y-axis.
         nz : int
-            Number of cells in the z-axis. TODO
+            Number of cells in the z-axis.
         dx : Union[int, float]
-            Cell length in the x-axis. TODO
+            Cell length in the x-axis.
         dy : Union[int, float]
-            Cell width in the y-axis. TODO
+            Cell width in the y-axis.
         dz : Union[int, float]
-            Cell depth in the z-axis. TODO
-            
-        Notes
-        -----
-            .
+            Cell depth in the z-axis.
         """
-        ### Input validation
-        # TODO
-        ############################# TODO ######################
-        #     # Test parameters types
-        # parameter_names = ['x0', 'y0', 'z0', 'dx', 'dy', 'dz']
-        # parameters = [x0, y0, z0, dx, dy, dz]
-        # for (parameter_name, parameter) in zip(parameter_names, parameters):
-        #     is_parameter_type_valid(parameter_name=parameter_name,
-        #                             parameter_value=parameter,
-        #                             valid_types=(int, float))
-            
-           #     for p in ['nx', 'ny', 'nz']:
-    #         is_parameter_type_valid(grid_parameters[p], p, (int))
-    #     for p in ['nx', 'ny', 'nz']:
-    #         is_parameter_value_valid(grid_parameters[p], p, '>', 0)
-    
-    #     for p in ['nx', 'ny', 'nz']:
-    #         is_parameter_type_valid(grid_parameters[p], p, (int))
-    #     for p in ['nx', 'ny', 'nz']:
-    #         is_parameter_value_valid(grid_parameters[p], p, '>', 0)
-        ############################################
-
+        
         ### Initialization
         self.__x0 = x0
         self.__y0 = y0
@@ -160,7 +135,6 @@ class Grid():
         self.__surface_coordinates = tuple(zip(x_path[:-1], y_path[:-1]))
         self.__polygon = Polygon(self.__surface_coordinates)
     
-    # TODO
     def __repr__(self) -> str:
         msg = ("Grid(x0={}, y0={}, z0={}, nx={}, ny={}, nz={}, dx={}, dy={},"
                " dz={})".format(self.x0, self.y0, self.z0, self.nx, self.ny,
@@ -594,24 +568,17 @@ class Grid():
         if indices.shape[1] == 2:
             i = indices[:, 0]
             j = indices[:, 1]
-            # x, y = self.get_x(i), self.get_y(j)
-            # out = np.dstack((x, y))[0]
             out = self.get_x(i), self.get_y(j)
         elif indices.shape[1] == 3:
             i = indices[:, 0]
             j = indices[:, 1]
             k = indices[:, 2]
-            # x, y, z = self.get_x(i), self.get_y(j), self.get_z(k)
-            # out = np.dstack((x, y, z))[0]
             out = self.get_x(i), self.get_y(j), self.get_z(k)
         else:
             msg = ("Shape of the `indices` parameter is invalid. Only (2, "
                    "n) and (3, n) array like are valid.")
             raise TypeError(msg)
         
-        # # Output a more convinient format when only one entry
-        # if len(out) == 1:
-        #     out = out[0]
         return out
         
     def is_x_valid(self,

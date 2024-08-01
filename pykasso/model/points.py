@@ -91,7 +91,9 @@ class PointGenerator():
             return validated_geology_ids
     
     def _get_valid_cells(self, array: np.ndarray) -> list:
-        """"""
+        """
+        TODO
+        """
         i, j, k = np.indices(array.shape)
         i, j, k = i.flatten(), j.flatten(), k.flatten()
         test = array.flatten()
@@ -110,7 +112,9 @@ class PointGenerator():
         return valid_cells
     
     def _generate_points(self, size: int = 1) -> np.ndarray:
-        """"""
+        """
+        TODO
+        """
         indices = self.rng.choice(self.valid_cells, size=size)
         i, j, k = zip(*indices)
         i, j, k = np.array(i), np.array(j), np.array(k)
@@ -120,7 +124,9 @@ class PointGenerator():
         return np.dstack((x, y, z))[0]
         
     def _3D_point_from_2D_point(self, point: tuple) -> tuple:
-        """"""
+        """
+        TODO
+        """
         x, y = point
         i, j = self.grid.get_indices(point)
         i, j = int(i), int(j) 
@@ -131,7 +137,9 @@ class PointGenerator():
         return (x, y, z)
     
     def _is_point_valid(self, point: tuple) -> bool:
-        """Check if 2D or 3D point is valid."""
+        """
+        Check if 2D or 3D point is valid.
+        """
         if self.grid.is_inbox(point):
             if len(point) == 2:
                 i, j = self.grid.get_indices(point)

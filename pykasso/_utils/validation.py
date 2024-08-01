@@ -12,14 +12,6 @@ import numpy as np
 ### Typing
 from typing import Union
 
-# def is_list_length_valid(list_to_test: list, value: int, attribute: str) -> bool:
-#     if len(data) < value:
-#         msg = ("'{}' data length is too short ({} elements minimum)."
-#                .format(attribute, value))
-#         this.logger.critical(msg)
-#         raise ValueError(msg)
-#     else:
-#         return True
 
 def is_filepath_valid(filepath: str,
                       ) -> Union[FileNotFoundError, bool]:
@@ -116,37 +108,6 @@ def is_key_in_dict(dictionary: dict,
         raise KeyError(msg)
 
 
-# def is_element_in_list(element_to_test: str,
-#                        list_to_test: list,
-#                        ) -> Union[KeyError, bool]:
-#     """
-#     Test element presence in the list.
-
-#     Parameters
-#     ----------
-#     element_to_test : str
-#         Element to verify presence in list.
-#     list_to_test : list
-#         List to test.
-
-#     Returns
-#     -------
-#     Union[KeyError, bool]
-#         Return ``true`` if test pass.
-#         Otherwise raise a ``KeyError`` exception.
-
-#     Raises
-#     ------
-#     KeyError
-#     """
-#     if element_to_test in list_to_test:
-#         return True
-#     else:
-#         msg = ("Element '{}' is invalid. Valid element(s): '{}'."
-#                .format(element_to_test, list_name))
-#         raise KeyError(msg)
-        
-
 def is_parameter_comparison_valid(parameter_name: str,
                                   parameter_value,
                                   logical_test: str,
@@ -194,10 +155,3 @@ def is_parameter_comparison_valid(parameter_name: str,
         raise ValueError(msg)
     else:
         return True
-
-# try:
-#     do_something_in_app_that_breaks_easily()
-# except AppError as error:
-#     logger.error(error)
-#     raise
-

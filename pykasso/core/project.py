@@ -35,25 +35,21 @@ class Project(Sequence):
     Attributes
     ----------
     name : str
-        TODO
+    
     description : str
-        TODO
+    
     creation_date : str
-        TODO
+    
     pykasso_version : str
-        TODO
-    grid : Grid
-        TODO
-    core : dict
-        TODO
-    n_simulations : int
-        TODO
-    simulations : list
-        TODO
         
-    Notes
-    -----
-    TODO
+    grid : Grid
+        
+    core : dict
+        
+    n_simulations : int
+        
+    simulations : list
+        
     """
     
     def __init__(self,
@@ -63,23 +59,7 @@ class Project(Sequence):
                  force: bool = False
                  ) -> None:
         """
-        Initialize a pyKasso project. TODO
-
-        Parameters
-        ----------
-        grid_parameters : dict
-            _description_
-        project_location : str, optional
-            _description_, by default None
-        example : str, optional
-            _description_, by default None
-        force : bool, optional
-            _description_, by default False
-
-        Raises
-        ------
-        ValueError
-            _description_
+        Initialize a pyKasso project.
         """
         ### Initialize values
         self.__name = None
@@ -222,14 +202,6 @@ class Project(Sequence):
     def __getitem__(self, i):
         data = self._get_simulation_data(i)
         return data
-    
-    # # TODO
-    # def __repr__(self) -> str:
-    #     return str(self._return_project_status())
-    
-    # # TODO
-    # def __str__(self) -> str:
-    #     return str(self._return_project_status())
     
     def _create_log_file(self) -> None:
         """
@@ -377,12 +349,6 @@ class Project(Sequence):
         """Return the grid of the project."""
         return self.__grid
     
-    # TODO ?
-    # @property
-    # def core(self) -> dict:
-    #     """Return the dictionary describing the core of pyKasso."""
-    #     return self.__core
-    
     @property
     def n_simulations(self) -> int:
         """Return the number of simulations already computed within the
@@ -407,7 +373,8 @@ class Project(Sequence):
     
     @property
     def dimension(self) -> str:
-        """TODO
+        """
+        TODO
         """
         return self.__dimension
     

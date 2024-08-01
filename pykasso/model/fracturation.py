@@ -146,30 +146,7 @@ class Fractures(GeologicFeature):
         # Update the attributes
         self.data_volume = frac_model.copy()
         self.fractures_voxelized = fractures_voxelized
-        
-        # frac_model = sum([d for d in fractures_voxelized.values()])
-        # frac_model = np.where(frac_model > 0, 1, 0)
-        
-        ######### TODO #########
-        # # Constraints model with geology if provided
-        # if 'geology' in kwargs:
-        #     frac_model_geology = np.zeros_like(frac_model)
-        #     for geologic_id in kwargs['geology']:
-        #         frac_model_geology = np.where(
-        #             Geology.data_volume == geologic_id,
-        #             frac_model,
-        #             frac_model_geology
-        #         )
-        #     self.fractures_families['model'] = frac_model_geology
                 
-        # data = self.fractures_families['model']
-        ######### TODO #########
-        
-        # # Sets the costs
-        # costs = pd.Series(self.families['cost'].values,
-        #                   index=self.families['id']).to_dict()
-        # self.set_costs(costs)
-        
         return None
                 
     def generate_fractures(self,
@@ -404,9 +381,11 @@ class Fractures(GeologicFeature):
         out = (fmina + u * frangea)**invpalpha
         return out
 
- # TODO static ??
+
 def calculate_normal(dip, orientation):
-    """"""
+    """
+    TODO
+    """
     orientation = np.radians(orientation)
     dip = np.radians(dip)
     x = np.sin(dip) * np.cos(np.radians(90) - orientation)

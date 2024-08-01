@@ -140,7 +140,8 @@ def _parameters_validation(feature, kind):
 
 def _memoize(feature):
     """
-    TODO
+    This decorator caches the results of function calls, preventing the need
+    to recompute results for the same inputs.
     """
     def _(function):
         def _wrapper(*args, **kwargs):
@@ -164,7 +165,8 @@ def _memoize(feature):
 
 def _logging(feature=None, step=None):
     """
-    TODO
+    This decorator records messages to a log fileand tracks events, errors,
+    and informational messages.
     """
     def _(function):
         def _wrapper(*args, **kwargs):

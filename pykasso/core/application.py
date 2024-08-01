@@ -15,9 +15,11 @@ from pykasso.analysis.analysis import Analyzer
 from pykasso.visualization.visualizer import Visualizer
 
 ### Validation
-from pykasso._utils.validation import (is_variable_type_valid,
-                                       is_key_in_dict,
-                                       is_parameter_comparison_valid)
+from pykasso._utils.validation import (
+    is_variable_type_valid,
+    is_key_in_dict,
+    is_parameter_comparison_valid,
+)
 
 ### Variables
 from pykasso.core._namespaces import (GRID_PARAMETERS)
@@ -33,13 +35,13 @@ class Application():
     Attributes
     ----------
     project
-        Project class. TODO
+        Project class.
     model
-        Model class. TODO
+        Model class.
     analyzer
-        Analyzer class. TODO
+        Analyzer class.
     visualizer
-        Visualizer class TODO
+        Visualizer class
         
     Notes
     -----
