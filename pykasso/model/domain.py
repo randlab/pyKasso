@@ -19,10 +19,11 @@ class Delimitation():
     Class modeling the vertical limits of the study site.
     """
     
-    def __init__(self,
-                 vertices: list,
-                 grid: Grid,
-                 ) -> None:
+    def __init__(
+        self,
+        vertices: list,
+        grid: Grid,
+    ) -> None:
         """
         Construct the delimitation, the vertical limits of the study site.
 
@@ -56,12 +57,12 @@ class Topography(Surface):
     """
     Class modeling the upper horizontal limit of the study site.
     """
-    
-    def __init__(self,
-                 grid: Grid,
-                 *args,
-                 **kwargs,
-                 ) -> None:
+    def __init__(
+        self,
+        grid: Grid,
+        *args,
+        **kwargs,
+    ) -> None:
         feature = 'topography'
         super().__init__(grid, feature, *args, **kwargs)
         
@@ -70,12 +71,12 @@ class Bedrock(Surface):
     """
     Class modeling the lower horizontal limit of the study site.
     """
-    
-    def __init__(self,
-                 grid: Grid,
-                 *args,
-                 **kwargs,
-                 ) -> None:
+    def __init__(
+        self,
+        grid: Grid,
+        *args,
+        **kwargs,
+    ) -> None:
         feature = 'bedrock'
         super().__init__(grid, feature, *args, **kwargs)
         
@@ -85,12 +86,12 @@ class WaterTable(Surface):
     Class modeling the water level elevation, the phreatic/vadose limit of the
     study site.
     """
-    
-    def __init__(self,
-                 grid: Grid,
-                 *args,
-                 **kwargs,
-                 ) -> None:
+    def __init__(
+        self,
+        grid: Grid,
+        *args,
+        **kwargs,
+    ) -> None:
         feature = 'water_table'
         super().__init__(grid, feature, *args, **kwargs)
 
@@ -102,38 +103,69 @@ class Domain():
     """
     
     ### List of available subdomains
-    subdomains = [
-        "domain",                       #
-        "domain_surface",               #
-        "domain_bottom",                #
-        # "domain_out",                   #
+    subdomains = {
+        "domain":
+            "Cells located in the domain.",
+        "domain_surface":
+            ("Cells located at the upper interface between the domain and the"
+             " outside zone."),
+        "domain_bottom":
+            ("Cells located at the lower interface between the domain and the"
+             " outside zone."),
+        # "domain_out": "",
 
-        "domain_borders",               #
-        "domain_borders_sides",         #
-        "domain_borders_surface",       #
-        "domain_borders_bottom",        #
+        "domain_borders":
+            ("Cells located at the interface between the domain and the"
+             " outside zone."),
+        "domain_borders_sides":
+            ("Cells located at the interface between the domain and the"
+             " outside zone, but only in the x- and y-direction."),
+        "domain_borders_surface":
+            ("Cells located at the upper interface between the domain and the"
+             " outside zone, but only in the x- and y-direction."),
+        "domain_borders_bottom":
+            ("Cells located at the lower interface between the domain and the"
+             " outside zone, but only in the x- and y-direction."),
 
-        "vadose_zone",                  #
-        "vadose_borders",               #
+        "vadose_zone":
+            ("Cells located in the vadose zone."),
+        "vadose_borders":
+            ("Cells located in the vadose zone, at the interface between the"
+             " vadose zone and the rest of the model, but only in the x- and"
+             " y-direction."),
 
-        "phreatic_zone",                #
-        "phreatic_surface",             #
-        "phreatic_borders_surface",     #
+        "phreatic_zone":
+            ("Cells located in the phreatic zone."),
+        "phreatic_surface":
+            ("Cells located in the phreatic zone, at the interface between the"
+             " phreatic zone and the vadose zone."),
+        "phreatic_borders_surface":
+            ("Cells located in the phreatic zone, at the interface between the"
+             " phreatic zone and the vadose zone, as well as the outside zone."
+             ),
 
-        "bedrock",                      #
-        "bedrock_",                     #
-        "bedrock_vadose",               #
-        "bedrock_phreatic",             #
-    ]
+        "bedrock":
+            ("Cells located in the zone below the bedrock surface"),
+        "bedrock_":
+            ("Cells located in the zone defined by the bedrock surface, with"
+             " an additional two-cells layer in the upper z-direction."),
+        "bedrock_vadose":
+            ("Two-cells layer located above the zone defined by the bedrock"
+             " surface and intersected by the vadose zone."),
+        "bedrock_phreatic":
+            ("Two-cells layer located above the zone defined by the bedrock"
+             " surface and intersected by the phreatic zone."),
+    }
     
-    def __init__(self,
-                 grid: Grid,
-                 delimitation: Delimitation = None,
-                 topography: Topography = None,
-                 bedrock: Bedrock = None,
-                 water_table: WaterTable = None,
-                 geology: np.ndarray = None,
-                 ) -> None:
+    def __init__(
+        self,
+        grid: Grid,
+        delimitation: Delimitation = None,
+        topography: Topography = None,
+        bedrock: Bedrock = None,
+        water_table: WaterTable = None,
+        geology: np.ndarray = None,
+    ) -> None:
         """
         Construct an array modeling the valid spatial extension for karst
         conduit network generation.
@@ -221,7 +253,8 @@ class Domain():
         Parameters
         ----------
         subdomain : str
-            Name of the requested subdomain. Subdomains available: {}
+            Name of the requested subdomain. To see the list of available
+            subdomains inspect the ``subdomains`` attribute dictionary.
             
         Returns
         -------
@@ -355,7 +388,6 @@ class Domain():
         # colors the array
         volume = np.zeros_like(self.data_volume)
         volume[i, j, k] = 1
-        
         return volume
     
     def _get_bordered_subdomain(self, subdomain: str) -> np.ndarray:
@@ -383,7 +415,6 @@ class Domain():
                                            border_value=1)
                 test = dilation & self.data_volume[:, :, z]
                 volume[:, :, z] = test
-        
         return volume
         
     def _get_phreatic_subdomain(self, subdomain: str) -> np.ndarray:
@@ -430,7 +461,6 @@ class Domain():
         roll_value = 2
         volume = np.roll(self.bedrock.data_volume, roll_value, axis=2)
         volume[:, :, 0:2] = 1
-        
         return volume
   
     ###############
@@ -439,8 +469,8 @@ class Domain():
 
     def is_3D_point_valid(self, point: tuple) -> bool:
         """
-        Return true if a (x, y, z)-point is inside the domain, otherwise
-        false.
+        Return ``True`` if a (x, y, z)-point is inside the domain, otherwise
+        ``False``.
 
         Parameters
         ----------
@@ -461,8 +491,8 @@ class Domain():
      
     def is_2D_point_valid(self, point: tuple) -> bool:
         """
-        Return true if a z-coordinate exists for a (x, y)-point projected
-        inside the domain, otherwise false.
+        Return ``True`` if a z-coordinate exists for a (x, y)-point projected
+        inside the domain, otherwise ``False``.
 
         Parameters
         ----------
@@ -489,20 +519,3 @@ class Domain():
         else:
             out = False
         return out
-    
-
-#####################
-### Documentation ###
-#####################
-
-subdomains_list = ""
-for subdomain in Domain.subdomains:
-    txt_elem = """\n\t\t\t- "{}" """.format(subdomain)
-    subdomains_list += txt_elem
-
-# Update documentation
-Domain.get_subdomain.__doc__ = (Domain.get_subdomain.__doc__
-                                .format(subdomains_list))
-# Domain.is_coordinate_in_subdomain.__doc__ = (
-#     Domain.is_coordinate_in_subdomain.__doc__.format(subdomains_list)
-# )

@@ -11,19 +11,24 @@ import pandas as pd
 ### Local dependencies
 from pykasso.model.geologic_features import GeologicFeature
 from pykasso.core._namespaces import DEFAULT_FMM_COSTS
+
 ### Typing
 from pykasso.core.grid import Grid
 from numpy.random import Generator
 
 
 class Fractures(GeologicFeature):
-    """Class modeling the fracturation model."""
+    """
+    Class modeling the fracturation model.
+    """
     
-    def __init__(self,
-                 grid: Grid,
-                 rng: Generator,
-                 *args,
-                 **kwargs):
+    def __init__(
+        self,
+        grid: Grid,
+        rng: Generator,
+        *args,
+        **kwargs,
+    ) -> None:
         """
         Class modeling the fracturation model.
 
@@ -46,30 +51,101 @@ class Fractures(GeologicFeature):
         self.fractures = pd.DataFrame()
         self.fractures_voxelized = {}
         
-    def set_names(self,
-                  names: dict[int, str],
-                  default_name: str = 'family {}',
-                  ) -> None:
+    def set_names(
+        self,
+        names: dict[int, str],
+        default_name: str = 'family {}',
+    ) -> None:
+        """
+        Assign names to fracture families based on the provided ``names``
+        dictionary, with an optional default naming pattern.
+
+        Parameters
+        ----------
+        names : dict[int, str]
+            A dictionary where the keys are fracture familiy indices (integers)
+            and the values are the corresponding names (strings) to be
+            assigned. This dictionary specifies which fracture families should
+            receive custom names.
+        default_name : str, optional
+            A format string used to generate default fracture familiy names
+            for items not explicitly named in the ``names`` dictionary.
+            The format string should include a placeholder (e.g., '{}') that
+            will be replaced by the item's index. The default pattern is
+            'family {}'.
+        
+        Notes
+        -----
+        This function does not return a value. It overrides the `set_names`
+        method from the parent class.
+        """
         return super().set_names(names, default_name)
 
-    def set_costs(self,
-                  costs: dict[int, str],
-                  default_cost: float = DEFAULT_FMM_COSTS['fractures'],
-                  ) -> None:
+    def set_costs(
+        self,
+        costs: dict[int, str],
+        default_cost: float = DEFAULT_FMM_COSTS['fractures'],
+    ) -> None:
+        """
+        Assign costs to fracture families based on the provided dictionary,
+        with an optional default cost.
+
+        Parameters
+        ----------
+        costs : dict[int, str]
+            A dictionary where the keys are fracture familiy indices (integers)
+            and the values are the corresponding costs (floats) to be assigned.
+            This dictionary specifies which fracture families should receive
+            custom costs.
+        default_cost : float, optional
+            The default cost to be applied to fracture familes not explicitly
+             listed in the `costs` dictionary. The default values are taken
+             from the `DEFAULT_FMM_COSTS['fractures']` dictionary.
+        
+        Notes
+        -----
+        This function does not return a value. It overrides the `set_costs`
+        method from the parent class.
+        """
         return super().set_costs(costs, default_cost)
     
-    def set_model(self,
-                  model: dict[int, str],
-                  default_model: bool = True,
-                  ) -> None:
+    def set_model(
+        self,
+        model: dict[int, bool],
+        default_model: bool = True,
+    ) -> None:
+        """
+        Indicate if a fracture family should be considered in the modelisation
+        based on the provided dictionary, with an optional default setting.
+
+        Parameters
+        ----------
+        model : dict[int, bool]
+            A dictionary where the keys are fracture familiy indices (integers)
+             and the values are booleans indicating if the fracture family is
+            considered. This dictionary specifies which fracture families
+             should be evaluated in the simulation.
+            
+        default_model : bool, optional
+            The default value to be applied to fracture families not
+             explicitly listed in the `model` dictionary. The default value is
+             `True`.
+        
+        Notes
+        -----
+        This function does not return a value. It overrides the `set_costs`
+        method from the parent class.
+        """
+        
         model.setdefault(0, False)
         return super().set_model(model, default_model)
         
-    def generate_fracture_family(self,
-                                 name: str,
-                                 settings: dict,
-                                 cost: float = DEFAULT_FMM_COSTS['fractures'],
-                                 ) -> None:
+    def generate_fracture_family(
+        self,
+        name: str,
+        settings: dict,
+        cost: float = DEFAULT_FMM_COSTS['fractures'],
+    ) -> None:
         """
         Create a new fracture family.
         Populate the `self.families` and `self.fractures` dataframe attributes.
@@ -149,17 +225,18 @@ class Fractures(GeologicFeature):
                 
         return None
                 
-    def generate_fractures(self,
-                           density: float,
-                           orientation: float,
-                           dip: float,
-                           length: float,
-                           orientation_distribution: str = 'vonmises',
-                           dip_distribution: str = 'vonmises',
-                           length_distribution: str = 'power',
-                           **kwargs: dict,
-                           ) -> pd.DataFrame:
-        """TODO"""
+    def generate_fractures(
+        self,
+        density: float,
+        orientation: float,
+        dip: float,
+        length: float,
+        orientation_distribution: str = 'vonmises',
+        dip_distribution: str = 'vonmises',
+        length_distribution: str = 'power',
+        **kwargs: dict,
+    ) -> pd.DataFrame:
+        
         
         ######################
         ### INITIALIZATION ###
@@ -305,19 +382,21 @@ class Fractures(GeologicFeature):
 
         return fractures
     
-    def _uniform(self,
-                 value_min: float,
-                 value_max: float,
-                 n: int,
-                 ) -> np.ndarray:
+    def _uniform(
+        self,
+        value_min: float,
+        value_max: float,
+        n: int,
+    ) -> np.ndarray:
         """TODO"""
         out = self.rng.uniform(low=value_min, high=value_max, size=n)
         return out
     
     @staticmethod
-    def _vonmises_calculate_mu(theta_min: float,
-                               theta_max: float,
-                               ) -> float:
+    def _vonmises_calculate_mu(
+        theta_min: float,
+        theta_max: float,
+    ) -> float:
         """
         Calculate the mu parameter from the von Mises distribution.
         """
@@ -325,9 +404,10 @@ class Fractures(GeologicFeature):
         return mu
     
     @staticmethod
-    def _vonmises_calculate_kappa(theta_max: float,
-                                  mu: float,
-                                  ) -> float:
+    def _vonmises_calculate_kappa(
+        theta_max: float,
+        mu: float,
+    ) -> float:
         """
         Calculate the kappa parameter from the von Mises distribution.
         """
@@ -348,11 +428,12 @@ class Fractures(GeologicFeature):
         kappa = mpmath.findroot(func, 0)
         return kappa
     
-    def _vonmises(self,
-                  theta_min: float,
-                  theta_max: float,
-                  n: int,
-                  ) -> np.ndarray:
+    def _vonmises(
+        self,
+        theta_min: float,
+        theta_max: float,
+        n: int,
+    ) -> np.ndarray:
         """
         https://en.wikipedia.org/wiki/Von_Mises_distribution
         """
@@ -364,12 +445,13 @@ class Fractures(GeologicFeature):
         out = np.degrees(out)
         return out
     
-    def _power(self,
-               value_min: float,
-               value_max: float,
-               alpha: float,
-               n: int,
-               ) -> np.ndarray:
+    def _power(
+        self,
+        value_min: float,
+        value_max: float,
+        alpha: float,
+        n: int,
+    ) -> np.ndarray:
         """
         TODO
         """
@@ -382,7 +464,7 @@ class Fractures(GeologicFeature):
         return out
 
 
-def calculate_normal(dip, orientation):
+def calculate_normal(dip: np.ndarray, orientation: np.ndarray):
     """
     TODO
     """
@@ -403,7 +485,7 @@ def calculate_normal(dip, orientation):
 ####################
 
 
-def _float_eq(a, b, tolerance: float = 1e-5):
+def _float_eq(a, b, tolerance: float = 1e-5) -> np.ndarray:
     """
     Returns True if the difference between a and b is lower than tolerance.
 
@@ -428,7 +510,7 @@ def _float_eq(a, b, tolerance: float = 1e-5):
     return np.all(abs(a - b) < tolerance)
 
 
-def _unit_intersect(n: np.ndarray, d: float):
+def _unit_intersect(n: np.ndarray, d: float) -> np.ndarray:
     """
     Computes the intersection between a unit circle and a line on a 2D plane.
     The unit circle is centered on the origin (x=0, y=0) and has a radius of 1.
@@ -473,8 +555,12 @@ def _unit_intersect(n: np.ndarray, d: float):
     return np.array([X1, X2, Y1, Y2])
 
 
-def _disk_zplane_intersect(center: np.ndarray, n: np.ndarray,
-                           R: float, zi: float):
+def _disk_zplane_intersect(
+    center: np.ndarray,
+    n: np.ndarray,
+    R: float,
+    zi: float,
+) -> np.ndarray:
     """
     Computes the intersection between a disk and a horizontal plane (constant
     z plane) in 3D. The disk is defined by three parameters :
@@ -528,8 +614,12 @@ def _disk_zplane_intersect(center: np.ndarray, n: np.ndarray,
     return np.array([x1, y1, x2, y2])
 
 
-def _disk_xplane_intersect(center: np.ndarray, n: np.ndarray,
-                           R: float, xi: float):
+def _disk_xplane_intersect(
+    center: np.ndarray,
+    n: np.ndarray,
+    R: float,
+    xi: float,
+) -> np.ndarray:
     """
     Computes the intersection between a disk and a vertical plane (constant x
     plane) in 3D. The disk is defined by three parameters :
@@ -583,8 +673,12 @@ def _disk_xplane_intersect(center: np.ndarray, n: np.ndarray,
     return np.array([y1, z1, y2, z2])
 
 
-def _disk_yplane_intersect(center: np.ndarray, n: np.ndarray,
-                           R: float, yi: float):
+def _disk_yplane_intersect(
+    center: np.ndarray,
+    n: np.ndarray,
+    R: float,
+    yi: float,
+) -> np.ndarray:
     """
     Computes the intersection between a disk and a vertical plane (constant y
     plane) in 3D. The disk is defined by three parameters :
@@ -638,7 +732,8 @@ def _disk_yplane_intersect(center: np.ndarray, n: np.ndarray,
 
 
 def _rst2d(m: np.ndarray, xs: int, xe: int, ys: int, ye: int):
-    """Rasterizes a line on a 2D plane.
+    """
+    Rasterizes a line on a 2D plane.
 
     Parameters
     ----------
@@ -697,10 +792,12 @@ def _rst2d(m: np.ndarray, xs: int, xe: int, ys: int, ye: int):
     return
 
 
-def voxelize_fractures(grid,
-                       fractures: pd.DataFrame,
-                       ) -> np.ndarray:
-    """Rasterizes a set of fractures on a 3D grid.
+def voxelize_fractures(
+    grid,
+    fractures: pd.DataFrame,
+) -> np.ndarray:
+    """
+    Rasterizes a set of fractures on a 3D grid.
     
     Parameters
     ----------

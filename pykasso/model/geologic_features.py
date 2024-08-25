@@ -8,8 +8,10 @@ import pandas as pd
 
 ### Local dependencies
 from pykasso._utils.datareader import DataReader
-from pykasso.core._namespaces import (DEFAULT_FMM_COSTS,
-                                      DEFAULT_FEATURE_PARAMETERS)
+from pykasso.core._namespaces import (
+    DEFAULT_FMM_COSTS,
+    DEFAULT_FEATURE_PARAMETERS,
+)
 
 ### Typing
 from typing import Union
@@ -25,13 +27,14 @@ class GeologicFeature(DataReader):
     Class modeling a geological feature.
     """
     
-    def __init__(self,
-                 grid: Grid,
-                 feature: str,
-                 dim: int,
-                 *args,
-                 **kwargs,
-                 ) -> None:
+    def __init__(
+        self,
+        grid: Grid,
+        feature: str,
+        dim: int,
+        *args,
+        **kwargs,
+    ) -> None:
         """
         Construct a geological feature.
 
@@ -87,10 +90,11 @@ class GeologicFeature(DataReader):
     ### SETTERS ###
     ###############
         
-    def set_data(self,
-                 data: Union[None, str, np.ndarray],
-                 axis: str = 'z',
-                 ) -> None:
+    def set_data(
+        self,
+        data: Union[None, str, np.ndarray],
+        axis: str = 'z',
+    ) -> None:
         """TODO"""
         # If no data is provdided
         if data is None:
@@ -118,10 +122,11 @@ class GeologicFeature(DataReader):
                                                            axis)
         return None
     
-    def set_names(self,
-                  names: dict[int, str],
-                  default_name: str = 'object {}',
-                  ) -> None:
+    def set_names(
+        self,
+        names: dict[int, str],
+        default_name: str = 'object {}',
+    ) -> None:
         """TODO"""
         ids = self.stats.index
         names_df = {}
@@ -130,10 +135,11 @@ class GeologicFeature(DataReader):
         self.names = names_df
         return None
         
-    def set_costs(self,
-                  costs: dict[int, str],
-                  default_cost: float = 0.5,
-                  ) -> None:
+    def set_costs(
+        self,
+        costs: dict[int, str],
+        default_cost: float = 0.5,
+    ) -> None:
         """TODO"""
         ids = self.stats.index
         costs_df = {}
@@ -142,10 +148,11 @@ class GeologicFeature(DataReader):
         self.costs = costs_df
         return None
     
-    def set_model(self,
-                  model: dict[int, str],
-                  default_model: bool = True,
-                  ) -> None:
+    def set_model(
+        self,
+        model: dict[int, str],
+        default_model: bool = True,
+    ) -> None:
         """TODO"""
         ids = self.stats.index
         model_df = {}
@@ -210,7 +217,8 @@ class Surface(GeologicFeature):
     
     def _surface_to_volume(self, condition, grid) -> np.ndarray:
         """
-        Convert a two dimensional array in a three dimensional array."""
+        Convert a two dimensional array in a three dimensional array.
+        """
         k = grid.get_k(self.data_surface)
         data_volume = np.zeros((grid.nx, grid.ny, grid.nz))
         for z in range(grid.nz):

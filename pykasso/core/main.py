@@ -1,5 +1,5 @@
 """
-Module storing functions giving access to the public content of pyKasso.
+Module containing functions for accessing the public content of pyKasso.
 """
 
 ### Local dependencies

@@ -42,8 +42,8 @@ from .core import *
 __all__.extend(core.__all__)
 
 # Import DataReader class
-from pykasso._utils.datareader import DataReader
-__all__.extend(['DataReader'])
+# from pykasso._utils.datareader import DataReader
+# __all__.extend(['DataReader'])
 
 # Import pyKasso version string
 from ._version import __version__

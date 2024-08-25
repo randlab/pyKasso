@@ -357,7 +357,7 @@ class DataReader():
             The path to the file that needs to be processed. This should
             include the file name and its extension.
         usecol : Union[int, str], optional
-            The rank of the column to consider, by default None. 
+            The rank of the column to consider, by default None.
 
         Returns
         -------

@@ -19,10 +19,12 @@ import yaml
 ### Local dependencies
 from pykasso.core.grid import Grid
 from .._version import __version__
-from pykasso.core._namespaces import (MISC_DIR_PATH,
-                                      DEFAULT_PARAMETERS_FILENAME,
-                                      DEFAULT_PROJECT_FILENAME,
-                                      DEFAULT_LOG_FILENAME)
+from pykasso.core._namespaces import (
+    MISC_DIR_PATH,
+    DEFAULT_PARAMETERS_FILENAME,
+    DEFAULT_PROJECT_FILENAME,
+    DEFAULT_LOG_FILENAME,
+)
 
 
 class Project(Sequence):
@@ -35,31 +37,47 @@ class Project(Sequence):
     Attributes
     ----------
     name : str
-    
+        Name of the project.
     description : str
-    
+        Description of the project.
     creation_date : str
-    
+        Creation date of the project.
     pykasso_version : str
-        
+        pyKasso's version used during project creation.
     grid : Grid
-        
+        Grid parameters used for the project.
     core : dict
-        
+        Core parameters defining the project structure.
     n_simulations : int
-        
+        Number of simulations already calculated.
     simulations : list
-        
+        List of paths locating already calculated simulations.
     """
     
-    def __init__(self,
-                 grid_parameters: dict,
-                 project_location: str = None,
-                 example: str = None,
-                 force: bool = False
-                 ) -> None:
+    def __init__(
+        self,
+        grid_parameters: dict,
+        project_location: str = None,
+        example: str = None,
+        force: bool = False
+    ) -> None:
         """
         Initialize a pyKasso project.
+        
+        Parameters
+        ----------
+        grid_parameters : dict
+            The dictionary containing the grid parameters.
+        project_location : str, optional
+            TODO
+            The file path to the project location. If not specified, the
+            default project location will be used (default is None).
+        example : str, optional
+            A string indicating an example configuration to use as project
+            in the initialization (default is None).
+        force : bool, optional
+            If True, overwrite files in case of conflict when ``name``
+            points to an already existing directory (default is True).
         """
         ### Initialize values
         self.__name = None
@@ -288,7 +306,9 @@ class Project(Sequence):
         return None
     
     def _export_project_file(self) -> None:
-        """Export the project attributes in a YAML file."""
+        """
+        Export the project attributes in a YAML file.
+        """
         project = self._return_project_status()
         # Set the path
         outputs_directory = self.core['paths']['project_dir']
@@ -299,7 +319,9 @@ class Project(Sequence):
         return None
     
     def _return_project_status(self) -> dict:
-        """Update and return the dictionary describing the project."""
+        """
+        Update and return the dictionary describing the project.
+        """
         project = {
             'name': self.name,
             'description': self.description,
@@ -374,7 +396,7 @@ class Project(Sequence):
     @property
     def dimension(self) -> str:
         """
-        TODO
+        Return the dimension ("2D" or "3D") of the project.
         """
         return self.__dimension
     
@@ -383,7 +405,9 @@ class Project(Sequence):
     ##############
     
     def _define_project_dimension(self) -> None:
-        """Determine if the project is in 2D or 3D."""
+        """
+        Determine if the project is in 2D or 3D.
+        """
         counter = Counter(self.grid.shape)
         if counter[1] == 1:
             self.__dimension = '2D'
@@ -392,14 +416,18 @@ class Project(Sequence):
         return None
     
     def _get_simulation_data(self, n: int) -> dict:
-        """Return the data of computed simulation ``n``."""
+        """
+        Return the data of computed simulation ``n``.
+        """
         simulation_directory = self.simulations[n]
         simulation_data_path = simulation_directory + 'results.pickle'
         simulation_data = self._read_pickle(simulation_data_path)
         return simulation_data
     
     def _read_pickle(self, path: str) -> dict:
-        """Read a pickle from a given path."""
+        """
+        Read a pickle from a given path.
+        """
         with open(path, 'rb') as handle:
             out = pickle.load(handle)
             return out
@@ -409,17 +437,63 @@ class Project(Sequence):
         return None
         
     def get_simulations(self, ni: int = 0, nf: int = None) -> list:
-        """TODO"""
+        """
+        Return a list of simulation ranks from the lower bound ``ni`` to the
+        upper bound ``nf`` of the computed simulations.
+        
+        Parameters
+        ----------
+        ni : int, optional
+            Lower bound of the selection (0 by default).
+        nf : int, optional
+            Upper bound of the selection. If left empty, it will select all
+            the remaining simulations (None by default).
+
+        Returns
+        -------
+        list
+            A list containing the simulation ranks between ``ni`` and ``nf``.
+        """
         list_sims = list(range(self.n_simulations))
         selected_sims = list_sims[ni:nf]
         return selected_sims
     
     def get_first_simulations(self, n: int) -> list:
-        """TODO"""
+        """
+        Retrieve the first ``n`` computed simulation ranks.
+
+        Parameters
+        ----------
+        n : int
+            The number of simulations to retrieve, starting from the first
+            computed simulation.
+
+        Returns
+        -------
+        list
+            A list containing the first ``n`` simulation ranks. If ``n``
+            exceeds the total number of simulations available, the entire list
+            of simulation ranks is returned.
+        """
         first_sims = self.get_simulations(0, n)
         return first_sims
     
     def get_last_simulations(self, n: int) -> list:
-        """TODO"""
+        """
+        Retrieve the last ``n`` computed simulation ranks.
+
+        Parameters
+        ----------
+        n : int
+            The number of simulations to retrieve, starting from the last
+            computed simulation.
+
+        Returns
+        -------
+        list
+            A list containing the last ``n`` simulation ranks. If ``n``
+            exceeds the total number of simulations available, the entire list
+            of simulation ranks is returned.
+        """
         last_sims = self.get_simulations(-n, None)
         return last_sims

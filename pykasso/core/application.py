@@ -2,12 +2,6 @@
 Module containing the application class.
 """
 
-### Internal dependencies
-import warnings
-import logging
-
-### External dependencies
-
 ### Local dependencies
 from pykasso.core.project import Project
 from pykasso.model.sks import SKS
@@ -64,11 +58,12 @@ class Application():
     ### MANAGE PROJECT ###
     ######################
         
-    def new_project(self,
-                    name: str,
-                    grid_parameters: dict,
-                    force: bool = True
-                    ) -> None:
+    def new_project(
+        self,
+        name: str,
+        grid_parameters: dict,
+        force: bool = True,
+    ) -> None:
         """
         Create a new project.
         
@@ -84,16 +79,19 @@ class Application():
             The dictionary containing the grid parameters.
         force : bool, optional
             If True, overwrite files in case of conflict when ``name``
-            points to an already existing directory.
-            Default is True.
+            points to an already existing directory (default is True).
 
         Examples
         --------
         >>> import pykasso as pk
         >>> app = pk.pykasso()
-        >>> name = TODO
-        >>> grid_parameters = {TODO}
-        >>> app.new_project(TODO)
+        >>> name = "new_project"
+        >>> grid_parameters = {
+        >>>     'nx': 10, 'ny': 10, 'nz': 10,
+        >>>     'x0': 0, 'y0': 0, 'z0': 0,
+        >>>     'dx': 10, 'dy': 10, 'dz': 10,
+        >>> }
+        >>> app.new_project(name, grid_parameters)
         """
         
         ### Input validation
@@ -157,9 +155,11 @@ class Application():
         ### Initialization of the application
         
         # Set a project instance
-        self.__project = Project(grid_parameters=grid_parameters,
-                                 project_location=name,
-                                 force=force)
+        self.__project = Project(
+            grid_parameters=grid_parameters,
+            project_location=name,
+            force=force,
+        )
         
         # Initialize the 'model' module
         self.__model = SKS(self.project)

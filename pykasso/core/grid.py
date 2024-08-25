@@ -11,7 +11,8 @@ from typing import Union
 
 
 class Grid():
-    """Class modeling a structured grid.
+    """
+    Class modeling a structured grid.
     
     This class models the three dimensional structured grid of the studied
     domain.
@@ -38,19 +39,20 @@ class Grid():
         Cell depth in the z-axis.
     """
 
-    def __init__(self,
-                 x0: Union[int, float],
-                 y0: Union[int, float],
-                 z0: Union[int, float],
-                 nx: int,
-                 ny: int,
-                 nz: int,
-                 dx: Union[int, float],
-                 dy: Union[int, float],
-                 dz: Union[int, float]
-                 ) -> None:
+    def __init__(
+        self,
+        x0: Union[int, float],
+        y0: Union[int, float],
+        z0: Union[int, float],
+        nx: int,
+        ny: int,
+        nz: int,
+        dx: Union[int, float],
+        dy: Union[int, float],
+        dz: Union[int, float],
+    ) -> None:
         """
-        Constructs a three dimensional structured grid of nx-nodes-length,
+        Construct a three dimensional structured grid of nx-nodes-length,
         ny-nodes-width and nz-nodes-depth. Node centers are located in the
         center of the dx-length, dy-width and dz-depth cells. The (x0,y0,z0)
         origin is based at the bottom left corner of the grid.
@@ -61,7 +63,7 @@ class Grid():
         Parameters
         ----------
         x0 : Union[int, float]
-            x-coordinate of centerpoint of bottom left cell. 
+            x-coordinate of centerpoint of bottom left cell.
         y0 : Union[int, float]
             y-coordinate of centerpoint of bottom left cell.
         z0 : Union[int, float]
@@ -347,9 +349,7 @@ class Grid():
         out = (X, Y, Z)
         return out
 
-    def get_i(self,
-              x: Union[float, list, tuple, np.ndarray]
-              ) -> np.ndarray:
+    def get_i(self, x: Union[float, list, tuple, np.ndarray]) -> np.ndarray:
         """
         Retrieve i-index from x-coordinate.
 
@@ -368,9 +368,7 @@ class Grid():
         i = i.astype('int32')
         return i
 
-    def get_j(self,
-              y: Union[float, list, tuple, np.ndarray]
-              ) -> np.ndarray:
+    def get_j(self, y: Union[float, list, tuple, np.ndarray]) -> np.ndarray:
         """
         Retrieve j-index from y-coordinate.
 
@@ -389,9 +387,7 @@ class Grid():
         j = j.astype('int32')
         return j
 
-    def get_k(self,
-              z: Union[float, list, tuple, np.ndarray]
-              ) -> np.ndarray:
+    def get_k(self, z: Union[float, list, tuple, np.ndarray]) -> np.ndarray:
         """
         Retrieve k-index from z-coordinate.
 
@@ -410,14 +406,15 @@ class Grid():
         k = k.astype('int32')
         return k
     
-    def get_indices(self,
-                    coordinates: Union[
-                        list,
-                        tuple[float, float],
-                        tuple[float, float, float],
-                        np.ndarray
-                    ]
-                    ) -> np.ndarray:
+    def get_indices(
+        self,
+        coordinates: Union[
+            list,
+            tuple[float, float],
+            tuple[float, float, float],
+            np.ndarray
+        ]
+    ) -> np.ndarray:
         """
         Retrieve both i and j-index from x and y-coordinates. Returns also
         k-index when z-coordinate is provided.
@@ -466,9 +463,7 @@ class Grid():
         #     out = out[0]
         return out
 
-    def get_x(self,
-              i: Union[int, list, tuple, np.ndarray]
-              ) -> np.ndarray:
+    def get_x(self, i: Union[int, list, tuple, np.ndarray]) -> np.ndarray:
         """
         Retrieve x-coordinate from i-index.
 
@@ -487,9 +482,7 @@ class Grid():
         out = np.where((i < 0) | (i > (self.nx - 1)), None, self.x[i])
         return out
 
-    def get_y(self,
-              j: Union[int, list, tuple, np.ndarray]
-              ) -> np.ndarray:
+    def get_y(self, j: Union[int, list, tuple, np.ndarray]) -> np.ndarray:
         """
         Retrieve y-coordinate from j-index.
 
@@ -508,9 +501,7 @@ class Grid():
         out = np.where((j < 0) | (j > (self.ny - 1)), None, self.y[j])
         return out
 
-    def get_z(self,
-              k: Union[int, list, tuple, np.ndarray]
-              ) -> np.ndarray:
+    def get_z(self, k: Union[int, list, tuple, np.ndarray]) -> np.ndarray:
         """
         Retrieve z-coordinate from k-index.
 
@@ -529,14 +520,15 @@ class Grid():
         out = np.where((k < 0) | (k > (self.nz - 1)), None, self.z[k])
         return out
     
-    def get_coordinates(self,
-                        indices: Union[
-                            list,
-                            tuple[int, int],
-                            tuple[int, int, int],
-                            np.ndarray
-                        ]
-                        ) -> np.ndarray:
+    def get_coordinates(
+        self,
+        indices: Union[
+            list,
+            tuple[int, int],
+            tuple[int, int, int],
+            np.ndarray
+        ]
+    ) -> np.ndarray:
         """
         Retrieve both x and y-coordinates from i and j-index. Returns also
         z-coordinate when k-index is provided.
@@ -581,9 +573,10 @@ class Grid():
         
         return out
         
-    def is_x_valid(self,
-                   x: Union[float, list, tuple, np.ndarray]
-                   ) -> np.ndarray:
+    def is_x_valid(
+        self,
+        x: Union[float, list, tuple, np.ndarray],
+    ) -> np.ndarray:
         """
         Return true if the ``x`` coordinate is inside the grid domain.
 
@@ -600,9 +593,10 @@ class Grid():
         out = (i - self.nx + 1) * i <= 0
         return out
     
-    def is_y_valid(self,
-                   y: Union[float, list, tuple, np.ndarray]
-                   ) -> np.ndarray:
+    def is_y_valid(
+        self,
+        y: Union[float, list, tuple, np.ndarray],
+    ) -> np.ndarray:
         """
         Return true if the ``y`` coordinate is inside the grid domain.
 
@@ -619,9 +613,10 @@ class Grid():
         out = (j - self.ny + 1) * j <= 0
         return out
     
-    def is_z_valid(self,
-                   z: Union[float, list, tuple, np.ndarray]
-                   ) -> np.ndarray:
+    def is_z_valid(
+        self,
+        z: Union[float, list, tuple, np.ndarray],
+    ) -> np.ndarray:
         """
         Return true if the ``z`` coordinate is inside the grid domain.
 
@@ -638,13 +633,15 @@ class Grid():
         out = (k - self.nz + 1) * k <= 0
         return out
 
-    def is_inbox(self,
-                 coordinates: Union[
-                     list,
-                     tuple[float, float],
-                     tuple[float, float, float],
-                     np.ndarray]
-                 ) -> np.ndarray:
+    def is_inbox(
+        self,
+        coordinates: Union[
+            list,
+            tuple[float, float],
+            tuple[float, float, float],
+            np.ndarray,
+        ]
+    ) -> np.ndarray:
         """
         Return true if a (x, y)-point is within the surface of the grid or if
         a (x, y, z)-point is inside the grid.
