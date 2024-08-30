@@ -76,8 +76,8 @@ class Fractures(GeologicFeature):
         
         Notes
         -----
-        This function does not return a value. It overrides the `set_names`
-        method from the parent class.
+        This function does not return a value. It rewrites the ``self.names``
+        attribute with the new specified dictionary.
         """
         return super().set_names(names, default_name)
 
@@ -104,8 +104,8 @@ class Fractures(GeologicFeature):
         
         Notes
         -----
-        This function does not return a value. It overrides the `set_costs`
-        method from the parent class.
+        This function does not return a value. It rewrites the ``self.costs``
+        attribute with the new specified dictionary.
         """
         return super().set_costs(costs, default_cost)
     
@@ -133,8 +133,8 @@ class Fractures(GeologicFeature):
         
         Notes
         -----
-        This function does not return a value. It overrides the `set_costs`
-        method from the parent class.
+        This function does not return a value. It rewrites the ``self.model``
+        attribute with the new specified dictionary.
         """
         
         model.setdefault(0, False)
@@ -363,7 +363,7 @@ class Fractures(GeologicFeature):
             radius = frac_length / 2
             
         ##### FRACTURE NORMAL VECTOR
-        normal = calculate_normal(dip_fractures, orientation_fractures)
+        normal = _calculate_normal(dip_fractures, orientation_fractures)
 
         #######################
         ### Returns results ###
@@ -388,7 +388,10 @@ class Fractures(GeologicFeature):
         value_max: float,
         n: int,
     ) -> np.ndarray:
-        """TODO"""
+        """
+        Generate an array of ``n`` uniformly distributed random values between
+        specified minimum and maximum bounds.
+        """
         out = self.rng.uniform(low=value_min, high=value_max, size=n)
         return out
     
@@ -435,7 +438,9 @@ class Fractures(GeologicFeature):
         n: int,
     ) -> np.ndarray:
         """
-        https://en.wikipedia.org/wiki/Von_Mises_distribution
+        Generate an array of ``n`` random values following a von Mises
+        distribution in an interval specified by minimum and maximum bounds.
+        More details here : https://en.wikipedia.org/wiki/Von_Mises_distribution
         """
         theta_min_rad = np.radians(theta_min)
         theta_max_rad = np.radians(theta_max)
@@ -453,7 +458,8 @@ class Fractures(GeologicFeature):
         n: int,
     ) -> np.ndarray:
         """
-        TODO
+        Generate an array of ``n`` random values following a modified power-law
+        distribution in an interval specified by minimum and maximum bounds.
         """
         palpha = (1 - alpha)
         invpalpha = 1 / palpha
@@ -464,9 +470,10 @@ class Fractures(GeologicFeature):
         return out
 
 
-def calculate_normal(dip: np.ndarray, orientation: np.ndarray):
+def _calculate_normal(dip: np.ndarray, orientation: np.ndarray) -> list:
     """
-    TODO
+    Calculate the normal vectors for a set of fractures based on their dip and
+    orientation angles.
     """
     orientation = np.radians(orientation)
     dip = np.radians(dip)
