@@ -1,4 +1,4 @@
-name: pykasso
+name: pykasso_
 channels:
   - conda-forge
   - agd-lbr
@@ -33,4 +33,5 @@ dependencies:
   - numpydoc
   - pip
   - pip:
+    - karstnet
     - -e .
