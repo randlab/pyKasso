@@ -29,14 +29,12 @@ mamba env create -f environment.yml
 Then:
 ```
 mamba activate pykasso
-pip install git+https://github.com/karstnet/karstnet.git
 ```
 
 It also works with conda but may take more time to install all the dependencies :
 ```
 conda env create -f environment.yml
 conda activate pykasso
-pip install git+https://github.com/karstnet/karstnet.git
 ```
 
 ## Examples
