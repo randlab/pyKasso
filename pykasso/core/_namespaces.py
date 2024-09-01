@@ -113,3 +113,6 @@ DEFAULT_FEATURE_PARAMETERS = {
         'model': True,
     }
 }
+
+SKS_VALID_ALGORITHM_VALUES = ['Isotropic3', 'Riemann3']
+SKS_VALID_MODE_VALUES = ['A', 'B', 'C', 'D']

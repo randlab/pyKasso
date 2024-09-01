@@ -6,6 +6,9 @@ import time
 import logging
 
 ### Local dependencies
+from pykasso._utils.validation import (
+    test_sks_settings,
+)
 import pykasso.model._validations as val
 from pykasso.core._namespaces import DEFAULT_FMM_COSTS
 
@@ -113,19 +116,16 @@ def _parameters_validation(feature, kind):
                         raise KeyError(msg)
             
             # Control values
-            # TODO : finish the validating functions
             if feature == 'sks':
-                val.validate_settings_sks(default_params)
+                test_sks_settings(default_params)
             elif feature in ['geology', 'faults', 'fractures']:
                 pass
             elif feature == 'domain':
-                # val.validate_settings_domain(default_params)
                 pass
             elif feature in ['inlets', 'outlets']:
                 val.validate_settings_points(default_params, feature)
                 # if isinstance(default_params['data'], str)
                 
-                # val.validate_settings_io(default_params)
                 pass
             
             # Update dictionary

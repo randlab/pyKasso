@@ -9,12 +9,18 @@ import logging
 ### External dependencies
 import numpy as np
 
+from pykasso.core._namespaces import (
+    SKS_VALID_ALGORITHM_VALUES,
+    SKS_VALID_MODE_VALUES,
+)
+
 ### Typing
 from typing import Union
 
 
-def is_filepath_valid(filepath: str,
-                      ) -> Union[FileNotFoundError, bool]:
+def is_filepath_valid(
+    filepath: str,
+) -> Union[FileNotFoundError, bool]:
     """
     Test if the filepath is valid.
     
@@ -40,10 +46,11 @@ def is_filepath_valid(filepath: str,
         return True
 
 
-def is_variable_type_valid(variable_name: str,
-                           variable_value,
-                           valid_types: tuple,
-                           ) -> Union[TypeError, bool]:
+def is_variable_type_valid(
+    variable_name: str,
+    variable_value,
+    valid_types: tuple,
+) -> Union[TypeError, bool]:
     """
     Test if the type of the variable is valid.
 
@@ -74,10 +81,11 @@ def is_variable_type_valid(variable_name: str,
         raise TypeError(msg)
 
 
-def is_key_in_dict(dictionary: dict,
-                   dictionary_name: str,
-                   key_to_test: str
-                   ) -> Union[KeyError, bool]:
+def is_key_in_dict(
+    dictionary: dict,
+    dictionary_name: str,
+    key_to_test: str,
+) -> Union[KeyError, bool]:
     """
     Test key presence in the dictionary.
 
@@ -108,11 +116,28 @@ def is_key_in_dict(dictionary: dict,
         raise KeyError(msg)
 
 
-def is_parameter_comparison_valid(parameter_name: str,
-                                  parameter_value,
-                                  logical_test: str,
-                                  compared_to,
-                                  ) -> Union[ValueError, bool]:
+def is_variable_in_list(
+    variable_name: str,
+    variable_value,
+    accepted_values: list,
+) -> Union[ValueError, bool]:
+    """
+    TODO
+    """
+    if variable_value not in accepted_values:
+        msg = ("Parameter '{}' value is invalid. Accepted values : {}"
+               .format(variable_name, accepted_values))
+        raise ValueError(msg)
+    else:
+        return True
+
+
+def is_parameter_comparison_valid(
+    parameter_name: str,
+    parameter_value,
+    logical_test: str,
+    compared_to,
+) -> Union[ValueError, bool]:
     """
     Test if the comparision returns true.
 
@@ -155,3 +180,116 @@ def is_parameter_comparison_valid(parameter_name: str,
         raise ValueError(msg)
     else:
         return True
+
+##########################
+### Dictionary testing ###
+##########################
+
+
+def test_sks_settings(settings: dict) -> None:
+    """
+    TODO
+    """
+    logger = logging.getLogger("sks.validation")
+    
+    ### Test 'seed' value
+    try:
+        is_variable_type_valid(
+            variable_name='seed',
+            variable_value=settings['seed'],
+            valid_types=(int),
+        )
+    except TypeError as error:
+        logger.error(error)
+        raise
+    
+    ### Test 'algorithm' value
+    try:
+        is_variable_in_list(
+            variable_name='algorithm',
+            variable_value=settings['algorithm'],
+            accepted_values=SKS_VALID_ALGORITHM_VALUES
+        )
+    except ValueError as error:
+        logger.error(error)
+        raise
+    
+    ### Test 'costs' value
+    try:
+        is_variable_type_valid(
+            variable_name='costs',
+            variable_value=settings['costs'],
+            valid_types=(dict),
+        )
+    except TypeError as error:
+        logger.error(error)
+        raise
+    
+    ### Test 'factors' value
+    try:
+        is_variable_type_valid(
+            variable_name='factors',
+            variable_value=settings['factors'],
+            valid_types=(dict),
+        )
+    except TypeError as error:
+        logger.error(error)
+        raise
+    
+    ### Test 'mode' value
+    try:
+        is_variable_in_list(
+            variable_name='mode',
+            variable_value=settings['mode'],
+            accepted_values=SKS_VALID_MODE_VALUES
+        )
+    except ValueError as error:
+        logger.error(error)
+        raise
+    
+    return None
+
+
+# def test_geologic_feature_settings(settings: dict) -> None:
+#     """
+#     TODO
+#     """
+#     return None
+
+
+# def test_point_settings(kind: str, settings: dict) -> None:
+#     """
+#     TODO
+#     """
+#     logger = logging.getLogger("{}.validation".format(kind))
+    
+#     ### Test 'number' value
+#     try:
+#         is_variable_type_valid(
+#             variable_name='number',
+#             variable_value=settings['number'],
+#             valid_types=(int),
+#         )
+#     except TypeError as error:
+#         logger.error(error)
+#         raise
+    
+#     ### Test 'data' value
+    
+    
+#     ### Test 'shuffle' value
+    
+    
+#     ### Test 'importance' value
+    
+    
+#     ### Test 'subdomain' value
+    
+    
+#     ### Test 'geology' value
+    
+    
+#     ### Test 'seed' value
+    
+    
+#     return None

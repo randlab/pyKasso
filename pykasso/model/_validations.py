@@ -3,15 +3,12 @@ Input validation functions.
 """
 
 import PIL
-import os
 import sys
 import logging
 import rasterio
 import numpy as np
-from shapely.geometry import Point
 
 from pykasso._utils import datareader
-from pykasso.core._namespaces import DEFAULT_FMM_COSTS
 
 from pykasso._utils import validation as val
 
@@ -105,39 +102,6 @@ def is_costs_dictionnary_valid(costs_dictionnary: dict, ids_data: list):
     
     
 ###############################################################################
-
-
-###########
-### SKS ###
-###########
-
-def validate_settings_sks(settings: dict) -> dict:
-    """TODO
-    
-    - 'seed'
-    - 'algorithm'
-    - 'costs'
-    - 'mode'
-    - 'factors'
-    """
-    logger = logging.getLogger("sks.validation")
-    
-    ### 'seed'
-    # Must be an int
-    try:
-        val.is_variable_type_valid(variable_name='seed',
-                                   variable_value=settings['seed'],
-                                   valid_types=(int))
-    except TypeError as error:
-        logger.error(error)
-        raise
-    
-    # 'mode'
-    if settings['mode'] not in ['A', 'B', 'C', 'D']:
-        pass
-    
-    return settings
-
 
 ########################
 ### OUTLETS - INLETS ###
