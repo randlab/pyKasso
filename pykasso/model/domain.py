@@ -238,7 +238,7 @@ class Domain():
             'y': self.data_volume.max(axis=1),
             'z': self.data_volume.max(axis=2),
         }
-        self.surface = self.data_surfaces['x'].sum() * self.grid.node_area
+        self.surface = self.data_surfaces['x'].sum() * self.grid.node_area # TODO - to control ! rename ?!
         
         # Union with declared geological model
         if geology is not None:

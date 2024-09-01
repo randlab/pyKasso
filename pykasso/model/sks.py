@@ -24,7 +24,6 @@ import pykasso.model._wrappers as wp
 from .domain import Domain, Delimitation, Topography, Bedrock, WaterTable
 from .geologic_features import Geology, Faults
 from .fracturation import Fractures
-from .points import PointGenerator
 from pykasso._utils.array import normalize_array
 from pykasso.core._namespaces import DEFAULT_FMM_COSTS
 
@@ -274,9 +273,9 @@ class SKS():
     def _set_rng(self, attribute: str) -> None:
         """
         Assign the seed for the specified attribute. If the seed has
-        been set by the user, then assign that value, otherwise either 
-        generate a random seed triggered by the global 'sks' seed if the 
-        seed is None, or generate a completely independent random seed  
+        been set by the user, then assign that value, otherwise either
+        generate a random seed triggered by the global 'sks' seed if the
+        seed is None, or generate a completely independent random seed
         if the seed is 0.
         """
         
@@ -284,7 +283,7 @@ class SKS():
         if self.model_parameters[attribute]['seed'] is None:
             seed = self.rng['sks'].integers(low=0, high=10**9)
 
-        # If the seed is 0, generate an independent random seed 
+        # If the seed is 0, generate an independent random seed
         elif self.model_parameters[attribute]['seed'] == 0:
             seed = np.random.default_rng().integers(low=0, high=10**9)
 
@@ -463,8 +462,13 @@ class SKS():
         - Outlet locations
         - Inlet locations
         """
+        self._points = {
+            'outlets': {},
+            'inlets': {},
+        }
         self._build_model_outlets()
         self._build_model_inlets()
+        # del self._points
         return None
     
     @wp._parameters_validation('outlets', 'required')
@@ -510,23 +514,16 @@ class SKS():
          Parameters
          ----------
          kind : str
+            Kind of points : "outlets" or "inlets".
          
          Returns
          -------
          pd.DataFrame
         """
-        ### TODO
-        # Geology as constraint
-        
-        ### Create a point generator instance
         logger = logging.getLogger("construction.{}".format(kind))
-        point_manager = PointGenerator(
-            rng=self.rng[kind],
-            subdomain=self.model_parameters[kind]['subdomain'],
-            domain=self.domain,
-            geology=self.geology,
-            geologic_ids=self.model_parameters[kind]['geology']
-        )
+        
+        ### Prepare data for point generation
+        self._define_point_generation_vars(kind)
         
         ### Inspect validity of declared points
         points = self.model_parameters[kind]['data']
@@ -535,8 +532,8 @@ class SKS():
         if len(points) != 0:
             for point in points:
                 if len(point) == 2:
-                    if point_manager._is_point_valid(point):
-                        point = point_manager._3D_point_from_2D_point(point)
+                    if self._is_point_valid(point):
+                        point = self._2D_to_3D_point(kind, point)
                         validated_points.append(point)
                     else:
                         msg = ("Point with coordinates {} is invalid in"
@@ -544,7 +541,7 @@ class SKS():
                         logger.error(msg)
                         raise ValueError(msg)
                 elif len(point) == 3:
-                    if point_manager._is_point_valid(point):
+                    if self._is_point_valid(point):
                         validated_points.append(point)
                     else:
                         msg = ("Point with coordinates {} is invalid in"
@@ -563,33 +560,137 @@ class SKS():
         
         # Case 1 - No points declared
         if (data == '') or (data == []):
-            points = point_manager._generate_points(size=n)
+            points = self._generate_points(kind, size=n)
         # Case 2 - More points required than provided
         elif (n > len(data)):
             n_points = n - len(data)
-            points = np.append(np.array(data),
-                               point_manager._generate_points(n_points),
-                               axis=0)
+            points = np.append(
+                np.array(data),
+                self._generate_points(kind, n_points),
+                axis=0
+            )
         # Case 3 - Less points required than provided
         elif (n < len(data)):
-            # points = self.rng['sks'].choice(data, n, replace=False)
+            # points = self.rng['sks'].choice(data, n, replace=False) # ?
             points = data[:n]
         # Case 4 - Points required equals points declared
         else:
             points = data
 
-        ### Populates the DataFrame
+        ### Populate the DataFrame
         x, y, z = zip(*points)
         data = {
             'x': x,
             'y': y,
             'z': z,
         }
-        
-        # Deletes the point manager
-        del point_manager
 
         return pd.DataFrame(data=data)
+    
+    def _define_point_generation_vars(self, kind: str) -> None:
+        """
+        TODO
+        """
+        # Retrieve subdomain model
+        subdomain = self.model_parameters[kind]['subdomain']
+        self._points[kind]['subdomain'] = self.domain.get_subdomain(subdomain)
+        
+        # Retrieve valid geological model
+        geologic_ids = self.model_parameters[kind]['geology']
+        if geologic_ids is not None:
+            valid_geologic_ids = self._controls_geologic_ids(geologic_ids)
+        else:
+            df = self.geology.overview()
+            valid_geologic_ids = df[df['model']==True].index.to_list()
+        self._points[kind]['geology'] = self.geology.get_data_units(valid_geologic_ids)
+        
+        # Cross subdomain with geological domain
+        self._points[kind]['data'] = np.logical_and(
+            self._points[kind]['subdomain'] > 0,
+            self._points[kind]['geology'] > 0,
+        ).astype(int)
+        
+        # Define valid cells
+        indices = np.indices(self.grid.shape)
+        filter = self._points[kind]['data'].astype(bool)
+        valid_indices = indices[:, filter]
+        valid_cells = pd.DataFrame(valid_indices.T, columns=['i', 'j', 'k'])
+        self._points[kind]['valid_cells'] = valid_cells
+        return None
+    
+    def _controls_geologic_ids(self, geologic_ids: list) -> list:
+        """
+        Control if the geologic IDs specified in the ``geologic_ids`` list
+        match with the geologic IDs from the geologic model.
+        
+        Returns
+        -------
+        list
+            List of matching geologic IDs
+        """
+        values = self.geology.stats.index.to_list()
+        validated_geology_ids = []
+        
+        for geologic_id in geologic_ids:
+            if geologic_id in values:
+                validated_geology_ids.append(geologic_id)
+            else:
+                msg = ("Declared geologic ID #{} is not present in "
+                       "geology model.".format(geologic_id))
+                logging.warning(msg)
+            
+        if len(validated_geology_ids) == 0:
+            msg = ("None of the geologic IDs declared are present in the "
+                   "geologic model, geologic constraints are ignored.")
+            logging.warning(msg)
+
+        return validated_geology_ids
+    
+    def _is_point_valid(self, point: tuple) -> bool:
+        """
+        Check if a 2D or 3D point is in domain.
+        
+        Returns
+        -------
+        bool
+        """
+        if self.grid.is_inbox(point):
+            if len(point) == 2:
+                i, j = self.grid.get_indices(point)
+                out = self.domain.data_surfaces['z'][i, j] > 0
+            elif len(point) == 3:
+                i, j, k = self.grid.get_indices(point)
+                out = self.domain.data_volume[i, j, k] > 0
+            return out
+        else:
+            return False
+        
+    def _2D_to_3D_point(self, kind: str, point: tuple) -> tuple:
+        """
+        TODO
+        """
+        i, j = self.grid.get_indices(point)
+        i, j = int(i), int(j)
+        valid_cells = self._points[kind]['valid_cells']
+        column_valid_cells = valid_cells[(valid_cells['i'] == i)
+                                         & (valid_cells['j'] == j)]
+        i_, j_, k_ = self.rng[kind].choice(column_valid_cells)
+        z = (self.grid.zmin + (k_ + self.rng[kind].random()) * self.grid.dz)
+        x, y = point
+        return (x, y, z)
+    
+    def _generate_points(self, kind: str, size: int = 1) -> np.ndarray:
+        """
+        TODO
+        """
+        RNG = self.rng[kind]
+        indices = RNG.choice(self._points[kind]['valid_cells'], size=size)
+        i, j, k = zip(*indices)
+        i, j, k = np.array(i), np.array(j), np.array(k)
+        x = (self.grid.xmin + (i + RNG.random()) * self.grid.dx)
+        y = (self.grid.ymin + (j + RNG.random()) * self.grid.dy)
+        z = (self.grid.zmin + (k + RNG.random()) * self.grid.dz)
+        return np.dstack((x, y, z))[0]
     
     @wp._logging()
     def _build_conceptual_model(self) -> None:

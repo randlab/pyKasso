@@ -238,7 +238,8 @@ class GeologicFeature(DataReader):
         -------
         np.ndarray
         """
-        data = np.empty(self.grid.shape) * np.nan
+        # data = np.empty(self.grid.shape) * np.nan # ISSUES with plotting
+        data = np.zeros(self.grid.shape)
         test = np.isin(self.data_volume, units)
         data = np.where(test, self.data_volume, data)
         return data
