@@ -85,7 +85,6 @@ VALID_EXTENSIONS_DATA = [
 ]
 VALID_EXTENSIONS_DATA.extend(VALID_EXTENSIONS_IMAGE)
 
-# Define default fast-marching costs
 DEFAULT_FMM_COSTS = {
     'out': 10,
     'geology': 0.4,

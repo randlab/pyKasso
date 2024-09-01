@@ -83,15 +83,15 @@ class Grid():
         """
         
         ### Initialization
-        self.__x0 = x0
-        self.__y0 = y0
-        self.__z0 = z0
+        self.__x0 = float(x0)
+        self.__y0 = float(y0)
+        self.__z0 = float(z0)
         self.__nx = nx
         self.__ny = ny
         self.__nz = nz
-        self.__dx = dx
-        self.__dy = dy
-        self.__dz = dz
+        self.__dx = float(dx)
+        self.__dy = float(dy)
+        self.__dz = float(dz)
 
         # Calculate the 1D arrays of centerpoints of each cell along each axis
         # 3D meshgrids are available through 'X', 'Y' and 'Z' properties.

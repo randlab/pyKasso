@@ -16,7 +16,9 @@ from pykasso._utils.validation import (
 )
 
 ### Variables
-from pykasso.core._namespaces import (GRID_PARAMETERS)
+from pykasso.core._namespaces import (
+    GRID_PARAMETERS,
+)
 
 
 class Application():

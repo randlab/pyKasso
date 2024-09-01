@@ -69,9 +69,8 @@ class Project(Sequence):
         grid_parameters : dict
             The dictionary containing the grid parameters.
         project_location : str, optional
-            TODO
             The file path to the project location. If not specified, the
-            default project location will be used (default is None).
+            default project location will be the active directory.
         example : str, optional
             A string indicating an example configuration to use as project
             in the initialization (default is None).
@@ -80,15 +79,15 @@ class Project(Sequence):
             points to an already existing directory (default is True).
         """
         ### Initialize values
-        self.__name = None
-        self.__description = None
-        self.__creation_date = None
-        self.__pykasso_version = None
-        self.__grid = None
-        self.__core = None  # TODO
-        self.__n_simulations = None
-        self.__simulations = None
-        self.__dimension = None
+        self.__name: str = None
+        self.__description: str = None
+        self.__creation_date: str = None
+        self.__pykasso_version: str = None
+        self.__grid: Grid = None
+        self.__core: dict = None
+        self.__n_simulations: int = None
+        self.__simulations: list = None
+        self.__dimension: str = None
         
         ### Prepare the input variables
     
@@ -370,6 +369,19 @@ class Project(Sequence):
     def grid(self) -> Grid:
         """Return the grid of the project."""
         return self.__grid
+    
+    @property
+    def core(self) -> dict:
+        """Return a dictionary with core informations."""
+        return self.__core.copy()
+    
+    @core.setter
+    def core(self, new_dict: dict) -> None:
+        """Set the core dictionary."""
+        if not isinstance(new_dict, dict):
+            raise ValueError("Value must be a dictionary")
+        self.__core = new_dict
+        return None
     
     @property
     def n_simulations(self) -> int:

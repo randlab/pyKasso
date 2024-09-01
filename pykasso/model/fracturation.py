@@ -15,6 +15,7 @@ from pykasso.core._namespaces import DEFAULT_FMM_COSTS
 ### Typing
 from pykasso.core.grid import Grid
 from numpy.random import Generator
+from typing import Union
 
 
 class Fractures(GeologicFeature):
@@ -228,16 +229,14 @@ class Fractures(GeologicFeature):
     def generate_fractures(
         self,
         density: float,
-        orientation: float,
-        dip: float,
-        length: float,
+        orientation: Union[list, float, int],
+        dip: Union[list, float, int],
+        length: Union[list, float, int],
         orientation_distribution: str = 'vonmises',
         dip_distribution: str = 'vonmises',
         length_distribution: str = 'power',
         **kwargs: dict,
     ) -> pd.DataFrame:
-        
-        
         ######################
         ### INITIALIZATION ###
         ######################
