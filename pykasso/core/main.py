@@ -5,6 +5,7 @@ Module containing functions for accessing the public content of pyKasso.
 ### Local dependencies
 from pykasso.core.application import Application
 from pykasso._utils.datareader import DataReader
+from pykasso.core.grid import Grid
 
 
 def pykasso() -> Application:
@@ -28,13 +29,17 @@ def pykasso() -> Application:
     return out
 
 
-def create_datareader() -> DataReader:
+def create_datareader(grid: Grid = None) -> DataReader:
     """
     Create and return a ``DataReader``.
 
     Returns
     -------
     DataReader
+    
+    Parameters
+    ----------
+    Grid
         
     See Also
     --------
@@ -45,5 +50,5 @@ def create_datareader() -> DataReader:
     >>> import pykasso as pk
     >>> data_reader = pk.create_datareader()
     """
-    out = DataReader()
+    out = DataReader(grid=grid)
     return out

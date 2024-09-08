@@ -673,7 +673,9 @@ class Grid():
             x = coordinates[:, 0]
             y = coordinates[:, 1]
             z = coordinates[:, 2]
-            i, j, k = self.is_x_valid(x), self.is_y_valid(y), self.is_z_valid(z)
+            i = self.is_x_valid(x)
+            j = self.is_y_valid(y)
+            k = self.is_z_valid(z)
             out = np.logical_and.reduce([i, j, k])
         else:
             msg = ("Shape of the `coordinates` parameter is invalid. Only (2, "

@@ -28,10 +28,10 @@ class DataReader():
     
     Supported formats:
         - gslib, vox,
-        - csv :
-        - txt :
-        - npy :
-        - jpg / png
+        - csv,
+        - txt,
+        - npy,
+        - jpg, png,
         - grd : http://peterbird.name/guide/grd_format.htm
         - tif / asc
             - asc : https://desktop.arcgis.com/en/arcmap/latest/manage-data/
