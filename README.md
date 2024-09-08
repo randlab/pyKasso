@@ -19,23 +19,22 @@ pyKasso is a python3 open-source package intended to simulate easily and quickly
 
 ## Installation
 
-Currently, pyKasso is only working with Python 3.9. The best way to install it is by using miniforge: https://github.com/conda-forge/miniforge.
+Currently, pyKasso is only working with Python 3.9. 
 
-From source:
-```
-mamba env create -f environment.yml
-```
-
-Then:
-```
-mamba activate pykasso
-```
-
-It also works with conda but may take more time to install all the dependencies :
+If you are using anaconda or miniconda, the simplest way to install pykasso is to create the `pykasso` conda environment av
+nd activate it with the following commands:
 ```
 conda env create -f environment.yml
 conda activate pykasso
 ```
+This will install all the required dependencies.
+
+An alternative and faster way to do the same is to use miniforge: https://github.com/conda-forge/miniforge:
+```
+mamba env create -f environment.yml
+mamba activate pykasso
+```
+
 
 ## Examples
 
