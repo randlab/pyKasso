@@ -29,9 +29,7 @@ conda activate pykasso
 ```
 This will install all the required dependencies.
 
-An alternative and faster way to do the same is to use miniforge: https://github.com/conda-forge/miniforge.
-
-From source:
+An alternative and faster way to do the same is to use miniforge: https://github.com/conda-forge/miniforge:
 ```
 mamba env create -f environment.yml
 mamba activate pykasso
