@@ -532,7 +532,7 @@ class SKS():
         if len(points) != 0:
             for point in points:
                 if len(point) == 2:
-                    if self._is_point_valid(point):
+                    if self._is_point_valid(point, kind):
                         point = self._2D_to_3D_point(kind, point)
                         validated_points.append(point)
                     else:
@@ -541,7 +541,7 @@ class SKS():
                         logger.error(msg)
                         raise ValueError(msg)
                 elif len(point) == 3:
-                    if self._is_point_valid(point):
+                    if self._is_point_valid(point, kind):
                         validated_points.append(point)
                     else:
                         msg = ("Point with coordinates {} is invalid in"
@@ -646,7 +646,7 @@ class SKS():
 
         return validated_geology_ids
     
-    def _is_point_valid(self, point: tuple) -> bool:
+    def _is_point_valid(self, point: tuple, kind: str) -> bool:
         """
         Check if a 2D or 3D point is in domain.
         
@@ -657,10 +657,12 @@ class SKS():
         if self.grid.is_inbox(point):
             if len(point) == 2:
                 i, j = self.grid.get_indices(point)
-                out = self.domain.data_surfaces['z'][i, j] > 0
+                # out = self.domain.data_surfaces['z'][i, j] > 0
+                out = self._points[kind]['data'].max(axis=2)[i, j] > 0
             elif len(point) == 3:
                 i, j, k = self.grid.get_indices(point)
-                out = self.domain.data_volume[i, j, k] > 0
+                # out = self.domain.data_volume[i, j, k] > 0
+                out = self._points[kind]['data'][i, j, k] > 0
             return out
         else:
             return False
@@ -670,7 +672,8 @@ class SKS():
         TODO
         """
         i, j = self.grid.get_indices(point)
-        i, j = int(i), int(j)
+        i = i[0]
+        j = j[0]
         valid_cells = self._points[kind]['valid_cells']
         column_valid_cells = valid_cells[(valid_cells['i'] == i)
                                          & (valid_cells['j'] == j)]

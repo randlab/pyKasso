@@ -389,8 +389,8 @@ class Geology(GeologicFeature):
         default_cost: float = DEFAULT_FMM_COSTS['geology'],
     ) -> None:
         """
-        Assign costs to geologic units based on the provided dictionary, with an
-        optional default cost.
+        Assign costs to geologic units based on the provided dictionary, with
+        an optional default cost.
 
         Parameters
         ----------
@@ -537,6 +537,3 @@ class Faults(GeologicFeature):
         """
         model.setdefault(0, False)
         return super().set_model(model, default_model)
-
-# DOCSTRING
-# Surface.compute_statistics.__doc__ = GeologicFeature.compute_statistics.__doc__

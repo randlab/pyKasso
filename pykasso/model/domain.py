@@ -503,11 +503,11 @@ class Domain():
         -------
         out : bool
         """
-        point = Point(point)
-        if self.grid.polygon.contains(point):
+        point_object = Point(point)
+        if self.grid.polygon.contains(point_object):
             i, j = self.grid.get_indices(point)
             out = bool(self.data_surfaces['z'][i, j])
-        elif self.grid.polygon.touches(point):
+        elif self.grid.polygon.touches(point_object):
             x, y = point
             i, j = self.grid.get_indices(x, y)
             test_x = self.grid.is_x_valid(x)
