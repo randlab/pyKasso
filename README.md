@@ -43,5 +43,6 @@ mamba activate pykasso
 
 ## Publications
 
+- Miville, F., Renard, P., Fandel, C., Filipponi, M. 2025: pyKasso: An open-source three-dimensional discrete karst network generator. Environmental Modelling & Software, Volume 186, https://doi.org/10.1016/j.envsoft.2025.106362
 - Fandel, C., Miville, F., Ferré, T. et al. 2022: The stochastic simulation of karst conduit network structure using anisotropic fast marching, and its application to a geologically complex alpine karst system. Hydrogeol J 30, 927–946, https://doi.org/10.1007/s10040-022-02464-x
 - Borghi, A., Renard, P., Jenni, S. 2012: A pseudo-genetic stochastic model to generate karstic networks, Journal of Hydrology, 414–415, https://doi.org/10.1016/j.jhydrol.2011.11.032.
