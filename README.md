@@ -41,6 +41,29 @@ mamba activate pykasso
 - Examples developped for the paper: [notebooks/paper/](https://github.com/randlab/pyKasso/tree/dev/notebooks/paper)
 - Some basic examples illustrating pyKasso's functionalities: [notebooks/geometry/](https://github.com/randlab/pyKasso/tree/dev/notebooks/geometry)
 
+## Citing pyKasso
+
+We published a [paper about pyKasso](https://doi.org/10.1016/j.envsoft.2025.106362).
+
+If you are using pyKasso in your scientific research, please help our scientific visibility by citing our work.
+
+> Miville, F., Renard, P., Fandel, C., Filipponi, M. 2025: pyKasso: An open-source three-dimensional discrete karst network generator. Environmental Modelling & Software, Volume 186, https://doi.org/10.1016/j.envsoft.2025.106362
+
+BibTex:
+```
+@article{MIVILLE2025106362,
+  title = {pyKasso: An open-source three-dimensional discrete karst network generator},
+  journal = {Environmental Modelling & Software},
+  volume = {186},
+  pages = {106362},
+  year = {2025},
+  issn = {1364-8152},
+  doi = {https://doi.org/10.1016/j.envsoft.2025.106362},
+  url = {https://www.sciencedirect.com/science/article/pii/S1364815225000465},
+  author = {François Miville and Philippe Renard and Chloé Fandel and Marco Filipponi},
+}
+```
+
 ## Publications
 
 - Miville, F., Renard, P., Fandel, C., Filipponi, M. 2025: pyKasso: An open-source three-dimensional discrete karst network generator. Environmental Modelling & Software, Volume 186, https://doi.org/10.1016/j.envsoft.2025.106362
