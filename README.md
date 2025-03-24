@@ -19,7 +19,8 @@ pyKasso is a python3 open-source package intended to simulate easily and quickly
 
 ## Installation
 
-Currently, pyKasso is only working with Python 3.9. 
+> [!IMPORTANT]
+> Currently, pyKasso is only working with Python 3.9. 
 
 If you are using anaconda or miniconda, the simplest way to install pykasso is to create the `pykasso` conda environment av
 nd activate it with the following commands:
