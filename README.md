@@ -6,7 +6,7 @@
 <!-- [![PyPI Versions](https://img.shields.io/pypi/pyversions/pykasso.png)](https://pypi.python.org/pypi/pykasso) -->
 
 ![license](https://img.shields.io/github/license/randlab/pyKasso)
-![last-commit](https://img.shields.io/github/last-commit/randlab/pyKasso/dev)
+![last-commit](https://img.shields.io/github/last-commit/randlab/pyKasso/)
 
 <!-- [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/randlab/pyKasso/dev) -->
 
