@@ -8,7 +8,7 @@
 ![license](https://img.shields.io/github/license/randlab/pyKasso)
 ![last-commit](https://img.shields.io/github/last-commit/randlab/pyKasso/dev)
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/randlab/pyKasso/dev)
+<!-- [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/randlab/pyKasso/dev) -->
 
 ## pyKasso: a stochastic karst network simulation tool
 
@@ -20,27 +20,45 @@ pyKasso is a python3 open-source package intended to simulate easily and quickly
 ## Installation
 
 > [!IMPORTANT]
-> Currently, pyKasso is only working with Python 3.9. 
+> Currently, pyKasso is working with:
+> - Python 3.11 
+> - Python 3.10 (not tested)
+> - Python 3.9
 
-If you are using anaconda or miniconda, the simplest way to install pykasso is to create the `pykasso` conda environment av
-nd activate it with the following commands:
-```
-conda env create -f environment.yml
-conda activate pykasso
-```
-This will install all the required dependencies.
+The easiest way to install pyKasso is to use anaconda or miniconda.
 
-An alternative and faster way to do the same is to use miniforge: https://github.com/conda-forge/miniforge:
+1. Create a python 3.11 environnement
 ```
-mamba env create -f environment.yml
-mamba activate pykasso
+conda create --name pyKasso -c conda-forge python=3.11
+conda activate pyKasso
 ```
 
+2. Clone or download the project then install it locally
+```
+pip install -e git+https://github.com/randlab/pyKasso.git#egg=pykasso
+python -m pip install .
+```
+
+3. Install the hfm package
+```
+conda config --add channels agd-lbr
+conda install hfm
+```
+
+An alternative and faster way to do the same is to use miniforge: https://github.com/conda-forge/miniforge
+```
+conda create --name pyKasso -c conda-forge python=3.11
+conda activate pyKasso
+python -m pip install .
+conda config --add channels agd-lbr
+mamba install hfm
+```
 
 ## Examples
 
-- Examples developped for the paper: [notebooks/paper/](https://github.com/randlab/pyKasso/tree/dev/notebooks/paper)
-- Some basic examples illustrating pyKasso's functionalities: [notebooks/geometry/](https://github.com/randlab/pyKasso/tree/dev/notebooks/geometry)
+- Examples developped for the paper: [notebooks/paper/](https://github.com/randlab/pyKasso/tree/master/notebooks/paper)
+- Some basic examples illustrating pyKasso's functionalities: [notebooks/geometry/](https://github.com/randlab/pyKasso/tree/master/notebooks/geometry)
+- An example to use pyKasso with Google Colab: [notebooks/colab/](https://github.com/randlab/pyKasso/tree/master/notebooks/colab) 
 
 ## Citing pyKasso
 
