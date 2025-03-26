@@ -27,19 +27,22 @@ pyKasso is a python3 open-source package intended to simulate easily and quickly
 
 The easiest way to install pyKasso is to use anaconda or miniconda.
 
-1. Create a python 3.11 environnement
+1. Create a python 3.11 environnement:
 ```
 conda create --name pyKasso -c conda-forge python=3.11
 conda activate pyKasso
 ```
 
-2. Clone or download the project then install it locally
+2. Clone the project then install it locally:
 ```
 pip install -e git+https://github.com/randlab/pyKasso.git#egg=pykasso
+```
+Or download it then install it locally:
+```
 python -m pip install .
 ```
 
-3. Install the hfm package
+3. Install the hfm package:
 ```
 conda config --add channels agd-lbr
 conda install hfm
