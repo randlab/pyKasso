@@ -27,17 +27,17 @@ else:
     _has_pyvista = True
 
 ### Local dependencies
-from pykasso.core._namespaces import (GEOLOGICAL_FEATURES,
-                                      DOMAIN_FEATURES,
-                                      ANISOTROPIC_FEATURES,
-                                      AUTHORIZED_FEATURES,
-                                      SURFACE_FEATURES)
+from ..core._namespaces import (
+    GEOLOGICAL_FEATURES,
+    DOMAIN_FEATURES,
+    ANISOTROPIC_FEATURES,
+    AUTHORIZED_FEATURES,
+    SURFACE_FEATURES,
+)
 
 ### Typing
-from typing import Union
-from typing import NamedTuple
-
-from pykasso.core.project import Project
+from typing import (Union, NamedTuple)
+from ..core.project import Project
 
 
 class Figure(NamedTuple):
@@ -1293,7 +1293,7 @@ class Visualizer():
         #     pass
             
         except Exception:
-            print('error')
+            # print('error')
             featured_data = simulation_data['grid'].copy()
             
         return featured_data

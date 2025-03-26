@@ -20,7 +20,7 @@ else:
 
 ### Typing
 from typing import Union
-from pykasso.core.project import Project
+from ..core.project import Project
 from pandas import (DataFrame, Series)
 from pandas.io.formats.style import Styler
 

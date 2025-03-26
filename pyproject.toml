@@ -1,7 +1,7 @@
 [project]
 name = "pykasso"
-version = "1.0.0"
-requires-python = "<3.10"
+version = "1.0.1"
+requires-python = ">=3.10"
 description = "Python project intended to simulate stochastic karst network"
 authors = [
   {name = "François Miville", email = "francois.miville@ikmail.com"},
@@ -15,16 +15,44 @@ license = {file = "LICENSE"}
 readme = "README.md"
 keywords = ['hydrogeology', '3-D modeling', 'stochasticity']
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Programming Language :: Python :: 3.9",
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Natural Language :: English",
     "Topic :: Scientific/Engineering",
 ]
+dependencies = [
+  'pillow',
+  'numpy',
+  'pandas',
+  'Jinja2',
+  'matplotlib',
+  'PyQt5',
+  'openpyxl',
+  'mpmath',
+  'PyYAML',
+  'scipy',
+  'plotly',
+  'shapely',
+  'rasterio',
+  'agd',
+  'networkx',
+  'mplstereonet',
+  'pyvista',
+  'imageio',
+  'trame',
+  'trame-vuetify',
+  'trame-vtk',
+  'karstnet',
+]
 
-[tool.setuptools]
-packages = ["pykasso"]
+[tool.setuptools.packages.find]
+include = ['pykasso', 'pykasso.*']
+
+[tool.setuptools.package-data]
+'pykasso._misc' = ['*']
 
 [project.urls]
 Homepage = "https://github.com/randlab/pyKasso"

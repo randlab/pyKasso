@@ -1,4 +1,6 @@
-"""Custom pyKasso's typing."""
+"""
+Custom pyKasso's typing.
+"""
 
 # Typing
 from typing import TypeVar, TYPE_CHECKING
@@ -7,10 +9,10 @@ from numpy import random
 from pandas import core, io
 
 if TYPE_CHECKING:
-    import pykasso.core.project as pcp
-    import pykasso.core.grid as pcg
-    import pykasso.model.domain as pcd
-    import pykasso.model.geologic_features as pcgf
+    from ..core import project as pcp
+    from ..core import grid as pcg
+    from ..model.domain_features import domain as pcd
+    from ..model import geologicfeature as pcgf
 
 ### Custom internal types
 

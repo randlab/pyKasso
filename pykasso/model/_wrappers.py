@@ -1,16 +1,12 @@
 """pyKasso's wrappers functions."""
 
 ### Internal dependencies
-import sys
-import time
 import logging
 
 ### Local dependencies
-from pykasso._utils.validation import (
-    test_sks_settings,
-)
-import pykasso.model._validations as val
-from pykasso.core._namespaces import DEFAULT_FMM_COSTS
+from .._utils.validation import test_sks_settings
+from ..model import _validations as val
+from ..core._namespaces import DEFAULT_FMM_COSTS
 
 
 DEFAULT_VALUES = {

@@ -11,12 +11,12 @@ import pandas as pd
 import rasterio
 
 ### Local dependencies
-from pykasso.core._namespaces import (
+from ..core._namespaces import (
     VALID_EXTENSIONS_DATA,
     VALID_EXTENSIONS_DATAFRAME,
     VALID_EXTENSIONS_IMAGE,
 )
-from pykasso.core.grid import Grid
+from ..core.grid import Grid
 
 ### Typing
 from typing import Union

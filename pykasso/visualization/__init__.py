@@ -11,5 +11,4 @@ __all__ = []
 from .visualizer import *
 from .._version import __version__
 
-# __all__.extend([''])
 __all__.extend(['__version__'])

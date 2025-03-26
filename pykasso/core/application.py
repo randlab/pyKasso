@@ -3,20 +3,20 @@ Module containing the application class.
 """
 
 ### Local dependencies
-from pykasso.core.project import Project
-from pykasso.model.sks import SKS
-from pykasso.analysis.analysis import Analyzer
-from pykasso.visualization.visualizer import Visualizer
+from .project import Project
+from ..model.sks import SKS
+from ..analysis.analysis import Analyzer
+from ..visualization.visualizer import Visualizer
 
 ### Validation
-from pykasso._utils.validation import (
+from .._utils.validation import (
     is_variable_type_valid,
     is_key_in_dict,
     is_parameter_comparison_valid,
 )
 
 ### Variables
-from pykasso.core._namespaces import (
+from ._namespaces import (
     GRID_PARAMETERS,
 )
 

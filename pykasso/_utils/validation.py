@@ -9,7 +9,7 @@ import logging
 ### External dependencies
 import numpy as np
 
-from pykasso.core._namespaces import (
+from ..core._namespaces import (
     SKS_VALID_ALGORITHM_VALUES,
     SKS_VALID_MODE_VALUES,
 )

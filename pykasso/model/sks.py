@@ -20,15 +20,14 @@ from agd import Eikonal
 from agd.Metrics import Riemann
 
 ### Local dependencies
-import pykasso.model._wrappers as wp
-from .domain import Domain, Delimitation, Topography, Bedrock, WaterTable
-from .geologic_features import Geology, Faults
-from .fracturation import Fractures
-from pykasso._utils.array import normalize_array
-from pykasso.core._namespaces import DEFAULT_FMM_COSTS
+from ..model import _wrappers as wp
+from .domain_features import Domain, Delimitation, Topography, Bedrock, WaterTable
+from .geologic_features import Geology, Faults, Fractures
+from .._utils.array import normalize_array
+from ..core._namespaces import DEFAULT_FMM_COSTS
 
 ### Typing
-from pykasso._typing import Project
+from .._typing import Project
 
 
 #################

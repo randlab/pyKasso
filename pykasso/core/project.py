@@ -17,9 +17,9 @@ from collections.abc import Sequence
 import yaml
 
 ### Local dependencies
-from pykasso.core.grid import Grid
+from .grid import Grid
 from .._version import __version__
-from pykasso.core._namespaces import (
+from ._namespaces import (
     MISC_DIR_PATH,
     DEFAULT_PARAMETERS_FILENAME,
     DEFAULT_PROJECT_FILENAME,

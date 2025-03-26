@@ -8,9 +8,8 @@ import logging
 import rasterio
 import numpy as np
 
-from pykasso._utils import datareader
-
-from pykasso._utils import validation as val
+from .._utils import datareader
+from .._utils import validation as val
 
 this = sys.modules[__name__]
 

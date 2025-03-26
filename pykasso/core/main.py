@@ -3,10 +3,9 @@ Module containing functions for accessing the public content of pyKasso.
 """
 
 ### Local dependencies
-from pykasso.core.application import Application
-from pykasso._utils.datareader import DataReader
-from pykasso.core.grid import Grid
-
+from .application import Application
+from .grid import Grid
+from .._utils.datareader import DataReader
 
 def pykasso() -> Application:
     """
