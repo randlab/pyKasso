@@ -34,11 +34,11 @@ class Faults(GeologicFeature):
             the values are the corresponding names (strings) to be assigned.
             This dictionary specifies which geologic unit should receive
             custom names.
-        default_name : str, optional
+        default_name : str, default: 'fault {}'
             A format string used to generate default fault item names for
             items not explicitly named in the ``names`` dictionary. The format
             string should include a placeholder (e.g., '{}') that will be
-            replaced by the item's index. The default pattern is 'family {}'.
+            replaced by the item's index.
         
         Notes
         -----
@@ -65,7 +65,7 @@ class Faults(GeologicFeature):
             custom costs.
         default_cost : float, optional
             The default cost to be applied to fault items not explicitly
-            listed in the `costs` dictionary. The default values are taken
+            listed in the ``costs`` dictionary. The default values are taken
             from the `DEFAULT_FMM_COSTS['faults']` dictionary.
         
         Notes
@@ -90,9 +90,9 @@ class Faults(GeologicFeature):
             A dictionary where the keys are fault item indices (integers) and
             the values are booleans indicating if the item is considered or
             not.
-        default_model : bool, optional
+        default_model : bool, default: True
             The default value to be applied to fault items not explicitly
-            listed in the `model` dictionary. The default value is `True`.
+            listed in the ``model`` dictionary.
         
         Notes
         -----

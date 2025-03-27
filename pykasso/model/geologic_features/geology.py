@@ -34,11 +34,11 @@ class Geology(GeologicFeature):
             and the values are the corresponding names (strings) to be
             assigned. This dictionary specifies which geologic unit should
             receive custom names.
-        default_name : str, optional
+        default_name : str, default: 'unit {}'
             A format string used to generate default geologic unit names for
             items not explicitly named in the ``names`` dictionary. The format
             string should include a placeholder (e.g., '{}') that will be
-            replaced by the item's index. The default pattern is 'family {}'.
+            replaced by the item's index.
         
         Notes
         -----
@@ -65,8 +65,8 @@ class Geology(GeologicFeature):
             custom costs.
         default_cost : float, optional
             The default cost to be applied to geologic units not explicitly
-            listed in the `costs` dictionary. The default values are taken
-            from the `DEFAULT_FMM_COSTS['geology']` dictionary.
+            listed in the ``costs`` dictionary. The default values are taken
+            from the ``DEFAULT_FMM_COSTS['geology']`` dictionary.
         
         Notes
         -----
@@ -90,9 +90,9 @@ class Geology(GeologicFeature):
             A dictionary where the keys are geologic unit indices (integers)
             and the values are booleans indicating if the item is considered or
             not.
-        default_model : bool, optional
+        default_model : bool, default: True
             The default value to be applied to geologic units not explicitly
-            listed in the `model` dictionary. The default value is `True`.
+            listed in the ``model`` dictionary.
         
         Notes
         -----

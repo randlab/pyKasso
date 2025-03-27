@@ -134,11 +134,11 @@ class GeologicFeature(DataReader):
             A dictionary where the keys are item indices (integers) and the
             values are the corresponding names (strings) to be assigned. This
             dictionary specifies which items should receive custom names.
-        default_name : str, optional
+        default_name : str, default: 'item {}'
             A format string used to generate default names for items not
             explicitly named in the ``names`` dictionary. The format string
             should include a placeholder (e.g., '{}') that will be replaced by
-            the item's index. The default pattern is 'item {}'.
+            the item's index.
         
         Notes
         -----
@@ -167,9 +167,9 @@ class GeologicFeature(DataReader):
             A dictionary where the keys are item indices (integers) and the
             values are the corresponding costs (floats) to be assigned. This
             dictionary specifies which items should receive custom costs.
-        default_cost : float, optional
+        default_cost : float, default: 0.5
             The default cost to be applied to items not explicitly listed in
-            the `costs` dictionary. The default value is 0,5.
+            the ``costs`` dictionary.
         
         Notes
         -----
@@ -197,9 +197,9 @@ class GeologicFeature(DataReader):
         model : dict[int, bool]
             A dictionary where the keys are item indices (integers) and the
             values are booleans indicating if the item is considered or not.
-        default_model : bool, optional
+        default_model : bool, default: True
             The default value to be applied to items not explicitly listed in
-            the `model` dictionary. The default value is `True`.
+            the ``model`` dictionary.
         
         Notes
         -----

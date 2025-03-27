@@ -64,12 +64,11 @@ class Fractures(GeologicFeature):
             and the values are the corresponding names (strings) to be
             assigned. This dictionary specifies which fracture families should
             receive custom names.
-        default_name : str, optional
+        default_name : str, default: 'family {}'
             A format string used to generate default fracture familiy names
             for items not explicitly named in the ``names`` dictionary.
             The format string should include a placeholder (e.g., '{}') that
-            will be replaced by the item's index. The default pattern is
-            'family {}'.
+            will be replaced by the item's index.
         
         Notes
         -----
@@ -96,8 +95,8 @@ class Fractures(GeologicFeature):
             custom costs.
         default_cost : float, optional
             The default cost to be applied to fracture familes not explicitly
-             listed in the `costs` dictionary. The default values are taken
-             from the `DEFAULT_FMM_COSTS['fractures']` dictionary.
+             listed in the ``costs`` dictionary. The default values are taken
+             from the ``DEFAULT_FMM_COSTS['fractures']`` dictionary.
         
         Notes
         -----
@@ -123,10 +122,9 @@ class Fractures(GeologicFeature):
             considered. This dictionary specifies which fracture families
              should be evaluated in the simulation.
             
-        default_model : bool, optional
+        default_model : bool, default: True
             The default value to be applied to fracture families not
-             explicitly listed in the `model` dictionary. The default value is
-             `True`.
+             explicitly listed in the ``model`` dictionary.
         
         Notes
         -----
@@ -145,7 +143,7 @@ class Fractures(GeologicFeature):
     ) -> None:
         """
         Create a new fracture family.
-        Populate the `self.families` and `self.fractures` dataframe attributes.
+        Populate the ``self.families`` and ``self.fractures`` dataframe attributes.
 
         Parameters
         ----------
@@ -189,7 +187,7 @@ class Fractures(GeologicFeature):
         Construct the array for the fracturation model by voxelizing the
         fractures.
         
-        Voxelize each fracture family and populate the `fractures_voxelized`
+        Voxelize each fracture family and populate the ``fractures_voxelized``
         dictionary attribute. Sort fracture families by travel cost and
         combine all the voxels according to their ranking.
         """
