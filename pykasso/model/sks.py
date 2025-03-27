@@ -43,51 +43,36 @@ class SKS():
     Attributes
     ----------
     SKS_SETTINGS : dict
-        ...
-    grid : _type_
-        ...
-    domain : _type_
-        ...
-    geology : _type_
-        ...
-    faults : _type_
-        ...
-    fractures : _type_
-        ...
+    grid : Grid
+    domain : Domain
+    geology : Geology
+    faults : Faults
+    fractures : Fractures
     inlets : DataFrame
-        ...
     outlets : DataFrame
-        ...
     
     .. note:: ``faults`` or ``fractures`` will return None when not defined.
     """
     
-    def __init__(self,
-                 project: Project,
-                 ) -> None:
-        """_summary_
-
-        Returns
-        -------
-        _type_
-            _description_
-        """
+    def __init__(self, project: Project) -> None:
+        """"""
         ### Initialization
         self.project = project
         self.grid = project.grid
 
-    def generate(self,
-                 model_parameters: dict = {},
-                 export_settings: dict = {},
-                 ) -> None:
-        """_summary_
+    def generate(
+        self,
+        model_parameters: dict = {},
+        export_settings: dict = {},
+    ) -> None:
+        """TODO
 
         Parameters
         ----------
-        model_parameters : dict, optional
-            _description_, by default {}
-        export_settings : dict, optional
-            _description_, by default {}
+        model_parameters : dict, default: {}
+            TODO
+        export_settings : dict, default: {}
+            TODO
 
         """
         self.model_parameters = model_parameters
