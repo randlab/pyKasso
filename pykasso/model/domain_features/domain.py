@@ -92,7 +92,7 @@ class Domain():
         Parameters
         ----------
         grid : Grid
-            Grid of the model.
+            pyKasso's ``Grid`` of the model.
         delimitation : Delimitation, default: None
             Vertical limits of the model.
         topography : Topography, default: None

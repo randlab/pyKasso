@@ -34,7 +34,7 @@ class GeologicFeature(DataReader):
         Parameters
         ----------
         grid : Grid
-            pyKasso's grid
+            pyKasso's ``Grid`` of the model.
         feature : str
             Define the type of geological feature.
             
