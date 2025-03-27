@@ -32,7 +32,7 @@ def is_filepath_valid(
     Returns
     -------
     Union[FileNotFoundError, bool]
-        Return ``true`` if test pass.
+        Return ``True`` if test pass.
         Otherwise raise a ``FileNotFoundError`` exception.
         
     Raises
@@ -66,7 +66,7 @@ def is_variable_type_valid(
     Returns
     -------
     Union[TypeError, bool]
-        Return ``true`` if test pass.
+        Return ``True`` if test pass.
         Otherwise raise a ``TypeError`` exception.
 
     Raises
@@ -101,7 +101,7 @@ def is_key_in_dict(
     Returns
     -------
     Union[KeyError, bool]
-        Return ``true`` if test pass.
+        Return ``True`` if test pass.
         Otherwise raise a ``KeyError`` exception.
 
     Raises
@@ -155,13 +155,12 @@ def is_parameter_comparison_valid(
     Returns
     -------
     Union[ValueError, bool]
-        Return ``true`` if test pass.
+        Return ``True`` if test pass.
         Otherwise raise a ``ValueError`` exception.
 
     Raises
     ------
     ValueError
-
     """
     logical_test_text = {
         '>': 'greater than',
@@ -188,7 +187,6 @@ def is_parameter_comparison_valid(
 
 def test_sks_settings(settings: dict) -> None:
     """
-    TODO
     """
     logger = logging.getLogger("sks.validation")
     
@@ -252,14 +250,11 @@ def test_sks_settings(settings: dict) -> None:
 
 # def test_geologic_feature_settings(settings: dict) -> None:
 #     """
-#     TODO
 #     """
 #     return None
 
-
 # def test_point_settings(kind: str, settings: dict) -> None:
 #     """
-#     TODO
 #     """
 #     logger = logging.getLogger("{}.validation".format(kind))
     
