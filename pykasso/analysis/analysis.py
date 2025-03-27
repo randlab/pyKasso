@@ -27,8 +27,8 @@ from pandas.io.formats.style import Styler
 
 def requires_karstnet():
     """
-    If 'karstnet' package is not installed, return `ImportError` exception
-    when a method requiring 'karstnet' is called.
+    If ``karstnet`` package is not installed, return ``ImportError`` exception
+    when a method requiring ``karstnet`` is called.
     """
     def _(function):
         def _wrapper(*args, **kwargs):
@@ -73,17 +73,18 @@ class Analyzer():
         return None
     
     @requires_karstnet()
-    def compute_metrics(self,
-                        verbose: bool = False,
-                        ) -> DataFrame:
+    def compute_metrics(
+        self,
+        verbose: bool = False,
+    ) -> DataFrame:
         """
         Compute the statistical metrics for each simulated discret karst
         conduit network using the karstnet package.
         
         Parameters
         ----------
-        verbosity : int, optional
-            Verbosity of karstnet results, by default 0
+        verbosity : int, default: 0
+            Verbosity of karstnet results.
 
         Returns
         -------
@@ -143,9 +144,10 @@ class Analyzer():
         return df_metrics
 
     @requires_karstnet()
-    def compare_metrics(self,
-                        dataframe: Union[DataFrame, Series, Styler],
-                        ) -> Styler:
+    def compare_metrics(
+        self,
+        dataframe: Union[DataFrame, Series, Styler],
+    ) -> Styler:
         """
         Compare the calculated statistical metrics with the reference.
 
@@ -205,21 +207,22 @@ class Analyzer():
 
         return df_metrics
 
-    def compute_stats_on_networks(self,
-                                  numpy_algorithm: str = 'mean',
-                                  numpy_parameters: dict = {},
-                                  ) -> np.ndarray:
+    def compute_stats_on_networks(
+        self,
+        numpy_algorithm: str = 'mean',
+        numpy_parameters: dict = {},
+    ) -> np.ndarray:
         """
         Compute selected algorithm on the whole set of computed discrete karst
         conduit networks.
         
         Parameters
         ----------
-        numpy_algorithm : str, optional
-            numpy algorithm, 'mean' by default.
-            More details : https://numpy.org/doc/stable/reference/routines.statistics.html
-        numpy_parameters : dict, optional
-            Parameters of the selected algorithm, ``{}`` by default.
+        numpy_algorithm : str, default: 'mean'
+            Numpy algorithm to use. More details here:
+            https://numpy.org/doc/stable/reference/routines.statistics.html
+        numpy_parameters : dict, default: {}
+            Parameters of the selected algorithm.
         
         Returns
         -------
