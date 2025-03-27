@@ -93,16 +93,16 @@ class Domain():
         ----------
         grid : Grid
             Grid of the model.
-        delimitation : Delimitation, optional
-            Vertical limits of the model, by default None.
-        topography : Topography, optional
-            Horizontal upper limits of the model, by default None.
-        bedrock : Bedrock, optional
-            Horizontal lower limits of the model, by default None.
-        water_table : WaterTable, optional
-            Phreatic/vadose limit of the model, by default None.
-        geology : np.ndarray, optional
-            Geologic model, by default None.
+        delimitation : Delimitation, default: None
+            Vertical limits of the model.
+        topography : Topography, default: None
+            Horizontal upper limits of the model.
+        bedrock : Bedrock, default: None
+            Horizontal lower limits of the model.
+        water_table : WaterTable, default: None
+            Phreatic/vadose limit of the model.
+        geology : np.ndarray, default: None
+            Geologic model.
         """
         ### Initialization
         self.grid = grid
