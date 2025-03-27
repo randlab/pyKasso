@@ -432,7 +432,7 @@ class Grid():
         Raises
         ------
         TypeError
-            The shape of the `coordinates` parameter is invalid.
+            The shape of the ``coordinates`` parameter is invalid.
         """
         # Convert type in np.ndarray
         if not isinstance(coordinates, np.ndarray):
@@ -546,7 +546,7 @@ class Grid():
         Raises
         ------
         TypeError
-            The shape of the `indices` parameter is invalid.
+            The shape of the ``indices`` parameter is invalid.
         """
         # Convert type in np.ndarray
         if not isinstance(indices, np.ndarray):
