@@ -79,9 +79,9 @@ class Application():
             argument points to a non-existant folder.
         grid_parameters : dict
             The dictionary containing the grid parameters.
-        force : bool, optional
+        force : bool, default: True
             If True, overwrite files in case of conflict when ``name``
-            points to an already existing directory (default is True).
+            points to an already existing directory.
 
         Examples
         --------
