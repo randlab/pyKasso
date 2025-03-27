@@ -6,6 +6,8 @@ discretization.
 import numpy as np
 import pandas as pd
 
+from ..core.grid import Grid
+
 
 def _calculate_normal(
     dip: np.ndarray,
@@ -34,16 +36,16 @@ def _calculate_normal(
 
 def _float_eq(a, b, tolerance: float = 1e-5) -> np.ndarray:
     """
-    Returns True if the difference between a and b is lower than tolerance.
+    Returns ``True`` if the difference between ``a`` and ``b`` is lower than tolerance.
 
     Parameters
     ----------
-    a : _type_
-        _description_
-    b : _type_
-        _description_
-    tolerance : float, optional
-        _description_, by default 1e-5
+    a : TODO
+        TODO
+    b : TODO
+        TODO
+    tolerance : float, default: 1e-5
+        TODO
 
     Returns
     -------
@@ -61,7 +63,7 @@ def _unit_intersect(n: np.ndarray, d: float) -> np.ndarray:
     """
     Computes the intersection between a unit circle and a line on a 2D plane.
     The unit circle is centered on the origin (x=0, y=0) and has a radius of 1.
-    The line is defined by parameters 'n' and 'd'.
+    The line is defined by parameters ``n`` and ``d``.
 
     Parameters
     ----------
@@ -286,7 +288,7 @@ def _rst2d(m: np.ndarray, xs: int, xe: int, ys: int, ye: int):
     ----------
     m : numpy.ndarray of dim 2
     xs, xe, ys, ye : int
-        Indices of positions on the grid m.
+        Indices of positions on the grid ``m``.
         Starting and ending location of the line.
 
     Returns
@@ -340,7 +342,7 @@ def _rst2d(m: np.ndarray, xs: int, xe: int, ys: int, ye: int):
 
 
 def voxelize_fractures(
-    grid,
+    grid: Grid,
     fractures: pd.DataFrame,
 ) -> np.ndarray:
     """
@@ -348,10 +350,10 @@ def voxelize_fractures(
     
     Parameters
     ----------
-    grid : _type_
-        _description_
-    fractures : _type_
-        _description_
+    grid : Grid
+        pyKasso's ``Grid`` of the model.
+    fractures : pd.DataFrame
+        DataFrame storing the fractures to voxelize.
 
     Returns
     -------

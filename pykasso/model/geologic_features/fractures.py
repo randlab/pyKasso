@@ -231,6 +231,7 @@ class Fractures(GeologicFeature):
         length_distribution: str = 'power',
         **kwargs: dict,
     ) -> pd.DataFrame:
+
         ######################
         ### INITIALIZATION ###
         ######################

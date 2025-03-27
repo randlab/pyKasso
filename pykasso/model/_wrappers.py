@@ -67,6 +67,9 @@ DEFAULT_VALUES = {
 
 
 def _parameters_validation(feature, kind):
+    """
+    This decorator validates input parameters before creatings modeling classes.
+    """
     def _(function):
         def _wrapper(*args, **kwargs):
             logger = logging.getLogger("validation.{}".format(feature))
