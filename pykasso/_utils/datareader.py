@@ -88,6 +88,12 @@ class DataReader():
                                 ) -> pd.DataFrame:
         """
         Convert data from a file into a pandas dataframe.
+
+        Parameters
+        ----------
+        filename : str
+            The path to the file that needs to be processed. This should
+            include the file name and its extension.
         """
         # Get extension file
         valid_extensions = VALID_EXTENSIONS_DATAFRAME
@@ -144,13 +150,14 @@ class DataReader():
     ### Get Data Array ###
     ######################
             
-    def get_data_from_file(self,
-                           filename: str,
-                           extend: bool = False,
-                           axis: str = 'z',
-                           usecol: Union[int, str] = None,
-                           **kwargs
-                           ) -> np.ndarray:
+    def get_data_from_file(
+        self,
+        filename: str,
+        extend: bool = False,
+        axis: str = 'z',
+        usecol: Union[int, str] = None,
+        **kwargs
+    ) -> np.ndarray:
         """
         Get data from a file.
 
@@ -159,12 +166,12 @@ class DataReader():
         filename : str
             The path to the file that needs to be processed. This should
             include the file name and its extension.
-        extend : bool, optional
-            TODO, by default False.
-        axis : str, optional
-            TODO, by default 'z'.
-        usecol : Union[int, str], optional
-            TODO, by default None.
+        extend : bool, default: False
+            If ``True``, a 2D dataset will be expanded in 3D in the selected ``axis``.
+        axis : str, default: 'z'
+            The axis in which data should be expanded if necessary.
+        usecol : Union[int, str], default: None
+            The rank of the column to consider.
 
         Returns
         -------
@@ -345,9 +352,10 @@ class DataReader():
     #########################
     
     @staticmethod
-    def read_vox(filename: str,
-                 usecol: Union[int, str] = None,
-                 ) -> np.ndarray:
+    def read_vox(
+        filename: str,
+        usecol: Union[int, str] = None,
+    ) -> np.ndarray:
         """
         Read a vox file.
 
@@ -356,8 +364,8 @@ class DataReader():
         filename : str
             The path to the file that needs to be processed. This should
             include the file name and its extension.
-        usecol : Union[int, str], optional
-            The rank of the column to consider, by default None.
+        usecol : Union[int, str], default: None
+            The rank of the column to consider.
 
         Returns
         -------
