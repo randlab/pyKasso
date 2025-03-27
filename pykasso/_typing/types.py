@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from ..core import project as pcp
     from ..core import grid as pcg
     from ..model.domain_features import domain as pcd
-    from ..model import geologicfeature as pcgf
+    from ..model.geologic_features import geologicfeature as pcgf
 
 ### Custom internal types
 
@@ -29,9 +29,12 @@ WaterLevel = TypeVar('WaterLevel', bound='pcd.WaterLevel')
 Geology = TypeVar('Geology', bound='pcgf.Geology')
 
 ### Custom external types
+
 # Numpy
-RandomNumberGenerator = TypeVar('RandomNumberGenerator',
-                                bound='random._generator.Generator')
+RandomNumberGenerator = TypeVar(
+    'RandomNumberGenerator',
+    bound='random._generator.Generator',
+)
 # Pandas
 Series = TypeVar('Series', bound='core.series.Series')
 DataFrame = TypeVar('DataFrame', bound='core.frame.DataFrame')
