@@ -34,11 +34,21 @@ class GeologicFeature(DataReader):
         Parameters
         ----------
         grid : Grid
-            TODO
+            pyKasso's grid
         feature : str
-            TODO
+            Define the type of geological feature.
+            
+            Available 2D geological features:
+                - ``'topography'``
+                - ``'water_table'``
+                - ``'bedrock'``
+
+            Available 3D geological features:
+                 - ``'geology'``
+                - ``'faults'``
+                - ``'fractures'``
         dim : int
-            TODO
+            Define whether the geological feature corresponds to a 2D or 3D dataset.
         """
         
         # Initialization
@@ -92,7 +102,8 @@ class GeologicFeature(DataReader):
         data: Union[None, str, np.ndarray],
         axis: str = 'z',
     ) -> None:
-        """TODO"""
+        """        
+        """
         # If no data is provdided
         if data is None:
             
