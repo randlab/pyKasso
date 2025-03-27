@@ -7,6 +7,7 @@ from .application import Application
 from .grid import Grid
 from .._utils.datareader import DataReader
 
+
 def pykasso() -> Application:
     """
     Create and return an ``Application``.

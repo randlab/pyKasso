@@ -68,15 +68,15 @@ class Project(Sequence):
         ----------
         grid_parameters : dict
             The dictionary containing the grid parameters.
-        project_location : str, optional
+        project_location : str, default: None
             The file path to the project location. If not specified, the
             default project location will be the active directory.
-        example : str, optional
+        example : str, default: None
             A string indicating an example configuration to use as project
-            in the initialization (default is None).
-        force : bool, optional
-            If True, overwrite files in case of conflict when ``name``
-            points to an already existing directory (default is True).
+            in the initialization.
+        force : bool, default: True
+            If ``True``, overwrite files in case of conflict when ``name``
+            points to an already existing directory.
         """
         ### Initialize values
         self.__name: str = None
@@ -455,11 +455,11 @@ class Project(Sequence):
         
         Parameters
         ----------
-        ni : int, optional
-            Lower bound of the selection (0 by default).
-        nf : int, optional
+        ni : int, default: 0
+            Lower bound of the selection.
+        nf : int, default: None
             Upper bound of the selection. If left empty, it will select all
-            the remaining simulations (None by default).
+            the remaining simulations.
 
         Returns
         -------
