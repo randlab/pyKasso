@@ -1506,7 +1506,7 @@ class SKS():
                 if np.isnan(self.maps['nodes'][ix, iy, iz]):                                    #if there is no existing conduit node here
                     if ~np.isnan(self.maps['outlets'][ix, iy, iz]):                              #if there is an outlet here (cell value is not nan)
                         outlet = self._outlets.iloc[int(self.maps['outlets'][ix, iy, iz])]         #get the outlet coordinates using the ID in the outlets map
-                        self.vectors['nodes'][self.vectors['n']] = [outlet.x, outlet.y, outlet.z, 'outlet']           #add a node at the outlet coordinates (with the node type for SWMM)
+                        self.vectors['nodes'][self.vectors['n']] = [float(outlet.x), float(outlet.y), float(outlet.z), 'outlet']           #add a node at the outlet coordinates (with the node type for SWMM)
                         self.maps['nodes'][ix, iy, iz] = self.vectors['n']                                   #update node map with node index
                         if p > 0:                                                           #if this is not the first point (i.e. the inlet) in the current path
                             if merge is False:                                               #if this conduit has not merged with an existing conduit
@@ -1515,13 +1515,13 @@ class SKS():
                             else:                                                          #if this conduit HAS merged with an existing conduit
                                 [[fromix, fromiy, fromiz], error] = self.fmm['fastMarching'].IndexFromPoint(path[:, p-1]) #get xyz indices of previous point in current conduit path
                                 n_from = self.maps['nodes'][fromix, fromiy, fromiz]           #get node index of the node already in the cell where the previous point was
-                                self.vectors['edges'][self.vectors['e']] = [n_from, self.vectors['n']]                         #add an edge connecting existing conduit node to current node
+                                self.vectors['edges'][self.vectors['e']] = [int(n_from), self.vectors['n']]                         #add an edge connecting existing conduit node to current node
                                 self.vectors['e'] = self.vectors['e'] + 1                                             #increment edge counter up by one
                         self.vectors['n'] = self.vectors['n'] + 1                                                   #increment node counter up by one
                     else:                                                                  #if there is NOT an outlet here
                         if p > 0:                                                           #if this is not the first point in the current path
                             # possible improvement: if the next point on the path is on an existing point, skip the current point.
-                            self.vectors['nodes'][self.vectors['n']] = [point[0], point[1], point[2], 'junction']            #add a junction node here (with the node type for SWMM)
+                            self.vectors['nodes'][self.vectors['n']] = [float(point[0]), float(point[1]), float(point[2]), 'junction']            #add a junction node here (with the node type for SWMM)
                             self.maps['nodes'][ix, iy, iz] = self.vectors['n']                               #update node map with node index
                             if merge is False:                                              #if this conduit has not merged with an existing conduit
                                 self.vectors['edges'][self.vectors['e']] = [self.vectors['n']-1, self.vectors['n']]                      #add and edge connecting the previous node to the current node
@@ -1529,11 +1529,11 @@ class SKS():
                             else:                                                           #if this conduit HAS merged with an existing conduit
                                 [[fromix, fromiy, fromiz], error] = self.fmm['fastMarching'].IndexFromPoint(path[:, p-1]) #get xy indices of previous point in current conduit path
                                 n_from = self.maps['nodes'][fromix, fromiy, fromiz]                   #get node index of the node already in the cell where the previous point was
-                                self.vectors['edges'][self.vectors['e']] = [n_from, self.vectors['n']]                        #add an edge connecting existing conduit node to current node
+                                self.vectors['edges'][self.vectors['e']] = [int(n_from), self.vectors['n']]                        #add an edge connecting existing conduit node to current node
                                 self.vectors['e'] = self.vectors['e'] + 1                                            #increment edge counter up by one
                                 merge = False                                                #reset merge indicator to show that current conduit has left                                                              #if this is the first point in current path
                         else:                                                                #if this is the first point in the current path (counter <= 0, therefore it is an inlet)
-                            self.vectors['nodes'][self.vectors['n']] = [point[0], point[1], point[2], 'inlet']               #add an inlet node here (with the node type for SWMM)
+                            self.vectors['nodes'][self.vectors['n']] = [float(point[0]), float(point[1]), float(point[2]), 'inlet']               #add an inlet node here (with the node type for SWMM)
                             self.maps['nodes'][ix, iy, iz] = self.vectors['n']                               #update node map with node index
                         self.vectors['n'] = self.vectors['n'] + 1                                                   #increment node counter up by one
                 elif ~np.isnan(self.maps['nodes'][ix, iy, iz]):                                 #if there is already a node in this cell (either because there is a conduit here, or because there are two nodes in the same cell)
@@ -1544,11 +1544,11 @@ class SKS():
                         pass                                                                 #skip this node (duplicate)
                     else:                                                                   #if existing node index is >1 less than next node to be added index
                         if p > 0:                                                           #if this is not the first point in the current path
-                            self.vectors['edges'][self.vectors['e']] = [self.vectors['n']-1, n_existing]                      #add an edge connecting most recently added node and existing node in cell
+                            self.vectors['edges'][self.vectors['e']] = [self.vectors['n']-1, int(n_existing)]                      #add an edge connecting most recently added node and existing node in cell
                             self.vectors['e'] = self.vectors['e'] + 1                                                #increment edge counter up by one
                             merge = True                                                     #add a flag indicating that this conduit has merged into an existing one
                         else:                                                                #if this is the first point in the current path (i.e. the inlet is on an exising conduit)
-                            self.vectors['nodes'][self.vectors['n']] = [point[0], point[1], point[2], 'inlet']                #add a node here (with the node type for SWMM)- this will cause there to be two nodes in the same cell
+                            self.vectors['nodes'][self.vectors['n']] = [float(point[0]), float(point[1]), float(point[2]), 'inlet']                #add a node here (with the node type for SWMM)- this will cause there to be two nodes in the same cell
                             self.maps['nodes'][ix, iy, iz] = self.vectors['n']                                #update node map with node index
                             self.vectors['n'] = self.vectors['n'] + 1                                                 #increment node counter by 1
                 # self.maps['karst'][self.iteration][ix, iy, iz] = 1                               #update karst map to put a conduit in current cell
